@@ -31,6 +31,22 @@
         </div>
     </div>
     <script>
+    /*
+     Google Sign-In integration (client-side):
+     - Implements a small shim and handler `handleGoogleLogin()` which loads
+         Google's Identity Services script and renders a Google Sign-In button into
+         the account modal element with id `account-google-btn`.
+     - To enable: create an OAuth 2.0 Client ID in Google Cloud Console, add your
+         authorized JavaScript origin (e.g., https://romgon.net), then set the
+         client ID either by adding a meta tag:
+             <meta name="google-client-id" content="YOUR_CLIENT_ID">
+         or by assigning it at runtime before this script runs:
+             window.GOOGLE_CLIENT_ID = 'YOUR_CLIENT_ID.apps.googleusercontent.com'
+     - On successful sign-in, `handleGoogleCredentialResponse` parses the JWT and
+         stores a minimal `currentUser` in localStorage.
+     - This is client-side only. For server-verified auth, send the ID token to
+         your server and verify it with Google's token verification endpoints.
+    */
     // Show/hide Statistics Dashboard modal
     function showStatsDashboard() {
         document.getElementById('stats-dashboard-modal').style.display = 'block';
@@ -14754,88 +14770,10 @@ ${moveHistory || '(No moves played yet - starting position)'}
             if (startMenu) startMenu.style.display = 'flex';
         }
 
-        // ----------------------
-        // Google Sign-In helpers
-        // ----------------------
-        function loadGoogleIdentityScript() {
-            return new Promise((resolve, reject) => {
-                if (window.google && window.google.accounts && window.google.accounts.id) return resolve();
-                const s = document.createElement('script');
-                s.src = 'https://accounts.google.com/gsi/client';
-                s.async = true; s.defer = true;
-                s.onload = () => setTimeout(resolve, 50);
-                s.onerror = reject;
-                document.head.appendChild(s);
-            });
-        }
-
-        function getGoogleClientId() {
-            if (window.GOOGLE_CLIENT_ID) return window.GOOGLE_CLIENT_ID;
-            const m = document.querySelector('meta[name="google-client-id"]');
-            if (m) return m.content;
-            return null;
-        }
-
-        function parseJwt (token) {
-            try {
-                const base64Url = token.split('.')[1];
-                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                }).join(''));
-                return JSON.parse(jsonPayload);
-            } catch (e) {
-                return null;
-            }
-        }
-
-        function handleGoogleCredentialResponse(response) {
-            const payload = parseJwt(response.credential);
-            if (!payload) {
-                alert('Google sign-in failed to parse credentials.');
-                return;
-            }
-            const user = {
-                provider: 'google',
-                id: payload.sub,
-                name: payload.name || payload.email,
-                email: payload.email,
-                picture: payload.picture || null,
-            };
-            try { persistCurrentUser(user); } catch (e) { window.currentUser = user; }
-            try { closeAccountModal(); } catch (e) {}
-            console.info('Signed in as', user.email);
-        }
-
-        async function handleGoogleLogin() {
-            const clientId = getGoogleClientId();
-            if (!clientId) {
-                const msg = 'No Google Client ID configured.\n\nCreate an OAuth 2.0 Client ID in Google Cloud Console, add your origin (e.g., https://romgon.net) to authorized JavaScript origins, then set window.GOOGLE_CLIENT_ID to the value or add <meta name="google-client-id" content="YOUR_CLIENT_ID"> to the page.';
-                alert(msg);
-                console.warn(msg);
-                return;
-            }
-            try {
-                await loadGoogleIdentityScript();
-                if (!window.google || !window.google.accounts || !window.google.accounts.id) {
-                    alert('Google Identity library failed to load.');
-                    return;
-                }
-                google.accounts.id.initialize({
-                    client_id: clientId,
-                    callback: handleGoogleCredentialResponse,
-                    auto_select: false,
-                });
-                const holder = document.getElementById('account-google-btn');
-                if (holder) {
-                    holder.innerHTML = '';
-                    google.accounts.id.renderButton(holder, { theme: 'outline', size: 'large' });
-                }
-                google.accounts.id.prompt();
-            } catch (e) {
-                console.error('handleGoogleLogin error', e);
-                alert('Failed to load Google sign-in: ' + (e && e.message ? e.message : e));
-            }
+        // Handle Google login (delegates to preferred handler if present)
+        function handleGoogleLogin() {
+            // delegate to preferredLoginHandler which prefers the in-development handler
+            try { return preferredLoginHandler(); } catch (e) { console.warn('preferredLoginHandler failed', e); }
         }
 
         // Handle guest login
@@ -14897,13 +14835,212 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 if (typeof handleLoginFlow === 'function') {
                     return handleLoginFlow();
                 }
-                // Avoid calling handleGoogleLogin() here to prevent recursion in
-                // builds where handleGoogleLogin delegates back to preferredLoginHandler.
+                // Do not call handleGoogleLogin() here to avoid recursion where
+                // handleGoogleLogin might delegate back to this shim in some builds.
             } catch (e) {
                 console.warn('preferredLoginHandler: preferred handler threw, falling back', e);
             }
             return promptLogin();
         }
+
+        // ----------------------
+        // Google Sign-In helpers
+        // ----------------------
+        // Usage: set `window.GOOGLE_CLIENT_ID = 'your-client-id.apps.googleusercontent.com'` before calling,
+        // or add <meta name="google-client-id" content="YOUR_CLIENT_ID"> to the page.
+
+        function loadGoogleIdentityScript() {
+            return new Promise((resolve, reject) => {
+                if (window.google && window.google.accounts && window.google.accounts.id) return resolve();
+                const s = document.createElement('script');
+                s.src = 'https://accounts.google.com/gsi/client';
+                s.async = true; s.defer = true;
+                s.onload = () => setTimeout(resolve, 50);
+                s.onerror = reject;
+                document.head.appendChild(s);
+            });
+        }
+
+        function getGoogleClientId() {
+            if (window.GOOGLE_CLIENT_ID) return window.GOOGLE_CLIENT_ID;
+            const m = document.querySelector('meta[name="google-client-id"]');
+            if (m) return m.content;
+            return null;
+        }
+
+        function parseJwt (token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function persistCurrentUser(user) {
+            window.currentUser = user;
+            try { localStorage.setItem('romgon_current_user', JSON.stringify(user)); } catch (e) {}
+            // If you have UI update hooks, call them here (example: refresh panel badges)
+            if (typeof updateBaseDefenceDisplay === 'function') updateBaseDefenceDisplay();
+            if (typeof updateVariantIndicators === 'function') updateVariantIndicators();
+            // Show a small profile badge in the UI
+            try { showLoggedInUser(user); } catch (e) {}
+        }
+
+        function handleGoogleCredentialResponse(response) {
+            // response.credential is a JWT
+            const payload = parseJwt(response.credential);
+            if (!payload) {
+                alert('Google sign-in failed to parse credentials.');
+                return;
+            }
+            const user = {
+                provider: 'google',
+                id: payload.sub,
+                name: payload.name || payload.email,
+                email: payload.email,
+                picture: payload.picture || null,
+            };
+            persistCurrentUser(user);
+            // Close modal if open
+            closeAccountModal();
+            // Optional: show a quick welcome
+            console.info('Signed in as', user.email);
+        }
+
+        async function handleGoogleLogin() {
+            const clientId = getGoogleClientId();
+            if (!clientId) {
+                const msg = 'No Google Client ID configured.\n\nCreate an OAuth 2.0 Client ID in Google Cloud Console, add your origin (e.g., https://romgon.net) to authorized JavaScript origins, then set window.GOOGLE_CLIENT_ID to the value or add <meta name="google-client-id" content="YOUR_CLIENT_ID"> to the page.';
+                alert(msg);
+                console.warn(msg);
+                return;
+            }
+            try {
+                await loadGoogleIdentityScript();
+                if (!window.google || !window.google.accounts || !window.google.accounts.id) {
+                    alert('Google Identity library failed to load.');
+                    return;
+                }
+                // Initialize the Google Identity Services client
+                google.accounts.id.initialize({
+                    client_id: clientId,
+                    callback: handleGoogleCredentialResponse,
+                    auto_select: false,
+                });
+
+                // If there's a placeholder button in the modal, render the Google button into it
+                const holder = document.getElementById('account-google-btn');
+                if (holder) {
+                    // Clear any text and render Google's button
+                    holder.innerHTML = '';
+                    google.accounts.id.renderButton(holder, { theme: 'outline', size: 'large' });
+                }
+
+                // Trigger the one-tap prompt (optional)
+                google.accounts.id.prompt();
+            } catch (e) {
+                console.error('handleGoogleLogin error', e);
+                alert('Failed to load Google sign-in: ' + e.message);
+            }
+        }
+
+        // ----------------------
+        // Profile UI helpers
+        // ----------------------
+        function showLoggedInUser(user) {
+            if (!user) return;
+            // create or update a small badge in the top-right
+            let badge = document.getElementById('user-profile-badge');
+            if (!badge) {
+                badge = document.createElement('div');
+                badge.id = 'user-profile-badge';
+                badge.style.cssText = 'position:fixed; top:12px; right:12px; z-index:20001; display:flex; gap:8px; align-items:center; background:#111; color:#fff; padding:6px 10px; border-radius:18px; box-shadow:0 6px 18px rgba(0,0,0,0.6); cursor:pointer;';
+                document.body.appendChild(badge);
+                badge.addEventListener('click', (e) => { e.stopPropagation(); showAccountModal(); });
+            }
+            badge.innerHTML = '';
+            if (user.picture) {
+                const img = document.createElement('img');
+                img.src = user.picture;
+                img.style.cssText = 'width:28px; height:28px; border-radius:50%; object-fit:cover;';
+                badge.appendChild(img);
+            }
+            const txt = document.createElement('div');
+            txt.style.cssText = 'font-size:13px; color:#fff;';
+            txt.textContent = user.name || user.email || 'Player';
+            badge.appendChild(txt);
+        }
+
+        function removeLoggedInUserUI() {
+            const b = document.getElementById('user-profile-badge');
+            if (b) b.remove();
+        }
+
+        function handleSignOut() {
+            window.currentUser = null;
+            try { localStorage.removeItem('romgon_current_user'); } catch (e) {}
+            removeLoggedInUserUI();
+            // Optionally notify server to revoke session
+            if (window.google && window.google.accounts && window.google.accounts.id) {
+                try { google.accounts.id.disableAutoSelect(); } catch (e) {}
+            }
+            // Refresh parts of the UI that depend on user
+            if (typeof updateBaseDefenceDisplay === 'function') updateBaseDefenceDisplay();
+            if (typeof updateVariantIndicators === 'function') updateVariantIndicators();
+            alert('Signed out');
+            closeAccountModal();
+        }
+
+        // Render account modal state (profile vs sign-in)
+        function renderAccountModalState() {
+            const modal = document.getElementById('account-modal');
+            if (!modal) return;
+            const box = modal.querySelector('div');
+            if (!box) return;
+            // Remove existing profile area if any
+            const existing = box.querySelector('#account-profile-area');
+            if (existing) existing.remove();
+            const user = window.currentUser || (function(){ try { return JSON.parse(localStorage.getItem('romgon_current_user')); } catch(e){return null;} })();
+            if (user) {
+                const area = document.createElement('div');
+                area.id = 'account-profile-area';
+                area.style.cssText = 'margin:10px 0; padding:8px; background:#1b1b1b; border-radius:8px; color:#fff; display:flex; align-items:center; gap:12px;';
+                const img = document.createElement('img');
+                img.src = user.picture || '';
+                img.style.cssText = 'width:48px; height:48px; border-radius:8px; object-fit:cover; background:#222';
+                const info = document.createElement('div');
+                info.innerHTML = `<div style="font-weight:700">${user.name || user.email}</div><div style="font-size:12px; color:#ccc">${user.email || ''}</div>`;
+                const signOutBtn = document.createElement('button');
+                signOutBtn.textContent = 'Sign out';
+                signOutBtn.style.cssText = 'margin-left:auto; background:#e74c3c; color:#fff; border:none; padding:8px 10px; border-radius:8px; cursor:pointer;';
+                signOutBtn.addEventListener('click', (e)=>{ e.stopPropagation(); handleSignOut(); });
+                area.appendChild(img);
+                area.appendChild(info);
+                area.appendChild(signOutBtn);
+                // Insert profile area above the buttons
+                box.insertBefore(area, box.querySelector('div[style*="display:flex; gap:10px;"]'));
+            } else {
+                // Not signed in; ensure Google button is present
+                const gbtn = box.querySelector('#account-google-btn');
+                if (gbtn) {
+                    try { handleGoogleLogin(); } catch (e) {}
+                }
+            }
+        }
+
+        // On load, restore user UI if present
+        try {
+            const saved = localStorage.getItem('romgon_current_user');
+            if (saved) {
+                const u = JSON.parse(saved);
+                if (u) showLoggedInUser(u);
+            }
+        } catch (e) {}
 
         // Show a centered account modal with guest vs user info and login button
         function showAccountModal() {
@@ -14947,6 +15084,7 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     <li>Profile, avatar, and community features</li>
                 </ul>
                 <div style="display:flex; gap:10px; justify-content:flex-end;">
+                    <div id="account-google-btn" style="display:inline-block;"></div>
                     <button id="account-login-btn" style="background:#4ecdc4; color:#10201f; border:none; padding:10px 14px; border-radius:8px; font-weight:700; cursor:pointer;">Go to Login</button>
                     <button id="account-cancel-btn" style="background:#444; color:#fff; border:none; padding:10px 14px; border-radius:8px; cursor:pointer;">Close</button>
                 </div>
@@ -14963,6 +15101,8 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 // Direct to login flow (prefer in-development handler, fallback to prompt)
                 preferredLoginHandler();
             });
+            // Try to render Google button/profile state when modal opens
+            try { renderAccountModalState(); } catch (e) { try { handleGoogleLogin(); } catch(_){} }
         }
 
         function closeAccountModal() {
