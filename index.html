@@ -14815,15 +14815,16 @@ ${moveHistory || '(No moves played yet - starting position)'}
         // later without changing every callsite.
         function preferredLoginHandler() {
             try {
-                // If you implement handleLoginFlow or handleGoogleLogin, the shim will prefer them.
+                // Prefer a complete login flow implementation if present.
                 if (typeof handleLoginFlow === 'function') {
                     return handleLoginFlow();
                 }
-                if (typeof handleGoogleLogin === 'function') {
-                    return handleGoogleLogin();
-                }
+                // NOTE: Do NOT call handleGoogleLogin() here — that function may
+                // delegate back to this shim in some build copies, causing infinite
+                // recursion and a maximum call stack size exceeded error. If you need
+                // a direct Google-specific flow, invoke handleGoogleLogin() directly
+                // from the UI where appropriate (e.g. the Google button).
             } catch (e) {
-                // swallow and fallback
                 console.warn('preferredLoginHandler: preferred handler threw, falling back', e);
             }
             return promptLogin();
