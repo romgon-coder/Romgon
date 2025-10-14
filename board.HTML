@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Romgon - Interactive Game</title>
+    <style>
+        :root {
+            /* --- Configuration --- */
+            --hex-size: 35px; --hex-gap: 1px; --background-color: #f8f8f8;
+            --color-dark-brown: #6d3a13; --color-orange-med: #f57d2d; --color-orange-light: #fcc49c;
+            --pawn-scale: 0.85; --pawn-stroke-width: 5.5; --pawn-stroke-color: #444;
+            --white-pawn-fill: #ffffff; --black-pawn-fill: #000000;
+            --drop-target-highlight: rgba(0, 0, 0, 0.1); --vertical-shift: 18px;
+            --indicator-dot-color: #888888; --indicator-dot-size: 11px;
+            --flip-indicator-flipped-color: #ff0000;
+            /* --- End Configuration --- */
+
+            /* Calculated values */
+            --hex-height: calc(var(--hex-size) * 2);
+            --hex-width: calc(var(--hex-size) * 1.73205);
+            --hex-margin-top: calc(var(--hex-height) * -0.1 - var(--hex-gap) * 0.5);
+            --hex-row-offset: calc(var(--hex-width) / 2 + var(--hex-gap) * 0.866 / 2);
+            --hex-horizontal-spacing: calc(var(--hex-gap) * 3.866 / 1);
+            --pawn-base-size: calc(var(--hex-width) * var(--pawn-scale));
+            --captured-pawn-scale: 0.5;
+            --captured-pawn-size: calc(var(--hex-width) * var(--captured-pawn-scale));
+        }
+        /* --- Rest of CSS --- */
+        body { background-color: var(--background-color); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; overflow: hidden; gap: 30px;}
+        .board { display: flex; flex-direction: column; align-items: center; padding: 20px; transform: rotate(90deg); margin: calc(var(--hex-size) * 2); }
+        .row { display: flex; margin-top: var(--hex-margin-top); justify-content: center; }
+        .row:first-child { margin-top: 0; }
+        .row:nth-child(even) { margin-left: var(--hex-row-offset); }
+        .hexagon {
+            position: relative; width: var(--hex-width); height: var(--hex-height);
+            background-color: var(--color-orange-med); margin-left: var(--hex-horizontal-spacing);
+            margin-right: var(--hex-horizontal-spacing); cursor: default;
+            transition: filter 0.2s ease-in-out, transform 0.2s ease-in-out; flex-shrink: 0;
+            display: flex; justify-content: center; align-items: center;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.35);
+        }
+        .color-dark-brown { background-color: var(--color-dark-brown); } .color-orange-med { background-color: var(--color-orange-med); } .color-orange-light { background-color: var(--color-orange-light); }
+        .hexagon.shift-down { transform: translateX(var(--vertical-shift)); }
+        .hexagon.drag-over { filter: brightness(0.9) contrast(1.1); }
+        .pawn { width: var(--pawn-base-size); height: var(--pawn-base-size); display: block; cursor: grab; transition: opacity 0.2s ease, transform 0.3s ease; z-index: 1; transform: rotate(-90deg); overflow: visible; --current-rotation: 0deg; position: relative; user-select: none; }
+        .pawn.rotatable { transform: rotate(-90deg) rotate(var(--current-rotation)); cursor: pointer; }
+        .pawn svg { display: block; width: 100%; height: 100%; }
+        .pawn.dragging { opacity: 0.5 !important; cursor: grabbing; }
+        .hexagon.attack-preview { 
+            background-color: rgba(255, 0, 0, 0.8) !important; 
+            border: 3px solid #ff0000 !important;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 1) !important;
+            z-index: 10 !important;
+        }
+        .hexagon.move-preview { 
+            background-color: rgba(0, 255, 0, 0.8) !important; 
+            border: 3px solid #00ff00 !important;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 1) !important;
+            z-index: 10 !important;
+        }
+        .pawn-white .shape-fill { fill: var(--white-pawn-fill); } .pawn-black .shape-fill { fill: var(--black-pawn-fill); }
+        .pawn .shape-stroke { stroke: var(--pawn-stroke-color); stroke-width: var(--pawn-stroke-width); stroke-linejoin: round; stroke-linecap: round; }
+        .pawn .shape-stroke-outer { stroke: var(--pawn-stroke-color); stroke-width: calc(var(--pawn-stroke-width) * 1.5); }
+        .pawn .shape-stroke-inner { stroke: var(--pawn-stroke-color); stroke-width: var(--pawn-stroke-width); }
+        .pawn::after {
+            content: ''; position: absolute; width: var(--indicator-dot-size); height: var(--indicator-dot-size);
+            background-color: var(--indicator-dot-color); border-radius: 50%;
+            top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2;
+            transition: background-color 0.3s ease;
+        }
+        .pawn.flipped::after { background-color: var(--flip-indicator-flipped-color); }
+        .captured-area { border: 2px dashed #555; padding: 10px; min-width: 100px; height: 400px; display: flex; flex-wrap: wrap; gap: 5px; align-content: flex-start; background-color: rgba(0,0,0,0.05); overflow-y: auto; }
+        .captured-area h3 { width: 100%; text-align: center; margin: 0 0 10px 0; font-family: sans-serif; font-size: 14px; color: #333; }
+        .captured-area .pawn { width: var(--captured-pawn-size); height: var(--captured-pawn-size); transform: none; cursor: default; opacity: 0.7; --current-rotation: 0deg; }
+        .captured-area .pawn::after { display: none; }
+
+        /* --- Updated Button CSS --- */
+        #undo-button {
+            padding: 8px 15px; font-size: 14px; cursor: pointer;
+            border: 1px solid #ccc; background-color: #eee; border-radius: 4px;
+            margin: 0 10px; /* Adjust margin as needed */
+            transition: background-color 0.2s ease;
+        }
+        #undo-button:disabled {
+            cursor: not-allowed; opacity: 0.6; background-color: #f5f5f5;
+        }
+        #undo-button:not(:disabled):hover { background-color: #ddd; }
+        /* --- End button CSS --- */
+
+        /* Apply game over styles to the button too */
+        body.game-over .board,
+        body.game-over .captured-area,
+        body.game-over #undo-button {
+            /* pointer-events: none; Don't disable pointer-events for button if we allow undoing winning move */
+            filter: grayscale(60%) opacity(60%);
+        }
+         body.game-over #undo-button:not(:disabled) { /* Keep button clickable if not disabled */
+            filter: none; /* Remove filter if it's enabled (for undoing win) */
+            opacity: 1;
+        }
+
+
+        #game-over-message { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(0, 0, 0, 0.8); color: white; padding: 30px 40px; border-radius: 10px; text-align: center; font-family: sans-serif; font-size: 24px; z-index: 100; box-shadow: 0 0 15px black; }
+        #game-over-message span { font-weight: bold; display: block; margin-bottom: 10px; }
+        body.game-over #game-over-message { display: block; }
+        body.dragging * { user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; }
+    </style>
+</head>
+<body>
+
+    <div id="game-over-message"> <span id="winner-name"></span> wins! <br> (Rhombus Escape) </div>
+    <div class="captured-area" id="captured-white" aria-label="Captured White Pieces"><h3>Captured White</h3></div>
+
+        <div class="board" id="game-board">
+        <!-- Row 0 -->
+             <div class="row" id="row-0">
+            <div class="hexagon shift-down color-orange-med" id="hex-0-0"><div class="pawn pawn-white pawn-square" id="pawn-wsq1" draggable="true"><svg viewBox="0 0 100 100"><rect class="shape-fill shape-stroke" x="15" y="15" width="70" height="70"/></svg></div></div>
+            <div class="hexagon shift-down color-orange-med" id="hex-0-1"></div>
+            <div class="hexagon shift-down color-orange-med" id="hex-0-2"></div>
+            <div class="hexagon shift-down color-orange-med" id="hex-0-3"></div>
+            <div class="hexagon shift-down color-orange-med" id="hex-0-4"></div>
+            <div class="hexagon shift-down color-orange-med" id="hex-0-5"><div class="pawn pawn-black pawn-square" id="pawn-bsq1" draggable="true"><svg viewBox="0 0 100 100"><rect class="shape-fill shape-stroke" x="15" y="15" width="70" height="70"/></svg></div></div>
+             </div>
+        <!-- Row 1 -->
+             <div class="row" id="row-1">
+            <div class="hexagon color-orange-med" id="hex-1-0"><div class="pawn pawn-white pawn-triangle rotatable" id="pawn-wt1" draggable="true" data-rotation="180" style="--current-rotation: 180deg;"><svg viewBox="0 0 100 100"><polygon class="shape-fill shape-stroke-outer" points="50,15 85,85 15,85"/><polygon class="shape-stroke-inner" fill="none" points="50,15 67.5,50 32.5,50"/><line class="shape-stroke-inner" x1="32.5" y1="50" x2="67.5" y2="50"/></svg></div></div>
+            <div class="hexagon color-orange-light" id="hex-1-1"></div>
+            <div class="hexagon color-orange-light" id="hex-1-2"></div>
+            <div class="hexagon color-orange-light" id="hex-1-3"></div>
+            <div class="hexagon color-orange-light" id="hex-1-4"></div>
+            <div class="hexagon color-orange-light" id="hex-1-5"></div>
+            <div class="hexagon color-orange-med" id="hex-1-6"><div class="pawn pawn-black pawn-triangle rotatable" id="pawn-bt1" draggable="true" data-rotation="0"><svg viewBox="0 0 100 100"><polygon class="shape-fill shape-stroke-outer" points="50,15 85,85 15,85"/><polygon class="shape-stroke-inner" fill="none" points="50,15 67.5,50 32.5,50"/><line class="shape-stroke-inner" x1="32.5" y1="50" x2="67.5" y2="50"/></svg></div></div>
+             </div>
+        <!-- Row 2 -->
+             <div class="row" id="row-2">
+            <div class="hexagon shift-down color-orange-med" id="hex-2-0"><div class="pawn pawn-white pawn-circle" id="pawn-wc1" draggable="true"><svg viewBox="0 0 100 100"><circle class="shape-fill shape-stroke" cx="50" cy="50" r="40"/></svg></div></div>
+            <div class="hexagon shift-down color-orange-light" id="hex-2-1"></div>
+            <div class="hexagon shift-down color-orange-med" id="hex-2-2"></div>
+            <div class="hexagon shift-down color-orange-med" id="hex-2-3"></div>
+            <div class="hexagon shift-down color-orange-med" id="hex-2-4"></div>
+            <div class="hexagon shift-down color-orange-med" id="hex-2-5"></div>
+            <div class="hexagon shift-down color-orange-light" id="hex-2-6"></div>
+            <div class="hexagon shift-down color-orange-med" id="hex-2-7"><div class="pawn pawn-black pawn-circle" id="pawn-bc1" draggable="true"><svg viewBox="0 0 100 100"><circle class="shape-fill shape-stroke" cx="50" cy="50" r="40"/></svg></div></div>
+             </div>
+        <!-- Row 3 -->
+             <div class="row" id="row-3">
+            <div class="hexagon color-dark-brown" id="hex-3-0"><div class="pawn pawn-white pawn-rhombus rotatable" id="pawn-wr1" draggable="true" data-rotation="0"><svg viewBox="0 0 100 100"><polygon class="shape-fill shape-stroke" points="50,10 90,50 50,90 10,50"/></svg></div></div>
+            <div class="hexagon color-orange-light" id="hex-3-1"></div>
+            <div class="hexagon color-orange-med" id="hex-3-2"></div>
+            <div class="hexagon color-dark-brown" id="hex-3-3"></div>
+            <div class="hexagon color-dark-brown" id="hex-3-4"></div>
+            <div class="hexagon color-dark-brown" id="hex-3-5"></div>
+            <div class="hexagon color-orange-med" id="hex-3-6"></div>
+            <div class="hexagon color-orange-light" id="hex-3-7"></div>
+            <div class="hexagon color-dark-brown" id="hex-3-8"><div class="pawn pawn-black pawn-rhombus rotatable" id="pawn-br1" draggable="true" data-rotation="0"><svg viewBox="0 0 100 100"><polygon class="shape-fill shape-stroke" points="50,10 90,50 50,90 10,50"/></svg></div></div>
+             </div>
+        <!-- Row 4 -->
+             <div class="row" id="row-4">
+            <div class="hexagon shift-down color-orange-med" id="hex-4-0"><div class="pawn pawn-white pawn-hexagon rotatable" id="pawn-wh1" draggable="true" data-rotation="0"><svg viewBox="0 0 100 100"><polygon class="shape-fill shape-stroke" points="50,10 90,35 90,65 50,90 10,65 10,35"/></svg></div></div>
+            <div class="hexagon shift-down color-orange-light" id="hex-4-1"></div>
+            <div class="hexagon shift-down color-orange-med" id="hex-4-2"></div>
+            <div class="hexagon shift-down color-orange-med" id="hex-4-3"></div>
+            <div class="hexagon shift-down color-orange-med" id="hex-4-4"></div>
+            <div class="hexagon shift-down color-orange-med" id="hex-4-5"></div>
+            <div class="hexagon shift-down color-orange-light" id="hex-4-6"></div>
+            <div class="hexagon shift-down color-orange-med" id="hex-4-7"><div class="pawn pawn-black pawn-hexagon rotatable" id="pawn-bh1" draggable="true" data-rotation="0"><svg viewBox="0 0 100 100"><polygon class="shape-fill shape-stroke" points="50,10 90,35 90,65 50,90 10,65 10,35"/></svg></div></div>
+             </div>
+        <!-- Row 5 -->
+             <div class="row" id="row-5">
+            <div class="hexagon color-orange-med" id="hex-5-0"><div class="pawn pawn-white pawn-triangle rotatable" id="pawn-wt2" draggable="true" data-rotation="180" style="--current-rotation: 180deg;"><svg viewBox="0 0 100 100"><polygon class="shape-fill shape-stroke-outer" points="50,15 85,85 15,85"/><polygon class="shape-stroke-inner" fill="none" points="50,15 67.5,50 32.5,50"/><line class="shape-stroke-inner" x1="32.5" y1="50" x2="67.5" y2="50"/></svg></div></div>
+            <div class="hexagon color-orange-light" id="hex-5-1"></div>
+            <div class="hexagon color-orange-light" id="hex-5-2"></div>
+            <div class="hexagon color-orange-light" id="hex-5-3"></div>
+            <div class="hexagon color-orange-light" id="hex-5-4"></div>
+            <div class="hexagon color-orange-light" id="hex-5-5"></div>
+            <div class="hexagon color-orange-med" id="hex-5-6"><div class="pawn pawn-black pawn-triangle rotatable" id="pawn-bt2" draggable="true" data-rotation="0"><svg viewBox="0 0 100 100"><polygon class="shape-fill shape-stroke-outer" points="50,15 85,85 15,85"/><polygon class="shape-stroke-inner" fill="none" points="50,15 67.5,50 32.5,50"/><line class="shape-stroke-inner" x1="32.5" y1="50" x2="67.5" y2="50"/></svg></div></div>
+             </div>
+         <!-- Row 6 -->
+             <div class="row" id="row-6">
+            <div class="hexagon shift-down color-orange-med" id="hex-6-0"><div class="pawn pawn-white pawn-square" id="pawn-wsq2" draggable="true"><svg viewBox="0 0 100 100"><rect class="shape-fill shape-stroke" x="15" y="15" width="70" height="70"/></svg></div></div>
+            <div class="hexagon shift-down color-orange-med" id="hex-6-1"></div>
+            <div class="hexagon shift-down color-orange-med" id="hex-6-2"></div>
+            <div class="hexagon shift-down color-orange-med" id="hex-6-3"></div>
+            <div class="hexagon shift-down color-orange-med" id="hex-6-4"></div>
+            <div class="hexagon shift-down color-dark-brown" id="hex-6-5"><div class="pawn pawn-black pawn-square" id="pawn-bsq2" draggable="true"><svg viewBox="0 0 100 100"><rect class="shape-fill shape-stroke" x="15" y="15" width="70" height="70"/></svg></div></div>
+        </div>
+    </div> <!-- End of board div -->
+
+    <!-- == Renamed Button == -->
+    <button id="undo-button" disabled>Undo Last Action</button>
+    <!-- ================== -->
+
+    <div class="captured-area" id="captured-black" aria-label="Captured Black Pieces"><h3>Captured Black</h3></div>
+
+</body>
+</html>
+
+<script>
+    // --- Setup variables ---
+    const pawns = document.querySelectorAll('.pawn');
+    const hexagons = document.querySelectorAll('.hexagon');
+    const board = document.getElementById('game-board');
+    const capturedWhiteContainer = document.getElementById('captured-white');
+    const capturedBlackContainer = document.getElementById('captured-black');
+    const gameOverMessageDiv = document.getElementById('game-over-message');
+    const winnerNameSpan = document.getElementById('winner-name');
+    // === Get button by NEW ID ===
+    const undoButton = document.getElementById('undo-button');
+
+    let draggedPawn = null;
+    let gameOver = false;
+    let lastAction = null; // Stores { type: 'move'/'rotate'/'flip', details... }
+
+    // Target hexes and pawns for winning condition
+    const WHITE_TARGET_HEX_ID = 'hex-3-8';
+    const BLACK_TARGET_HEX_ID = 'hex-3-0';
+    const WHITE_RHOMBUS_ID = 'pawn-wr1';
+    const BLACK_RHOMBUS_ID = 'pawn-br1';
+
+    // --- Helper Functions ---
+    function enableUndoButton() {
+        if (undoButton && !gameOver && lastAction) {
+            undoButton.disabled = false;
+        }
+         // Ensure button is visually enabled if undoing winning move makes it active
+         if (undoButton && !undoButton.disabled && document.body.classList.contains('game-over')) {
+             undoButton.style.filter = 'none';
+             undoButton.style.opacity = '1';
+         }
+    }
+
+    function disableUndoButton() {
+        if (undoButton) {
+            undoButton.disabled = true;
+             // Re-apply game-over styling if needed when disabling
+             if (document.body.classList.contains('game-over')) {
+                 undoButton.style.filter = ''; // Let CSS handle it
+                 undoButton.style.opacity = ''; // Let CSS handle it
+             }
+        }
+    }
+
+    function recordAction(actionDetails) {
+        // Only record actions if the game is not over
+        // We allow undoing the *move* that ended the game, but no further actions should be recorded after game over.
+        if (gameOver) return;
+
+        lastAction = actionDetails;
+        enableUndoButton(); // Enable button after any valid action is recorded
+    }
+
+    // --- Game Logic Functions ---
+    function resetGameOverState() {
+        gameOver = false;
+        winnerNameSpan.textContent = '';
+        gameOverMessageDiv.style.display = 'none'; // Hide message
+        document.body.classList.remove('game-over');
+        // Re-enable draggable for non-captured pieces
+        document.querySelectorAll('.board .pawn:not(.captured)').forEach(p => p.setAttribute('draggable', 'true'));
+        // Button state will be handled by enable/disable functions
+    }
+
+    function endGame(winner) {
+        // Prevent re-triggering if already over
+        if (gameOver) return;
+        gameOver = true;
+        winnerNameSpan.textContent = winner;
+        gameOverMessageDiv.style.display = 'block'; // Show message
+        document.body.classList.add('game-over');
+        document.querySelectorAll('.board .pawn').forEach(p => p.removeAttribute('draggable')); // Disable dragging
+
+        // Keep undo button enabled *only if* the last action was a move, allowing undo of winning move.
+        if (!lastAction || lastAction.type !== 'move') {
+             disableUndoButton();
+        } else {
+             // Ensure button is visually distinct if enabled during game over
+             if (undoButton && !undoButton.disabled) {
+                 undoButton.style.filter = 'none';
+                 undoButton.style.opacity = '1';
+             }
+        }
+    }
+
+    function checkWinCondition(movedPawnId, targetHexId) {
+        if (gameOver) return; // Don't check if already won
+        if (movedPawnId === WHITE_RHOMBUS_ID && targetHexId === WHITE_TARGET_HEX_ID) {
+            endGame('White');
+        } else if (movedPawnId === BLACK_RHOMBUS_ID && targetHexId === BLACK_TARGET_HEX_ID) {
+            endGame('Black');
+        }
+    }
+
+    // --- Event Listeners (Rotation, Drag/Drop, Flip) ---
+
+    // Double-click for rotation (Records 'rotate' action)
+    board.addEventListener('dblclick', function(event) {
+        if (gameOver) return; // Don't allow rotation if game over
+        const pawnElement = event.target.closest('.pawn.rotatable');
+        if (pawnElement && !document.body.classList.contains('dragging')) {
+            event.preventDefault();
+            let currentRotation = parseInt(pawnElement.dataset.rotation || '0', 10);
+            let rotationAmount = 0;
+            if (pawnElement.classList.contains('pawn-triangle')) { rotationAmount = event.shiftKey ? -60 : 60; }
+            else if (pawnElement.classList.contains('pawn-hexagon')) { rotationAmount = event.shiftKey ? -60 : 60; }
+            else if (pawnElement.classList.contains('pawn-rhombus')) { rotationAmount = event.shiftKey ? -90 : 90; }
+            else { return; }
+            let newRotation = (currentRotation + rotationAmount) % 360;
+            if (newRotation < 0) newRotation += 360;
+            recordAction({ type: 'rotate', pawnId: pawnElement.id, previousRotation: currentRotation, newRotation: newRotation });
+            pawnElement.dataset.rotation = newRotation;
+            pawnElement.style.setProperty('--current-rotation', newRotation + 'deg');
+        }
+    });
+
+    // --- Attack Pattern Functions ---
+    function getAttackPattern(pawnElement, hexId) {
+        const hexIdParts = hexId.split('-');
+        const row = parseInt(hexIdParts[1]);
+        const col = parseInt(hexIdParts[2]);
+        
+        const rotation = parseInt(pawnElement.dataset.rotation || '0', 10);
+        const isFlipped = pawnElement.classList.contains('flipped');
+        
+        let attackPositions = [];
+        
+        if (pawnElement.classList.contains('pawn-triangle')) {
+            attackPositions = getTriangleAttackPattern(row, col, rotation, isFlipped);
+        } else if (pawnElement.classList.contains('pawn-hexagon')) {
+            attackPositions = getHexagonAttackPattern(row, col);
+        } else if (pawnElement.classList.contains('pawn-square')) {
+            attackPositions = getSquareAttackPattern(row, col, rotation);
+        } else if (pawnElement.classList.contains('pawn-circle')) {
+            attackPositions = getCircleAttackPattern(row, col);
+        } else if (pawnElement.classList.contains('pawn-rhombus')) {
+            attackPositions = getRhombusAttackPattern(row, col, rotation);
+        }
+        
+        const validPositions = attackPositions.filter(pos => isValidHexPosition(pos[0], pos[1]));
+        
+        return validPositions;
+    }
+
+    function getTriangleAttackPattern(row, col, rotation, isFlipped) {
+        // Triangle attacks in V pattern - 3 positions in front
+        // The V pattern is: center front + left front + right front
+        const isEvenRow = row % 2 === 0;
+        
+        // Get the 6 hexagonal directions based on rotation
+        const directions = [
+            [row - 1, col],                    // Up
+            [row + 1, col],                    // Down
+            [row, col + 1],                    // Right
+            [row, col - 1],                    // Left
+            [row - 1, col - (isEvenRow ? 1 : 0)], // Upper-left
+            [row + 1, col - (isEvenRow ? 1 : 0)]  // Lower-left
+        ];
+        
+        const dirIndex = Math.floor(rotation / 60) % 6;
+        const frontDir = directions[dirIndex];
+        const leftDir = directions[(dirIndex - 1 + 6) % 6];
+        const rightDir = directions[(dirIndex + 1) % 6];
+        
+        // V pattern: center front, left front, right front
+        return [
+            [frontDir[0], frontDir[1]],        // Center front
+            [leftDir[0], leftDir[1]],          // Left front
+            [rightDir[0], rightDir[1]]         // Right front
+        ];
+    }
+
+    function getHexagonAttackPattern(row, col) {
+        // Hexagon attacks all 6 adjacent positions in hexagonal grid
+        const isEvenRow = row % 2 === 0;
+        
+        return [
+            [row - 1, col],                    // Up
+            [row + 1, col],                    // Down
+            [row, col + 1],                    // Right
+            [row, col - 1],                    // Left
+            [row - 1, col - (isEvenRow ? 1 : 0)], // Upper-left
+            [row + 1, col - (isEvenRow ? 1 : 0)]  // Lower-left
+        ];
+    }
+
+    function getSquareAttackPattern(row, col, rotation) {
+        // Square attacks in bow-tie pattern - 2 positions
+        // Pattern from SQUARE ATTACK PAT.png: upper-left, upper-right
+        // This creates a V pattern pointing upward
+        
+        const positions = [
+            [row - 1, col],     // Upper-left (5-5 from 6-5)
+            [row - 1, col + 1]  // Upper-right (5-6 from 6-5)
+        ];
+        
+        return positions;
+    }
+
+    function getCircleAttackPattern(row, col) {
+        // Circle attacks 6 adjacent positions (same as hexagon)
+        return getHexagonAttackPattern(row, col);
+    }
+
+    function getRhombusAttackPattern(row, col, rotation) {
+        // Rhombus attacks 4 diagonal positions based on rotation
+        // Rhombus moves in a diamond pattern - 4 diagonal positions
+        const directions = [
+            [-1, 1], [1, 1], [1, -1], [-1, -1]
+        ];
+        
+        // Get the direction based on rotation (90 degree increments)
+        const dirIndex = Math.floor(rotation / 90) % 4;
+        const primaryDir = directions[dirIndex];
+        const secondaryDir = directions[(dirIndex + 1) % 4];
+        const tertiaryDir = directions[(dirIndex + 2) % 4];
+        const quaternaryDir = directions[(dirIndex + 3) % 4];
+        
+        return [
+            [row + primaryDir[0], col + primaryDir[1]],
+            [row + secondaryDir[0], col + secondaryDir[1]],
+            [row + tertiaryDir[0], col + tertiaryDir[1]],
+            [row + quaternaryDir[0], col + quaternaryDir[1]]
+        ];
+    }
+
+    function isValidHexPosition(row, col) {
+        // Check if the position is valid on the board
+        if (row < 0 || row > 6) return false;
+        
+        // Check column bounds based on row - these are the actual column counts from the HTML
+        const maxCols = [6, 7, 8, 9, 8, 7, 6]; // Max columns per row
+        return col >= 0 && col < maxCols[row];
+    }
+
+    // Drag and Drop Logic (DragStart/End are unchanged)
+    pawns.forEach((pawn, index) => {
+        
+        pawn.addEventListener('dragstart', (e) => { 
+            if (gameOver) { e.preventDefault(); return; } 
+            draggedPawn = e.target.closest('.pawn'); 
+            if (!draggedPawn || pawn !== draggedPawn) { e.preventDefault(); return; } 
+            e.dataTransfer.setData('text/plain', draggedPawn.id); 
+            e.dataTransfer.effectAllowed = 'move'; 
+            requestAnimationFrame(() => { if(draggedPawn) { draggedPawn.classList.add('dragging'); document.body.classList.add('dragging'); } }); 
+        });
+        
+        // Disable dragging on SVG elements to prevent interference
+        const svgElements = pawn.querySelectorAll('svg, svg *');
+        svgElements.forEach(svg => {
+            svg.setAttribute('draggable', 'false');
+            svg.style.pointerEvents = 'none'; // Make SVG elements non-interactive
+        });
+        pawn.addEventListener('dragend', (e) => { const endedPawn = e.target.closest('.pawn'); if (endedPawn) { endedPawn.classList.remove('dragging'); endedPawn.style.opacity = '1'; } document.body.classList.remove('dragging'); hexagons.forEach(hex => hex.classList.remove('drag-over', 'attack-preview', 'move-preview')); draggedPawn = null; });
+        
+        // Add hover effects to show attack patterns
+        pawn.addEventListener('mouseenter', (e) => {
+            if (gameOver || document.body.classList.contains('dragging')) return;
+            e.stopPropagation();
+            const pawnElement = e.target.closest('.pawn');
+            const hexElement = pawnElement.parentElement.closest('.hexagon');
+            if (hexElement) {
+                const hexId = hexElement.id;
+                const attackPositions = getAttackPattern(pawnElement, hexId);
+                
+                // Show attack preview on all valid positions
+                attackPositions.forEach(([row, col]) => {
+                    const targetHexId = `${row}-${col}`;
+                    const targetHex = document.getElementById(targetHexId);
+                    if (targetHex) {
+                        const existingPawn = targetHex.querySelector('.pawn:not(.captured)');
+                        if (existingPawn && existingPawn !== pawnElement) {
+                            // Check if it's a valid attack
+                            const iDW = pawnElement.classList.contains('pawn-white');
+                            const iEW = existingPawn.classList.contains('pawn-white');
+                            const iDF = pawnElement.classList.contains('flipped');
+                            const iEF = existingPawn.classList.contains('flipped');
+                            
+                            if (iDW !== iEW && iDF === iEF) {
+                                targetHex.classList.add('attack-preview');
+                            }
+                        } else {
+                            targetHex.classList.add('move-preview');
+                        }
+                    }
+                });
+            }
+        });
+        
+        pawn.addEventListener('mouseleave', (e) => {
+            if (gameOver || document.body.classList.contains('dragging')) return;
+            e.stopPropagation();
+            // Remove all preview classes
+            hexagons.forEach(hex => hex.classList.remove('attack-preview', 'move-preview'));
+        });
+    });
+
+    // Hexagon listeners (DragOver/Leave unchanged)
+    hexagons.forEach((hex, index) => {
+        hex.addEventListener('dragover', (e) => { 
+            if (gameOver) { return; } 
+            e.preventDefault(); 
+            const targetHex = e.target.closest('.hexagon'); 
+            if (!targetHex || !draggedPawn) return; 
+            
+            // Get the source hex of the dragged pawn
+            const sourceHex = draggedPawn.parentElement.closest('.hexagon');
+            const sourceHexId = sourceHex ? sourceHex.id : null;
+            const targetHexId = targetHex.id;
+            
+            // Check if this is a valid move based on attack patterns
+            let allowDrop = false;
+            const existingPawn = targetHex.querySelector('.pawn');
+            
+            // Check if target is in attack range
+            if (sourceHexId) {
+                const attackPositions = getAttackPattern(draggedPawn, sourceHexId);
+                const hexIdParts = targetHexId.split('-');
+                const targetRow = parseInt(hexIdParts[1]);
+                const targetCol = parseInt(hexIdParts[2]);
+                const isInAttackPattern = attackPositions.some(([row, col]) => row === targetRow && col === targetCol);
+                
+                if (isInAttackPattern) {
+                    if (!existingPawn || existingPawn === draggedPawn) { 
+                        // Moving to empty space - allow
+                        allowDrop = true;
+                    } else { 
+                        // Target is occupied - check if it's a valid attack
+                        const isDraggedPawnWhite = draggedPawn.classList.contains('pawn-white'); 
+                        const isExistingPawnWhite = existingPawn.classList.contains('pawn-white'); 
+                        const isDraggedPawnFlipped = draggedPawn.classList.contains('flipped'); 
+                        const isExistingPawnFlipped = existingPawn.classList.contains('flipped'); 
+                        
+                        // Allow attack only if different colors and same flip state
+                        if (isDraggedPawnWhite !== isExistingPawnWhite && isDraggedPawnFlipped === isExistingPawnFlipped) {
+                            allowDrop = true;
+                        } else {
+                            // Friendly piece or wrong flip state - don't allow
+                            allowDrop = false;
+                        }
+                    }
+                }
+            } 
+            
+            if (allowDrop) { 
+                e.dataTransfer.dropEffect = 'move'; 
+                targetHex.classList.add('drag-over'); 
+            } else { 
+                e.dataTransfer.dropEffect = 'none'; 
+                targetHex.classList.remove('drag-over'); 
+            } 
+        });
+        hex.addEventListener('dragleave', (e) => { const targetHex = e.target.closest('.hexagon'); if (targetHex) targetHex.classList.remove('drag-over'); });
+
+        // Drop listener (Records 'move' action)
+        hex.addEventListener('drop', (e) => {
+            if (gameOver) return; // Don't allow drops if game over
+            e.preventDefault();
+            const targetHex = e.target.closest('.hexagon');
+            if (targetHex) targetHex.classList.remove('drag-over');
+            const pawnId = e.dataTransfer.getData('text/plain');
+            const pawnElement = draggedPawn;
+            if (!pawnElement || pawnElement.id !== pawnId || !targetHex) { console.error("Drop Error: Mismatch!"); return; }
+            const sourceHex = pawnElement.parentElement.closest('.hexagon');
+            const sourceHexId = sourceHex ? sourceHex.id : null;
+            const targetHexId = targetHex.id;
+            const existingPawn = targetHex.querySelector('.pawn:not(.captured)');
+            
+            // Validate move using attack patterns
+            let validMove = false;
+            if (sourceHexId) {
+                const attackPositions = getAttackPattern(pawnElement, sourceHexId);
+                const hexIdParts = targetHexId.split('-');
+                const targetRow = parseInt(hexIdParts[1]);
+                const targetCol = parseInt(hexIdParts[2]);
+                const isInAttackPattern = attackPositions.some(([row, col]) => row === targetRow && col === targetCol);
+                
+                if (isInAttackPattern) {
+                    // Check if target is occupied by a friendly piece
+                    if (existingPawn && existingPawn !== pawnElement) {
+                        const isDraggedPawnWhite = pawnElement.classList.contains('pawn-white');
+                        const isExistingPawnWhite = existingPawn.classList.contains('pawn-white');
+                        
+                        // If it's a friendly piece (same color), don't allow the move
+                        if (isDraggedPawnWhite === isExistingPawnWhite) {
+                            console.log('Cannot move to friendly piece position');
+                            validMove = false;
+                        } else {
+                            // It's an enemy piece, allow the move (attack)
+                            console.log('Can attack enemy piece');
+                            validMove = true;
+                        }
+                    } else {
+                        // Target is empty, allow the move
+                        validMove = true;
+                    }
+                }
+            }
+            
+            if (!validMove) {
+                return;
+            }
+            
+            let successfulDrop = false;
+            let capturedPawnDetails = null;
+            if (existingPawn && existingPawn !== pawnElement) { // Capture
+                const iDW = pawnElement.classList.contains('pawn-white'); const iEW = existingPawn.classList.contains('pawn-white');
+                const iDF = pawnElement.classList.contains('flipped'); const iEF = existingPawn.classList.contains('flipped');
+                if (iDW !== iEW && iDF === iEF) {
+                    capturedPawnDetails = { id: existingPawn.id, wasWhite: iEW, wasFlipped: iEF }; // Record flip state
+                    const capCont = iEW ? capturedWhiteContainer : capturedBlackContainer;
+                    if (capCont) {
+                        existingPawn.classList.remove('rotatable', 'dragging'); existingPawn.classList.add('captured');
+                        existingPawn.removeAttribute('draggable'); existingPawn.removeAttribute('data-rotation');
+                        existingPawn.style.removeProperty('--current-rotation');
+                        capCont.appendChild(existingPawn);
+                        targetHex.appendChild(pawnElement); successfulDrop = true;
+                    } else { console.error("Capture container missing!"); }
+                }
+            } else if (!existingPawn || existingPawn === pawnElement) { // Move
+                if (!targetHex.contains(pawnElement)) { targetHex.appendChild(pawnElement); }
+                successfulDrop = true;
+            }
+            if (successfulDrop) {
+                pawnElement.style.opacity = '1';
+                recordAction({ type: 'move', pawnId: pawnElement.id, sourceHexId: sourceHexId, targetHexId: targetHex.id, capturedPawn: capturedPawnDetails });
+                checkWinCondition(pawnElement.id, targetHex.id); // Check win AFTER recording
+            }
+        });
+    });
+
+    // Alt+Click for Flipping (Records 'flip' action)
+    board.addEventListener('click', function(event) {
+        if (event.altKey && !document.body.classList.contains('dragging')) {
+             const pawnElement = event.target.closest('.pawn');
+             if (pawnElement && !pawnElement.classList.contains('captured')) {
+                 if (gameOver) return; // Don't allow flip if game over
+                 event.preventDefault();
+                 const wasFlipped = pawnElement.classList.contains('flipped');
+                 recordAction({ type: 'flip', pawnId: pawnElement.id, previousFlippedState: wasFlipped, newFlippedState: !wasFlipped });
+                 pawnElement.classList.toggle('flipped');
+                 pawnElement.dataset.flipped = !wasFlipped;
+             }
+        }
+    });
+
+    // --- Undo/Repeat Button Logic ---
+    if (undoButton) {
+        undoButton.addEventListener('click', () => {
+            if (!lastAction) {
+                return;
+            }
+
+            // Disable button immediately only if undoing a move, as that clears the action.
+             if (lastAction.type === 'move') {
+                 disableUndoButton();
+             }
+
+            // --- START ACTION PROCESSING ---
+            try {
+                let wasWinningMoveUndone = false; // Flag to check if we undid the win
+
+                switch (lastAction.type) {
+                    case 'move': // Performs UNDO
+                        const pawnToMoveBack = document.getElementById(lastAction.pawnId);
+                        const originalSourceHex = document.getElementById(lastAction.sourceHexId);
+
+                        // --- Validations ---
+                        if (!pawnToMoveBack) { console.error("Undo Error: Pawn to move back not found!", lastAction.pawnId); lastAction = null; disableUndoButton(); return; }
+                        if (!originalSourceHex) { console.error("Undo Error: Original source hex not found!", lastAction.sourceHexId); lastAction = null; disableUndoButton(); return; }
+
+                        // --- Check if game needs reset ---
+                        const currentPawnHex = pawnToMoveBack.parentElement.closest('.hexagon');
+                        if (gameOver && currentPawnHex && currentPawnHex.id === lastAction.targetHexId) {
+                             if ((lastAction.pawnId === WHITE_RHOMBUS_ID && lastAction.targetHexId === WHITE_TARGET_HEX_ID) ||
+                                 (lastAction.pawnId === BLACK_RHOMBUS_ID && lastAction.targetHexId === BLACK_TARGET_HEX_ID)) {
+                                 wasWinningMoveUndone = true;
+                                 resetGameOverState(); // Reset game state BEFORE moving pieces
+                             }
+                        }
+
+                        // --- Handle potential occupant in the source hex (where pawn is returning to) ---
+                        const occupantInSource = originalSourceHex.querySelector('.pawn:not(.captured)');
+                        if (occupantInSource && occupantInSource !== pawnToMoveBack) {
+                            console.warn(`Undo: Displacing ${occupantInSource.id} from target hex ${originalSourceHex.id}.`);
+                             const iEW = occupantInSource.classList.contains('pawn-white');
+                             const capCont = iEW ? capturedWhiteContainer : capturedBlackContainer;
+                             occupantInSource.classList.remove('rotatable'); occupantInSource.classList.add('captured');
+                             occupantInSource.removeAttribute('draggable'); occupantInSource.removeAttribute('data-rotation');
+                             occupantInSource.style.removeProperty('--current-rotation');
+                             capCont.appendChild(occupantInSource);
+                        }
+
+                        // --- Move the main pawn back ---
+                        originalSourceHex.appendChild(pawnToMoveBack);
+
+                        // --- Restore captured piece if applicable ---
+                        if (lastAction.capturedPawn) {
+                            const capturedPawnElement = document.getElementById(lastAction.capturedPawn.id);
+                            const targetHexWhereCaptureHappened = document.getElementById(lastAction.targetHexId);
+                            if (capturedPawnElement && targetHexWhereCaptureHappened) {
+                                const occupantInRestoreHex = targetHexWhereCaptureHappened.querySelector('.pawn:not(.captured)');
+                                if (occupantInRestoreHex && occupantInRestoreHex !== capturedPawnElement) {
+                                    console.warn(`Undo Restore: Displacing ${occupantInRestoreHex.id} from ${targetHexWhereCaptureHappened.id}.`);
+                                    const iEW = occupantInRestoreHex.classList.contains('pawn-white');
+                                    const capCont = iEW ? capturedWhiteContainer : capturedBlackContainer;
+                                    occupantInRestoreHex.classList.remove('rotatable'); occupantInRestoreHex.classList.add('captured');
+                                    occupantInRestoreHex.removeAttribute('draggable'); occupantInRestoreHex.removeAttribute('data-rotation');
+                                    occupantInRestoreHex.style.removeProperty('--current-rotation');
+                                    capCont.appendChild(occupantInRestoreHex);
+                                }
+                                // Restore state & move
+                                capturedPawnElement.classList.remove('captured');
+                                capturedPawnElement.setAttribute('draggable', 'true');
+                                if (capturedPawnElement.matches('.pawn-triangle, .pawn-hexagon, .pawn-rhombus')) { // Check if it should be rotatable
+                                     capturedPawnElement.classList.add('rotatable');
+                                }
+                                // Restore flip state
+                                if (lastAction.capturedPawn.wasFlipped) { capturedPawnElement.classList.add('flipped'); capturedPawnElement.dataset.flipped = 'true'; }
+                                else { capturedPawnElement.classList.remove('flipped'); capturedPawnElement.dataset.flipped = 'false'; }
+
+                                targetHexWhereCaptureHappened.appendChild(capturedPawnElement);
+                            } else { console.error("Undo Error: Captured pawn or its original hex not found!", lastAction.capturedPawn, lastAction.targetHexId); }
+                        }
+
+                        // --- Clear last action after successful move undo ---
+                        lastAction = null;
+                        // Button was already disabled at start of 'move' case
+
+                        break; // End case 'move'
+
+                    case 'rotate': // Performs REPEAT
+                         const pawnToRotate = document.getElementById(lastAction.pawnId);
+                         if (pawnToRotate && pawnToRotate.classList.contains('rotatable') && !pawnToRotate.classList.contains('captured')) {
+                             pawnToRotate.dataset.rotation = lastAction.newRotation;
+                             pawnToRotate.style.setProperty('--current-rotation', lastAction.newRotation + 'deg');
+                             // DO NOT clear lastAction
+                             enableUndoButton(); // Re-enable button
+                         } else {
+                             console.warn("Repeat Rotate: Pawn not found, not rotatable, or captured.");
+                             disableUndoButton(); // Keep disabled if repeat failed
+                         }
+                         break;
+
+                    case 'flip': // Performs REPEAT
+                        const pawnToFlip = document.getElementById(lastAction.pawnId);
+                        if (pawnToFlip && !pawnToFlip.classList.contains('captured')) {
+                             if (lastAction.newFlippedState) { pawnToFlip.classList.add('flipped'); }
+                             else { pawnToFlip.classList.remove('flipped'); }
+                             pawnToFlip.dataset.flipped = lastAction.newFlippedState;
+                             // DO NOT clear lastAction
+                             enableUndoButton(); // Re-enable button
+                        } else {
+                            console.warn("Repeat Flip: Pawn not found or captured.");
+                             disableUndoButton(); // Keep disabled if repeat failed
+                         }
+                        break;
+
+                    default:
+                        console.error("Unknown last action type:", lastAction.type);
+                        disableUndoButton();
+                        lastAction = null;
+                        return;
+                }
+
+            } catch (error) {
+                console.error("Error during Undo/Repeat action:", error);
+                lastAction = null; // Clear action on error
+                disableUndoButton(); // Ensure button is disabled on error
+            }
+            // --- END ACTION PROCESSING ---
+        });
+    } else {
+        console.error("Initialization Error: Undo button with ID 'undo-button' not found in HTML.");
+    }
+
+    // Add global hover preview functionality
+    function showAttackPreview(pawnElement) {
+        if (gameOver || document.body.classList.contains('dragging')) return;
+        
+        const hexElement = pawnElement.parentElement.closest('.hexagon');
+        if (hexElement) {
+            const hexId = hexElement.id;
+            console.log(`Showing attack preview for ${pawnElement.id} at ${hexId}`);
+            const attackPositions = getAttackPattern(pawnElement, hexId);
+            console.log('Attack positions:', attackPositions);
+            
+            // Clear any existing previews first
+            hexagons.forEach(hex => hex.classList.remove('attack-preview', 'move-preview'));
+            
+            // Show attack preview on all valid positions
+            attackPositions.forEach(([row, col]) => {
+                const targetHexId = `hex-${row}-${col}`;
+                const targetHex = document.getElementById(targetHexId);
+                if (targetHex) {
+                    const existingPawn = targetHex.querySelector('.pawn:not(.captured)');
+                    if (existingPawn && existingPawn !== pawnElement) {
+                        // Check if it's a valid attack
+                        const iDW = pawnElement.classList.contains('pawn-white');
+                        const iEW = existingPawn.classList.contains('pawn-white');
+                        const iDF = pawnElement.classList.contains('flipped');
+                        const iEF = existingPawn.classList.contains('flipped');
+                        
+                        if (iDW !== iEW && iDF === iEF) {
+                            targetHex.classList.add('attack-preview');
+                        }
+                    } else {
+                        targetHex.classList.add('move-preview');
+                    }
+                }
+            });
+        }
+    }
+
+    function clearAttackPreview() {
+        if (gameOver || document.body.classList.contains('dragging')) return;
+        hexagons.forEach(hex => hex.classList.remove('attack-preview', 'move-preview'));
+    }
+
+    // Add event delegation for hover effects
+    board.addEventListener('mouseenter', function(e) {
+        const pawnElement = e.target.closest('.pawn');
+        if (pawnElement) {
+            showAttackPreview(pawnElement);
+        }
+    }, true);
+
+    board.addEventListener('mouseleave', function(e) {
+        const pawnElement = e.target.closest('.pawn');
+        if (pawnElement) {
+            clearAttackPreview();
+        }
+    }, true);
+
+    
+    // Test function to manually apply preview classes
+    function testPreview() {
+        const testHex = document.getElementById('hex-1-1');
+        if (testHex) {
+            testHex.classList.add('move-preview');
+            setTimeout(() => {
+                testHex.classList.remove('move-preview');
+            }, 3000);
+        }
+    }
+    
+    // Uncomment the line below to test the preview classes
+    // testPreview();
+
+</script>
+
+</body>
+</html>

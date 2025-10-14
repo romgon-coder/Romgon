@@ -1,0 +1,7 @@
+# Ignore node_modules if copied
+node_modules/
+
+# Optional: ignore local dev artifacts
+*.log
+*.tmp
+deploy.zip
