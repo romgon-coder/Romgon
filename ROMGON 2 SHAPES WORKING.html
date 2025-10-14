@@ -14895,6 +14895,8 @@ ${moveHistory || '(No moves played yet - starting position)'}
             // If you have UI update hooks, call them here (example: refresh panel badges)
             if (typeof updateBaseDefenceDisplay === 'function') updateBaseDefenceDisplay();
             if (typeof updateVariantIndicators === 'function') updateVariantIndicators();
+            // Show a small profile badge in the UI
+            try { showLoggedInUser(user); } catch (e) {}
         }
 
         function handleGoogleCredentialResponse(response) {
@@ -14955,6 +14957,99 @@ ${moveHistory || '(No moves played yet - starting position)'}
             }
         }
 
+        // ----------------------
+        // Profile UI helpers
+        // ----------------------
+        function showLoggedInUser(user) {
+            if (!user) return;
+            // create or update a small badge in the top-right
+            let badge = document.getElementById('user-profile-badge');
+            if (!badge) {
+                badge = document.createElement('div');
+                badge.id = 'user-profile-badge';
+                badge.style.cssText = 'position:fixed; top:12px; right:12px; z-index:20001; display:flex; gap:8px; align-items:center; background:#111; color:#fff; padding:6px 10px; border-radius:18px; box-shadow:0 6px 18px rgba(0,0,0,0.6); cursor:pointer;';
+                document.body.appendChild(badge);
+                badge.addEventListener('click', (e) => { e.stopPropagation(); showAccountModal(); });
+            }
+            badge.innerHTML = '';
+            if (user.picture) {
+                const img = document.createElement('img');
+                img.src = user.picture;
+                img.style.cssText = 'width:28px; height:28px; border-radius:50%; object-fit:cover;';
+                badge.appendChild(img);
+            }
+            const txt = document.createElement('div');
+            txt.style.cssText = 'font-size:13px; color:#fff;';
+            txt.textContent = user.name || user.email || 'Player';
+            badge.appendChild(txt);
+        }
+
+        function removeLoggedInUserUI() {
+            const b = document.getElementById('user-profile-badge');
+            if (b) b.remove();
+        }
+
+        function handleSignOut() {
+            window.currentUser = null;
+            try { localStorage.removeItem('romgon_current_user'); } catch (e) {}
+            removeLoggedInUserUI();
+            // Optionally notify server to revoke session
+            if (window.google && window.google.accounts && window.google.accounts.id) {
+                try { google.accounts.id.disableAutoSelect(); } catch (e) {}
+            }
+            // Refresh parts of the UI that depend on user
+            if (typeof updateBaseDefenceDisplay === 'function') updateBaseDefenceDisplay();
+            if (typeof updateVariantIndicators === 'function') updateVariantIndicators();
+            alert('Signed out');
+            closeAccountModal();
+        }
+
+        // Render account modal state (profile vs sign-in)
+        function renderAccountModalState() {
+            const modal = document.getElementById('account-modal');
+            if (!modal) return;
+            const box = modal.querySelector('div');
+            if (!box) return;
+            // Remove existing profile area if any
+            const existing = box.querySelector('#account-profile-area');
+            if (existing) existing.remove();
+            const user = window.currentUser || (function(){ try { return JSON.parse(localStorage.getItem('romgon_current_user')); } catch(e){return null;} })();
+            if (user) {
+                const area = document.createElement('div');
+                area.id = 'account-profile-area';
+                area.style.cssText = 'margin:10px 0; padding:8px; background:#1b1b1b; border-radius:8px; color:#fff; display:flex; align-items:center; gap:12px;';
+                const img = document.createElement('img');
+                img.src = user.picture || '';
+                img.style.cssText = 'width:48px; height:48px; border-radius:8px; object-fit:cover; background:#222';
+                const info = document.createElement('div');
+                info.innerHTML = `<div style="font-weight:700">${user.name || user.email}</div><div style="font-size:12px; color:#ccc">${user.email || ''}</div>`;
+                const signOutBtn = document.createElement('button');
+                signOutBtn.textContent = 'Sign out';
+                signOutBtn.style.cssText = 'margin-left:auto; background:#e74c3c; color:#fff; border:none; padding:8px 10px; border-radius:8px; cursor:pointer;';
+                signOutBtn.addEventListener('click', (e)=>{ e.stopPropagation(); handleSignOut(); });
+                area.appendChild(img);
+                area.appendChild(info);
+                area.appendChild(signOutBtn);
+                // Insert profile area above the buttons
+                box.insertBefore(area, box.querySelector('div[style*="display:flex; gap:10px;"]'));
+            } else {
+                // Not signed in; ensure Google button is present
+                const gbtn = box.querySelector('#account-google-btn');
+                if (gbtn) {
+                    try { handleGoogleLogin(); } catch (e) {}
+                }
+            }
+        }
+
+        // On load, restore user UI if present
+        try {
+            const saved = localStorage.getItem('romgon_current_user');
+            if (saved) {
+                const u = JSON.parse(saved);
+                if (u) showLoggedInUser(u);
+            }
+        } catch (e) {}
+
         // Show a centered account modal with guest vs user info and login button
         function showAccountModal() {
             // If modal exists, show it
@@ -15014,8 +15109,8 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 // Direct to login flow (prefer in-development handler, fallback to prompt)
                 preferredLoginHandler();
             });
-            // Try to render Google button when modal opens
-            try { handleGoogleLogin(); } catch (e) { /* non-fatal */ }
+            // Try to render Google button/profile state when modal opens
+            try { renderAccountModalState(); } catch (e) { try { handleGoogleLogin(); } catch(_){} }
         }
 
         function closeAccountModal() {
