@@ -14945,8 +14945,13 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     google.accounts.id.renderButton(holder, { theme: 'outline', size: 'large' });
                 }
 
-                // Trigger the one-tap prompt (optional)
-                google.accounts.id.prompt();
+                // Trigger the one-tap prompt (optional).
+                // Wrap in try/catch to avoid FedCM/One-tap network/CORS errors causing uncaught exceptions.
+                try {
+                    google.accounts.id.prompt();
+                } catch (promptErr) {
+                    console.warn('google.accounts.id.prompt() failed (FedCM/OneTap may be blocked):', promptErr);
+                }
             } catch (e) {
                 console.error('handleGoogleLogin error', e);
                 alert('Failed to load Google sign-in: ' + e.message);
