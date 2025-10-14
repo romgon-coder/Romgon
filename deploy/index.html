@@ -14754,16 +14754,15 @@ ${moveHistory || '(No moves played yet - starting position)'}
             if (startMenu) startMenu.style.display = 'flex';
         }
 
-        // Handle Google login (placeholder for future implementation)
+        // Handle Google login (delegates to preferredLoginHandler if present)
         function handleGoogleLogin() {
-            // For now, show a message that Google login is coming soon
-            alert('Google login will be implemented soon! Please use Guest login for now.');
-
-            // Future implementation would look like:
-            // - Initialize Google OAuth
-            // - Handle authentication
-            // - Set currentUser with Google profile info
-            // - Call hideSplashPage()
+            if (typeof preferredLoginHandler === 'function') {
+                return preferredLoginHandler();
+            }
+            // Fallback to prompt login modal if no preferred handler
+            if (typeof promptLogin === 'function') return promptLogin();
+            // As a last resort, log and keep silent
+            console.log('handleGoogleLogin called but no preferredLoginHandler or promptLogin available');
         }
 
         // Handle guest login
