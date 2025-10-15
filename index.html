@@ -407,6 +407,26 @@
             window.baseDefenseVariant = window.gameSettings.baseDefenseVariant || 'original';
         }
     </script>
+    <script>
+        // Suppress noisy emoji debug logs (🔍, 🎯) in production unless explicitly enabled.
+        // Set window.__ROMGON_DEBUG__ = true from the console to re-enable these logs.
+        (function(){
+            try {
+                const allowed = !!window.__ROMGON_DEBUG__;
+                if (allowed) return; // don't wrap if debug explicitly enabled
+                const origLog = console.log.bind(console);
+                console.log = function(...args) {
+                    try {
+                        if (args && args.length) {
+                            const first = String(args[0] || '');
+                            if (first.startsWith('🔍') || first.startsWith('🎯')) return; // suppress
+                        }
+                    } catch (e) {}
+                    origLog(...args);
+                };
+            } catch (e) { /* noop */ }
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ROMGON</title>
@@ -1872,6 +1892,48 @@
             <h2 style="color:#a55eea; text-align:center; margin-bottom:24px; font-size:2em;">🧠 ROMGON Theory & Endgame Guide</h2>
             <div id="theory-content" style="max-height:65vh; overflow-y:auto; color:#eee; font-size:1.08em; line-height:1.7; background:rgba(0,0,0,0.10); padding:18px; border-radius:10px; border:1px solid #444; white-space:pre-wrap;"></div>
             <button onclick="closeTheoryModal()" style="margin-top:28px; background:#a55eea; color:#fff; border:none; padding:12px 32px; border-radius:8px; font-size:1.1em; font-weight:600; cursor:pointer; width:100%; transition:all 0.2s;" onmouseover="this.style.background='#8e44ad'" onmouseout="this.style.background='#a55eea'">Close</button>
+        </div>
+    </div>
+
+    <!-- User Home (shown to signed-in users or guests when they choose) -->
+    <div id="user-home" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:linear-gradient(135deg,#0f1923 0%,#1a2332 100%); z-index:4000; overflow:auto; color:#fff;">
+        <div style="max-width:1000px; margin:40px auto; padding:28px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; gap:12px; align-items:center;">
+                    <div id="user-home-avatar" style="width:64px; height:64px; border-radius:50%; background:#222; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:20px;">G</div>
+                    <div>
+                        <div id="user-home-name" style="font-size:1.6em; font-weight:800;">Guest</div>
+                        <div id="user-home-email" style="color:#ccc; font-size:0.95em;">Not signed in</div>
+                    </div>
+                </div>
+                <div>
+                    <button id="user-signout-btn" style="background:#ff6b6b; color:#fff; border:none; padding:10px 16px; border-radius:8px; font-weight:700; cursor:pointer;">Sign out</button>
+                </div>
+            </div>
+
+            <hr style="border:1px solid rgba(255,255,255,0.06); margin:18px 0;" />
+
+            <div style="display:flex; gap:18px; flex-wrap:wrap;">
+                <div style="flex:1 1 320px; background:rgba(255,255,255,0.03); padding:18px; border-radius:12px;">
+                    <h3 style="margin-top:0;">Play</h3>
+                    <button id="user-pvp-btn" style="display:block; width:100%; background:linear-gradient(135deg,#4ecdc4,#3aa89f); color:#111; border:none; padding:14px; border-radius:10px; font-weight:800;">Start PVP</button>
+                    <div style="margin-top:12px; color:#ccc; font-size:0.95em;">Play local or online matches against other players.</div>
+                </div>
+
+                <div style="width:320px; background:rgba(255,255,255,0.03); padding:18px; border-radius:12px;">
+                    <h3 style="margin-top:0;">Statistics</h3>
+                    <button id="user-stats-btn" style="display:block; width:100%; background:linear-gradient(135deg,#ffd700,#f1c40f); color:#111; border:none; padding:12px; border-radius:10px; font-weight:800;">Open Dashboard</button>
+                    <div style="margin-top:12px; color:#ccc; font-size:0.95em;">View your wins, piece stats, and progress charts.</div>
+                </div>
+
+                <div style="flex:1 1 360px; background:rgba(255,255,255,0.02); padding:18px; border-radius:12px;">
+                    <h3 style="margin-top:0;">User vs Guest</h3>
+                    <ul style="color:#ccc;">
+                        <li><b>Users</b>: persistent stats, profile photo, cloud-synced preferences, matchmaking.</li>
+                        <li><b>Guests</b>: instant play, local-only stats, no matchmaking or saved profile.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
     <script>
@@ -6470,6 +6532,30 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             // Show puzzles modal
             openPuzzlesModal();
         });
+
+        // Wire user-home buttons (if present)
+        const userPvpBtn = document.getElementById('user-pvp-btn');
+        if (userPvpBtn) {
+            userPvpBtn.addEventListener('click', function() {
+                // Close user-home and open multiplayer modal / start PVP flow
+                hideUserHome();
+                // Prefer multiplayer modal if available
+                try { openMultiplayerModal(); } catch (e) { /* fallback: start game */ startGameMode && startGameMode('pvp'); }
+            });
+        }
+
+        const userStatsBtn = document.getElementById('user-stats-btn');
+        if (userStatsBtn) {
+            userStatsBtn.addEventListener('click', function() {
+                hideUserHome();
+                try { showStatsDashboard(); } catch (e) { alert('Stats dashboard not available'); }
+            });
+        }
+
+        const userSignoutBtn = document.getElementById('user-signout-btn');
+        if (userSignoutBtn) {
+            userSignoutBtn.addEventListener('click', function() { handleSignOut(); });
+        }
 
         // ========== PUZZLE FUNCTIONALITY ==========
         
@@ -14805,6 +14891,91 @@ ${moveHistory || '(No moves played yet - starting position)'}
             }
         }
 
+        // Persist and show current user (used by Google login and guest flow)
+        function persistCurrentUser(user) {
+            if (!user) return;
+            window.currentUser = user;
+            try { localStorage.setItem('romgon-user', JSON.stringify(user)); } catch (e) {}
+            // Update small badge and user-home UI
+            try { showLoggedInUser(user); } catch (e) {}
+            try { showUserHome(); } catch (e) {}
+        }
+
+        // Profile UI helpers (lightweight, mirrors deploy behavior)
+        function showLoggedInUser(user) {
+            if (!user) return;
+            let badge = document.getElementById('user-profile-badge');
+            if (!badge) {
+                badge = document.createElement('div');
+                badge.id = 'user-profile-badge';
+                badge.style.cssText = 'position:fixed; top:12px; right:12px; z-index:20001; display:flex; gap:8px; align-items:center; background:#111; color:#fff; padding:6px 10px; border-radius:18px; box-shadow:0 6px 18px rgba(0,0,0,0.6); cursor:pointer;';
+                document.body.appendChild(badge);
+                badge.addEventListener('click', (e) => { e.stopPropagation(); showAccountModal(); });
+            }
+            badge.innerHTML = '';
+            if (user.picture) {
+                const img = document.createElement('img');
+                img.src = user.picture;
+                img.style.cssText = 'width:28px; height:28px; border-radius:50%; object-fit:cover;';
+                badge.appendChild(img);
+            }
+            const txt = document.createElement('div');
+            txt.style.cssText = 'font-size:13px; color:#fff;';
+            txt.textContent = user.name || user.email || 'Player';
+            badge.appendChild(txt);
+        }
+
+        function removeLoggedInUserUI() {
+            const b = document.getElementById('user-profile-badge');
+            if (b) b.remove();
+        }
+
+        function handleSignOut() {
+            window.currentUser = null;
+            try { localStorage.removeItem('romgon-user'); } catch (e) {}
+            removeLoggedInUserUI();
+            try { if (window.google && window.google.accounts && window.google.accounts.id) google.accounts.id.disableAutoSelect(); } catch (e) {}
+            // Hide user-home if visible
+            try { hideUserHome(); } catch (e) {}
+            alert('Signed out');
+            try { closeAccountModal(); } catch (e) {}
+        }
+
+        // Show / hide the user-first landing page
+        function showUserHome() {
+            const uh = document.getElementById('user-home');
+            if (!uh) return;
+            const startMenu = document.getElementById('start-menu');
+            const splash = document.getElementById('splash-page');
+            if (startMenu) startMenu.style.display = 'none';
+            if (splash) splash.style.display = 'none';
+            // populate
+            const u = window.currentUser || (function(){ try { return JSON.parse(localStorage.getItem('romgon-user')); } catch(e){return null;} })();
+            const avatar = document.getElementById('user-home-avatar');
+            const nameEl = document.getElementById('user-home-name');
+            const emailEl = document.getElementById('user-home-email');
+            if (u) {
+                if (avatar) {
+                    if (u.picture) {
+                        avatar.style.background = 'transparent';
+                        avatar.innerHTML = `<img src="${u.picture}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;"/>`;
+                    } else {
+                        avatar.style.background = '#222';
+                        avatar.textContent = (u.name || 'G').charAt(0).toUpperCase();
+                    }
+                }
+                if (nameEl) nameEl.textContent = u.name || u.email || 'Player';
+                if (emailEl) emailEl.textContent = u.email || (u.type === 'guest' ? 'Guest' : 'Not signed in');
+            }
+            uh.style.display = 'block';
+        }
+
+        function hideUserHome() {
+            const uh = document.getElementById('user-home');
+            if (!uh) return;
+            uh.style.display = 'none';
+        }
+
         function handleGoogleCredentialResponse(response) {
             const payload = parseJwt(response.credential);
             if (!payload) {
@@ -14868,20 +15039,10 @@ ${moveHistory || '(No moves played yet - starting position)'}
 
         // Handle guest login
         function handleGuestLogin() {
-            // Set guest user
-            window.currentUser = {
-                type: 'guest',
-                name: 'Guest Player',
-                id: 'guest_' + Date.now()
-            };
-
-            // Save to localStorage for persistence
-            localStorage.setItem('romgon-user', JSON.stringify(window.currentUser));
-
-            // Hide splash page and show main menu
-            hideSplashPage();
-
-            console.log('👤 Logged in as Guest:', window.currentUser);
+            // Create guest user and persist via common helper (will show user-home)
+            const guest = { type: 'guest', name: 'Guest Player', id: 'guest_' + Date.now() };
+            try { persistCurrentUser(guest); } catch (e) { window.currentUser = guest; localStorage.setItem('romgon-user', JSON.stringify(guest)); hideSplashPage(); }
+            console.log('👤 Logged in as Guest:', guest);
         }
 
         // Get current user info
