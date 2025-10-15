@@ -5772,6 +5772,9 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         let llmMode = false; // LLM AI mode (mockup)
         let currentAIModel = 'claude-sonnet'; // 'claude-sonnet', 'gpt4', 'grok', 'gemini'
         let showAllMoves = false; // Track if "show all moves" mode is active
+    // Track human player's chosen color (for guest vs AI flows)
+    window.humanColor = window.humanColor || null;
+    window.skipAutoFlipForGuestAI = !!window.skipAutoFlipForGuestAI;
         
         // Fog of War variant settings
         let fogOfWarEnabled = false; // Enable/disable Fog of War mode
@@ -6885,6 +6888,109 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 console.error('startQuickPvp failed', e);
                 try { openGameVariantsModal('pvp'); } catch (ee) { startGameMode && startGameMode('pvp'); }
             }
+        }
+
+        // Guest-friendly helpers
+        function startNewGame() {
+            try {
+                gameInProgress = true;
+                aiEnabled = false;
+                llmMode = false;
+                initializeBoard('full');
+                document.getElementById('board-display-container').style.display = 'block';
+                updateTurnDisplay();
+                showNotification('🎮 New game started', 'info');
+            } catch (e) { console.error('startNewGame error', e); }
+        }
+
+        function startLocalPvp() {
+            startQuickPvp();
+        }
+
+        function startVsAI() {
+            try {
+                const args = Array.from(arguments);
+                let chosenColor = args[0];
+                if (!chosenColor && isGuestUser()) {
+                    showColorChoiceModal(function(selection) {
+                        window.humanColor = selection;
+                        window.skipAutoFlipForGuestAI = true;
+                        startVsAI(selection);
+                    });
+                    return;
+                }
+
+                if (chosenColor) {
+                    window.humanColor = chosenColor;
+                }
+
+                selectedGameMode = 'ai';
+                aiEnabled = true;
+                llmMode = false;
+                initializeBoard('full');
+                document.getElementById('board-display-container').style.display = 'block';
+                updateTurnDisplay();
+                if (isGuestUser()) {
+                    window.skipAutoFlipForGuestAI = true;
+                    showNotification('🤖 Playing vs AI (Guest) — you play as ' + (window.humanColor || 'black'), 'info');
+                } else {
+                    window.skipAutoFlipForGuestAI = false;
+                    showNotification('🤖 Playing vs AI', 'info');
+                }
+            } catch (e) { console.error('startVsAI error', e); }
+        }
+
+        function showLoadRPN() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.rpn,.txt';
+            input.onchange = (ev) => {
+                const f = ev.target.files[0];
+                if (!f) return;
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const content = reader.result;
+                    try { importPositionRPN(content); showNotification('📥 Position loaded', 'success'); } catch (e) { alert('Failed to load RPN: '+e.message); }
+                };
+                reader.readAsText(f);
+            };
+            input.click();
+        }
+
+        function quitGame() {
+            try {
+                gameInProgress = false;
+                clearBoard();
+                document.getElementById('board-display-container').style.display = 'none';
+                document.getElementById('start-menu').style.display = 'flex';
+                showNotification('🏁 Quit to menu', 'info');
+            } catch (e) { console.error('quitGame error', e); }
+        }
+
+        function showColorChoiceModal(callback) {
+            try {
+                const modal = document.createElement('div');
+                modal.id = 'color-choice-modal';
+                modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:20000;';
+
+                const box = document.createElement('div');
+                box.style.cssText = 'background:#262421;color:#fff;padding:22px;border-radius:12px;min-width:320px;text-align:center;';
+                box.innerHTML = `<h3 style="margin-top:0;color:#4ecdc4;">Choose your side</h3>
+                    <p style="color:#ccc;">Do you want to play as White or Black?</p>
+                    <div style="display:flex;gap:12px;justify-content:center;margin-top:14px;">
+                        <button id="choose-white" style="background:#4ecdc4;color:#10201f;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:800;">Play as White</button>
+                        <button id="choose-black" style="background:#555;color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:800;">Play as Black</button>
+                    </div>
+                    <div style="margin-top:12px;font-size:12px;color:#aaa;">Tip: White moves first by default.</div>`;
+
+                modal.appendChild(box);
+                document.body.appendChild(modal);
+
+                function cleanup() { const m = document.getElementById('color-choice-modal'); if (m) m.remove(); }
+
+                document.getElementById('choose-white').addEventListener('click', function() { cleanup(); callback('white'); });
+                document.getElementById('choose-black').addEventListener('click', function() { cleanup(); callback('black'); });
+            } catch (e) { console.error('showColorChoiceModal error', e); callback('black'); }
         }
         
         function startTimer() {
@@ -11206,7 +11312,12 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         // Function to auto-flip board based on current player
         function autoBoardFlip() {
             const board = document.querySelector('.board');
-            
+            // If guest is playing vs AI and we've set the skip flag, do not auto-flip
+            if (aiEnabled && isGuestUser() && window.skipAutoFlipForGuestAI) {
+                console.log('Auto-flip skipped for guest vs AI (humanColor=', window.humanColor, ')');
+                return;
+            }
+
             // White's turn: Flip board so white is at bottom
             // Black's turn: Normal view so black is at bottom
             if (currentPlayer === 'white') {
