@@ -416,6 +416,13 @@
         // Early runtime assignment of client id so getGoogleClientId() finds it before DOM-ready
         window.GOOGLE_CLIENT_ID = '629995302527-1t22gstg5590d0as9espopm5mdicrjoj.apps.googleusercontent.com';
     </script>
+    <script>
+        // Ensure global settings object exists to avoid TypeErrors when UI code reads properties
+        window.gameSettings = window.gameSettings || {};
+        if (typeof window.baseDefenseVariant === 'undefined') {
+            window.baseDefenseVariant = window.gameSettings.baseDefenseVariant || 'original';
+        }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ROMGON</title>
