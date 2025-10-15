@@ -6537,10 +6537,10 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         const userPvpBtn = document.getElementById('user-pvp-btn');
         if (userPvpBtn) {
             userPvpBtn.addEventListener('click', function() {
-                // Close user-home and open multiplayer modal / start PVP flow
+                // Close user-home and open the PVP game variants modal (local PVP by default).
+                // This ensures guests are taken to the local PVP flow instead of the online/multiplayer modal.
                 hideUserHome();
-                // Prefer multiplayer modal if available
-                try { openMultiplayerModal(); } catch (e) { /* fallback: start game */ startGameMode && startGameMode('pvp'); }
+                try { openGameVariantsModal('pvp'); } catch (e) { /* fallback: start game directly */ startGameMode && startGameMode('pvp'); }
             });
         }
 

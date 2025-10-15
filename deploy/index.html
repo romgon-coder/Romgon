@@ -6507,6 +6507,30 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             openPuzzlesModal();
         });
 
+        // Wire user-home buttons (if present)
+        const userPvpBtn = document.getElementById('user-pvp-btn');
+        if (userPvpBtn) {
+            userPvpBtn.addEventListener('click', function() {
+                // Close user-home and open the PVP game variants modal (local PVP by default).
+                // This ensures guests are taken to the local PVP flow instead of the online/multiplayer modal.
+                hideUserHome();
+                try { openGameVariantsModal('pvp'); } catch (e) { /* fallback: start game directly */ startGameMode && startGameMode('pvp'); }
+            });
+        }
+
+        const userStatsBtn = document.getElementById('user-stats-btn');
+        if (userStatsBtn) {
+            userStatsBtn.addEventListener('click', function() {
+                hideUserHome();
+                try { showStatsDashboard(); } catch (e) { alert('Stats dashboard not available'); }
+            });
+        }
+
+        const userSignoutBtn = document.getElementById('user-signout-btn');
+        if (userSignoutBtn) {
+            userSignoutBtn.addEventListener('click', function() { handleSignOut(); });
+        }
+
         // ========== PUZZLE FUNCTIONALITY ==========
         
         let puzzleMode = false;
