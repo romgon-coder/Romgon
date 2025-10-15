@@ -410,6 +410,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google Client ID: placed in <head> so it's available early at runtime -->
+    <meta name="google-client-id" content="629995302527-1t22gstg5590d0as9espopm5mdicrjoj.apps.googleusercontent.com" />
+    <script>
+        // Early runtime assignment of client id so getGoogleClientId() finds it before DOM-ready
+        window.GOOGLE_CLIENT_ID = '629995302527-1t22gstg5590d0as9espopm5mdicrjoj.apps.googleusercontent.com';
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ROMGON</title>
