@@ -1847,6 +1847,21 @@
                     <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #95a5a6; font-weight: 600;">SETTINGS</h3>
                     <p style="font-size: 0.8em; color: #aaa; margin: 0; line-height: 1.3;">Preferences<br/>Controls</p>
                 </button>
+                <!-- Account Card -->
+                <button id="start-account-btn" style="
+                    background: linear-gradient(135deg, rgba(78, 205, 196, 0.10), rgba(78, 205, 196, 0.06));
+                    border: 2px solid #4ecdc4;
+                    border-radius: 12px;
+                    padding: 20px 15px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    color: white;
+                    text-align: center;
+                " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(78, 205, 196, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'" onclick="(function(){document.getElementById('start-menu').style.display='none'; try{ if(window.isSignedIn && isSignedIn()){ showUserHome(); } else { showAccountModal(); } }catch(e){ showAccountModal(); } })();">
+                    <div style="font-size: 2.2em; margin-bottom: 8px;">👤</div>
+                    <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #4ecdc4; font-weight: 600;">ACCOUNT</h3>
+                    <p style="font-size: 0.8em; color: #aaa; margin: 0; line-height: 1.3;">Sign in / Guest<br/>Profile & Settings</p>
+                </button>
                 </div>
                 
             <!-- Advanced Modes - Same Grid -->
@@ -11549,9 +11564,23 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
                 transition: all 0.3s ease;
             `;
+            // Open user/account page from in-game menu (should show user-home/account)
             menuButton.onclick = function() {
-                gameInProgress = true;
-                showStartMenu();
+                // If user is guest or signed in, show account/user home instead of the global start menu
+                try {
+                    if (isGuestUser() || getCurrentUser()) {
+                        // Show the account modal or user home page
+                        try { showUserHome(); } catch (e) { /* fallback to account modal */ }
+                        try { showAccountModal(); } catch (e) { /* ignore */ }
+                    } else {
+                        // Otherwise fall back to start menu
+                        gameInProgress = true;
+                        showStartMenu();
+                    }
+                } catch (e) {
+                    gameInProgress = true;
+                    showStartMenu();
+                }
             };
             menuButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             menuButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
@@ -11928,24 +11957,8 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             `;
             turnDisplay.textContent = `${currentPlayer.toUpperCase()} TURN`;
 
-            // Add guest indicator if user is logged in as guest
-            if (isGuestUser()) {
-                const guestIndicator = document.createElement('div');
-                guestIndicator.style.cssText = `
-                    display: inline-block;
-                    background-color: #4ecdc4;
-                    color: #262421;
-                    padding: 2px 8px;
-                    border-radius: 10px;
-                    font-size: 10px;
-                    font-weight: bold;
-                    margin-left: 10px;
-                    border: 1px solid #fff;
-                    text-transform: uppercase;
-                `;
-                guestIndicator.textContent = 'GUEST';
-                turnDisplay.appendChild(guestIndicator);
-            }
+            // NOTE: Center floating guest badge removed - per-side indicators are shown
+            // inside the eliminated/side panels (see updateBaseDefenceDisplay()).
 
             // Create right button (Help)
             const helpButton = document.createElement('button');
@@ -13092,80 +13105,93 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
         // Function to update base defence display
         function updateBaseDefenceDisplay() {
-            // Remove existing base defence indicators
+            // Remove existing base defence and side role indicators
             const existingWhiteIndicator = document.getElementById('white-base-defence');
             const existingBlackIndicator = document.getElementById('black-base-defence');
-            const existingGuestIndicatorBlack = document.getElementById('guest-indicator-black');
-            const existingGuestIndicatorWhite = document.getElementById('guest-indicator-white');
+            const existingRoleBlack = document.getElementById('role-indicator-black');
+            const existingRoleWhite = document.getElementById('role-indicator-white');
             if (existingWhiteIndicator) existingWhiteIndicator.remove();
             if (existingBlackIndicator) existingBlackIndicator.remove();
-            if (existingGuestIndicatorBlack) existingGuestIndicatorBlack.remove();
-            if (existingGuestIndicatorWhite) existingGuestIndicatorWhite.remove();
+            if (existingRoleBlack) existingRoleBlack.remove();
+            if (existingRoleWhite) existingRoleWhite.remove();
 
             const activeDefences = isBaseDefenceActive();
             
-            // Add guest indicator above BOTH eliminated sections if user is guest
-            if (isGuestUser()) {
-                const blackEliminatedSection = document.querySelector('.eliminated-section:last-child');
-                const whiteEliminatedSection = document.querySelector('.eliminated-section:first-child');
-                const makeGuestIndicator = (id) => {
-                    const el = document.createElement('div');
-                    el.id = id;
-                    el.className = 'guest-indicator-badge';
-                    el.style.cssText = `
-                        background-color: #ff6b6b;
-                        color: white;
-                        padding: 8px 12px;
-                        border-radius: 10px;
-                        font-weight: bold;
-                        font-size: 12px;
-                        text-align: center;
-                        margin-bottom: 10px;
-                        border: 2px solid #fff;
-                        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-                        cursor: pointer;
-                        position: relative;
-                    `;
-                    el.textContent = '👤 Logged in as Guest';
+            // Add per-side role indicators (AI / YOU / GUEST) into eliminated panels
+            // Determine roles for each side
+            const blackEliminatedSection = document.querySelector('.eliminated-section:last-child');
+            const whiteEliminatedSection = document.querySelector('.eliminated-section:first-child');
 
-                    // Tooltip element
-                    const tip = document.createElement('div');
-                    tip.className = 'guest-tooltip';
-                    tip.style.cssText = `
-                        position: absolute;
-                        top: 110%;
-                        left: 50%;
-                        transform: translateX(-50%);
-                        background: rgba(0,0,0,0.85);
-                        color: #fff;
-                        padding: 6px 8px;
-                        font-size: 11px;
-                        border-radius: 6px;
-                        white-space: nowrap;
-                        display: none;
-                        z-index: 100;
-                    `;
-                    tip.textContent = 'Guest: limited features (no cloud saves, no online ranking)';
-                    el.appendChild(tip);
+            const makeSideRoleIndicator = (id, label, color) => {
+                const el = document.createElement('div');
+                el.id = id;
+                el.className = 'guest-indicator-badge';
+                el.style.cssText = `
+                    background-color: ${color};
+                    color: white;
+                    padding: 8px 12px;
+                    border-radius: 10px;
+                    font-weight: bold;
+                    font-size: 12px;
+                    text-align: center;
+                    margin-bottom: 10px;
+                    border: 2px solid #fff;
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                    cursor: default;
+                    position: relative;
+                `;
+                el.textContent = label;
+                return el;
+            };
 
-                    // Show tooltip on hover
-                    el.addEventListener('mouseenter', () => { tip.style.display = 'block'; });
-                    el.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+            // Decide labels/colors: human player shows 'YOU' (green), AI shows 'AI' (purple), guest shows 'GUEST' (red)
+            const humanColor = window.humanColor || null; // 'white' or 'black' when guest chose color vs AI
 
-                    // Click to prompt login
-                    el.addEventListener('click', (e) => { e.stopPropagation(); showAccountModal(); });
+            // Helper to insert or replace indicator
+            const insertIndicator = (container, id, label, color) => {
+                if (!container) return;
+                const existing = document.getElementById(id);
+                if (existing) existing.remove();
+                const node = makeSideRoleIndicator(id, label, color);
+                container.insertBefore(node, container.firstChild);
+            };
 
-                    return el;
-                };
-
-                if (blackEliminatedSection) {
-                    const guestIndicatorBlack = makeGuestIndicator('guest-indicator-black');
-                    blackEliminatedSection.insertBefore(guestIndicatorBlack, blackEliminatedSection.firstChild);
+            // If AI enabled, show AI on the side the AI is controlling, and YOU on the human side
+            if (aiEnabled) {
+                // Determine which side the human is playing. If humanColor set, that side is YOU.
+                if (humanColor === 'white') {
+                    insertIndicator(whiteEliminatedSection, 'role-indicator-white', 'YOU', '#26de81');
+                    insertIndicator(blackEliminatedSection, 'role-indicator-black', 'AI', '#a55eea');
+                } else if (humanColor === 'black') {
+                    insertIndicator(blackEliminatedSection, 'role-indicator-black', 'YOU', '#26de81');
+                    insertIndicator(whiteEliminatedSection, 'role-indicator-white', 'AI', '#a55eea');
+                } else {
+                    // No explicit humanColor: assume human is black by default
+                    insertIndicator(blackEliminatedSection, 'role-indicator-black', 'YOU', '#26de81');
+                    insertIndicator(whiteEliminatedSection, 'role-indicator-white', 'AI', '#a55eea');
                 }
-                if (whiteEliminatedSection) {
-                    const guestIndicatorWhite = makeGuestIndicator('guest-indicator-white');
-                    whiteEliminatedSection.insertBefore(guestIndicatorWhite, whiteEliminatedSection.firstChild);
+            } else if (isGuestUser()) {
+                // Guest-only (no AI) - show GUEST label on both sides
+                insertIndicator(blackEliminatedSection, 'role-indicator-black', 'GUEST', '#ff6b6b');
+                insertIndicator(whiteEliminatedSection, 'role-indicator-white', 'GUEST', '#ff6b6b');
+            } else if (multiplayerMode) {
+                // Multiplayer: show 'YOU' where myPlayerColor is and 'OPPONENT' on the other side
+                const myColor = myPlayerColor || null; // 'black' or 'white' expected
+                if (myColor === 'white') {
+                    insertIndicator(whiteEliminatedSection, 'role-indicator-white', 'YOU', '#26de81');
+                    insertIndicator(blackEliminatedSection, 'role-indicator-black', 'OPPONENT', '#ff9f43');
+                } else if (myColor === 'black') {
+                    insertIndicator(blackEliminatedSection, 'role-indicator-black', 'YOU', '#26de81');
+                    insertIndicator(whiteEliminatedSection, 'role-indicator-white', 'OPPONENT', '#ff9f43');
+                } else {
+                    // Unknown: clear any role indicators
+                    const exB = document.getElementById('role-indicator-black'); if (exB) exB.remove();
+                    const exW = document.getElementById('role-indicator-white'); if (exW) exW.remove();
                 }
+            } else {
+                // No special mode - remove any role indicators
+                const exB = document.getElementById('role-indicator-black'); if (exB) exB.remove();
+                const exW = document.getElementById('role-indicator-white'); if (exW) exW.remove();
             }
             
             // Insert white base defence indicator into its placeholder so ordering is
@@ -14993,10 +15019,21 @@ ${moveHistory || '(No moves played yet - starting position)'}
             // Save to localStorage for persistence
             localStorage.setItem('romgon-user', JSON.stringify(window.currentUser));
 
-            // Hide splash page and show main menu
-            hideSplashPage();
+            // After guest login, navigate to user/account page (not the in-game start menu)
+            try {
+                // Ensure start menu/splash are hidden
+                const splash = document.getElementById('splash-page'); if (splash) splash.style.display = 'none';
+                const startMenu = document.getElementById('start-menu'); if (startMenu) startMenu.style.display = 'none';
 
-            console.log('👤 Logged in as Guest:', window.currentUser);
+                // Show the user home / account area so guest sees the account-focused main menu
+                try { showUserHome(); } catch (e) { /* if user-home isn't present, fall back to account modal */ }
+                try { showAccountModal(); } catch (e) { /* ignore */ }
+            } catch (e) {
+                // Fallback: show start menu
+                hideSplashPage();
+            }
+
+            console.log('👤 Logged in as Guest and routed to account page:', window.currentUser);
         }
 
         // Get current user info
@@ -15308,6 +15345,60 @@ ${moveHistory || '(No moves played yet - starting position)'}
             });
             // Try to render Google button/profile state when modal opens
             try { renderAccountModalState(); } catch (e) { try { handleGoogleLogin(); } catch(_){} }
+        }
+
+        // Show the user-home page (a user/account focused main menu). If not present,
+        // fall back to showing the account modal.
+        function showUserHome() {
+            let userHome = document.getElementById('user-home');
+            // Hide competing UI
+            const startMenu = document.getElementById('start-menu'); if (startMenu) startMenu.style.display = 'none';
+            const splash = document.getElementById('splash-page'); if (splash) splash.style.display = 'none';
+            const board = document.getElementById('board-display-container'); if (board) board.style.display = 'none';
+
+            // Create user-home DOM if missing
+            if (!userHome) {
+                userHome = document.createElement('div');
+                userHome.id = 'user-home';
+                userHome.style.cssText = 'position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#0f1923, #1a2332); z-index:20000;';
+
+                const box = document.createElement('div');
+                box.style.cssText = 'width:560px; max-width:94%; background:#23272e; padding:26px; border-radius:14px; color:#fff; box-shadow:0 10px 40px rgba(0,0,0,0.6);';
+                box.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <div style="font-size:20px; font-weight:800; color:#4ecdc4;">Welcome</div>
+                        <div style="font-size:12px; color:#ccc;">${(getCurrentUser() && getCurrentUser().name) ? getCurrentUser().name : 'Guest'}</div>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <button id="user-newgame-btn" style="padding:14px; font-weight:800; border-radius:10px; background:linear-gradient(135deg,#4ecdc4,#3aa89f); border:none; color:#10201f;">🎮 New Game</button>
+                        <button id="user-localpvp-btn" style="padding:14px; font-weight:800; border-radius:10px; background:linear-gradient(135deg,#ffd700,#f39c12); border:none; color:#111;">👥 Local PVP</button>
+                        <button id="user-vsai-btn" style="padding:14px; font-weight:800; border-radius:10px; background:linear-gradient(135deg,#a55eea,#7c3aed); border:none; color:#fff;">🤖 Play vs AI</button>
+                        <button id="user-loadrpn-btn" style="padding:14px; font-weight:800; border-radius:10px; background:linear-gradient(135deg,#16a085,#1abc9c); border:none; color:#fff;">📥 Load RPN</button>
+                        <button id="user-quit-btn" style="grid-column:1 / span 2; padding:12px; font-weight:700; border-radius:10px; background:#e74c3c; border:none; color:#fff;">🏁 Quit to Menu</button>
+                    </div>
+                    <div style="margin-top:14px; text-align:center; font-size:12px; color:#aaa;">Account & settings are available via the top-right badge.</div>
+                `;
+
+                userHome.appendChild(box);
+                document.body.appendChild(userHome);
+
+                // Wire buttons
+                document.getElementById('user-newgame-btn').addEventListener('click', function(){ hideUserHome(); startNewGame(); });
+                document.getElementById('user-localpvp-btn').addEventListener('click', function(){ hideUserHome(); startLocalPvp(); });
+                document.getElementById('user-vsai-btn').addEventListener('click', function(){ hideUserHome(); startVsAI(); });
+                document.getElementById('user-loadrpn-btn').addEventListener('click', function(){ hideUserHome(); showLoadRPN(); });
+                document.getElementById('user-quit-btn').addEventListener('click', function(){ hideUserHome(); quitGame(); });
+            }
+
+            // Show user-home
+            userHome.style.display = 'flex';
+            // Ensure account modal also reflects state
+            try { renderAccountModalState(); } catch (e) {}
+        }
+
+        function hideUserHome() {
+            const userHome = document.getElementById('user-home');
+            if (userHome) userHome.style.display = 'none';
         }
 
         function closeAccountModal() {

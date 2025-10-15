@@ -1831,6 +1831,21 @@
                     <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #95a5a6; font-weight: 600;">SETTINGS</h3>
                     <p style="font-size: 0.8em; color: #aaa; margin: 0; line-height: 1.3;">Preferences<br/>Controls</p>
                 </button>
+                <!-- Account Card -->
+                <button id="start-account-btn" style="
+                    background: linear-gradient(135deg, rgba(78, 205, 196, 0.10), rgba(78, 205, 196, 0.06));
+                    border: 2px solid #4ecdc4;
+                    border-radius: 12px;
+                    padding: 20px 15px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    color: white;
+                    text-align: center;
+                " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(78, 205, 196, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'" onclick="(function(){document.getElementById('start-menu').style.display='none'; try{ if(window.isSignedIn && isSignedIn()){ showUserHome(); } else { showAccountModal(); } }catch(e){ showAccountModal(); } })();">
+                    <div style="font-size: 2.2em; margin-bottom: 8px;">👤</div>
+                    <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #4ecdc4; font-weight: 600;">ACCOUNT</h3>
+                    <p style="font-size: 0.8em; color: #aaa; margin: 0; line-height: 1.3;">Sign in / Guest<br/>Profile & Settings</p>
+                </button>
                 </div>
                 
             <!-- Advanced Modes - Same Grid -->
