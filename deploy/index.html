@@ -6511,10 +6511,17 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         const userPvpBtn = document.getElementById('user-pvp-btn');
         if (userPvpBtn) {
             userPvpBtn.addEventListener('click', function() {
-                // Close user-home and open the PVP game variants modal (local PVP by default).
-                // This ensures guests are taken to the local PVP flow instead of the online/multiplayer modal.
+                // Close user-home and start a quick local PVP game immediately.
                 hideUserHome();
-                try { openGameVariantsModal('pvp'); } catch (e) { /* fallback: start game directly */ startGameMode && startGameMode('pvp'); }
+                try {
+                    if (typeof startQuickPvp === 'function') {
+                        startQuickPvp();
+                    } else {
+                        openGameVariantsModal('pvp');
+                    }
+                } catch (e) {
+                    startGameMode && startGameMode('pvp');
+                }
             });
         }
 
@@ -6848,6 +6855,36 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             selectedGameMode = null;
             
             // Note: AI will trigger automatically when it becomes White's turn
+        }
+
+        // Quick-start helper for local PVP games (used by user-home Start PVP)
+        function startQuickPvp() {
+            try {
+                selectedGameMode = 'pvp';
+                timerEnabled = false;
+                const startMenu = document.getElementById('start-menu'); if (startMenu) startMenu.style.display = 'none';
+                const splash = document.getElementById('splash-page'); if (splash) splash.style.display = 'none';
+                document.getElementById('board-display-container').style.display = 'block';
+                document.getElementById('player-timers').style.display = 'none';
+
+                gameInProgress = true;
+                aiEnabled = false;
+                llmMode = false;
+                initializeBoard('full');
+
+                currentTurnPiece = null;
+                escapeRaceNotificationShown = false;
+                clearMovementHistory();
+                clearMoveRepetitions();
+                clearCoordinateLabels();
+                highlightThreatenedPieces();
+                updateTurnDisplay();
+
+                console.log('⚔️ Quick PVP started (guest/user)');
+            } catch (e) {
+                console.error('startQuickPvp failed', e);
+                try { openGameVariantsModal('pvp'); } catch (ee) { startGameMode && startGameMode('pvp'); }
+            }
         }
         
         function startTimer() {
