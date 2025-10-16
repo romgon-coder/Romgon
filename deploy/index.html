@@ -31,22 +31,6 @@
         </div>
     </div>
     <script>
-    /*
-     Google Sign-In integration (client-side):
-     - Implements a small shim and handler `handleGoogleLogin()` which loads
-         Google's Identity Services script and renders a Google Sign-In button into
-         the account modal element with id `account-google-btn`.
-     - To enable: create an OAuth 2.0 Client ID in Google Cloud Console, add your
-         authorized JavaScript origin (e.g., https://romgon.net), then set the
-         client ID either by adding a meta tag:
-             <meta name="google-client-id" content="629995302527-1t22gstg5590d0as9espopm5mdicrjoj.apps.googleusercontent.com">
-         or by assigning it at runtime before this script runs:
-             window.GOOGLE_CLIENT_ID = '629995302527-1t22gstg5590d0as9espopm5mdicrjoj.apps.googleusercontent.com'
-     - On successful sign-in, `handleGoogleCredentialResponse` parses the JWT and
-         stores a minimal `currentUser` in localStorage.
-     - This is client-side only. For server-verified auth, send the ID token to
-         your server and verify it with Google's token verification endpoints.
-    */
     // Show/hide Statistics Dashboard modal
     function showStatsDashboard() {
         document.getElementById('stats-dashboard-modal').style.display = 'block';
@@ -410,39 +394,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Google Client ID: placed in <head> so it's available early at runtime -->
-    <meta name="google-client-id" content="629995302527-1t22gstg5590d0as9espopm5mdicrjoj.apps.googleusercontent.com" />
-    <script>
-        // Early runtime assignment of client id so getGoogleClientId() finds it before DOM-ready
-        window.GOOGLE_CLIENT_ID = '629995302527-1t22gstg5590d0as9espopm5mdicrjoj.apps.googleusercontent.com';
-    </script>
-    <script>
-        // Ensure global settings object exists to avoid TypeErrors when UI code reads properties
-        window.gameSettings = window.gameSettings || {};
-        if (typeof window.baseDefenseVariant === 'undefined') {
-            window.baseDefenseVariant = window.gameSettings.baseDefenseVariant || 'original';
-        }
-    </script>
-    <script>
-        // Suppress noisy emoji debug logs (🔍, 🎯) in production unless explicitly enabled.
-        // Set window.__ROMGON_DEBUG__ = true from the console to re-enable these logs.
-        (function(){
-            try {
-                const allowed = !!window.__ROMGON_DEBUG__;
-                if (allowed) return; // don't wrap if debug explicitly enabled
-                const origLog = console.log.bind(console);
-                console.log = function(...args) {
-                    try {
-                        if (args && args.length) {
-                            const first = String(args[0] || '');
-                            if (first.startsWith('🔍') || first.startsWith('🎯')) return; // suppress
-                        }
-                    } catch (e) {}
-                    origLog(...args);
-                };
-            } catch (e) { /* noop */ }
-        })();
-    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ROMGON</title>
@@ -1756,12 +1707,15 @@
                 <button id="start-game-btn" style="
                     background: linear-gradient(135deg, rgba(78, 205, 196, 0.15), rgba(68, 160, 141, 0.15));
                     border: 2px solid #4ecdc4;
-                    border-radius: 12px;
-                    padding: 20px 15px;
+                    clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0% 50%);
+                    padding: 32px 18px 32px 18px;
                     cursor: pointer;
                     transition: all 0.3s ease;
                     color: white;
                     text-align: center;
+                    aspect-ratio: 1 / 1;
+                    min-width: 120px;
+                    max-width: 220px;
                 " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(78, 205, 196, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
                     <div style="font-size: 2.2em; margin-bottom: 8px;">👥</div>
                     <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #4ecdc4; font-weight: 600;">LOCAL PVP</h3>
@@ -1772,12 +1726,15 @@
                 <button id="start-multiplayer-btn" style="
                     background: linear-gradient(135deg, rgba(38, 222, 129, 0.15), rgba(32, 191, 107, 0.15));
                     border: 2px solid #26de81;
-                    border-radius: 12px;
-                    padding: 20px 15px;
+                    clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0% 50%);
+                    padding: 32px 18px 32px 18px;
                     cursor: pointer;
                     transition: all 0.3s ease;
                     color: white;
                     text-align: center;
+                    aspect-ratio: 1 / 1;
+                    min-width: 120px;
+                    max-width: 220px;
                 " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(38, 222, 129, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
                     <div style="font-size: 2.2em; margin-bottom: 8px;">🌐</div>
                     <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #26de81; font-weight: 600;">ONLINE</h3>
@@ -1788,12 +1745,15 @@
                 <button id="start-ai-mode-btn" style="
                     background: linear-gradient(135deg, rgba(165, 94, 234, 0.15), rgba(142, 68, 173, 0.15));
                     border: 2px solid #a55eea;
-                    border-radius: 12px;
-                    padding: 20px 15px;
+                    clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0% 50%);
+                    padding: 32px 18px 32px 18px;
                     cursor: pointer;
                     transition: all 0.3s ease;
                     color: white;
                     text-align: center;
+                    aspect-ratio: 1 / 1;
+                    min-width: 120px;
+                    max-width: 220px;
                 " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(165, 94, 234, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
                     <div style="font-size: 2.2em; margin-bottom: 8px;">🤖</div>
                     <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #a55eea; font-weight: 600;">VS AI</h3>
@@ -1804,12 +1764,15 @@
                 <button id="start-puzzles-btn" style="
                     background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 193, 7, 0.15));
                     border: 2px solid #ffd700;
-                    border-radius: 12px;
-                    padding: 20px 15px;
+                    clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0% 50%);
+                    padding: 32px 18px 32px 18px;
                     cursor: pointer;
                     transition: all 0.3s ease;
                     color: white;
                     text-align: center;
+                    aspect-ratio: 1 / 1;
+                    min-width: 120px;
+                    max-width: 220px;
                 " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(255, 215, 0, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
                     <div style="font-size: 2.2em; margin-bottom: 8px;">🧩</div>
                     <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #ffd700; font-weight: 600;">PUZZLES</h3>
@@ -1820,12 +1783,15 @@
                 <button id="start-leaderboard-btn" style="
                     background: linear-gradient(135deg, rgba(241, 196, 15, 0.15), rgba(243, 156, 18, 0.15));
                     border: 2px solid #f1c40f;
-                    border-radius: 12px;
-                    padding: 20px 15px;
+                    clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0% 50%);
+                    padding: 32px 18px 32px 18px;
                     cursor: pointer;
                     transition: all 0.3s ease;
                     color: white;
                     text-align: center;
+                    aspect-ratio: 1 / 1;
+                    min-width: 120px;
+                    max-width: 220px;
                 " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(241, 196, 15, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
                     <div style="font-size: 2.2em; margin-bottom: 8px;">🏆</div>
                     <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #f1c40f; font-weight: 600;">LEADERBOARD</h3>
@@ -1836,31 +1802,19 @@
                 <button id="start-settings-btn" style="
                     background: linear-gradient(135deg, rgba(149, 165, 166, 0.15), rgba(127, 140, 141, 0.15));
                     border: 2px solid #95a5a6;
-                    border-radius: 12px;
-                    padding: 20px 15px;
+                    clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0% 50%);
+                    padding: 32px 18px 32px 18px;
                     cursor: pointer;
                     transition: all 0.3s ease;
                     color: white;
                     text-align: center;
+                    aspect-ratio: 1 / 1;
+                    min-width: 120px;
+                    max-width: 220px;
                 " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(149, 165, 166, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
                     <div style="font-size: 2.2em; margin-bottom: 8px;">⚙️</div>
                     <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #95a5a6; font-weight: 600;">SETTINGS</h3>
                     <p style="font-size: 0.8em; color: #aaa; margin: 0; line-height: 1.3;">Preferences<br/>Controls</p>
-                </button>
-                <!-- Account Card -->
-                <button id="start-account-btn" style="
-                    background: linear-gradient(135deg, rgba(78, 205, 196, 0.10), rgba(78, 205, 196, 0.06));
-                    border: 2px solid #4ecdc4;
-                    border-radius: 12px;
-                    padding: 20px 15px;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    color: white;
-                    text-align: center;
-                " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(78, 205, 196, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'" onclick="(function(){document.getElementById('start-menu').style.display='none'; try{ if(window.isSignedIn && isSignedIn()){ showUserHome(); } else { showAccountModal(); } }catch(e){ showAccountModal(); } })();">
-                    <div style="font-size: 2.2em; margin-bottom: 8px;">👤</div>
-                    <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #4ecdc4; font-weight: 600;">ACCOUNT</h3>
-                    <p style="font-size: 0.8em; color: #aaa; margin: 0; line-height: 1.3;">Sign in / Guest<br/>Profile & Settings</p>
                 </button>
                 </div>
                 
@@ -5787,9 +5741,6 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         let llmMode = false; // LLM AI mode (mockup)
         let currentAIModel = 'claude-sonnet'; // 'claude-sonnet', 'gpt4', 'grok', 'gemini'
         let showAllMoves = false; // Track if "show all moves" mode is active
-    // Track human player's chosen color (for guest vs AI flows)
-    window.humanColor = window.humanColor || null;
-    window.skipAutoFlipForGuestAI = !!window.skipAutoFlipForGuestAI;
         
         // Fog of War variant settings
         let fogOfWarEnabled = false; // Enable/disable Fog of War mode
@@ -6525,37 +6476,6 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             openPuzzlesModal();
         });
 
-        // Wire user-home buttons (if present)
-        const userPvpBtn = document.getElementById('user-pvp-btn');
-        if (userPvpBtn) {
-            userPvpBtn.addEventListener('click', function() {
-                // Close user-home and start a quick local PVP game immediately.
-                hideUserHome();
-                try {
-                    if (typeof startQuickPvp === 'function') {
-                        startQuickPvp();
-                    } else {
-                        openGameVariantsModal('pvp');
-                    }
-                } catch (e) {
-                    startGameMode && startGameMode('pvp');
-                }
-            });
-        }
-
-        const userStatsBtn = document.getElementById('user-stats-btn');
-        if (userStatsBtn) {
-            userStatsBtn.addEventListener('click', function() {
-                hideUserHome();
-                try { showStatsDashboard(); } catch (e) { alert('Stats dashboard not available'); }
-            });
-        }
-
-        const userSignoutBtn = document.getElementById('user-signout-btn');
-        if (userSignoutBtn) {
-            userSignoutBtn.addEventListener('click', function() { handleSignOut(); });
-        }
-
         // ========== PUZZLE FUNCTIONALITY ==========
         
         let puzzleMode = false;
@@ -6873,139 +6793,6 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             selectedGameMode = null;
             
             // Note: AI will trigger automatically when it becomes White's turn
-        }
-
-        // Quick-start helper for local PVP games (used by user-home Start PVP)
-        function startQuickPvp() {
-            try {
-                selectedGameMode = 'pvp';
-                timerEnabled = false;
-                const startMenu = document.getElementById('start-menu'); if (startMenu) startMenu.style.display = 'none';
-                const splash = document.getElementById('splash-page'); if (splash) splash.style.display = 'none';
-                document.getElementById('board-display-container').style.display = 'block';
-                document.getElementById('player-timers').style.display = 'none';
-
-                gameInProgress = true;
-                aiEnabled = false;
-                llmMode = false;
-                initializeBoard('full');
-
-                currentTurnPiece = null;
-                escapeRaceNotificationShown = false;
-                clearMovementHistory();
-                clearMoveRepetitions();
-                clearCoordinateLabels();
-                highlightThreatenedPieces();
-                updateTurnDisplay();
-
-                console.log('⚔️ Quick PVP started (guest/user)');
-            } catch (e) {
-                console.error('startQuickPvp failed', e);
-                try { openGameVariantsModal('pvp'); } catch (ee) { startGameMode && startGameMode('pvp'); }
-            }
-        }
-
-        // Guest-friendly helpers
-        function startNewGame() {
-            try {
-                gameInProgress = true;
-                aiEnabled = false;
-                llmMode = false;
-                initializeBoard('full');
-                document.getElementById('board-display-container').style.display = 'block';
-                updateTurnDisplay();
-                showNotification('🎮 New game started', 'info');
-            } catch (e) { console.error('startNewGame error', e); }
-        }
-
-        function startLocalPvp() {
-            startQuickPvp();
-        }
-
-        function startVsAI() {
-            try {
-                const args = Array.from(arguments);
-                let chosenColor = args[0];
-                if (!chosenColor && isGuestUser()) {
-                    showColorChoiceModal(function(selection) {
-                        window.humanColor = selection;
-                        window.skipAutoFlipForGuestAI = true;
-                        startVsAI(selection);
-                    });
-                    return;
-                }
-
-                if (chosenColor) {
-                    window.humanColor = chosenColor;
-                }
-
-                selectedGameMode = 'ai';
-                aiEnabled = true;
-                llmMode = false;
-                initializeBoard('full');
-                document.getElementById('board-display-container').style.display = 'block';
-                updateTurnDisplay();
-                if (isGuestUser()) {
-                    window.skipAutoFlipForGuestAI = true;
-                    showNotification('🤖 Playing vs AI (Guest) — you play as ' + (window.humanColor || 'black'), 'info');
-                } else {
-                    window.skipAutoFlipForGuestAI = false;
-                    showNotification('🤖 Playing vs AI', 'info');
-                }
-            } catch (e) { console.error('startVsAI error', e); }
-        }
-
-        function showLoadRPN() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.rpn,.txt';
-            input.onchange = (ev) => {
-                const f = ev.target.files[0];
-                if (!f) return;
-                const reader = new FileReader();
-                reader.onload = () => {
-                    const content = reader.result;
-                    try { importPositionRPN(content); showNotification('📥 Position loaded', 'success'); } catch (e) { alert('Failed to load RPN: '+e.message); }
-                };
-                reader.readAsText(f);
-            };
-            input.click();
-        }
-
-        function quitGame() {
-            try {
-                gameInProgress = false;
-                clearBoard();
-                document.getElementById('board-display-container').style.display = 'none';
-                document.getElementById('start-menu').style.display = 'flex';
-                showNotification('🏁 Quit to menu', 'info');
-            } catch (e) { console.error('quitGame error', e); }
-        }
-
-        function showColorChoiceModal(callback) {
-            try {
-                const modal = document.createElement('div');
-                modal.id = 'color-choice-modal';
-                modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:20000;';
-
-                const box = document.createElement('div');
-                box.style.cssText = 'background:#262421;color:#fff;padding:22px;border-radius:12px;min-width:320px;text-align:center;';
-                box.innerHTML = `<h3 style="margin-top:0;color:#4ecdc4;">Choose your side</h3>
-                    <p style="color:#ccc;">Do you want to play as White or Black?</p>
-                    <div style="display:flex;gap:12px;justify-content:center;margin-top:14px;">
-                        <button id="choose-white" style="background:#4ecdc4;color:#10201f;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:800;">Play as White</button>
-                        <button id="choose-black" style="background:#555;color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:800;">Play as Black</button>
-                    </div>
-                    <div style="margin-top:12px;font-size:12px;color:#aaa;">Tip: White moves first by default.</div>`;
-
-                modal.appendChild(box);
-                document.body.appendChild(modal);
-
-                function cleanup() { const m = document.getElementById('color-choice-modal'); if (m) m.remove(); }
-
-                document.getElementById('choose-white').addEventListener('click', function() { cleanup(); callback('white'); });
-                document.getElementById('choose-black').addEventListener('click', function() { cleanup(); callback('black'); });
-            } catch (e) { console.error('showColorChoiceModal error', e); callback('black'); }
         }
         
         function startTimer() {
@@ -11327,12 +11114,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         // Function to auto-flip board based on current player
         function autoBoardFlip() {
             const board = document.querySelector('.board');
-            // If guest is playing vs AI and we've set the skip flag, do not auto-flip
-            if (aiEnabled && isGuestUser() && window.skipAutoFlipForGuestAI) {
-                console.log('Auto-flip skipped for guest vs AI (humanColor=', window.humanColor, ')');
-                return;
-            }
-
+            
             // White's turn: Flip board so white is at bottom
             // Black's turn: Normal view so black is at bottom
             if (currentPlayer === 'white') {
@@ -11564,23 +11346,9 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
                 transition: all 0.3s ease;
             `;
-            // Open user/account page from in-game menu (should show user-home/account)
             menuButton.onclick = function() {
-                // If user is guest or signed in, show account/user home instead of the global start menu
-                try {
-                    if (isGuestUser() || getCurrentUser()) {
-                        // Show the account modal or user home page
-                        try { showUserHome(); } catch (e) { /* fallback to account modal */ }
-                        try { showAccountModal(); } catch (e) { /* ignore */ }
-                    } else {
-                        // Otherwise fall back to start menu
-                        gameInProgress = true;
-                        showStartMenu();
-                    }
-                } catch (e) {
-                    gameInProgress = true;
-                    showStartMenu();
-                }
+                gameInProgress = true;
+                showStartMenu();
             };
             menuButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             menuButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
@@ -11957,8 +11725,24 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             `;
             turnDisplay.textContent = `${currentPlayer.toUpperCase()} TURN`;
 
-            // NOTE: Center floating guest badge removed - per-side indicators are shown
-            // inside the eliminated/side panels (see updateBaseDefenceDisplay()).
+            // Add guest indicator if user is logged in as guest
+            if (isGuestUser()) {
+                const guestIndicator = document.createElement('div');
+                guestIndicator.style.cssText = `
+                    display: inline-block;
+                    background-color: #4ecdc4;
+                    color: #262421;
+                    padding: 2px 8px;
+                    border-radius: 10px;
+                    font-size: 10px;
+                    font-weight: bold;
+                    margin-left: 10px;
+                    border: 1px solid #fff;
+                    text-transform: uppercase;
+                `;
+                guestIndicator.textContent = 'GUEST';
+                turnDisplay.appendChild(guestIndicator);
+            }
 
             // Create right button (Help)
             const helpButton = document.createElement('button');
@@ -13105,93 +12889,80 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
         // Function to update base defence display
         function updateBaseDefenceDisplay() {
-            // Remove existing base defence and side role indicators
+            // Remove existing base defence indicators
             const existingWhiteIndicator = document.getElementById('white-base-defence');
             const existingBlackIndicator = document.getElementById('black-base-defence');
-            const existingRoleBlack = document.getElementById('role-indicator-black');
-            const existingRoleWhite = document.getElementById('role-indicator-white');
+            const existingGuestIndicatorBlack = document.getElementById('guest-indicator-black');
+            const existingGuestIndicatorWhite = document.getElementById('guest-indicator-white');
             if (existingWhiteIndicator) existingWhiteIndicator.remove();
             if (existingBlackIndicator) existingBlackIndicator.remove();
-            if (existingRoleBlack) existingRoleBlack.remove();
-            if (existingRoleWhite) existingRoleWhite.remove();
+            if (existingGuestIndicatorBlack) existingGuestIndicatorBlack.remove();
+            if (existingGuestIndicatorWhite) existingGuestIndicatorWhite.remove();
 
             const activeDefences = isBaseDefenceActive();
             
-            // Add per-side role indicators (AI / YOU / GUEST) into eliminated panels
-            // Determine roles for each side
-            const blackEliminatedSection = document.querySelector('.eliminated-section:last-child');
-            const whiteEliminatedSection = document.querySelector('.eliminated-section:first-child');
+            // Add guest indicator above BOTH eliminated sections if user is guest
+            if (isGuestUser()) {
+                const blackEliminatedSection = document.querySelector('.eliminated-section:last-child');
+                const whiteEliminatedSection = document.querySelector('.eliminated-section:first-child');
+                const makeGuestIndicator = (id) => {
+                    const el = document.createElement('div');
+                    el.id = id;
+                    el.className = 'guest-indicator-badge';
+                    el.style.cssText = `
+                        background-color: #ff6b6b;
+                        color: white;
+                        padding: 8px 12px;
+                        border-radius: 10px;
+                        font-weight: bold;
+                        font-size: 12px;
+                        text-align: center;
+                        margin-bottom: 10px;
+                        border: 2px solid #fff;
+                        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                        cursor: pointer;
+                        position: relative;
+                    `;
+                    el.textContent = '👤 Logged in as Guest';
 
-            const makeSideRoleIndicator = (id, label, color) => {
-                const el = document.createElement('div');
-                el.id = id;
-                el.className = 'guest-indicator-badge';
-                el.style.cssText = `
-                    background-color: ${color};
-                    color: white;
-                    padding: 8px 12px;
-                    border-radius: 10px;
-                    font-weight: bold;
-                    font-size: 12px;
-                    text-align: center;
-                    margin-bottom: 10px;
-                    border: 2px solid #fff;
-                    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-                    cursor: default;
-                    position: relative;
-                `;
-                el.textContent = label;
-                return el;
-            };
+                    // Tooltip element
+                    const tip = document.createElement('div');
+                    tip.className = 'guest-tooltip';
+                    tip.style.cssText = `
+                        position: absolute;
+                        top: 110%;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        background: rgba(0,0,0,0.85);
+                        color: #fff;
+                        padding: 6px 8px;
+                        font-size: 11px;
+                        border-radius: 6px;
+                        white-space: nowrap;
+                        display: none;
+                        z-index: 100;
+                    `;
+                    tip.textContent = 'Guest: limited features (no cloud saves, no online ranking)';
+                    el.appendChild(tip);
 
-            // Decide labels/colors: human player shows 'YOU' (green), AI shows 'AI' (purple), guest shows 'GUEST' (red)
-            const humanColor = window.humanColor || null; // 'white' or 'black' when guest chose color vs AI
+                    // Show tooltip on hover
+                    el.addEventListener('mouseenter', () => { tip.style.display = 'block'; });
+                    el.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
 
-            // Helper to insert or replace indicator
-            const insertIndicator = (container, id, label, color) => {
-                if (!container) return;
-                const existing = document.getElementById(id);
-                if (existing) existing.remove();
-                const node = makeSideRoleIndicator(id, label, color);
-                container.insertBefore(node, container.firstChild);
-            };
+                    // Click to prompt login
+                    el.addEventListener('click', (e) => { e.stopPropagation(); showAccountModal(); });
 
-            // If AI enabled, show AI on the side the AI is controlling, and YOU on the human side
-            if (aiEnabled) {
-                // Determine which side the human is playing. If humanColor set, that side is YOU.
-                if (humanColor === 'white') {
-                    insertIndicator(whiteEliminatedSection, 'role-indicator-white', 'YOU', '#26de81');
-                    insertIndicator(blackEliminatedSection, 'role-indicator-black', 'AI', '#a55eea');
-                } else if (humanColor === 'black') {
-                    insertIndicator(blackEliminatedSection, 'role-indicator-black', 'YOU', '#26de81');
-                    insertIndicator(whiteEliminatedSection, 'role-indicator-white', 'AI', '#a55eea');
-                } else {
-                    // No explicit humanColor: assume human is black by default
-                    insertIndicator(blackEliminatedSection, 'role-indicator-black', 'YOU', '#26de81');
-                    insertIndicator(whiteEliminatedSection, 'role-indicator-white', 'AI', '#a55eea');
+                    return el;
+                };
+
+                if (blackEliminatedSection) {
+                    const guestIndicatorBlack = makeGuestIndicator('guest-indicator-black');
+                    blackEliminatedSection.insertBefore(guestIndicatorBlack, blackEliminatedSection.firstChild);
                 }
-            } else if (isGuestUser()) {
-                // Guest-only (no AI) - show GUEST label on both sides
-                insertIndicator(blackEliminatedSection, 'role-indicator-black', 'GUEST', '#ff6b6b');
-                insertIndicator(whiteEliminatedSection, 'role-indicator-white', 'GUEST', '#ff6b6b');
-            } else if (multiplayerMode) {
-                // Multiplayer: show 'YOU' where myPlayerColor is and 'OPPONENT' on the other side
-                const myColor = myPlayerColor || null; // 'black' or 'white' expected
-                if (myColor === 'white') {
-                    insertIndicator(whiteEliminatedSection, 'role-indicator-white', 'YOU', '#26de81');
-                    insertIndicator(blackEliminatedSection, 'role-indicator-black', 'OPPONENT', '#ff9f43');
-                } else if (myColor === 'black') {
-                    insertIndicator(blackEliminatedSection, 'role-indicator-black', 'YOU', '#26de81');
-                    insertIndicator(whiteEliminatedSection, 'role-indicator-white', 'OPPONENT', '#ff9f43');
-                } else {
-                    // Unknown: clear any role indicators
-                    const exB = document.getElementById('role-indicator-black'); if (exB) exB.remove();
-                    const exW = document.getElementById('role-indicator-white'); if (exW) exW.remove();
+                if (whiteEliminatedSection) {
+                    const guestIndicatorWhite = makeGuestIndicator('guest-indicator-white');
+                    whiteEliminatedSection.insertBefore(guestIndicatorWhite, whiteEliminatedSection.firstChild);
                 }
-            } else {
-                // No special mode - remove any role indicators
-                const exB = document.getElementById('role-indicator-black'); if (exB) exB.remove();
-                const exW = document.getElementById('role-indicator-white'); if (exW) exW.remove();
             }
             
             // Insert white base defence indicator into its placeholder so ordering is
@@ -15001,10 +14772,16 @@ ${moveHistory || '(No moves played yet - starting position)'}
             if (startMenu) startMenu.style.display = 'flex';
         }
 
-        // Handle Google login (delegates to preferred handler if present)
+        // Handle Google login (placeholder for future implementation)
         function handleGoogleLogin() {
-            // delegate to preferredLoginHandler which prefers the in-development handler
-            try { return preferredLoginHandler(); } catch (e) { console.warn('preferredLoginHandler failed', e); }
+            // For now, show a message that Google login is coming soon
+            alert('Google login will be implemented soon! Please use Guest login for now.');
+
+            // Future implementation would look like:
+            // - Initialize Google OAuth
+            // - Handle authentication
+            // - Set currentUser with Google profile info
+            // - Call hideSplashPage()
         }
 
         // Handle guest login
@@ -15019,21 +14796,10 @@ ${moveHistory || '(No moves played yet - starting position)'}
             // Save to localStorage for persistence
             localStorage.setItem('romgon-user', JSON.stringify(window.currentUser));
 
-            // After guest login, navigate to user/account page (not the in-game start menu)
-            try {
-                // Ensure start menu/splash are hidden
-                const splash = document.getElementById('splash-page'); if (splash) splash.style.display = 'none';
-                const startMenu = document.getElementById('start-menu'); if (startMenu) startMenu.style.display = 'none';
+            // Hide splash page and show main menu
+            hideSplashPage();
 
-                // Show the user home / account area so guest sees the account-focused main menu
-                try { showUserHome(); } catch (e) { /* if user-home isn't present, fall back to account modal */ }
-                try { showAccountModal(); } catch (e) { /* ignore */ }
-            } catch (e) {
-                // Fallback: show start menu
-                hideSplashPage();
-            }
-
-            console.log('👤 Logged in as Guest and routed to account page:', window.currentUser);
+            console.log('👤 Logged in as Guest:', window.currentUser);
         }
 
         // Get current user info
@@ -15073,216 +14839,19 @@ ${moveHistory || '(No moves played yet - starting position)'}
         // later without changing every callsite.
         function preferredLoginHandler() {
             try {
-                // Prefer a complete login flow implementation if present.
+                // If you implement handleLoginFlow or handleGoogleLogin, the shim will prefer them.
                 if (typeof handleLoginFlow === 'function') {
                     return handleLoginFlow();
                 }
-                // Do not call handleGoogleLogin() here to avoid recursion where
-                // handleGoogleLogin might delegate back to this shim in some builds.
+                if (typeof handleGoogleLogin === 'function') {
+                    return handleGoogleLogin();
+                }
             } catch (e) {
+                // swallow and fallback
                 console.warn('preferredLoginHandler: preferred handler threw, falling back', e);
             }
             return promptLogin();
         }
-
-        // ----------------------
-        // Google Sign-In helpers
-        // ----------------------
-        // Usage: set `window.GOOGLE_CLIENT_ID = 'your-client-id.apps.googleusercontent.com'` before calling,
-        // or add <meta name="google-client-id" content="YOUR_CLIENT_ID"> to the page.
-
-        function loadGoogleIdentityScript() {
-            return new Promise((resolve, reject) => {
-                if (window.google && window.google.accounts && window.google.accounts.id) return resolve();
-                const s = document.createElement('script');
-                s.src = 'https://accounts.google.com/gsi/client';
-                s.async = true; s.defer = true;
-                s.onload = () => setTimeout(resolve, 50);
-                s.onerror = reject;
-                document.head.appendChild(s);
-            });
-        }
-
-        function getGoogleClientId() {
-            if (window.GOOGLE_CLIENT_ID) return window.GOOGLE_CLIENT_ID;
-            const m = document.querySelector('meta[name="google-client-id"]');
-            if (m) return m.content;
-            return null;
-        }
-
-        function parseJwt (token) {
-            try {
-                const base64Url = token.split('.')[1];
-                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                }).join(''));
-                return JSON.parse(jsonPayload);
-            } catch (e) {
-                return null;
-            }
-        }
-
-        function persistCurrentUser(user) {
-            window.currentUser = user;
-            try { localStorage.setItem('romgon_current_user', JSON.stringify(user)); } catch (e) {}
-            // If you have UI update hooks, call them here (example: refresh panel badges)
-            if (typeof updateBaseDefenceDisplay === 'function') updateBaseDefenceDisplay();
-            if (typeof updateVariantIndicators === 'function') updateVariantIndicators();
-            // Show a small profile badge in the UI
-            try { showLoggedInUser(user); } catch (e) {}
-        }
-
-        function handleGoogleCredentialResponse(response) {
-            // response.credential is a JWT
-            const payload = parseJwt(response.credential);
-            if (!payload) {
-                alert('Google sign-in failed to parse credentials.');
-                return;
-            }
-            const user = {
-                provider: 'google',
-                id: payload.sub,
-                name: payload.name || payload.email,
-                email: payload.email,
-                picture: payload.picture || null,
-            };
-            persistCurrentUser(user);
-            // Close modal if open
-            closeAccountModal();
-            // Optional: show a quick welcome
-            console.info('Signed in as', user.email);
-        }
-
-        async function handleGoogleLogin() {
-            const clientId = getGoogleClientId();
-            if (!clientId) {
-                const msg = 'No Google Client ID configured.\n\nCreate an OAuth 2.0 Client ID in Google Cloud Console, add your origin (e.g., https://romgon.net) to authorized JavaScript origins, then set window.GOOGLE_CLIENT_ID to the value or add <meta name="google-client-id" content="YOUR_CLIENT_ID"> to the page.';
-                alert(msg);
-                console.warn(msg);
-                return;
-            }
-            try {
-                await loadGoogleIdentityScript();
-                if (!window.google || !window.google.accounts || !window.google.accounts.id) {
-                    alert('Google Identity library failed to load.');
-                    return;
-                }
-                // Initialize the Google Identity Services client
-                google.accounts.id.initialize({
-                    client_id: clientId,
-                    callback: handleGoogleCredentialResponse,
-                    auto_select: false,
-                });
-
-                // If there's a placeholder button in the modal, render the Google button into it
-                const holder = document.getElementById('account-google-btn');
-                if (holder) {
-                    // Clear any text and render Google's button
-                    holder.innerHTML = '';
-                    google.accounts.id.renderButton(holder, { theme: 'outline', size: 'large' });
-                }
-
-                // Trigger the one-tap prompt (optional)
-                google.accounts.id.prompt();
-            } catch (e) {
-                console.error('handleGoogleLogin error', e);
-                alert('Failed to load Google sign-in: ' + e.message);
-            }
-        }
-
-        // ----------------------
-        // Profile UI helpers
-        // ----------------------
-        function showLoggedInUser(user) {
-            if (!user) return;
-            // create or update a small badge in the top-right
-            let badge = document.getElementById('user-profile-badge');
-            if (!badge) {
-                badge = document.createElement('div');
-                badge.id = 'user-profile-badge';
-                badge.style.cssText = 'position:fixed; top:12px; right:12px; z-index:20001; display:flex; gap:8px; align-items:center; background:#111; color:#fff; padding:6px 10px; border-radius:18px; box-shadow:0 6px 18px rgba(0,0,0,0.6); cursor:pointer;';
-                document.body.appendChild(badge);
-                badge.addEventListener('click', (e) => { e.stopPropagation(); showAccountModal(); });
-            }
-            badge.innerHTML = '';
-            if (user.picture) {
-                const img = document.createElement('img');
-                img.src = user.picture;
-                img.style.cssText = 'width:28px; height:28px; border-radius:50%; object-fit:cover;';
-                badge.appendChild(img);
-            }
-            const txt = document.createElement('div');
-            txt.style.cssText = 'font-size:13px; color:#fff;';
-            txt.textContent = user.name || user.email || 'Player';
-            badge.appendChild(txt);
-        }
-
-        function removeLoggedInUserUI() {
-            const b = document.getElementById('user-profile-badge');
-            if (b) b.remove();
-        }
-
-        function handleSignOut() {
-            window.currentUser = null;
-            try { localStorage.removeItem('romgon_current_user'); } catch (e) {}
-            removeLoggedInUserUI();
-            // Optionally notify server to revoke session
-            if (window.google && window.google.accounts && window.google.accounts.id) {
-                try { google.accounts.id.disableAutoSelect(); } catch (e) {}
-            }
-            // Refresh parts of the UI that depend on user
-            if (typeof updateBaseDefenceDisplay === 'function') updateBaseDefenceDisplay();
-            if (typeof updateVariantIndicators === 'function') updateVariantIndicators();
-            alert('Signed out');
-            closeAccountModal();
-        }
-
-        // Render account modal state (profile vs sign-in)
-        function renderAccountModalState() {
-            const modal = document.getElementById('account-modal');
-            if (!modal) return;
-            const box = modal.querySelector('div');
-            if (!box) return;
-            // Remove existing profile area if any
-            const existing = box.querySelector('#account-profile-area');
-            if (existing) existing.remove();
-            const user = window.currentUser || (function(){ try { return JSON.parse(localStorage.getItem('romgon_current_user')); } catch(e){return null;} })();
-            if (user) {
-                const area = document.createElement('div');
-                area.id = 'account-profile-area';
-                area.style.cssText = 'margin:10px 0; padding:8px; background:#1b1b1b; border-radius:8px; color:#fff; display:flex; align-items:center; gap:12px;';
-                const img = document.createElement('img');
-                img.src = user.picture || '';
-                img.style.cssText = 'width:48px; height:48px; border-radius:8px; object-fit:cover; background:#222';
-                const info = document.createElement('div');
-                info.innerHTML = `<div style="font-weight:700">${user.name || user.email}</div><div style="font-size:12px; color:#ccc">${user.email || ''}</div>`;
-                const signOutBtn = document.createElement('button');
-                signOutBtn.textContent = 'Sign out';
-                signOutBtn.style.cssText = 'margin-left:auto; background:#e74c3c; color:#fff; border:none; padding:8px 10px; border-radius:8px; cursor:pointer;';
-                signOutBtn.addEventListener('click', (e)=>{ e.stopPropagation(); handleSignOut(); });
-                area.appendChild(img);
-                area.appendChild(info);
-                area.appendChild(signOutBtn);
-                // Insert profile area above the buttons
-                box.insertBefore(area, box.querySelector('div[style*="display:flex; gap:10px;"]'));
-            } else {
-                // Not signed in; ensure Google button is present
-                const gbtn = box.querySelector('#account-google-btn');
-                if (gbtn) {
-                    try { handleGoogleLogin(); } catch (e) {}
-                }
-            }
-        }
-
-        // On load, restore user UI if present
-        try {
-            const saved = localStorage.getItem('romgon_current_user');
-            if (saved) {
-                const u = JSON.parse(saved);
-                if (u) showLoggedInUser(u);
-            }
-        } catch (e) {}
 
         // Show a centered account modal with guest vs user info and login button
         function showAccountModal() {
@@ -15326,7 +14895,6 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     <li>Profile, avatar, and community features</li>
                 </ul>
                 <div style="display:flex; gap:10px; justify-content:flex-end;">
-                    <div id="account-google-btn" style="display:inline-block;"></div>
                     <button id="account-login-btn" style="background:#4ecdc4; color:#10201f; border:none; padding:10px 14px; border-radius:8px; font-weight:700; cursor:pointer;">Go to Login</button>
                     <button id="account-cancel-btn" style="background:#444; color:#fff; border:none; padding:10px 14px; border-radius:8px; cursor:pointer;">Close</button>
                 </div>
@@ -15343,62 +14911,6 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 // Direct to login flow (prefer in-development handler, fallback to prompt)
                 preferredLoginHandler();
             });
-            // Try to render Google button/profile state when modal opens
-            try { renderAccountModalState(); } catch (e) { try { handleGoogleLogin(); } catch(_){} }
-        }
-
-        // Show the user-home page (a user/account focused main menu). If not present,
-        // fall back to showing the account modal.
-        function showUserHome() {
-            let userHome = document.getElementById('user-home');
-            // Hide competing UI
-            const startMenu = document.getElementById('start-menu'); if (startMenu) startMenu.style.display = 'none';
-            const splash = document.getElementById('splash-page'); if (splash) splash.style.display = 'none';
-            const board = document.getElementById('board-display-container'); if (board) board.style.display = 'none';
-
-            // Create user-home DOM if missing
-            if (!userHome) {
-                userHome = document.createElement('div');
-                userHome.id = 'user-home';
-                userHome.style.cssText = 'position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#0f1923, #1a2332); z-index:20000;';
-
-                const box = document.createElement('div');
-                box.style.cssText = 'width:560px; max-width:94%; background:#23272e; padding:26px; border-radius:14px; color:#fff; box-shadow:0 10px 40px rgba(0,0,0,0.6);';
-                box.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                        <div style="font-size:20px; font-weight:800; color:#4ecdc4;">Welcome</div>
-                        <div style="font-size:12px; color:#ccc;">${(getCurrentUser() && getCurrentUser().name) ? getCurrentUser().name : 'Guest'}</div>
-                    </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                        <button id="user-newgame-btn" style="padding:14px; font-weight:800; border-radius:10px; background:linear-gradient(135deg,#4ecdc4,#3aa89f); border:none; color:#10201f;">🎮 New Game</button>
-                        <button id="user-localpvp-btn" style="padding:14px; font-weight:800; border-radius:10px; background:linear-gradient(135deg,#ffd700,#f39c12); border:none; color:#111;">👥 Local PVP</button>
-                        <button id="user-vsai-btn" style="padding:14px; font-weight:800; border-radius:10px; background:linear-gradient(135deg,#a55eea,#7c3aed); border:none; color:#fff;">🤖 Play vs AI</button>
-                        <button id="user-loadrpn-btn" style="padding:14px; font-weight:800; border-radius:10px; background:linear-gradient(135deg,#16a085,#1abc9c); border:none; color:#fff;">📥 Load RPN</button>
-                        <button id="user-quit-btn" style="grid-column:1 / span 2; padding:12px; font-weight:700; border-radius:10px; background:#e74c3c; border:none; color:#fff;">🏁 Quit to Menu</button>
-                    </div>
-                    <div style="margin-top:14px; text-align:center; font-size:12px; color:#aaa;">Account & settings are available via the top-right badge.</div>
-                `;
-
-                userHome.appendChild(box);
-                document.body.appendChild(userHome);
-
-                // Wire buttons
-                document.getElementById('user-newgame-btn').addEventListener('click', function(){ hideUserHome(); startNewGame(); });
-                document.getElementById('user-localpvp-btn').addEventListener('click', function(){ hideUserHome(); startLocalPvp(); });
-                document.getElementById('user-vsai-btn').addEventListener('click', function(){ hideUserHome(); startVsAI(); });
-                document.getElementById('user-loadrpn-btn').addEventListener('click', function(){ hideUserHome(); showLoadRPN(); });
-                document.getElementById('user-quit-btn').addEventListener('click', function(){ hideUserHome(); quitGame(); });
-            }
-
-            // Show user-home
-            userHome.style.display = 'flex';
-            // Ensure account modal also reflects state
-            try { renderAccountModalState(); } catch (e) {}
-        }
-
-        function hideUserHome() {
-            const userHome = document.getElementById('user-home');
-            if (userHome) userHome.style.display = 'none';
         }
 
         function closeAccountModal() {
