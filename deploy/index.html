@@ -3267,6 +3267,11 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     </div>
 
     <div id="board-display-container" style="display: none;">
+        <!-- Top Left Controls (Menu + Quit) -->
+        <div style="position: absolute; top: 18px; left: 18px; z-index: 20; display: flex; gap: 12px;">
+            <button id="return-to-menu-btn" style="background:linear-gradient(135deg,#f57d2d,#fcc49c);color:white;border:none;padding:10px 22px;border-radius:18px;cursor:pointer;font-weight:700;font-size:1em;box-shadow:0 2px 8px rgba(245,125,45,0.25);transition:all 0.2s;letter-spacing:1px;" onclick="showStartMenu()" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 16px rgba(245,125,45,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(245,125,45,0.25)';">☰ MENU</button>
+            <button id="quit-game-btn" style="background:linear-gradient(135deg,#ff6b6b,#ff5252);color:white;border:none;padding:10px 22px;border-radius:18px;cursor:pointer;font-weight:700;font-size:1em;box-shadow:0 2px 8px rgba(255,107,107,0.25);transition:all 0.2s;letter-spacing:1px;" onclick="quitGame()" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 16px rgba(255,107,107,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(255,107,107,0.25)';">⏹️ QUIT</button>
+        </div>
         
         <!-- Player Timers -->
         <div id="player-timers" class="player-timers" style="display: none;">
@@ -3310,6 +3315,23 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     // List of all named openings from openings.md
     const ROMGON_OPENINGS = [
     { name: 'Triangle Coop', moves: ['t5-6>5-5','t1-6>2-6'] },
+
+    // --- Quit Game Handler ---
+    function quitGame() {
+        // Hide board and show start menu
+        const boardDisplayEl = document.getElementById('board-display-container');
+        if (boardDisplayEl) boardDisplayEl.style.display = 'none';
+        const startMenuEl = document.getElementById('start-menu');
+        if (startMenuEl) startMenuEl.style.display = 'flex';
+        // Hide AI panel if present
+        const aiPanelEl = document.getElementById('ai-reasoning-panel');
+        if (aiPanelEl) aiPanelEl.style.display = 'none';
+        // Reset game state flags
+        gameInProgress = false;
+        aiEnabled = false;
+        // Optionally reset timers, board, etc. as needed
+        // (Add more reset logic here if required)
+    }
     { name: 'Triangle Coop', moves: ['T1-0>1-1','T5-0>4-1'] },
     { name: 'Rhombus Straw', moves: ['r3-8>3-6','r3-6>3-4'] },
     { name: 'Rhombus Straw', moves: ['R3-0>3-2','R3-2>3-4'] },
