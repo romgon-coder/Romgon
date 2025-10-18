@@ -3466,7 +3466,33 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     // --- Opening Recognition Logic ---
     // List of all named openings from openings.md
     const ROMGON_OPENINGS = [
-    { name: 'Triangle Coop', moves: ['t5-6>5-5','t1-6>2-6'] },
+        { name: 'Triangle Coop', moves: ['t5-6>5-5','t1-6>2-6'] },
+        { name: 'Triangle Coop', moves: ['T1-0>1-1','T5-0>4-1'] },
+        { name: 'Rhombus Straw', moves: ['r3-8>3-6','r3-6>3-4'] },
+        { name: 'Rhombus Straw', moves: ['R3-0>3-2','R3-2>3-4'] },
+        { name: '2 Square Advance', moves: ['s6-5>5-5','s0-5>1-5'] },
+        { name: '2 Square Advance', moves: ['S0-0>1-1','S6-0>5-1'] },
+        { name: 'Triangle Gateway Attack', moves: ['T2-1-3-2','s5-0-5-1'] },
+        { name: 'Central Hexagon Push', moves: ['H3-2-3-3','t4-1-4-2'] },
+        { name: 'Rhombus Diagonal Entry', moves: ['R3-0-2-1','s1-0-1-1'] },
+        { name: 'Circle Central Jump', moves: ['C0-2-2-3','h3-2-rotR'] },
+        { name: 'Square Side Push', moves: ['S1-0-2-0','t4-1-3-2'] },
+        { name: 'Triangle Flank Advance', moves: ['T4-1-5-2','s1-0-1-1'] },
+        { name: 'Hexagon Diagonal Move', moves: ['H3-2-2-3','c0-2-2-1'] },
+        { name: 'Rhombus Central Advance', moves: ['R3-0-3-1','h3-2-3-3'] },
+        { name: 'Square Central Advance', moves: ['S5-0-5-1','t2-1-2-2'] },
+        { name: 'Circle Zone Jump', moves: ['C0-2-1-3','r3-0-4-1'] },
+        { name: 'Hexagon Rotate Left', moves: ['H3-2-rotL','t2-1-3-2'] },
+        { name: 'Triangle Central Push', moves: ['T2-1-2-2','s5-0-4-0'] },
+        { name: 'Square Flank Push', moves: ['S1-0-2-0','h3-2-2-3'] },
+        { name: 'Rhombus Flank Entry', moves: ['R3-0-4-1','t4-1-4-2'] },
+        { name: 'Hexagon Rotate Right', moves: ['H3-2-rotR','s1-0-1-1'] },
+        { name: 'Black Square Side Push', moves: ['s6-5>5-5'] },
+        { name: 'Hexagon Push', moves: ['s6-5>5-5','h2-7>3-6'] },
+        { name: 'Hexagon Push', moves: ['S0-0>1-1','H4-0>3-2'] },
+        { name: 'Rhombus Roster', moves: ['r3-8>3-6','c4-7>4-6'] },
+        { name: 'Rhombus Roster', moves: ['R3-0>3-2','C2-0>2-1'] }
+    ];
 
     // --- Quit Game Handler ---
     function quitGame() {
@@ -3484,37 +3510,6 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         // Optionally reset timers, board, etc. as needed
         // (Add more reset logic here if required)
     }
-    { name: 'Triangle Coop', moves: ['T1-0>1-1','T5-0>4-1'] },
-    { name: 'Rhombus Straw', moves: ['r3-8>3-6','r3-6>3-4'] },
-    { name: 'Rhombus Straw', moves: ['R3-0>3-2','R3-2>3-4'] },
-    { name: '2 Square Advance', moves: ['s6-5>5-5','s0-5>1-5'] },
-    { name: '2 Square Advance', moves: ['S0-0>1-1','S6-0>5-1'] },
-        { name: 'Triangle Gateway Attack', moves: ['T2-1-3-2','s5-0-5-1'] },
-        { name: 'Central Hexagon Push', moves: ['H3-2-3-3','t4-1-4-2'] },
-        { name: 'Rhombus Diagonal Entry', moves: ['R3-0-2-1','s1-0-1-1'] },
-        { name: 'Circle Central Jump', moves: ['C0-2-2-3','h3-2-rotR'] },
-        { name: 'Square Side Push', moves: ['S1-0-2-0','t4-1-3-2'] },
-        { name: 'Triangle Flank Advance', moves: ['T4-1-5-2','s1-0-1-1'] },
-        { name: 'Hexagon Diagonal Move', moves: ['H3-2-2-3','c0-2-2-1'] },
-        { name: 'Rhombus Central Advance', moves: ['R3-0-3-1','h3-2-3-3'] },
-        { name: 'Square Central Advance', moves: ['S5-0-5-1','t2-1-2-2'] },
-        { name: 'Circle Zone Jump', moves: ['C0-2-1-3','r3-0-4-1'] },
-        { name: 'Hexagon Rotate Left', moves: ['H3-2-rotL','t2-1-3-2'] },
-        { name: 'Triangle Central Push', moves: ['T2-1-2-2','s5-0-4-0'] },
-        { name: 'Square Flank Push', moves: ['S1-0-2-0','h3-2-2-3'] },
-        { name: 'Rhombus Flank Entry', moves: ['R3-0-4-1','t4-1-4-2'] },
-        { name: 'Hexagon Rotate Right', moves: ['H3-2-rotR','s1-0-1-1'] },
-        // Black Square Side Push (single move, not a two-move sequence)
-        { name: 'Black Square Side Push', moves: ['s6-5>5-5'] },
-    // Hexagon Push (Black)
-    { name: 'Hexagon Push', moves: ['s6-5>5-5','h2-7>3-6'] },
-    // Hexagon Push (White)
-    { name: 'Hexagon Push', moves: ['S0-0>1-1','H4-0>3-2'] },
-        // Rhombus Roster (Black)
-        { name: 'Rhombus Roster', moves: ['r3-8>3-6','c4-7>4-6'] },
-        // Rhombus Roster (White)
-        { name: 'Rhombus Roster', moves: ['R3-0>3-2','C2-0>2-1'] }
-    ];
 
     function normalizeMoveNotation(move) {
         // Normalize move notation for comparison: remove spaces, unify > and -
