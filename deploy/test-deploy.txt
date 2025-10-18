@@ -1,0 +1,3 @@
+✅ GitHub Pages is working!
+Timestamp: {{ Now }}
+This file tests if Pages publishes from GitHub Actions artifact.
