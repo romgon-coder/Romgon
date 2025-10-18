@@ -1034,17 +1034,17 @@
         #eliminated-pieces-container {
             position: fixed;
             top: 50%;
-            left: 0;
-            right: 0;
-            transform: translateY(-50%);
+            left: 50%;
+            transform: translate(-50%, -50%);
             display: flex;
             justify-content: space-between;
-            padding: 0 100px;
+            gap: 60px;
             z-index: 10;
             pointer-events: none;
             align-items: center;
             height: auto;
-            width: 100%;
+            width: auto;
+            max-width: 90vw;
         }
         .variant-indicator {
             background-color: #2d2d2d;
