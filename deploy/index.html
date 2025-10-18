@@ -1778,7 +1778,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: linear-gradient(135deg, #1a2332 0%, #0f1923 50%, #1a2332 100%);
+        background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #0f1419 100%);
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -1787,237 +1787,241 @@
         color: white;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         overflow-y: auto;
-        padding: 20px;
+        padding: 40px 20px;
         box-sizing: border-box;
     ">
         <!-- Logo/Title Section -->
         <div style="
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 60px;
+            max-width: 800px;
         ">
             <h1 style="
-                font-size: 2.8em;
-                font-weight: 800;
-                margin: 0;
-                background: linear-gradient(135deg, #f57d2d 0%, #fcc49c 100%);
+                font-size: 3.5em;
+                font-weight: 900;
+                margin: 0 0 10px 0;
+                background: linear-gradient(135deg, #f57d2d 0%, #ffa500 100%);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
                 background-clip: text;
-                letter-spacing: 6px;
-                text-shadow: 0 0 30px rgba(245, 125, 45, 0.5);
+                letter-spacing: 8px;
             ">ROMGON</h1>
             <p style="
-                font-size: 0.85em;
-                margin: 5px 0 0 0;
-                color: #fcc49c;
+                font-size: 0.9em;
+                margin: 0;
+                color: #999;
                 font-weight: 300;
-                letter-spacing: 2px;
+                letter-spacing: 3px;
             ">HEXAGONAL STRATEGY GAME</p>
         </div>
         
-        <!-- Return to Game Button (shown when in active game) -->
+        <!-- Return to Game Link (shown when in active game) -->
         <div id="return-to-game-container" style="
             display: none;
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 50px;
         ">
-            <button id="return-to-game-btn" style="
-                background: linear-gradient(135deg, #ff6b6b, #ff5252);
-                color: white;
-                border: none;
-                padding: 15px 40px;
-                border-radius: 25px;
-                cursor: pointer;
-                font-weight: 700;
+            <a onclick="returnToGame()" style="
+                color: #ff6b6b;
                 font-size: 1.2em;
-                box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+                font-weight: 700;
+                cursor: pointer;
+                text-decoration: none;
+                letter-spacing: 2px;
+                padding: 10px 20px;
+                border-bottom: 2px solid #ff6b6b;
                 transition: all 0.3s ease;
-                letter-spacing: 1px;
-            " onclick="returnToGame()" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(255, 107, 107, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(255, 107, 107, 0.4)'">
-                🔄 RETURN TO GAME
-            </button>
+                display: inline-block;
+            " onmouseover="this.style.color='#ff8a8a'; this.style.textShadow='0 0 20px rgba(255, 107, 107, 0.5)'" onmouseout="this.style.color='#ff6b6b'; this.style.textShadow='none'">
+                ← RETURN TO GAME
+            </a>
         </div>
         
-        <!-- Game Mode Selection -->
+        <!-- Main Menu - Text-Based Interface -->
         <div style="
-            max-width: 800px;
+            max-width: 900px;
             width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 50px;
         ">
-            <!-- Game Mode Grid -->
-            <div style="
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 15px;
-                margin-bottom: 20px;
-            ">
-                <!-- PVP Card -->
-                <button id="start-game-btn" style="
-                    background: linear-gradient(135deg, rgba(78, 205, 196, 0.15), rgba(68, 160, 141, 0.15));
-                    border: 2px solid #4ecdc4;
-                    clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0% 50%);
-                    padding: 32px 18px 32px 18px;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    color: white;
-                    text-align: center;
-                    aspect-ratio: 1 / 1;
-                    min-width: 120px;
-                    max-width: 220px;
-                " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(78, 205, 196, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                    <div style="font-size: 2.2em; margin-bottom: 8px;">👥</div>
-                    <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #4ecdc4; font-weight: 600;">LOCAL PVP</h3>
-                    <p style="font-size: 0.8em; color: #aaa; margin: 0; line-height: 1.3;">Two players<br/>Same device</p>
-                </button>
+            <!-- Game Modes Section -->
+            <div>
+                <h2 style="
+                    color: #f57d2d;
+                    font-size: 1.5em;
+                    margin: 0 0 30px 0;
+                    font-weight: 700;
+                    letter-spacing: 3px;
+                    border-bottom: 2px solid #f57d2d;
+                    padding-bottom: 10px;
+                ">GAME MODES</h2>
                 
-                <!-- Multiplayer Card -->
-                <button id="start-multiplayer-btn" style="
-                    background: linear-gradient(135deg, rgba(38, 222, 129, 0.15), rgba(32, 191, 107, 0.15));
-                    border: 2px solid #26de81;
-                    clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0% 50%);
-                    padding: 32px 18px 32px 18px;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    color: white;
-                    text-align: center;
-                    aspect-ratio: 1 / 1;
-                    min-width: 120px;
-                    max-width: 220px;
-                " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(38, 222, 129, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                    <div style="font-size: 2.2em; margin-bottom: 8px;">🌐</div>
-                    <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #26de81; font-weight: 600;">ONLINE</h3>
-                    <p style="font-size: 0.8em; color: #aaa; margin: 0; line-height: 1.3;">Play online<br/>With friends</p>
-                </button>
-                
-                <!-- AI Card -->
-                <button id="start-ai-mode-btn" style="
-                    background: linear-gradient(135deg, rgba(165, 94, 234, 0.15), rgba(142, 68, 173, 0.15));
-                    border: 2px solid #a55eea;
-                    clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0% 50%);
-                    padding: 32px 18px 32px 18px;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    color: white;
-                    text-align: center;
-                    aspect-ratio: 1 / 1;
-                    min-width: 120px;
-                    max-width: 220px;
-                " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(165, 94, 234, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                    <div style="font-size: 2.2em; margin-bottom: 8px;">🤖</div>
-                    <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #a55eea; font-weight: 600;">VS AI</h3>
-                    <p style="font-size: 0.8em; color: #aaa; margin: 0; line-height: 1.3;">Smart AI<br/>Opponent</p>
-                </button>
-                
-                <!-- Puzzles Card -->
-                <button id="start-puzzles-btn" style="
-                    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 193, 7, 0.15));
-                    border: 2px solid #ffd700;
-                    clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0% 50%);
-                    padding: 32px 18px 32px 18px;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    color: white;
-                    text-align: center;
-                    aspect-ratio: 1 / 1;
-                    min-width: 120px;
-                    max-width: 220px;
-                " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(255, 215, 0, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                    <div style="font-size: 2.2em; margin-bottom: 8px;">🧩</div>
-                    <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #ffd700; font-weight: 600;">PUZZLES</h3>
-                    <p style="font-size: 0.8em; color: #aaa; margin: 0; line-height: 1.3;">Train skills<br/>Solve challenges</p>
-                </button>
-                
-                <!-- Leaderboard Card -->
-                <button id="start-leaderboard-btn" style="
-                    background: linear-gradient(135deg, rgba(241, 196, 15, 0.15), rgba(243, 156, 18, 0.15));
-                    border: 2px solid #f1c40f;
-                    clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0% 50%);
-                    padding: 32px 18px 32px 18px;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    color: white;
-                    text-align: center;
-                    aspect-ratio: 1 / 1;
-                    min-width: 120px;
-                    max-width: 220px;
-                " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(241, 196, 15, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                    <div style="font-size: 2.2em; margin-bottom: 8px;">🏆</div>
-                    <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #f1c40f; font-weight: 600;">LEADERBOARD</h3>
-                    <p style="font-size: 0.8em; color: #aaa; margin: 0; line-height: 1.3;">Top players<br/>Rankings</p>
-                </button>
-                
-                <!-- Settings Card -->
-                <button id="start-settings-btn" style="
-                    background: linear-gradient(135deg, rgba(149, 165, 166, 0.15), rgba(127, 140, 141, 0.15));
-                    border: 2px solid #95a5a6;
-                    clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0% 50%);
-                    padding: 32px 18px 32px 18px;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    color: white;
-                    text-align: center;
-                    aspect-ratio: 1 / 1;
-                    min-width: 120px;
-                    max-width: 220px;
-                " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(149, 165, 166, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                    <div style="font-size: 2.2em; margin-bottom: 8px;">⚙️</div>
-                    <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #95a5a6; font-weight: 600;">SETTINGS</h3>
-                    <p style="font-size: 0.8em; color: #aaa; margin: 0; line-height: 1.3;">Preferences<br/>Controls</p>
-                </button>
+                <div style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 20px;
+                ">
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <span style="color: #4ecdc4; font-size: 1.8em;">👥</span>
+                        <a id="start-game-btn" onclick="startGameWithTime(10)" style="
+                            color: #4ecdc4;
+                            font-size: 1.2em;
+                            font-weight: 600;
+                            cursor: pointer;
+                            text-decoration: none;
+                            letter-spacing: 1px;
+                            transition: all 0.3s ease;
+                            display: inline-block;
+                        " onmouseover="this.style.color='#5eddd4'; this.style.textShadow='0 0 15px rgba(78, 205, 196, 0.5)'" onmouseout="this.style.color='#4ecdc4'; this.style.textShadow='none'">LOCAL PVP</a>
+                        <span style="color: #666; font-size: 0.9em; margin-left: auto;">Two players • Same device</span>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <span style="color: #26de81; font-size: 1.8em;">🌐</span>
+                        <a id="start-multiplayer-btn" style="
+                            color: #26de81;
+                            font-size: 1.2em;
+                            font-weight: 600;
+                            cursor: pointer;
+                            text-decoration: none;
+                            letter-spacing: 1px;
+                            transition: all 0.3s ease;
+                            display: inline-block;
+                        " onmouseover="this.style.color='#3bed92'; this.style.textShadow='0 0 15px rgba(38, 222, 129, 0.5)'" onmouseout="this.style.color='#26de81'; this.style.textShadow='none'">ONLINE</a>
+                        <span style="color: #666; font-size: 0.9em; margin-left: auto;">Play online • With friends</span>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <span style="color: #a55eea; font-size: 1.8em;">🤖</span>
+                        <a id="start-ai-mode-btn" style="
+                            color: #a55eea;
+                            font-size: 1.2em;
+                            font-weight: 600;
+                            cursor: pointer;
+                            text-decoration: none;
+                            letter-spacing: 1px;
+                            transition: all 0.3s ease;
+                            display: inline-block;
+                        " onmouseover="this.style.color='#b075ff'; this.style.textShadow='0 0 15px rgba(165, 94, 234, 0.5)'" onmouseout="this.style.color='#a55eea'; this.style.textShadow='none'">VS AI</a>
+                        <span style="color: #666; font-size: 0.9em; margin-left: auto;">Smart AI • Opponent</span>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <span style="color: #ffd700; font-size: 1.8em;">🧩</span>
+                        <a id="start-puzzles-btn" style="
+                            color: #ffd700;
+                            font-size: 1.2em;
+                            font-weight: 600;
+                            cursor: pointer;
+                            text-decoration: none;
+                            letter-spacing: 1px;
+                            transition: all 0.3s ease;
+                            display: inline-block;
+                        " onmouseover="this.style.color='#ffed4e'; this.style.textShadow='0 0 15px rgba(255, 215, 0, 0.5)'" onmouseout="this.style.color='#ffd700'; this.style.textShadow='none'">PUZZLES</a>
+                        <span style="color: #666; font-size: 0.9em; margin-left: auto;">Train skills • Solve challenges</span>
+                    </div>
                 </div>
+            </div>
+            
+            <!-- Reference Section -->
+            <div>
+                <h2 style="
+                    color: #00d2ff;
+                    font-size: 1.5em;
+                    margin: 0 0 30px 0;
+                    font-weight: 700;
+                    letter-spacing: 3px;
+                    border-bottom: 2px solid #00d2ff;
+                    padding-bottom: 10px;
+                ">REFERENCE & LEARNING</h2>
                 
-            <!-- Advanced Modes - Same Grid -->
+                <div style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 20px;
+                ">
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <span style="color: #f1c40f; font-size: 1.8em;">📊</span>
+                        <a onclick="showStatsDashboard()" style="
+                            color: #f1c40f;
+                            font-size: 1.2em;
+                            font-weight: 600;
+                            cursor: pointer;
+                            text-decoration: none;
+                            letter-spacing: 1px;
+                            transition: all 0.3s ease;
+                            display: inline-block;
+                        " onmouseover="this.style.color='#ffd700'; this.style.textShadow='0 0 15px rgba(241, 196, 15, 0.5)'" onmouseout="this.style.color='#f1c40f'; this.style.textShadow='none'">STATISTICS DASHBOARD</a>
+                        <span style="color: #666; font-size: 0.9em; margin-left: auto;">Track wins • Piece stats</span>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <span style="color: #4ecdc4; font-size: 1.8em;">📖</span>
+                        <a onclick="showOpeningBook()" style="
+                            color: #4ecdc4;
+                            font-size: 1.2em;
+                            font-weight: 600;
+                            cursor: pointer;
+                            text-decoration: none;
+                            letter-spacing: 1px;
+                            transition: all 0.3s ease;
+                            display: inline-block;
+                        " onmouseover="this.style.color='#5eddd4'; this.style.textShadow='0 0 15px rgba(78, 205, 196, 0.5)'" onmouseout="this.style.color='#4ecdc4'; this.style.textShadow='none'">OPENING BOOK</a>
+                        <span style="color: #666; font-size: 0.9em; margin-left: auto;">Standard openings • Diagrams</span>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <span style="color: #a55eea; font-size: 1.8em;">🧠</span>
+                        <a onclick="openTheoryModal()" style="
+                            color: #a55eea;
+                            font-size: 1.2em;
+                            font-weight: 600;
+                            cursor: pointer;
+                            text-decoration: none;
+                            letter-spacing: 1px;
+                            transition: all 0.3s ease;
+                            display: inline-block;
+                        " onmouseover="this.style.color='#b075ff'; this.style.textShadow='0 0 15px rgba(165, 94, 234, 0.5)'" onmouseout="this.style.color='#a55eea'; this.style.textShadow='none'">THEORY & ENDGAMES</a>
+                        <span style="color: #666; font-size: 0.9em; margin-left: auto;">Strategy • Complexity analysis</span>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <span style="color: #f57d2d; font-size: 1.8em;">📜</span>
+                        <a onclick="openRulebookModal()" style="
+                            color: #f57d2d;
+                            font-size: 1.2em;
+                            font-weight: 600;
+                            cursor: pointer;
+                            text-decoration: none;
+                            letter-spacing: 1px;
+                            transition: all 0.3s ease;
+                            display: inline-block;
+                        " onmouseover="this.style.color='#ffa500'; this.style.textShadow='0 0 15px rgba(245, 125, 45, 0.5)'" onmouseout="this.style.color='#f57d2d'; this.style.textShadow='none'">RULEBOOK</a>
+                        <span style="color: #666; font-size: 0.9em; margin-left: auto;">Full rules • How to play</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Game Info -->
             <div style="
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 15px;
-                margin-bottom: 20px;
+                text-align: center;
+                color: #999;
+                font-size: 0.85em;
+                max-width: 600px;
+                margin: 0 auto;
+                line-height: 1.6;
+                padding-top: 30px;
+                border-top: 1px solid #333;
             ">
-                <!-- Statistics Dashboard Card -->
-                <button id="start-stats-dashboard-btn" style="
-                    background: linear-gradient(135deg, rgba(255, 255, 255, 0.10), rgba(241, 196, 15, 0.10));
-                    border: 2px solid #f1c40f;
-                    border-radius: 12px;
-                    padding: 20px 15px;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    color: white;
-                    text-align: center;
-                " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(241, 196, 15, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'" onclick="showStatsDashboard()">
-                    <div style="font-size: 2.2em; margin-bottom: 8px;">📊</div>
-                    <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #f1c40f; font-weight: 600;">STATISTICS DASHBOARD</h3>
-                    <p style="font-size: 0.8em; color: #aaa; margin: 0; line-height: 1.3;">Track wins, records,<br/>piece stats</p>
-                </button>
-                <!-- Opening Book Card -->
-                <button id="start-opening-book-btn" style="
-                    background: linear-gradient(135deg, rgba(255, 255, 255, 0.10), rgba(78, 205, 196, 0.10));
-                    border: 2px solid #4ecdc4;
-                    border-radius: 12px;
-                    padding: 20px 15px;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    color: white;
-                    text-align: center;
-                " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(78, 205, 196, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'" onclick="showOpeningBook()">
-                    <div style="font-size: 2.2em; margin-bottom: 8px;">📖</div>
-                    <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #4ecdc4; font-weight: 600;">OPENING BOOK</h3>
-                    <p style="font-size: 0.8em; color: #aaa; margin: 0; line-height: 1.3;">Standard openings<br/>Names & diagrams</p>
-                </button>
-
-                <!-- Theory Card -->
-                <button id="start-theory-btn" style="
-                    background: linear-gradient(135deg, rgba(165, 94, 234, 0.15), rgba(142, 68, 173, 0.15));
-                    border: 2px solid #a55eea;
-                    border-radius: 12px;
-                    padding: 20px 15px;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    color: white;
-                    text-align: center;"
-                    onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(165, 94, 234, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'" onclick="openTheoryModal()">
-                    <div style="font-size: 2.2em; margin-bottom: 8px;">🧠</div>
-                    <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #a55eea; font-weight: 600;">THEORY</h3>
-                    <p style="font-size: 0.8em; color: #aaa; margin: 0; line-height: 1.3;">Strategy, endgames,<br/>blockades & variants</p>
-                </button>
+                <p style="margin: 0 0 10px 0;">
+                    <strong style="color: #f57d2d;">Objective:</strong> Move your rhombus to opponent's base or trap theirs
+                </p>
+                <p style="margin: 0;">
+                    <strong style="color: #4ecdc4;">Tip:</strong> Start with Local PVP to learn the basics
+                </p>
+            </div>
+        </div>
     <!-- Theory Modal -->
     <div id="theory-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.92); z-index:10001; justify-content:center; align-items:center; overflow-y:auto;">
         <div style="background:#262421; border:3px solid #a55eea; border-radius:20px; padding:40px 30px; max-width:900px; width:95vw; margin:40px auto; box-shadow:0 10px 50px rgba(165,94,234,0.2); position:relative; color:#fff;">
