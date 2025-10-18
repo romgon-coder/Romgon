@@ -6923,6 +6923,10 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         function startGameWithTime(minutes) {
             closeGameVariantsModal();
             
+            // Hide splash page and start menu
+            const splashPage = document.getElementById('splash-page');
+            if (splashPage) splashPage.style.display = 'none';
+            
             // Set timer
             if (minutes > 0) {
                 timerEnabled = true;
@@ -8743,6 +8747,10 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             if (returnToGameContainer) {
                 returnToGameContainer.style.display = gameInProgress ? 'block' : 'none';
             }
+            
+            // Hide splash page
+            const splashPage = document.getElementById('splash-page');
+            if (splashPage) splashPage.style.display = 'none';
             
             // Show start menu
             const startMenuEl = document.getElementById('start-menu');
