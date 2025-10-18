@@ -1,5 +1,4 @@
     <!-- Statistics Dashboard Modal -->
-    <!-- TEST: This comment was added to verify live deployment on romgon.net -->
     <div id="stats-dashboard-modal" style="
         display: none;
         position: fixed;
@@ -395,6 +394,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google Client ID: placed in <head> so it's available early at runtime -->
+    <meta name="google-client-id" content="629995302527-1t22gstg5590d0as9espopm5mdicrjoj.apps.googleusercontent.com" />
+    <script>
+        // Early runtime assignment of client id so getGoogleClientId() finds it before DOM-ready
+        window.GOOGLE_CLIENT_ID = '629995302527-1t22gstg5590d0as9espopm5mdicrjoj.apps.googleusercontent.com';
+    </script>
+    <script>
+        // Ensure global settings object exists to avoid TypeErrors when UI code reads properties
+        window.gameSettings = window.gameSettings || {};
+        if (typeof window.baseDefenseVariant === 'undefined') {
+            window.baseDefenseVariant = window.gameSettings.baseDefenseVariant || 'original';
+        }
+    </script>
+    <script>
+        // Suppress noisy emoji debug logs (🔍, 🎯) in production unless explicitly enabled.
+        // Set window.__ROMGON_DEBUG__ = true from the console to re-enable these logs.
+        (function(){
+            try {
+                const allowed = !!window.__ROMGON_DEBUG__;
+                if (allowed) return; // don't wrap if debug explicitly enabled
+                const origLog = console.log.bind(console);
+                console.log = function(...args) {
+                    try {
+                        if (args && args.length) {
+                            const first = String(args[0] || '');
+                            if (first.startsWith('🔍') || first.startsWith('🎯')) return; // suppress
+                        }
+                    } catch (e) {}
+                    origLog(...args);
+                };
+            } catch (e) { /* noop */ }
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ROMGON</title>
@@ -1545,31 +1577,6 @@
             min-width: 300px;
             max-width: 400px;
         ">
-            <!-- Under Construction banner -->
-            <div id="under-construction-banner" style="
-                background: #ffcc00;
-                color: #2d2d2d;
-                padding: 12px 16px;
-                border-radius: 10px;
-                font-weight: 800;
-                text-align: center;
-                margin-bottom: 6px;
-                box-shadow: 0 4px 10px rgba(0,0,0,0.12);
-            ">
-                ⚠️ Under construction — login temporarily disabled
-                <div id="deploy-test-badge" style="font-size:0.82em; font-weight:700; margin-top:8px; color:#2d2d2d; opacity:0.95;">
-                    Redeploy test — timestamp: <span id="deploy-test-ts">(loading...)</span>
-                </div>
-            </div>
-            <script>
-                // Small client-side timestamp to verify the deployed file was updated.
-                (function(){
-                    try {
-                        var el = document.getElementById('deploy-test-ts');
-                        if (el) el.textContent = new Date().toISOString();
-                    } catch(e) { /* fail silently */ }
-                })();
-            </script>
             <!-- Google Login Button -->
             <button id="google-login-btn" style="
                 background: linear-gradient(135deg, #4285f4 0%, #34a853 50%, #ea4335 100%);
@@ -1733,15 +1740,12 @@
                 <button id="start-game-btn" style="
                     background: linear-gradient(135deg, rgba(78, 205, 196, 0.15), rgba(68, 160, 141, 0.15));
                     border: 2px solid #4ecdc4;
-                    clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0% 50%);
-                    padding: 32px 18px 32px 18px;
+                    border-radius: 12px;
+                    padding: 20px 15px;
                     cursor: pointer;
                     transition: all 0.3s ease;
                     color: white;
                     text-align: center;
-                    aspect-ratio: 1 / 1;
-                    min-width: 120px;
-                    max-width: 220px;
                 " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(78, 205, 196, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
                     <div style="font-size: 2.2em; margin-bottom: 8px;">👥</div>
                     <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #4ecdc4; font-weight: 600;">LOCAL PVP</h3>
@@ -1752,15 +1756,12 @@
                 <button id="start-multiplayer-btn" style="
                     background: linear-gradient(135deg, rgba(38, 222, 129, 0.15), rgba(32, 191, 107, 0.15));
                     border: 2px solid #26de81;
-                    clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0% 50%);
-                    padding: 32px 18px 32px 18px;
+                    border-radius: 12px;
+                    padding: 20px 15px;
                     cursor: pointer;
                     transition: all 0.3s ease;
                     color: white;
                     text-align: center;
-                    aspect-ratio: 1 / 1;
-                    min-width: 120px;
-                    max-width: 220px;
                 " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(38, 222, 129, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
                     <div style="font-size: 2.2em; margin-bottom: 8px;">🌐</div>
                     <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #26de81; font-weight: 600;">ONLINE</h3>
@@ -1771,15 +1772,12 @@
                 <button id="start-ai-mode-btn" style="
                     background: linear-gradient(135deg, rgba(165, 94, 234, 0.15), rgba(142, 68, 173, 0.15));
                     border: 2px solid #a55eea;
-                    clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0% 50%);
-                    padding: 32px 18px 32px 18px;
+                    border-radius: 12px;
+                    padding: 20px 15px;
                     cursor: pointer;
                     transition: all 0.3s ease;
                     color: white;
                     text-align: center;
-                    aspect-ratio: 1 / 1;
-                    min-width: 120px;
-                    max-width: 220px;
                 " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(165, 94, 234, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
                     <div style="font-size: 2.2em; margin-bottom: 8px;">🤖</div>
                     <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #a55eea; font-weight: 600;">VS AI</h3>
@@ -1790,15 +1788,12 @@
                 <button id="start-puzzles-btn" style="
                     background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 193, 7, 0.15));
                     border: 2px solid #ffd700;
-                    clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0% 50%);
-                    padding: 32px 18px 32px 18px;
+                    border-radius: 12px;
+                    padding: 20px 15px;
                     cursor: pointer;
                     transition: all 0.3s ease;
                     color: white;
                     text-align: center;
-                    aspect-ratio: 1 / 1;
-                    min-width: 120px;
-                    max-width: 220px;
                 " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(255, 215, 0, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
                     <div style="font-size: 2.2em; margin-bottom: 8px;">🧩</div>
                     <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #ffd700; font-weight: 600;">PUZZLES</h3>
@@ -1809,15 +1804,12 @@
                 <button id="start-leaderboard-btn" style="
                     background: linear-gradient(135deg, rgba(241, 196, 15, 0.15), rgba(243, 156, 18, 0.15));
                     border: 2px solid #f1c40f;
-                    clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0% 50%);
-                    padding: 32px 18px 32px 18px;
+                    border-radius: 12px;
+                    padding: 20px 15px;
                     cursor: pointer;
                     transition: all 0.3s ease;
                     color: white;
                     text-align: center;
-                    aspect-ratio: 1 / 1;
-                    min-width: 120px;
-                    max-width: 220px;
                 " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(241, 196, 15, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
                     <div style="font-size: 2.2em; margin-bottom: 8px;">🏆</div>
                     <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #f1c40f; font-weight: 600;">LEADERBOARD</h3>
@@ -1828,19 +1820,31 @@
                 <button id="start-settings-btn" style="
                     background: linear-gradient(135deg, rgba(149, 165, 166, 0.15), rgba(127, 140, 141, 0.15));
                     border: 2px solid #95a5a6;
-                    clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0% 50%);
-                    padding: 32px 18px 32px 18px;
+                    border-radius: 12px;
+                    padding: 20px 15px;
                     cursor: pointer;
                     transition: all 0.3s ease;
                     color: white;
                     text-align: center;
-                    aspect-ratio: 1 / 1;
-                    min-width: 120px;
-                    max-width: 220px;
                 " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(149, 165, 166, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
                     <div style="font-size: 2.2em; margin-bottom: 8px;">⚙️</div>
                     <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #95a5a6; font-weight: 600;">SETTINGS</h3>
                     <p style="font-size: 0.8em; color: #aaa; margin: 0; line-height: 1.3;">Preferences<br/>Controls</p>
+                </button>
+                <!-- Account Card -->
+                <button id="start-account-btn" style="
+                    background: linear-gradient(135deg, rgba(78, 205, 196, 0.10), rgba(78, 205, 196, 0.06));
+                    border: 2px solid #4ecdc4;
+                    border-radius: 12px;
+                    padding: 20px 15px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    color: white;
+                    text-align: center;
+                " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(78, 205, 196, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'" onclick="(function(){document.getElementById('start-menu').style.display='none'; try{ if(window.isSignedIn && isSignedIn()){ showUserHome(); } else { showAccountModal(); } }catch(e){ showAccountModal(); } })();">
+                    <div style="font-size: 2.2em; margin-bottom: 8px;">👤</div>
+                    <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #4ecdc4; font-weight: 600;">ACCOUNT</h3>
+                    <p style="font-size: 0.8em; color: #aaa; margin: 0; line-height: 1.3;">Sign in / Guest<br/>Profile & Settings</p>
                 </button>
                 </div>
                 
@@ -1903,6 +1907,54 @@
             <h2 style="color:#a55eea; text-align:center; margin-bottom:24px; font-size:2em;">🧠 ROMGON Theory & Endgame Guide</h2>
             <div id="theory-content" style="max-height:65vh; overflow-y:auto; color:#eee; font-size:1.08em; line-height:1.7; background:rgba(0,0,0,0.10); padding:18px; border-radius:10px; border:1px solid #444; white-space:pre-wrap;"></div>
             <button onclick="closeTheoryModal()" style="margin-top:28px; background:#a55eea; color:#fff; border:none; padding:12px 32px; border-radius:8px; font-size:1.1em; font-weight:600; cursor:pointer; width:100%; transition:all 0.2s;" onmouseover="this.style.background='#8e44ad'" onmouseout="this.style.background='#a55eea'">Close</button>
+        </div>
+    </div>
+
+    <!-- User Home (shown to signed-in users or guests when they choose) -->
+    <div id="user-home" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:linear-gradient(135deg,#0f1923 0%,#1a2332 100%); z-index:4000; overflow:auto; color:#fff;">
+        <div style="max-width:1000px; margin:40px auto; padding:28px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; gap:12px; align-items:center;">
+                    <div id="user-home-avatar" style="width:64px; height:64px; border-radius:50%; background:#222; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:20px;">G</div>
+                    <div>
+                        <div id="user-home-name" style="font-size:1.6em; font-weight:800;">Guest</div>
+                        <div id="user-home-email" style="color:#ccc; font-size:0.95em;">Not signed in</div>
+                    </div>
+                </div>
+                <div>
+                    <button id="user-signout-btn" style="background:#ff6b6b; color:#fff; border:none; padding:10px 16px; border-radius:8px; font-weight:700; cursor:pointer;">Sign out</button>
+                </div>
+            </div>
+
+            <hr style="border:1px solid rgba(255,255,255,0.06); margin:18px 0;" />
+
+            <div style="display:flex; gap:18px; flex-wrap:wrap;">
+                <div style="flex:1 1 320px; background:rgba(255,255,255,0.03); padding:18px; border-radius:12px;">
+                    <h3 style="margin-top:0;">Play</h3>
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <button id="user-newgame-btn" style="width:100%; background:linear-gradient(135deg,#4ecdc4,#3aa89f); color:#111; border:none; padding:12px; border-radius:10px; font-weight:800;">New Game</button>
+                        <button id="user-localpvp-btn" style="width:100%; background:linear-gradient(135deg,#3aa89f,#19917f); color:#fff; border:none; padding:12px; border-radius:10px; font-weight:700;">Local PVP</button>
+                        <button id="user-vsai-btn" style="width:100%; background:linear-gradient(135deg,#ffd700,#f39c12); color:#111; border:none; padding:12px; border-radius:10px; font-weight:700;">Play vs AI</button>
+                        <button id="user-loadrpn-btn" style="width:100%; background:linear-gradient(135deg,#6c5ce7,#a29bfe); color:#fff; border:none; padding:12px; border-radius:10px; font-weight:700;">Load RPN</button>
+                        <button id="user-quit-btn" style="width:100%; background:#ff6b6b; color:#fff; border:none; padding:12px; border-radius:10px; font-weight:700;">Quit Game</button>
+                    </div>
+                    <div style="margin-top:12px; color:#ccc; font-size:0.95em;">Quick actions: start a new board, load a saved RPN, or play locally or vs AI.</div>
+                </div>
+
+                <div style="width:320px; background:rgba(255,255,255,0.03); padding:18px; border-radius:12px;">
+                    <h3 style="margin-top:0;">Statistics</h3>
+                    <button id="user-stats-btn" style="display:block; width:100%; background:linear-gradient(135deg,#ffd700,#f1c40f); color:#111; border:none; padding:12px; border-radius:10px; font-weight:800;">Open Dashboard</button>
+                    <div style="margin-top:12px; color:#ccc; font-size:0.95em;">View your wins, piece stats, and progress charts.</div>
+                </div>
+
+                <div style="flex:1 1 360px; background:rgba(255,255,255,0.02); padding:18px; border-radius:12px;">
+                    <h3 style="margin-top:0;">User vs Guest</h3>
+                    <ul style="color:#ccc;">
+                        <li><b>Users</b>: persistent stats, profile photo, cloud-synced preferences, matchmaking.</li>
+                        <li><b>Guests</b>: instant play, local-only stats, no matchmaking or saved profile.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
     <script>
@@ -3293,11 +3345,6 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     </div>
 
     <div id="board-display-container" style="display: none;">
-        <!-- Top Left Controls (Menu + Quit) -->
-        <div style="position: absolute; top: 18px; left: 18px; z-index: 20; display: flex; gap: 12px;">
-            <button id="return-to-menu-btn" style="background:linear-gradient(135deg,#f57d2d,#fcc49c);color:white;border:none;padding:10px 22px;border-radius:18px;cursor:pointer;font-weight:700;font-size:1em;box-shadow:0 2px 8px rgba(245,125,45,0.25);transition:all 0.2s;letter-spacing:1px;" onclick="showStartMenu()" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 16px rgba(245,125,45,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(245,125,45,0.25)';">☰ MENU</button>
-            <button id="quit-game-btn" style="background:linear-gradient(135deg,#ff6b6b,#ff5252);color:white;border:none;padding:10px 22px;border-radius:18px;cursor:pointer;font-weight:700;font-size:1em;box-shadow:0 2px 8px rgba(255,107,107,0.25);transition:all 0.2s;letter-spacing:1px;" onclick="quitGame()" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 16px rgba(255,107,107,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(255,107,107,0.25)';">⏹️ QUIT</button>
-        </div>
         
         <!-- Player Timers -->
         <div id="player-timers" class="player-timers" style="display: none;">
@@ -3341,23 +3388,6 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     // List of all named openings from openings.md
     const ROMGON_OPENINGS = [
     { name: 'Triangle Coop', moves: ['t5-6>5-5','t1-6>2-6'] },
-
-    // --- Quit Game Handler ---
-    function quitGame() {
-        // Hide board and show start menu
-        const boardDisplayEl = document.getElementById('board-display-container');
-        if (boardDisplayEl) boardDisplayEl.style.display = 'none';
-        const startMenuEl = document.getElementById('start-menu');
-        if (startMenuEl) startMenuEl.style.display = 'flex';
-        // Hide AI panel if present
-        const aiPanelEl = document.getElementById('ai-reasoning-panel');
-        if (aiPanelEl) aiPanelEl.style.display = 'none';
-        // Reset game state flags
-        gameInProgress = false;
-        aiEnabled = false;
-        // Optionally reset timers, board, etc. as needed
-        // (Add more reset logic here if required)
-    }
     { name: 'Triangle Coop', moves: ['T1-0>1-1','T5-0>4-1'] },
     { name: 'Rhombus Straw', moves: ['r3-8>3-6','r3-6>3-4'] },
     { name: 'Rhombus Straw', moves: ['R3-0>3-2','R3-2>3-4'] },
@@ -5789,6 +5819,11 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         let llmMode = false; // LLM AI mode (mockup)
         let currentAIModel = 'claude-sonnet'; // 'claude-sonnet', 'gpt4', 'grok', 'gemini'
         let showAllMoves = false; // Track if "show all moves" mode is active
+    // Track human player's chosen color (for guest vs AI flows)
+    // Possible values: 'white' or 'black'. Default: null (not set)
+    window.humanColor = window.humanColor || null;
+    // When true, autoBoardFlip will skip flipping for guest vs AI games
+    window.skipAutoFlipForGuestAI = !!window.skipAutoFlipForGuestAI;
         
         // Fog of War variant settings
         let fogOfWarEnabled = false; // Enable/disable Fog of War mode
@@ -6524,6 +6559,82 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             openPuzzlesModal();
         });
 
+        // Wire user-home buttons (if present)
+        const userPvpBtn = document.getElementById('user-pvp-btn');
+        if (userPvpBtn) {
+            userPvpBtn.addEventListener('click', function() {
+                // Close user-home and start a quick local PVP game immediately.
+                // This ensures guests and signed-in users land directly in a playable board UI.
+                hideUserHome();
+                try {
+                    // Use the quick helper which sets the selected mode and starts the game without extra modal clicks
+                    if (typeof startQuickPvp === 'function') {
+                        startQuickPvp();
+                    } else {
+                        // Fallback: open variants modal so user can select (older builds)
+                        openGameVariantsModal('pvp');
+                    }
+                } catch (e) {
+                    // Final fallback: use the generic startGameMode if present
+                    startGameMode && startGameMode('pvp');
+                }
+            });
+        }
+
+        const userStatsBtn = document.getElementById('user-stats-btn');
+        if (userStatsBtn) {
+            userStatsBtn.addEventListener('click', function() {
+                hideUserHome();
+                try { showStatsDashboard(); } catch (e) { alert('Stats dashboard not available'); }
+            });
+        }
+
+        const userSignoutBtn = document.getElementById('user-signout-btn');
+        if (userSignoutBtn) {
+            userSignoutBtn.addEventListener('click', function() { handleSignOut(); });
+        }
+
+        // Wire new guest/user welcome buttons (New Game, Local PVP, vs AI, Load RPN, Quit)
+        const userNewGameBtn = document.getElementById('user-newgame-btn');
+        if (userNewGameBtn) {
+            userNewGameBtn.addEventListener('click', function() {
+                hideUserHome();
+                startNewGame();
+            });
+        }
+
+        const userLocalPvpBtn = document.getElementById('user-localpvp-btn');
+        if (userLocalPvpBtn) {
+            userLocalPvpBtn.addEventListener('click', function() {
+                hideUserHome();
+                startLocalPvp();
+            });
+        }
+
+        const userVsAiBtn = document.getElementById('user-vsai-btn');
+        if (userVsAiBtn) {
+            userVsAiBtn.addEventListener('click', function() {
+                hideUserHome();
+                startVsAI();
+            });
+        }
+
+        const userLoadRpnBtn = document.getElementById('user-loadrpn-btn');
+        if (userLoadRpnBtn) {
+            userLoadRpnBtn.addEventListener('click', function() {
+                hideUserHome();
+                showLoadRPN();
+            });
+        }
+
+        const userQuitBtn = document.getElementById('user-quit-btn');
+        if (userQuitBtn) {
+            userQuitBtn.addEventListener('click', function() {
+                hideUserHome();
+                quitGame();
+            });
+        }
+
         // ========== PUZZLE FUNCTIONALITY ==========
         
         let puzzleMode = false;
@@ -6841,6 +6952,157 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             selectedGameMode = null;
             
             // Note: AI will trigger automatically when it becomes White's turn
+        }
+
+        // Quick-start helper for local PVP games (used by user-home Start PVP)
+        function startQuickPvp() {
+            try {
+                // Set selectedGameMode to pvp so other helpers can read it
+                selectedGameMode = 'pvp';
+                // Default to no timers for quick start; you can enable timers via variants modal later
+                timerEnabled = false;
+                // Hide any menus and show board
+                const startMenu = document.getElementById('start-menu'); if (startMenu) startMenu.style.display = 'none';
+                const splash = document.getElementById('splash-page'); if (splash) splash.style.display = 'none';
+                document.getElementById('board-display-container').style.display = 'block';
+                document.getElementById('player-timers').style.display = 'none';
+
+                // Initialize full board for PVP
+                gameInProgress = true;
+                aiEnabled = false;
+                llmMode = false;
+                initializeBoard('full');
+
+                // Reset game state
+                currentTurnPiece = null;
+                escapeRaceNotificationShown = false;
+                clearMovementHistory();
+                clearMoveRepetitions();
+                clearCoordinateLabels();
+                highlightThreatenedPieces();
+                updateTurnDisplay();
+
+                console.log('⚔️ Quick PVP started (guest/user)');
+            } catch (e) {
+                console.error('startQuickPvp failed', e);
+                // Fallback to modal-based start
+                try { openGameVariantsModal('pvp'); } catch (ee) { startGameMode && startGameMode('pvp'); }
+            }
+        }
+
+        // Guest-friendly helpers
+        function startNewGame() {
+            // Start a clean new game (standard full mode)
+            try {
+                gameInProgress = true;
+                aiEnabled = false;
+                llmMode = false;
+                initializeBoard('full');
+                document.getElementById('board-display-container').style.display = 'block';
+                updateTurnDisplay();
+                showNotification('🎮 New game started', 'info');
+            } catch (e) { console.error('startNewGame error', e); }
+        }
+
+        function startLocalPvp() {
+            // Alias for quick PVP
+            startQuickPvp();
+        }
+
+        function startVsAI() {
+            try {
+                // If called without specifying a color and the user is a guest, ask which side they want
+                const args = Array.from(arguments);
+                let chosenColor = args[0];
+                if (!chosenColor && isGuestUser()) {
+                    // Show a simple modal to choose color; callback will re-invoke startVsAI with selection
+                    showColorChoiceModal(function(selection) {
+                        // Remember guest choice and start AI game with that color
+                        window.humanColor = selection;
+                        // For guest vs AI, keep board orientation static (no auto-flip)
+                        window.skipAutoFlipForGuestAI = true;
+                        startVsAI(selection);
+                    });
+                    return;
+                }
+
+                // If a color was provided (or user is not guest), proceed
+                if (chosenColor) {
+                    window.humanColor = chosenColor;
+                }
+
+                selectedGameMode = 'ai';
+                aiEnabled = true;
+                llmMode = false;
+                initializeBoard('full');
+                document.getElementById('board-display-container').style.display = 'block';
+                updateTurnDisplay();
+                // When guests choose a color, we avoid auto-flipping the board during AI games
+                if (isGuestUser()) {
+                    window.skipAutoFlipForGuestAI = true;
+                    showNotification('🤖 Playing vs AI (Guest) — you play as ' + (window.humanColor || 'black'), 'info');
+                } else {
+                    window.skipAutoFlipForGuestAI = false;
+                    showNotification('🤖 Playing vs AI', 'info');
+                }
+            } catch (e) { console.error('startVsAI error', e); }
+        }
+
+        function showLoadRPN() {
+            // Open a small file picker dialog to load RPN
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.rpn,.txt';
+            input.onchange = (ev) => {
+                const f = ev.target.files[0];
+                if (!f) return;
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const content = reader.result;
+                    try { importPositionRPN(content); showNotification('📥 Position loaded', 'success'); } catch (e) { alert('Failed to load RPN: '+e.message); }
+                };
+                reader.readAsText(f);
+            };
+            input.click();
+        }
+
+        function quitGame() {
+            // End current game and return to start menu
+            try {
+                gameInProgress = false;
+                clearBoard();
+                document.getElementById('board-display-container').style.display = 'none';
+                document.getElementById('start-menu').style.display = 'flex';
+                showNotification('🏁 Quit to menu', 'info');
+            } catch (e) { console.error('quitGame error', e); }
+        }
+
+        // Small modal to let guest choose to play as White or Black
+        function showColorChoiceModal(callback) {
+            try {
+                // Build modal
+                const modal = document.createElement('div');
+                modal.id = 'color-choice-modal';
+                modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:20000;';
+
+                const box = document.createElement('div');
+                box.style.cssText = 'background:#262421;color:#fff;padding:22px;border-radius:12px;min-width:320px;text-align:center;';
+                box.innerHTML = `<h3 style="margin-top:0;color:#4ecdc4;">Choose your side</h3>
+                    <p style="color:#ccc;">Do you want to play as White or Black?</p>
+                    <div style="display:flex;gap:12px;justify-content:center;margin-top:14px;">
+                        <button id="choose-white" style="background:#4ecdc4;color:#10201f;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:800;">Play as White</button>
+                        <button id="choose-black" style="background:#555;color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:800;">Play as Black</button>
+                    </div>
+                    <div style="margin-top:12px;font-size:12px;color:#aaa;">Tip: White moves first by default.</div>`;
+
+                modal.appendChild(box);
+                document.body.appendChild(modal);
+
+                function cleanup() { const m = document.getElementById('color-choice-modal'); if (m) m.remove(); }
+
+                document.getElementById('choose-white').addEventListener('click', function() { cleanup(); callback('white'); });
+                document.getElementById('choose-black').addEventListener('click', function() { cleanup(); callback('black'); });
+            } catch (e) { console.error('showColorChoiceModal error', e); callback('black'); }
         }
         
         function startTimer() {
@@ -11162,7 +11424,13 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         // Function to auto-flip board based on current player
         function autoBoardFlip() {
             const board = document.querySelector('.board');
-            
+            // If guest is playing vs AI and we've set the skip flag, do not auto-flip
+            if (aiEnabled && isGuestUser() && window.skipAutoFlipForGuestAI) {
+                // Keep current board orientation (do not change)
+                console.log('Auto-flip skipped for guest vs AI (humanColor=', window.humanColor, ')');
+                return;
+            }
+
             // White's turn: Flip board so white is at bottom
             // Black's turn: Normal view so black is at bottom
             if (currentPlayer === 'white') {
@@ -14820,34 +15088,196 @@ ${moveHistory || '(No moves played yet - starting position)'}
             if (startMenu) startMenu.style.display = 'flex';
         }
 
-        // Handle Google login (placeholder for future implementation)
-        function handleGoogleLogin() {
-            // For now, show a message that Google login is coming soon
-            alert('Google login will be implemented soon! Please use Guest login for now.');
+        // ----------------------
+        // Google Sign-In helpers
+        // ----------------------
+        // Usage: set `window.GOOGLE_CLIENT_ID = 'your-client-id.apps.googleusercontent.com'` before calling,
+        // or add <meta name="google-client-id" content="YOUR_CLIENT_ID"> to the page.
 
-            // Future implementation would look like:
-            // - Initialize Google OAuth
-            // - Handle authentication
-            // - Set currentUser with Google profile info
-            // - Call hideSplashPage()
+        function loadGoogleIdentityScript() {
+            return new Promise((resolve, reject) => {
+                if (window.google && window.google.accounts && window.google.accounts.id) return resolve();
+                const s = document.createElement('script');
+                s.src = 'https://accounts.google.com/gsi/client';
+                s.async = true; s.defer = true;
+                s.onload = () => setTimeout(resolve, 50);
+                s.onerror = reject;
+                document.head.appendChild(s);
+            });
+        }
+
+        function getGoogleClientId() {
+            if (window.GOOGLE_CLIENT_ID) return window.GOOGLE_CLIENT_ID;
+            const m = document.querySelector('meta[name="google-client-id"]');
+            if (m) return m.content;
+            return null;
+        }
+
+        function parseJwt (token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // Persist and show current user (used by Google login and guest flow)
+        function persistCurrentUser(user) {
+            if (!user) return;
+            window.currentUser = user;
+            try { localStorage.setItem('romgon-user', JSON.stringify(user)); } catch (e) {}
+            // Update small badge and user-home UI
+            try { showLoggedInUser(user); } catch (e) {}
+            try { showUserHome(); } catch (e) {}
+        }
+
+        // Profile UI helpers (lightweight, mirrors deploy behavior)
+        function showLoggedInUser(user) {
+            if (!user) return;
+            let badge = document.getElementById('user-profile-badge');
+            if (!badge) {
+                badge = document.createElement('div');
+                badge.id = 'user-profile-badge';
+                badge.style.cssText = 'position:fixed; top:12px; right:12px; z-index:20001; display:flex; gap:8px; align-items:center; background:#111; color:#fff; padding:6px 10px; border-radius:18px; box-shadow:0 6px 18px rgba(0,0,0,0.6); cursor:pointer;';
+                document.body.appendChild(badge);
+                badge.addEventListener('click', (e) => { e.stopPropagation(); showAccountModal(); });
+            }
+            badge.innerHTML = '';
+            if (user.picture) {
+                const img = document.createElement('img');
+                img.src = user.picture;
+                img.style.cssText = 'width:28px; height:28px; border-radius:50%; object-fit:cover;';
+                badge.appendChild(img);
+            }
+            const txt = document.createElement('div');
+            txt.style.cssText = 'font-size:13px; color:#fff;';
+            txt.textContent = user.name || user.email || 'Player';
+            badge.appendChild(txt);
+        }
+
+        function removeLoggedInUserUI() {
+            const b = document.getElementById('user-profile-badge');
+            if (b) b.remove();
+        }
+
+        function handleSignOut() {
+            window.currentUser = null;
+            try { localStorage.removeItem('romgon-user'); } catch (e) {}
+            removeLoggedInUserUI();
+            try { if (window.google && window.google.accounts && window.google.accounts.id) google.accounts.id.disableAutoSelect(); } catch (e) {}
+            // Hide user-home if visible
+            try { hideUserHome(); } catch (e) {}
+            alert('Signed out');
+            try { closeAccountModal(); } catch (e) {}
+        }
+
+        // Show / hide the user-first landing page
+        function showUserHome() {
+            const uh = document.getElementById('user-home');
+            if (!uh) return;
+            const startMenu = document.getElementById('start-menu');
+            const splash = document.getElementById('splash-page');
+            if (startMenu) startMenu.style.display = 'none';
+            if (splash) splash.style.display = 'none';
+            // populate
+            const u = window.currentUser || (function(){ try { return JSON.parse(localStorage.getItem('romgon-user')); } catch(e){return null;} })();
+            const avatar = document.getElementById('user-home-avatar');
+            const nameEl = document.getElementById('user-home-name');
+            const emailEl = document.getElementById('user-home-email');
+            if (u) {
+                if (avatar) {
+                    if (u.picture) {
+                        avatar.style.background = 'transparent';
+                        avatar.innerHTML = `<img src="${u.picture}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;"/>`;
+                    } else {
+                        avatar.style.background = '#222';
+                        avatar.textContent = (u.name || 'G').charAt(0).toUpperCase();
+                    }
+                }
+                if (nameEl) nameEl.textContent = u.name || u.email || 'Player';
+                if (emailEl) emailEl.textContent = u.email || (u.type === 'guest' ? 'Guest' : 'Not signed in');
+            }
+            uh.style.display = 'block';
+        }
+
+        function hideUserHome() {
+            const uh = document.getElementById('user-home');
+            if (!uh) return;
+            uh.style.display = 'none';
+        }
+
+        function handleGoogleCredentialResponse(response) {
+            const payload = parseJwt(response.credential);
+            if (!payload) {
+                alert('Google sign-in failed to parse credentials.');
+                return;
+            }
+            const user = {
+                provider: 'google',
+                id: payload.sub,
+                name: payload.name || payload.email,
+                email: payload.email,
+                picture: payload.picture || null,
+            };
+            // Persist the user and update UI
+            try { persistCurrentUser(user); } catch (e) { window.currentUser = user; }
+            // Close modal if open
+            try { closeAccountModal(); } catch (e) {}
+            console.info('Signed in as', user.email);
+        }
+
+        async function handleGoogleLogin() {
+            const clientId = getGoogleClientId();
+            if (!clientId) {
+                const msg = 'No Google Client ID configured.\n\nCreate an OAuth 2.0 Client ID in Google Cloud Console, add your origin (e.g., https://romgon.net) to authorized JavaScript origins, then set window.GOOGLE_CLIENT_ID to the value or add <meta name="google-client-id" content="YOUR_CLIENT_ID"> to the page.';
+                alert(msg);
+                console.warn(msg);
+                return;
+            }
+            try {
+                await loadGoogleIdentityScript();
+                if (!window.google || !window.google.accounts || !window.google.accounts.id) {
+                    alert('Google Identity library failed to load.');
+                    return;
+                }
+                // Initialize the Google Identity Services client
+                google.accounts.id.initialize({
+                    client_id: clientId,
+                    callback: handleGoogleCredentialResponse,
+                    auto_select: false,
+                });
+
+                // If there's a placeholder button in the modal, render Google's button into it
+                const holder = document.getElementById('account-google-btn');
+                if (holder) {
+                    holder.innerHTML = '';
+                    google.accounts.id.renderButton(holder, { theme: 'outline', size: 'large' });
+                }
+
+                // Trigger the one-tap prompt (optional).
+                // Wrap in try/catch to avoid FedCM/One-tap network/CORS errors causing uncaught exceptions.
+                try {
+                    google.accounts.id.prompt();
+                } catch (promptErr) {
+                    console.warn('google.accounts.id.prompt() failed (FedCM/OneTap may be blocked):', promptErr);
+                }
+            } catch (e) {
+                console.error('handleGoogleLogin error', e);
+                alert('Failed to load Google sign-in: ' + (e && e.message ? e.message : e));
+            }
         }
 
         // Handle guest login
         function handleGuestLogin() {
-            // Set guest user
-            window.currentUser = {
-                type: 'guest',
-                name: 'Guest Player',
-                id: 'guest_' + Date.now()
-            };
-
-            // Save to localStorage for persistence
-            localStorage.setItem('romgon-user', JSON.stringify(window.currentUser));
-
-            // Hide splash page and show main menu
-            hideSplashPage();
-
-            console.log('👤 Logged in as Guest:', window.currentUser);
+            // Create guest user and persist via common helper (will show user-home)
+            const guest = { type: 'guest', name: 'Guest Player', id: 'guest_' + Date.now() };
+            try { persistCurrentUser(guest); } catch (e) { window.currentUser = guest; localStorage.setItem('romgon-user', JSON.stringify(guest)); hideSplashPage(); }
+            console.log('👤 Logged in as Guest:', guest);
         }
 
         // Get current user info
@@ -14887,15 +15317,16 @@ ${moveHistory || '(No moves played yet - starting position)'}
         // later without changing every callsite.
         function preferredLoginHandler() {
             try {
-                // If you implement handleLoginFlow or handleGoogleLogin, the shim will prefer them.
+                // Prefer a complete login flow implementation if present.
                 if (typeof handleLoginFlow === 'function') {
                     return handleLoginFlow();
                 }
-                if (typeof handleGoogleLogin === 'function') {
-                    return handleGoogleLogin();
-                }
+                // NOTE: Do NOT call handleGoogleLogin() here — that function may
+                // delegate back to this shim in some build copies, causing infinite
+                // recursion and a maximum call stack size exceeded error. If you need
+                // a direct Google-specific flow, invoke handleGoogleLogin() directly
+                // from the UI where appropriate (e.g. the Google button).
             } catch (e) {
-                // swallow and fallback
                 console.warn('preferredLoginHandler: preferred handler threw, falling back', e);
             }
             return promptLogin();
