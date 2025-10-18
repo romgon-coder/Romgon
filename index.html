@@ -14828,34 +14828,182 @@ ${moveHistory || '(No moves played yet - starting position)'}
             if (startMenu) startMenu.style.display = 'flex';
         }
 
-        // Handle Google login (placeholder for future implementation)
-        function handleGoogleLogin() {
-            // For now, show a message that Google login is coming soon
-            alert('Google login will be implemented soon! Please use Guest login for now.');
+        // ----------------------
+        // Google Sign-In helpers
+        // ----------------------
+        const GOOGLE_CLIENT_ID = '629995302527-jvm799stiufn1ipvp94611518iojqabc.apps.googleusercontent.com';
 
-            // Future implementation would look like:
-            // - Initialize Google OAuth
-            // - Handle authentication
-            // - Set currentUser with Google profile info
-            // - Call hideSplashPage()
+        function loadGoogleIdentityScript() {
+            return new Promise((resolve, reject) => {
+                if (window.google && window.google.accounts && window.google.accounts.id) return resolve();
+                const s = document.createElement('script');
+                s.src = 'https://accounts.google.com/gsi/client';
+                s.async = true; s.defer = true;
+                s.onload = () => setTimeout(resolve, 50);
+                s.onerror = reject;
+                document.head.appendChild(s);
+            });
+        }
+
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                console.error('JWT parse error:', e);
+                return null;
+            }
+        }
+
+        function handleGoogleCredentialResponse(response) {
+            const payload = parseJwt(response.credential);
+            if (!payload) {
+                alert('Google sign-in failed to parse credentials.');
+                return;
+            }
+            const user = {
+                provider: 'google',
+                id: payload.sub,
+                name: payload.name || payload.email,
+                email: payload.email,
+                picture: payload.picture || null,
+            };
+            // Persist the user and update UI
+            try { persistCurrentUser(user); } catch (e) { window.currentUser = user; }
+            // Close modal if open
+            try { closeAccountModal(); } catch (e) {}
+            console.info('✅ Signed in as', user.email);
+        }
+
+        async function handleGoogleLogin() {
+            try {
+                await loadGoogleIdentityScript();
+                if (!window.google || !window.google.accounts || !window.google.accounts.id) {
+                    alert('Google Identity library failed to load.');
+                    return;
+                }
+                // Initialize the Google Identity Services client
+                google.accounts.id.initialize({
+                    client_id: GOOGLE_CLIENT_ID,
+                    callback: handleGoogleCredentialResponse,
+                    auto_select: false,
+                });
+
+                // If there's a placeholder button in the modal, render Google's button into it
+                const holder = document.getElementById('account-google-btn');
+                if (holder) {
+                    holder.innerHTML = '';
+                    google.accounts.id.renderButton(holder, { theme: 'outline', size: 'large' });
+                }
+
+                // Trigger the one-tap prompt (optional).
+                // Wrap in try/catch to avoid FedCM/One-tap network/CORS errors causing uncaught exceptions.
+                try {
+                    google.accounts.id.prompt();
+                } catch (promptErr) {
+                    console.warn('google.accounts.id.prompt() failed (FedCM/OneTap may be blocked):', promptErr);
+                }
+            } catch (e) {
+                console.error('handleGoogleLogin error', e);
+                alert('Failed to load Google sign-in: ' + (e && e.message ? e.message : e));
+            }
+        }
+
+        // Persist and show current user (used by Google login and guest flow)
+        function persistCurrentUser(user) {
+            if (!user) return;
+            window.currentUser = user;
+            try { localStorage.setItem('romgon-user', JSON.stringify(user)); } catch (e) {}
+            // Update small badge and user-home UI
+            try { showLoggedInUser(user); } catch (e) {}
+            try { showUserHome(); } catch (e) {}
+        }
+
+        // Profile UI helpers (lightweight, mirrors deploy behavior)
+        function showLoggedInUser(user) {
+            if (!user) return;
+            let badge = document.getElementById('user-profile-badge');
+            if (!badge) {
+                badge = document.createElement('div');
+                badge.id = 'user-profile-badge';
+                badge.style.cssText = 'position:fixed; top:12px; right:12px; z-index:20001; display:flex; gap:8px; align-items:center; background:#111; color:#fff; padding:6px 10px; border-radius:18px; box-shadow:0 6px 18px rgba(0,0,0,0.6); cursor:pointer;';
+                document.body.appendChild(badge);
+                badge.addEventListener('click', (e) => { e.stopPropagation(); showAccountModal(); });
+            }
+            badge.innerHTML = '';
+            if (user.picture) {
+                const img = document.createElement('img');
+                img.src = user.picture;
+                img.style.cssText = 'width:28px; height:28px; border-radius:50%; object-fit:cover;';
+                badge.appendChild(img);
+            }
+            const txt = document.createElement('div');
+            txt.style.cssText = 'font-size:13px; color:#fff;';
+            txt.textContent = user.name || user.email || 'Player';
+            badge.appendChild(txt);
+        }
+
+        function removeLoggedInUserUI() {
+            const b = document.getElementById('user-profile-badge');
+            if (b) b.remove();
+        }
+
+        function handleSignOut() {
+            window.currentUser = null;
+            try { localStorage.removeItem('romgon-user'); } catch (e) {}
+            removeLoggedInUserUI();
+            try { if (window.google && window.google.accounts && window.google.accounts.id) google.accounts.id.disableAutoSelect(); } catch (e) {}
+            // Hide user-home if visible
+            try { hideUserHome(); } catch (e) {}
+            alert('Signed out');
+            try { closeAccountModal(); } catch (e) {}
+        }
+
+        // Show / hide the user-first landing page
+        function showUserHome() {
+            const uh = document.getElementById('user-home');
+            if (!uh) return;
+            const startMenu = document.getElementById('start-menu');
+            const splash = document.getElementById('splash-page');
+            if (startMenu) startMenu.style.display = 'none';
+            if (splash) splash.style.display = 'none';
+            // populate
+            const u = window.currentUser || (function(){ try { return JSON.parse(localStorage.getItem('romgon-user')); } catch(e){return null;} })();
+            const avatar = document.getElementById('user-home-avatar');
+            const nameEl = document.getElementById('user-home-name');
+            const emailEl = document.getElementById('user-home-email');
+            if (u) {
+                if (avatar) {
+                    if (u.picture) {
+                        avatar.style.background = 'transparent';
+                        avatar.innerHTML = `<img src="${u.picture}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;"/>`;
+                    } else {
+                        avatar.style.background = '#222';
+                        avatar.textContent = (u.name || 'G').charAt(0).toUpperCase();
+                    }
+                }
+                if (nameEl) nameEl.textContent = u.name || u.email || 'Player';
+                if (emailEl) emailEl.textContent = u.email || (u.type === 'guest' ? 'Guest' : 'Not signed in');
+            }
+            uh.style.display = 'block';
+        }
+
+        function hideUserHome() {
+            const uh = document.getElementById('user-home');
+            if (!uh) return;
+            uh.style.display = 'none';
         }
 
         // Handle guest login
         function handleGuestLogin() {
-            // Set guest user
-            window.currentUser = {
-                type: 'guest',
-                name: 'Guest Player',
-                id: 'guest_' + Date.now()
-            };
-
-            // Save to localStorage for persistence
-            localStorage.setItem('romgon-user', JSON.stringify(window.currentUser));
-
-            // Hide splash page and show main menu
-            hideSplashPage();
-
-            console.log('👤 Logged in as Guest:', window.currentUser);
+            // Create guest user and persist via common helper (will show user-home)
+            const guest = { type: 'guest', name: 'Guest Player', id: 'guest_' + Date.now() };
+            try { persistCurrentUser(guest); } catch (e) { window.currentUser = guest; localStorage.setItem('romgon-user', JSON.stringify(guest)); hideSplashPage(); }
+            console.log('👤 Logged in as Guest:', guest);
         }
 
         // Get current user info
@@ -14917,6 +15065,7 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 return;
             }
 
+            const currentUser = getCurrentUser();
             const modal = document.createElement('div');
             modal.id = 'account-modal';
             modal.style.cssText = `
@@ -14932,41 +15081,85 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
             `;
 
-            box.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="font-size:18px; font-weight:700;">Account</div>
-                    <button id="account-close-btn" style="background:#333; color:#fff; border:none; padding:6px 10px; border-radius:8px; cursor:pointer;">Close</button>
-                </div>
-                <hr style="border:1px solid #333; margin:12px 0;" />
-                <div style="font-size:14px; margin-bottom:8px;"><strong>Guest</strong> — Limited access</div>
-                <ul style="color:#ddd; margin-top:6px; margin-bottom:12px;">
-                    <li>No cloud saves (local only)</li>
-                    <li>No online ranking / leaderboards</li>
-                    <li>No cross-device sync</li>
-                </ul>
-                <div style="font-size:14px; margin-bottom:8px; margin-top:6px;"><strong>Logged-in User</strong> — Full access</div>
-                <ul style="color:#ddd; margin-top:6px; margin-bottom:16px;">
-                    <li>Cloud saves & cross-device sync</li>
-                    <li>Leaderboards & online matchmaking</li>
-                    <li>Profile, avatar, and community features</li>
-                </ul>
-                <div style="display:flex; gap:10px; justify-content:flex-end;">
-                    <button id="account-login-btn" style="background:#4ecdc4; color:#10201f; border:none; padding:10px 14px; border-radius:8px; font-weight:700; cursor:pointer;">Go to Login</button>
-                    <button id="account-cancel-btn" style="background:#444; color:#fff; border:none; padding:10px 14px; border-radius:8px; cursor:pointer;">Close</button>
-                </div>
-            `;
+            if (currentUser) {
+                // Show logged-in user view
+                box.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="font-size:18px; font-weight:700;">Account</div>
+                        <button id="account-close-btn" style="background:#333; color:#fff; border:none; padding:6px 10px; border-radius:8px; cursor:pointer;">Close</button>
+                    </div>
+                    <hr style="border:1px solid #333; margin:12px 0;" />
+                    <div style="text-align:center; margin-bottom:20px;">
+                        <div id="user-profile-avatar" style="width:64px; height:64px; border-radius:50%; background:#333; margin:0 auto 12px; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:bold;"></div>
+                        <div style="font-size:16px; font-weight:600;" id="user-modal-name">${currentUser.name || currentUser.email}</div>
+                        <div style="font-size:13px; color:#aaa;" id="user-modal-email">${currentUser.email || (currentUser.type === 'guest' ? 'Guest User' : '')}</div>
+                    </div>
+                    <div style="display:flex; gap:10px; justify-content:flex-end;">
+                        <button id="signout-btn" style="background:#ff6b6b; color:#fff; border:none; padding:10px 14px; border-radius:8px; cursor:pointer;">Sign Out</button>
+                        <button id="account-close-btn2" style="background:#444; color:#fff; border:none; padding:10px 14px; border-radius:8px; cursor:pointer;">Close</button>
+                    </div>
+                `;
+                // Populate avatar
+                const avatar = box.querySelector('#user-profile-avatar');
+                if (currentUser.picture) {
+                    avatar.style.background = 'transparent';
+                    avatar.innerHTML = `<img src="${currentUser.picture}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;"/>`;
+                } else {
+                    avatar.textContent = (currentUser.name || 'G').charAt(0).toUpperCase();
+                }
+            } else {
+                // Show login options
+                box.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="font-size:18px; font-weight:700;">Account</div>
+                        <button id="account-close-btn" style="background:#333; color:#fff; border:none; padding:6px 10px; border-radius:8px; cursor:pointer;">Close</button>
+                    </div>
+                    <hr style="border:1px solid #333; margin:12px 0;" />
+                    <div style="font-size:14px; margin-bottom:8px;"><strong>Guest</strong> — Limited access</div>
+                    <ul style="color:#ddd; margin-top:6px; margin-bottom:12px;">
+                        <li>No cloud saves (local only)</li>
+                        <li>No online ranking / leaderboards</li>
+                        <li>No cross-device sync</li>
+                    </ul>
+                    <div style="font-size:14px; margin-bottom:8px; margin-top:6px;"><strong>Logged-in User</strong> — Full access</div>
+                    <ul style="color:#ddd; margin-top:6px; margin-bottom:16px;">
+                        <li>Cloud saves & cross-device sync</li>
+                        <li>Leaderboards & online matchmaking</li>
+                        <li>Profile, avatar, and community features</li>
+                    </ul>
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <div id="account-google-btn"></div>
+                        <div style="display:flex; gap:10px; justify-content:flex-end;">
+                            <button id="guest-login-modal-btn" style="background:#4ecdc4; color:#10201f; border:none; padding:10px 14px; border-radius:8px; font-weight:700; cursor:pointer;">Guest Login</button>
+                            <button id="account-cancel-btn" style="background:#444; color:#fff; border:none; padding:10px 14px; border-radius:8px; cursor:pointer;">Close</button>
+                        </div>
+                    </div>
+                `;
+            }
 
             modal.appendChild(box);
             document.body.appendChild(modal);
 
             // Wire buttons
-            document.getElementById('account-close-btn').addEventListener('click', closeAccountModal);
-            document.getElementById('account-cancel-btn').addEventListener('click', closeAccountModal);
-            document.getElementById('account-login-btn').addEventListener('click', function() {
+            const closeBtn = box.querySelector('#account-close-btn');
+            const cancelBtn = box.querySelector('#account-cancel-btn');
+            const closeBtn2 = box.querySelector('#account-close-btn2');
+            const signoutBtn = box.querySelector('#signout-btn');
+            const guestLoginBtn = box.querySelector('#guest-login-modal-btn');
+
+            if (closeBtn) closeBtn.addEventListener('click', closeAccountModal);
+            if (cancelBtn) cancelBtn.addEventListener('click', closeAccountModal);
+            if (closeBtn2) closeBtn2.addEventListener('click', closeAccountModal);
+            if (signoutBtn) signoutBtn.addEventListener('click', handleSignOut);
+            if (guestLoginBtn) guestLoginBtn.addEventListener('click', function() {
                 closeAccountModal();
-                // Direct to login flow (prefer in-development handler, fallback to prompt)
-                preferredLoginHandler();
+                handleGuestLogin();
             });
+
+            // If user is logged in, show the profile; otherwise, initialize Google Sign-In
+            if (!currentUser) {
+                handleGoogleLogin();
+            }
         }
 
         function closeAccountModal() {
