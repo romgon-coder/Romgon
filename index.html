@@ -571,6 +571,9 @@
 
         /* Board container - centered in game area */
         #board-display-container {
+             position: fixed;
+             top: 0;
+             left: 0;
              display: flex;
              justify-content: center;
              align-items: center;
@@ -582,6 +585,8 @@
              padding-right: 2vw;
              box-sizing: border-box;
              overflow: hidden;
+             z-index: 3000;
+             background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 25%, #0f1923 50%, #1a1f3a 75%, #0a0e27 100%);
         }
 
         .board {
