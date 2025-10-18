@@ -1470,145 +1470,177 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: linear-gradient(135deg, #0f1923 0%, #1a2332 50%, #0f1923 100%);
+        background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 25%, #0f1923 50%, #1a1f3a 75%, #0a0e27 100%);
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: space-between;
         align-items: center;
         z-index: 3000;
         color: white;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
         overflow-y: auto;
-        padding: 20px;
+        padding: 40px 20px;
         box-sizing: border-box;
     ">
-        <!-- Logo Section -->
-        <div style="
-            text-align: center;
-            margin-bottom: 40px;
-        ">
+        <!-- Animated Background Elements -->
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 0;">
+            <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(78, 205, 196, 0.05) 1px, transparent 1px); background-size: 50px 50px; animation: moveGrid 20s linear infinite;"></div>
+            <div style="position: absolute; top: 10%; left: 5%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(165, 94, 234, 0.1) 0%, transparent 70%); border-radius: 50%; filter: blur(40px);"></div>
+            <div style="position: absolute; bottom: 10%; right: 5%; width: 400px; height: 400px; background: radial-gradient(circle, rgba(78, 205, 196, 0.1) 0%, transparent 70%); border-radius: 50%; filter: blur(40px);"></div>
+        </div>
+
+        <!-- Top Navigation -->
+        <div style="position: relative; z-index: 10; width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
             <h1 style="
-                font-size: 4em;
-                font-weight: 800;
                 margin: 0;
-                background: linear-gradient(135deg, #f57d2d 0%, #fcc49c 100%);
+                font-size: 2.5em;
+                font-weight: 900;
+                background: linear-gradient(135deg, #4ecdc4 0%, #f57d2d 100%);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
                 background-clip: text;
-                letter-spacing: 8px;
-                text-shadow: 0 0 40px rgba(245, 125, 45, 0.5);
-                animation: logoGlow 2s ease-in-out infinite alternate;
+                letter-spacing: 4px;
             ">ROMGON</h1>
-            <p style="
-                font-size: 1.2em;
-                margin: 10px 0 0 0;
-                color: #fcc49c;
-                font-weight: 300;
-                letter-spacing: 3px;
-            ">HEXAGONAL STRATEGY GAME</p>
-        </div>
-
-        <!-- Game Description -->
-        <div style="
-            max-width: 600px;
-            text-align: center;
-            margin-bottom: 50px;
-            padding: 0 20px;
-        ">
-            <p style="
-                font-size: 1.1em;
-                line-height: 1.6;
-                color: #ddd;
-                margin: 0 0 20px 0;
-            ">
-                Master the hexagonal battlefield in this strategic masterpiece. Command unique pieces with rotational abilities,
-                navigate complex zone systems, and outmaneuver your opponent in a game of tactical brilliance.
-            </p>
-            <div style="
-                display: flex;
-                justify-content: center;
-                gap: 30px;
-                margin-top: 30px;
-            ">
-                <div style="text-align: center;">
-                    <div style="font-size: 2em; margin-bottom: 5px;">♟️</div>
-                    <div style="font-size: 0.9em; color: #4ecdc4; font-weight: 600;">7 Unique Pieces</div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 2em; margin-bottom: 5px;">🔄</div>
-                    <div style="font-size: 0.9em; color: #a55eea; font-weight: 600;">Rotational Tactics</div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 2em; margin-bottom: 5px;">🎯</div>
-                    <div style="font-size: 0.9em; color: #ffd700; font-weight: 600;">Strategic Depth</div>
-                </div>
+            <div style="display: flex; gap: 20px; font-size: 0.9em; color: #aaa;">
+                <span style="cursor: pointer; transition: color 0.3s;" onmouseover="this.style.color='#4ecdc4'" onmouseout="this.style.color='#aaa'">About</span>
+                <span style="cursor: pointer; transition: color 0.3s;" onmouseover="this.style.color='#4ecdc4'" onmouseout="this.style.color='#aaa'">Guide</span>
+                <span style="cursor: pointer; transition: color 0.3s;" onmouseover="this.style.color='#4ecdc4'" onmouseout="this.style.color='#aaa'">Community</span>
             </div>
         </div>
 
-        <!-- Login Options -->
-        <div style="
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            min-width: 300px;
-            max-width: 400px;
-        ">
-            <!-- Google Login Button -->
-            <button id="google-login-btn" style="
-                background: linear-gradient(135deg, #4285f4 0%, #34a853 50%, #ea4335 100%);
-                color: white;
-                border: none;
-                padding: 18px 30px;
-                border-radius: 50px;
-                cursor: pointer;
-                font-weight: 700;
-                font-size: 1.1em;
-                box-shadow: 0 6px 20px rgba(66, 133, 244, 0.4);
-                transition: all 0.3s ease;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 12px;
-                letter-spacing: 0.5px;
-            " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 30px rgba(66, 133, 244, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 20px rgba(66, 133, 244, 0.4)'">
-                <svg width="20" height="20" viewBox="0 0 24 24">
-                    <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                </svg>
-                Sign in with Google
-            </button>
+        <!-- Hero Section -->
+        <div style="position: relative; z-index: 10; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; max-width: 900px; text-align: center; margin: 40px 0;">
+            <!-- Main Title -->
+            <h2 style="
+                font-size: 3.5em;
+                font-weight: 900;
+                margin: 0 0 20px 0;
+                line-height: 1.2;
+                background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            ">Master the Hexagonal Battlefield</h2>
 
-            <!-- Guest Login Button -->
-            <button id="guest-login-btn" style="
-                background: linear-gradient(135deg, rgba(78, 205, 196, 0.2), rgba(78, 205, 196, 0.1));
-                color: #4ecdc4;
-                border: 2px solid #4ecdc4;
-                padding: 18px 30px;
-                border-radius: 50px;
-                cursor: pointer;
-                font-weight: 700;
-                font-size: 1.1em;
-                box-shadow: 0 4px 15px rgba(78, 205, 196, 0.2);
-                transition: all 0.3s ease;
-                letter-spacing: 0.5px;
-            " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(78, 205, 196, 0.4)'; this.style.background='linear-gradient(135deg, rgba(78, 205, 196, 0.3), rgba(78, 205, 196, 0.2))'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(78, 205, 196, 0.2)'; this.style.background='linear-gradient(135deg, rgba(78, 205, 196, 0.2), rgba(78, 205, 196, 0.1))'">
-                🎮 Continue as Guest
-            </button>
+            <!-- Subtitle -->
+            <p style="
+                font-size: 1.3em;
+                color: #b0b0b0;
+                margin: 0 0 40px 0;
+                line-height: 1.6;
+                max-width: 700px;
+            ">
+                Strategic thinking meets tactical brilliance. Command unique pieces, master rotational abilities, and outmaneuver your opponent in the ultimate hexagonal strategy game.
+            </p>
+
+            <!-- Features Grid -->
+            <div style="
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 20px;
+                width: 100%;
+                margin-bottom: 60px;
+            ">
+                <div style="
+                    background: rgba(78, 205, 196, 0.1);
+                    border: 1px solid rgba(78, 205, 196, 0.3);
+                    border-radius: 12px;
+                    padding: 20px;
+                    transition: all 0.3s;
+                    cursor: default;
+                " onmouseover="this.style.background='rgba(78, 205, 196, 0.2)'; this.style.borderColor='rgba(78, 205, 196, 0.6)'; this.style.transform='translateY(-5px)'" onmouseout="this.style.background='rgba(78, 205, 196, 0.1)'; this.style.borderColor='rgba(78, 205, 196, 0.3)'; this.style.transform='translateY(0)'">
+                    <div style="font-size: 2em; margin-bottom: 8px;">🎮</div>
+                    <div style="font-weight: 600; color: #4ecdc4;">7 Pieces</div>
+                    <div style="font-size: 0.8em; color: #888; margin-top: 4px;">Unique abilities</div>
+                </div>
+
+                <div style="
+                    background: rgba(165, 94, 234, 0.1);
+                    border: 1px solid rgba(165, 94, 234, 0.3);
+                    border-radius: 12px;
+                    padding: 20px;
+                    transition: all 0.3s;
+                    cursor: default;
+                " onmouseover="this.style.background='rgba(165, 94, 234, 0.2)'; this.style.borderColor='rgba(165, 94, 234, 0.6)'; this.style.transform='translateY(-5px)'" onmouseout="this.style.background='rgba(165, 94, 234, 0.1)'; this.style.borderColor='rgba(165, 94, 234, 0.3)'; this.style.transform='translateY(0)'">
+                    <div style="font-size: 2em; margin-bottom: 8px;">🔄</div>
+                    <div style="font-weight: 600; color: #a55eea;">Rotations</div>
+                    <div style="font-size: 0.8em; color: #888; margin-top: 4px;">Dynamic tactics</div>
+                </div>
+
+                <div style="
+                    background: rgba(255, 193, 7, 0.1);
+                    border: 1px solid rgba(255, 193, 7, 0.3);
+                    border-radius: 12px;
+                    padding: 20px;
+                    transition: all 0.3s;
+                    cursor: default;
+                " onmouseover="this.style.background='rgba(255, 193, 7, 0.2)'; this.style.borderColor='rgba(255, 193, 7, 0.6)'; this.style.transform='translateY(-5px)'" onmouseout="this.style.background='rgba(255, 193, 7, 0.1)'; this.style.borderColor='rgba(255, 193, 7, 0.3)'; this.style.transform='translateY(0)'">
+                    <div style="font-size: 2em; margin-bottom: 8px;">⚡</div>
+                    <div style="font-weight: 600; color: #ffc107;">Depth</div>
+                    <div style="font-size: 0.8em; color: #888; margin-top: 4px;">Endless strategy</div>
+                </div>
+            </div>
+
+            <!-- CTA Buttons -->
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
+                <!-- Google Login Button -->
+                <button id="google-login-btn" style="
+                    background: linear-gradient(135deg, #4285f4 0%, #34a853 50%, #ea4335 100%);
+                    color: white;
+                    border: none;
+                    padding: 16px 40px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 700;
+                    font-size: 1em;
+                    box-shadow: 0 8px 25px rgba(66, 133, 244, 0.3);
+                    transition: all 0.3s ease;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 12px;
+                    letter-spacing: 0.5px;
+                " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 12px 35px rgba(66, 133, 244, 0.5)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 25px rgba(66, 133, 244, 0.3)'">
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Sign in with Google
+                </button>
+
+                <!-- Guest Login Button -->
+                <button id="guest-login-btn" style="
+                    background: transparent;
+                    color: #4ecdc4;
+                    border: 2px solid #4ecdc4;
+                    padding: 14px 38px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 700;
+                    font-size: 1em;
+                    box-shadow: 0 4px 15px rgba(78, 205, 196, 0.1);
+                    transition: all 0.3s ease;
+                    letter-spacing: 0.5px;
+                " onmouseover="this.style.background='rgba(78, 205, 196, 0.1)'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(78, 205, 196, 0.2)'" onmouseout="this.style.background='transparent'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(78, 205, 196, 0.1)'">
+                    🎮 Continue as Guest
+                </button>
+            </div>
         </div>
 
-        <!-- Footer Info -->
-        <div style="
-            position: absolute;
-            bottom: 30px;
-            text-align: center;
-            color: #888;
-            font-size: 0.9em;
-        ">
-            <p style="margin: 0;">© 2025 ROMGON - Strategic Hexagonal Gaming</p>
+        <!-- Footer -->
+        <div style="position: relative; z-index: 10; text-align: center; color: #666; font-size: 0.85em; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 20px; width: 100%; max-width: 1200px;">
+            <p style="margin: 0;">© 2025 ROMGON - Strategic Hexagonal Gaming | Designed for Strategy Masters</p>
         </div>
     </div>
+
+    <style>
+        @keyframes moveGrid {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+    </style>
 
     <!-- User Home Page (shown after login) -->
     <div id="user-home" style="
