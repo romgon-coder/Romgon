@@ -1553,31 +1553,6 @@
             min-width: 300px;
             max-width: 400px;
         ">
-            <!-- Under Construction banner -->
-            <div id="under-construction-banner" style="
-                background: #ffcc00;
-                color: #2d2d2d;
-                padding: 12px 16px;
-                border-radius: 10px;
-                font-weight: 800;
-                text-align: center;
-                margin-bottom: 6px;
-                box-shadow: 0 4px 10px rgba(0,0,0,0.12);
-            ">
-                ⚠️ Under construction — login temporarily disabled
-                <div id="deploy-test-badge" style="font-size:0.82em; font-weight:700; margin-top:8px; color:#2d2d2d; opacity:0.95;">
-                    Redeploy test — timestamp: <span id="deploy-test-ts">(loading...)</span>
-                </div>
-            </div>
-            <script>
-                // Small client-side timestamp to verify the deployed file was updated.
-                (function(){
-                    try {
-                        var el = document.getElementById('deploy-test-ts');
-                        if (el) el.textContent = new Date().toISOString();
-                    } catch(e) { /* fail silently */ }
-                })();
-            </script>
             <!-- Google Login Button -->
             <button id="google-login-btn" style="
                 background: linear-gradient(135deg, #4285f4 0%, #34a853 50%, #ea4335 100%);
