@@ -2509,8 +2509,10 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     updateDesc();
                 }
                 if (fogCheckbox) {
-                    fogCheckbox.checked = !!window.gameSettings.fogOfWar;
+                    if (!window.gameSettings) window.gameSettings = {};
+                    fogCheckbox.checked = !!(window.gameSettings && window.gameSettings.fogOfWar);
                     fogCheckbox.addEventListener('change', function() {
+                        if (!window.gameSettings) window.gameSettings = {};
                         window.gameSettings.fogOfWar = fogCheckbox.checked;
                         fogOfWarEnabled = fogCheckbox.checked;
                         saveSettings();
@@ -6615,35 +6617,54 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             setupDragAndDrop();
         }
 
-        document.getElementById('start-game-btn').addEventListener('click', function() {
-            // Show game variants modal for PVP mode
-            openGameVariantsModal('pvp');
-        });
+        // Setup menu event listeners with null checks
+        const gameBtn = document.getElementById('start-game-btn');
+        if (gameBtn) {
+            gameBtn.addEventListener('click', function() {
+                // Show game variants modal for PVP mode
+                openGameVariantsModal('pvp');
+            });
+        }
         
-        document.getElementById('start-ai-mode-btn').addEventListener('click', function() {
-            // Show game variants modal for AI mode
-            openGameVariantsModal('ai');
-        });
+        const aiModeBtn = document.getElementById('start-ai-mode-btn');
+        if (aiModeBtn) {
+            aiModeBtn.addEventListener('click', function() {
+                // Show game variants modal for AI mode
+                openGameVariantsModal('ai');
+            });
+        }
         
-        document.getElementById('start-llm-mode-btn').addEventListener('click', function() {
-            // Show game variants modal for LLM mode
-            openGameVariantsModal('llm');
-        });
+        const llmModeBtn = document.getElementById('start-llm-mode-btn');
+        if (llmModeBtn) {
+            llmModeBtn.addEventListener('click', function() {
+                // Show game variants modal for LLM mode
+                openGameVariantsModal('llm');
+            });
+        }
         
-        document.getElementById('start-game-modes-btn').addEventListener('click', function() {
-            // Show game modes modal
-            openGameModesModal();
-        });
+        const gameModesBtn = document.getElementById('start-game-modes-btn');
+        if (gameModesBtn) {
+            gameModesBtn.addEventListener('click', function() {
+                // Show game modes modal
+                openGameModesModal();
+            });
+        }
         
-        document.getElementById('start-multiplayer-btn').addEventListener('click', function() {
-            // Show multiplayer modal
-            openMultiplayerModal();
-        });
+        const multiplayerBtn = document.getElementById('start-multiplayer-btn');
+        if (multiplayerBtn) {
+            multiplayerBtn.addEventListener('click', function() {
+                // Show multiplayer modal
+                openMultiplayerModal();
+            });
+        }
 
-        document.getElementById('start-puzzles-btn').addEventListener('click', function() {
-            // Show puzzles modal
-            openPuzzlesModal();
-        });
+        const puzzlesBtn = document.getElementById('start-puzzles-btn');
+        if (puzzlesBtn) {
+            puzzlesBtn.addEventListener('click', function() {
+                // Show puzzles modal
+                openPuzzlesModal();
+            });
+        }
 
         // ========== PUZZLE FUNCTIONALITY ==========
         
@@ -7941,7 +7962,10 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         }
         
         // Add event listener for Leaderboard button
-        document.getElementById('start-leaderboard-btn').addEventListener('click', openLeaderboardModal);
+        const leaderboardBtn = document.getElementById('start-leaderboard-btn');
+        if (leaderboardBtn) {
+            leaderboardBtn.addEventListener('click', openLeaderboardModal);
+        }
 
         // ========== SETTINGS FUNCTIONALITY ==========
         
@@ -8137,7 +8161,10 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         }
         
         // Add event listener for Settings button
-        document.getElementById('start-settings-btn').addEventListener('click', openSettingsModal);
+        const settingsBtn = document.getElementById('start-settings-btn');
+        if (settingsBtn) {
+            settingsBtn.addEventListener('click', openSettingsModal);
+        }
 
         // ========== GAME MODES FUNCTIONALITY ==========
         
