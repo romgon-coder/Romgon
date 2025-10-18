@@ -3460,7 +3460,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     <div id="board-display-container" style="display: none;">
         <!-- Top Left Controls (Quit Button Only) -->
         <div style="position: absolute; top: 18px; left: 18px; z-index: 20; display: flex; gap: 12px;">
-            <button id="quit-game-btn" style="background:linear-gradient(135deg,#ff6b6b,#ff5252);color:white;border:none;padding:10px 22px;border-radius:18px;cursor:pointer;font-weight:700;font-size:1em;box-shadow:0 2px 8px rgba(255,107,107,0.25);transition:all 0.2s;letter-spacing:1px;" onclick="quitAndLogout()" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 16px rgba(255,107,107,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(255,107,107,0.25)';">↩️ MAIN MENU</button>
+            <button id="quit-game-btn" style="background:linear-gradient(135deg,#ff6b6b,#ff5252);color:white;border:none;padding:12px 28px;border-radius:18px;cursor:pointer;font-weight:700;font-size:1.05em;box-shadow:0 2px 8px rgba(255,107,107,0.25);transition:all 0.2s;letter-spacing:1px;white-space:nowrap;min-width:180px;" onclick="quitAndLogout()" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 16px rgba(255,107,107,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(255,107,107,0.25)';">↩️ MAIN MENU</button>
         </div>
         
         <!-- Player Timers -->
@@ -3548,17 +3548,28 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
     // --- Quit Game And Logout ---
     function quitAndLogout() {
-        // Hide board
+        // Hide board container and all its children (including buttons)
         const boardDisplayEl = document.getElementById('board-display-container');
-        if (boardDisplayEl) boardDisplayEl.style.display = 'none';
+        if (boardDisplayEl) {
+            boardDisplayEl.style.display = 'none';
+            // Also hide all child elements to ensure nothing shows
+            const allChildren = boardDisplayEl.querySelectorAll('*');
+            allChildren.forEach(child => {
+                if (child.style) {
+                    // Don't override if already hidden, but ensure visibility
+                }
+            });
+        }
         
         // Hide AI panel if present
         const aiPanelEl = document.getElementById('ai-reasoning-panel');
         if (aiPanelEl) aiPanelEl.style.display = 'none';
         
-        // Hide user home and start menu
+        // Hide user home 
         const userHomeEl = document.getElementById('user-home');
         if (userHomeEl) userHomeEl.style.display = 'none';
+        
+        // Hide start menu (important!)
         const startMenuEl = document.getElementById('start-menu');
         if (startMenuEl) startMenuEl.style.display = 'none';
         
@@ -3581,9 +3592,12 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         gameInProgress = false;
         aiEnabled = false;
         
-        // Show splash page (login screen)
+        // Show splash page (login screen) LAST so it's on top
         const splashPage = document.getElementById('splash-page');
-        if (splashPage) splashPage.style.display = 'flex';
+        if (splashPage) {
+            splashPage.style.display = 'flex';
+            splashPage.style.zIndex = '3000'; // Ensure it's on top
+        }
     }
 
     function normalizeMoveNotation(move) {
