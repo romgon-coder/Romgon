@@ -3458,10 +3458,9 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     </div>
 
     <div id="board-display-container" style="display: none;">
-        <!-- Top Left Controls (Menu + Quit) -->
+        <!-- Top Left Controls (Quit Button Only) -->
         <div style="position: absolute; top: 18px; left: 18px; z-index: 20; display: flex; gap: 12px;">
-            <button id="return-to-menu-btn" style="background:linear-gradient(135deg,#f57d2d,#fcc49c);color:white;border:none;padding:10px 22px;border-radius:18px;cursor:pointer;font-weight:700;font-size:1em;box-shadow:0 2px 8px rgba(245,125,45,0.25);transition:all 0.2s;letter-spacing:1px;" onclick="showStartMenu()" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 16px rgba(245,125,45,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(245,125,45,0.25)';">☰ MENU</button>
-            <button id="quit-game-btn" style="background:linear-gradient(135deg,#ff6b6b,#ff5252);color:white;border:none;padding:10px 22px;border-radius:18px;cursor:pointer;font-weight:700;font-size:1em;box-shadow:0 2px 8px rgba(255,107,107,0.25);transition:all 0.2s;letter-spacing:1px;" onclick="quitGame()" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 16px rgba(255,107,107,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(255,107,107,0.25)';">⏹️ QUIT</button>
+            <button id="quit-game-btn" style="background:linear-gradient(135deg,#ff6b6b,#ff5252);color:white;border:none;padding:10px 22px;border-radius:18px;cursor:pointer;font-weight:700;font-size:1em;box-shadow:0 2px 8px rgba(255,107,107,0.25);transition:all 0.2s;letter-spacing:1px;" onclick="quitGameToUserScreen()" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 16px rgba(255,107,107,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(255,107,107,0.25)';">⏹️ QUIT TO MENU</button>
         </div>
         
         <!-- Player Timers -->
@@ -3533,13 +3532,21 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         { name: 'Rhombus Roster', moves: ['R3-0>3-2','C2-0>2-1'] }
     ];
 
-    // --- Quit Game Handler ---
+    // --- Quit Game Handler (old - kept for backward compatibility) ---
     function quitGame() {
-        // Hide board and show start menu
+        // This function is kept for backward compatibility
+        // The new function quitGameToUserScreen() is now used instead
+        quitGameToUserScreen();
+    }
+
+    // --- Quit Game To User Screen ---
+    function quitGameToUserScreen() {
+        // Hide board
         const boardDisplayEl = document.getElementById('board-display-container');
         if (boardDisplayEl) boardDisplayEl.style.display = 'none';
-        const startMenuEl = document.getElementById('start-menu');
-        if (startMenuEl) startMenuEl.style.display = 'flex';
+        // Show user home screen
+        const userHomeEl = document.getElementById('user-home');
+        if (userHomeEl) userHomeEl.style.display = 'flex';
         // Hide AI panel if present
         const aiPanelEl = document.getElementById('ai-reasoning-panel');
         if (aiPanelEl) aiPanelEl.style.display = 'none';
