@@ -2509,12 +2509,13 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 const fogCheckbox = document.getElementById('fog-of-war-variant-tc');
                 if (sel) {
                     // Initialize dropdown from saved settings, or fallback to runtime value
-                    sel.value = window.gameSettings.baseDefenseVariant || window.baseDefenseVariant || 'original';
+                    sel.value = (window.gameSettings && window.gameSettings.baseDefenseVariant) || window.baseDefenseVariant || 'original';
                     function updateDesc() {
                         if (sel.value === 'original') desc.textContent = 'Original rules: only the rhombus defends the base (casual mode).';
                         else if (sel.value === 'shape-defense') desc.textContent = "Shape Defence: rhombus can only escape if the opponent's base is not under attack.";
                     }
                     sel.addEventListener('change', function() {
+                        if (!window.gameSettings) window.gameSettings = {};
                         window.gameSettings.baseDefenseVariant = sel.value;
                         window.baseDefenseVariant = sel.value;
                         updateBaseDefenceDisplay();
@@ -14922,8 +14923,9 @@ ${moveHistory || '(No moves played yet - starting position)'}
         // END OF SPLASH PAGE INITIALIZATION
         // ============================================
 
-        // Global login state
+        // Global login state and settings
         window.currentUser = null;
+        window.gameSettings = window.gameSettings || {};
 
         // Initialize splash page
         function initializeSplashPage() {
