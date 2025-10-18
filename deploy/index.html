@@ -1033,14 +1033,18 @@
         /* Eliminated pieces display - Chess.com style */
         #eliminated-pieces-container {
             position: fixed;
-            top: 90px; /* Moved down to make room for timers */
+            top: 50%;
             left: 0;
             right: 0;
+            transform: translateY(-50%);
             display: flex;
             justify-content: space-between;
             padding: 0 20px;
             z-index: 10;
             pointer-events: none;
+            align-items: center;
+            height: auto;
+            width: 100%;
         }
         .variant-indicator {
             background-color: #2d2d2d;
