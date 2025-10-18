@@ -7947,12 +7947,14 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             const tabs = ['daily', 'weekly', 'alltime'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`lb-tab-${t}`);
-                if (t === tab) {
-                    btn.style.background = '#f1c40f';
-                    btn.style.color = '#262421';
-                } else {
-                    btn.style.background = '#444';
-                    btn.style.color = '#ccc';
+                if (btn) {
+                    if (t === tab) {
+                        btn.style.background = '#f1c40f';
+                        btn.style.color = '#262421';
+                    } else {
+                        btn.style.background = '#444';
+                        btn.style.color = '#ccc';
+                    }
                 }
             });
             
