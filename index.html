@@ -3460,7 +3460,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     <div id="board-display-container" style="display: none;">
         <!-- Top Left Controls (Quit Button Only) -->
         <div style="position: absolute; top: 18px; left: 18px; z-index: 20; display: flex; gap: 12px;">
-            <button id="quit-game-btn" style="background:linear-gradient(135deg,#ff6b6b,#ff5252);color:white;border:none;padding:10px 22px;border-radius:18px;cursor:pointer;font-weight:700;font-size:1em;box-shadow:0 2px 8px rgba(255,107,107,0.25);transition:all 0.2s;letter-spacing:1px;" onclick="quitGameToUserScreen()" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 16px rgba(255,107,107,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(255,107,107,0.25)';">⏹️ QUIT TO MENU</button>
+            <button id="quit-game-btn" style="background:linear-gradient(135deg,#ff6b6b,#ff5252);color:white;border:none;padding:10px 22px;border-radius:18px;cursor:pointer;font-weight:700;font-size:1em;box-shadow:0 2px 8px rgba(255,107,107,0.25);transition:all 0.2s;letter-spacing:1px;" onclick="quitAndLogout()" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 16px rgba(255,107,107,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(255,107,107,0.25)';">↩️ MAIN MENU</button>
         </div>
         
         <!-- Player Timers -->
@@ -3535,26 +3535,55 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     // --- Quit Game Handler (old - kept for backward compatibility) ---
     function quitGame() {
         // This function is kept for backward compatibility
-        // The new function quitGameToUserScreen() is now used instead
-        quitGameToUserScreen();
+        // The new function quitAndLogout() is now used instead
+        quitAndLogout();
     }
 
-    // --- Quit Game To User Screen ---
+    // --- Quit Game To User Screen (old - kept for backward compatibility) ---
     function quitGameToUserScreen() {
+        // This function is kept for backward compatibility
+        // The new function quitAndLogout() is now used instead
+        quitAndLogout();
+    }
+
+    // --- Quit Game And Logout ---
+    function quitAndLogout() {
         // Hide board
         const boardDisplayEl = document.getElementById('board-display-container');
         if (boardDisplayEl) boardDisplayEl.style.display = 'none';
-        // Show user home screen
-        const userHomeEl = document.getElementById('user-home');
-        if (userHomeEl) userHomeEl.style.display = 'flex';
+        
         // Hide AI panel if present
         const aiPanelEl = document.getElementById('ai-reasoning-panel');
         if (aiPanelEl) aiPanelEl.style.display = 'none';
+        
+        // Hide user home and start menu
+        const userHomeEl = document.getElementById('user-home');
+        if (userHomeEl) userHomeEl.style.display = 'none';
+        const startMenuEl = document.getElementById('start-menu');
+        if (startMenuEl) startMenuEl.style.display = 'none';
+        
+        // Clear session and user data
+        window.currentUser = null;
+        try { localStorage.removeItem('romgon-user'); } catch (e) {}
+        try { sessionStorage.clear(); } catch (e) {}
+        
+        // Disable Google auto-select
+        try { 
+            if (window.google && window.google.accounts && window.google.accounts.id) {
+                google.accounts.id.disableAutoSelect(); 
+            } 
+        } catch (e) {}
+        
+        // Remove logged-in user UI
+        try { removeLoggedInUserUI(); } catch (e) {}
+        
         // Reset game state flags
         gameInProgress = false;
         aiEnabled = false;
-        // Optionally reset timers, board, etc. as needed
-        // (Add more reset logic here if required)
+        
+        // Show splash page (login screen)
+        const splashPage = document.getElementById('splash-page');
+        if (splashPage) splashPage.style.display = 'flex';
     }
 
     function normalizeMoveNotation(move) {
