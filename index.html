@@ -1805,96 +1805,381 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: linear-gradient(135deg, #1a2332 0%, #0f1923 50%, #1a2332 100%);
+        background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 25%, #0f1923 50%, #1a1f3a 75%, #0a0e27 100%);
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: space-between;
         align-items: center;
         z-index: 2000;
         color: white;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         overflow-y: auto;
-        padding: 20px;
+        padding: 40px 20px;
         box-sizing: border-box;
     ">
-        <!-- Logo/Title Section -->
-        <div style="
-            text-align: center;
-            margin-bottom: 30px;
-        ">
-            <h1 style="
+        <!-- Background Grid Animation -->
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 0;">
+            <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(78, 205, 196, 0.03) 1px, transparent 1px); background-size: 50px 50px; animation: moveGrid 30s linear infinite;"></div>
+            <div style="position: absolute; top: 5%; left: 10%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(165, 94, 234, 0.05) 0%, transparent 70%); border-radius: 50%; filter: blur(40px);"></div>
+            <div style="position: absolute; bottom: 5%; right: 10%; width: 400px; height: 400px; background: radial-gradient(circle, rgba(78, 205, 196, 0.05) 0%, transparent 70%); border-radius: 50%; filter: blur(40px);"></div>
+        </div>
+
+        <!-- Top Header with Logo and Quick Actions -->
+        <div style="position: relative; z-index: 10; width: 100%; max-width: 1400px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 50px;">
+            <div>
+                <h1 style="
+                    margin: 0;
+                    font-size: 2.2em;
+                    font-weight: 900;
+                    background: linear-gradient(135deg, #4ecdc4 0%, #f57d2d 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    background-clip: text;
+                    letter-spacing: 4px;
+                ">ROMGON</h1>
+            </div>
+            <div id="return-to-game-container" style="display: none;">
+                <button id="return-to-game-btn" style="
+                    background: linear-gradient(135deg, #ff6b6b, #ff5252);
+                    color: white;
+                    border: none;
+                    padding: 12px 30px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-weight: 700;
+                    font-size: 0.95em;
+                    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+                    transition: all 0.3s ease;
+                " onclick="returnToGame()" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(255, 107, 107, 0.5)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(255, 107, 107, 0.3)'">
+                    ← Back to Game
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div style="position: relative; z-index: 10; flex: 1; display: flex; flex-direction: column; justify-content: center; width: 100%; max-width: 1400px;">
+            <!-- Title Section -->
+            <h2 style="
+                text-align: center;
                 font-size: 2.8em;
-                font-weight: 800;
-                margin: 0;
-                background: linear-gradient(135deg, #f57d2d 0%, #fcc49c 100%);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-                letter-spacing: 6px;
-                text-shadow: 0 0 30px rgba(245, 125, 45, 0.5);
-            ">ROMGON</h1>
-            <p style="
-                font-size: 0.85em;
-                margin: 5px 0 0 0;
-                color: #fcc49c;
-                font-weight: 300;
-                letter-spacing: 2px;
-            ">HEXAGONAL STRATEGY GAME</p>
-        </div>
-        
-        <!-- Return to Game Button (shown when in active game) -->
-        <div id="return-to-game-container" style="
-            display: none;
-            text-align: center;
-            margin-bottom: 30px;
-        ">
-            <button id="return-to-game-btn" style="
-                background: linear-gradient(135deg, #ff6b6b, #ff5252);
+                font-weight: 900;
+                margin: 0 0 15px 0;
                 color: white;
-                border: none;
-                padding: 15px 40px;
-                border-radius: 25px;
-                cursor: pointer;
-                font-weight: 700;
-                font-size: 1.2em;
-                box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
-                transition: all 0.3s ease;
-                letter-spacing: 1px;
-            " onclick="returnToGame()" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(255, 107, 107, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(255, 107, 107, 0.4)'">
-                🔄 RETURN TO GAME
-            </button>
-        </div>
-        
-        <!-- Game Mode Selection -->
-        <div style="
-            max-width: 800px;
-            width: 100%;
-        ">
-            <!-- Game Mode Grid -->
+            ">Game Modes</h2>
+            <p style="text-align: center; color: #aaa; font-size: 1.1em; margin: 0 0 50px 0;">Choose your battle</p>
+
+            <!-- Game Modes Grid - Main Modes -->
             <div style="
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 15px;
-                margin-bottom: 20px;
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 20px;
+                width: 100%;
+                margin-bottom: 40px;
             ">
-                <!-- PVP Card -->
+                <!-- LOCAL PVP -->
                 <button id="start-game-btn" style="
-                    background: linear-gradient(135deg, rgba(78, 205, 196, 0.15), rgba(68, 160, 141, 0.15));
+                    background: linear-gradient(135deg, rgba(78, 205, 196, 0.15), rgba(68, 160, 141, 0.1));
                     border: 2px solid #4ecdc4;
-                    clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0% 50%);
-                    padding: 32px 18px 32px 18px;
+                    border-radius: 12px;
+                    padding: 28px 20px;
                     cursor: pointer;
                     transition: all 0.3s ease;
                     color: white;
                     text-align: center;
-                    aspect-ratio: 1 / 1;
-                    min-width: 120px;
-                    max-width: 220px;
-                " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(78, 205, 196, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                    <div style="font-size: 2.2em; margin-bottom: 8px;">👥</div>
-                    <h3 style="font-size: 1.1em; margin: 0 0 5px 0; color: #4ecdc4; font-weight: 600;">LOCAL PVP</h3>
-                    <p style="font-size: 0.8em; color: #aaa; margin: 0; line-height: 1.3;">Two players<br/>Same device</p>
+                    min-height: 160px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                " onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 12px 30px rgba(78, 205, 196, 0.3)'; this.style.background='linear-gradient(135deg, rgba(78, 205, 196, 0.25), rgba(68, 160, 141, 0.2))'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'; this.style.background='linear-gradient(135deg, rgba(78, 205, 196, 0.15), rgba(68, 160, 141, 0.1))'">
+                    <div style="font-size: 2.5em; margin-bottom: 10px;">👥</div>
+                    <h3 style="font-size: 1.2em; margin: 0 0 8px 0; color: #4ecdc4; font-weight: 700;">LOCAL PVP</h3>
+                    <p style="font-size: 0.85em; color: #aaa; margin: 0; line-height: 1.4;">Two players<br/>Same device</p>
                 </button>
+
+                <!-- ONLINE -->
+                <button id="start-multiplayer-btn" style="
+                    background: linear-gradient(135deg, rgba(76, 175, 80, 0.15), rgba(56, 142, 60, 0.1));
+                    border: 2px solid #4caf50;
+                    border-radius: 12px;
+                    padding: 28px 20px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    color: white;
+                    text-align: center;
+                    min-height: 160px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                " onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 12px 30px rgba(76, 175, 80, 0.3)'; this.style.background='linear-gradient(135deg, rgba(76, 175, 80, 0.25), rgba(56, 142, 60, 0.2))'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'; this.style.background='linear-gradient(135deg, rgba(76, 175, 80, 0.15), rgba(56, 142, 60, 0.1))'">
+                    <div style="font-size: 2.5em; margin-bottom: 10px;">🌐</div>
+                    <h3 style="font-size: 1.2em; margin: 0 0 8px 0; color: #4caf50; font-weight: 700;">ONLINE</h3>
+                    <p style="font-size: 0.85em; color: #aaa; margin: 0; line-height: 1.4;">Play online<br/>With friends</p>
+                </button>
+
+                <!-- VS AI -->
+                <button id="start-ai-mode-btn" style="
+                    background: linear-gradient(135deg, rgba(165, 94, 234, 0.15), rgba(142, 68, 173, 0.1));
+                    border: 2px solid #a55eea;
+                    border-radius: 12px;
+                    padding: 28px 20px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    color: white;
+                    text-align: center;
+                    min-height: 160px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                " onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 12px 30px rgba(165, 94, 234, 0.3)'; this.style.background='linear-gradient(135deg, rgba(165, 94, 234, 0.25), rgba(142, 68, 173, 0.2))'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'; this.style.background='linear-gradient(135deg, rgba(165, 94, 234, 0.15), rgba(142, 68, 173, 0.1))'">
+                    <div style="font-size: 2.5em; margin-bottom: 10px;">🤖</div>
+                    <h3 style="font-size: 1.2em; margin: 0 0 8px 0; color: #a55eea; font-weight: 700;">VS AI</h3>
+                    <p style="font-size: 0.85em; color: #aaa; margin: 0; line-height: 1.4;">Smart AI<br/>Opponent</p>
+                </button>
+
+                <!-- PUZZLES -->
+                <button id="start-puzzles-btn" style="
+                    background: linear-gradient(135deg, rgba(255, 193, 7, 0.15), rgba(255, 152, 0, 0.1));
+                    border: 2px solid #ffc107;
+                    border-radius: 12px;
+                    padding: 28px 20px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    color: white;
+                    text-align: center;
+                    min-height: 160px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                " onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 12px 30px rgba(255, 193, 7, 0.3)'; this.style.background='linear-gradient(135deg, rgba(255, 193, 7, 0.25), rgba(255, 152, 0, 0.2))'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'; this.style.background='linear-gradient(135deg, rgba(255, 193, 7, 0.15), rgba(255, 152, 0, 0.1))'">
+                    <div style="font-size: 2.5em; margin-bottom: 10px;">🧩</div>
+                    <h3 style="font-size: 1.2em; margin: 0 0 8px 0; color: #ffc107; font-weight: 700;">PUZZLES</h3>
+                    <p style="font-size: 0.85em; color: #aaa; margin: 0; line-height: 1.4;">Train skills<br/>Solve challenges</p>
+                </button>
+
+                <!-- LEADERBOARD -->
+                <button id="start-leaderboard-btn" style="
+                    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 193, 7, 0.1));
+                    border: 2px solid #ffd700;
+                    border-radius: 12px;
+                    padding: 28px 20px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    color: white;
+                    text-align: center;
+                    min-height: 160px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                " onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 12px 30px rgba(255, 215, 0, 0.3)'; this.style.background='linear-gradient(135deg, rgba(255, 215, 0, 0.25), rgba(255, 193, 7, 0.2))'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'; this.style.background='linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 193, 7, 0.1))'">
+                    <div style="font-size: 2.5em; margin-bottom: 10px;">🏆</div>
+                    <h3 style="font-size: 1.2em; margin: 0 0 8px 0; color: #ffd700; font-weight: 700;">LEADERBOARD</h3>
+                    <p style="font-size: 0.85em; color: #aaa; margin: 0; line-height: 1.4;">Top players<br/>Rankings</p>
+                </button>
+
+                <!-- SETTINGS -->
+                <button id="start-settings-btn" style="
+                    background: linear-gradient(135deg, rgba(149, 165, 166, 0.15), rgba(117, 134, 140, 0.1));
+                    border: 2px solid #95a5a6;
+                    border-radius: 12px;
+                    padding: 28px 20px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    color: white;
+                    text-align: center;
+                    min-height: 160px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                " onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 12px 30px rgba(149, 165, 166, 0.3)'; this.style.background='linear-gradient(135deg, rgba(149, 165, 166, 0.25), rgba(117, 134, 140, 0.2))'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'; this.style.background='linear-gradient(135deg, rgba(149, 165, 166, 0.15), rgba(117, 134, 140, 0.1))'">
+                    <div style="font-size: 2.5em; margin-bottom: 10px;">⚙️</div>
+                    <h3 style="font-size: 1.2em; margin: 0 0 8px 0; color: #95a5a6; font-weight: 700;">SETTINGS</h3>
+                    <p style="font-size: 0.85em; color: #aaa; margin: 0; line-height: 1.4;">Preferences<br/>Controls</p>
+                </button>
+            </div>
+
+            <!-- Advanced Section Title -->
+            <h3 style="
+                text-align: center;
+                font-size: 1.4em;
+                color: #888;
+                margin: 20px 0 30px 0;
+                letter-spacing: 1px;
+            ">Resources & Analysis</h3>
+
+            <!-- Advanced Modes Grid -->
+            <div style="
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+                gap: 20px;
+                width: 100%;
+            ">
+                <!-- STATISTICS DASHBOARD -->
+                <button id="start-stats-dashboard-btn" style="
+                    background: linear-gradient(135deg, rgba(241, 196, 15, 0.15), rgba(230, 174, 0, 0.1));
+                    border: 2px solid #f1c40f;
+                    border-radius: 12px;
+                    padding: 24px 18px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    color: white;
+                    text-align: center;
+                    min-height: 140px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                " onclick="showStatsDashboard()" onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 10px 25px rgba(241, 196, 15, 0.25)'; this.style.background='linear-gradient(135deg, rgba(241, 196, 15, 0.25), rgba(230, 174, 0, 0.15))'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'; this.style.background='linear-gradient(135deg, rgba(241, 196, 15, 0.15), rgba(230, 174, 0, 0.1))'">
+                    <div style="font-size: 2.2em; margin-bottom: 8px;">📊</div>
+                    <h3 style="font-size: 1em; margin: 0 0 6px 0; color: #f1c40f; font-weight: 700;">STATISTICS</h3>
+                    <p style="font-size: 0.8em; color: #aaa; margin: 0;">Win rate, stats</p>
+                </button>
+
+                <!-- OPENING BOOK -->
+                <button id="start-opening-book-btn" style="
+                    background: linear-gradient(135deg, rgba(78, 205, 196, 0.15), rgba(52, 168, 224, 0.1));
+                    border: 2px solid #4ecdc4;
+                    border-radius: 12px;
+                    padding: 24px 18px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    color: white;
+                    text-align: center;
+                    min-height: 140px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                " onclick="showOpeningBook()" onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 10px 25px rgba(78, 205, 196, 0.25)'; this.style.background='linear-gradient(135deg, rgba(78, 205, 196, 0.25), rgba(52, 168, 224, 0.15))'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'; this.style.background='linear-gradient(135deg, rgba(78, 205, 196, 0.15), rgba(52, 168, 224, 0.1))'">
+                    <div style="font-size: 2.2em; margin-bottom: 8px;">📖</div>
+                    <h3 style="font-size: 1em; margin: 0 0 6px 0; color: #4ecdc4; font-weight: 700;">OPENINGS</h3>
+                    <p style="font-size: 0.8em; color: #aaa; margin: 0;">Standard plays</p>
+                </button>
+
+                <!-- THEORY -->
+                <button id="start-theory-btn" style="
+                    background: linear-gradient(135deg, rgba(165, 94, 234, 0.15), rgba(123, 31, 162, 0.1));
+                    border: 2px solid #a55eea;
+                    border-radius: 12px;
+                    padding: 24px 18px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    color: white;
+                    text-align: center;
+                    min-height: 140px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                " onclick="openTheoryModal()" onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 10px 25px rgba(165, 94, 234, 0.25)'; this.style.background='linear-gradient(135deg, rgba(165, 94, 234, 0.25), rgba(123, 31, 162, 0.15))'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'; this.style.background='linear-gradient(135deg, rgba(165, 94, 234, 0.15), rgba(123, 31, 162, 0.1))'">
+                    <div style="font-size: 2.2em; margin-bottom: 8px;">🧠</div>
+                    <h3 style="font-size: 1em; margin: 0 0 6px 0; color: #a55eea; font-weight: 700;">THEORY</h3>
+                    <p style="font-size: 0.8em; color: #aaa; margin: 0;">Strategy guide</p>
+                </button>
+
+                <!-- AI REASONING -->
+                <button id="start-ai-reasoning-btn" style="
+                    background: linear-gradient(135deg, rgba(255, 152, 0, 0.15), rgba(255, 109, 0, 0.1));
+                    border: 2px solid #ff9800;
+                    border-radius: 12px;
+                    padding: 24px 18px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    color: white;
+                    text-align: center;
+                    min-height: 140px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                " onclick="toggleAIReasoningPanel()" onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 10px 25px rgba(255, 152, 0, 0.25)'; this.style.background='linear-gradient(135deg, rgba(255, 152, 0, 0.25), rgba(255, 109, 0, 0.15))'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'; this.style.background='linear-gradient(135deg, rgba(255, 152, 0, 0.15), rgba(255, 109, 0, 0.1))'">
+                    <div style="font-size: 2.2em; margin-bottom: 8px;">🧪</div>
+                    <h3 style="font-size: 1em; margin: 0 0 6px 0; color: #ff9800; font-weight: 700;">AI LAB</h3>
+                    <p style="font-size: 0.8em; color: #aaa; margin: 0;">AI analysis</p>
+                </button>
+
+                <!-- GAME MODES -->
+                <button id="start-game-modes-btn" style="
+                    background: linear-gradient(135deg, rgba(233, 30, 99, 0.15), rgba(194, 24, 91, 0.1));
+                    border: 2px solid #e91e63;
+                    border-radius: 12px;
+                    padding: 24px 18px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    color: white;
+                    text-align: center;
+                    min-height: 140px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                " onclick="showGameModesModal()" onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 10px 25px rgba(233, 30, 99, 0.25)'; this.style.background='linear-gradient(135deg, rgba(233, 30, 99, 0.25), rgba(194, 24, 91, 0.15))'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'; this.style.background='linear-gradient(135deg, rgba(233, 30, 99, 0.15), rgba(194, 24, 91, 0.1))'">
+                    <div style="font-size: 2.2em; margin-bottom: 8px;">🎭</div>
+                    <h3 style="font-size: 1em; margin: 0 0 6px 0; color: #e91e63; font-weight: 700;">VARIANTS</h3>
+                    <p style="font-size: 0.8em; color: #aaa; margin: 0;">Rule variants</p>
+                </button>
+
+                <!-- RULEBOOK -->
+                <button id="start-rulebook-btn" style="
+                    background: linear-gradient(135deg, rgba(156, 39, 176, 0.15), rgba(123, 31, 162, 0.1));
+                    border: 2px solid #9c27b0;
+                    border-radius: 12px;
+                    padding: 24px 18px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    color: white;
+                    text-align: center;
+                    min-height: 140px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                " onclick="showRuleBook()" onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 10px 25px rgba(156, 39, 176, 0.25)'; this.style.background='linear-gradient(135deg, rgba(156, 39, 176, 0.25), rgba(123, 31, 162, 0.15))'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'; this.style.background='linear-gradient(135deg, rgba(156, 39, 176, 0.15), rgba(123, 31, 162, 0.1))'">
+                    <div style="font-size: 2.2em; margin-bottom: 8px;">📚</div>
+                    <h3 style="font-size: 1em; margin: 0 0 6px 0; color: #9c27b0; font-weight: 700;">RULEBOOK</h3>
+                    <p style="font-size: 0.8em; color: #aaa; margin: 0;">Full rules</p>
+                </button>
+
+                <!-- ANALYSIS -->
+                <button id="start-analysis-btn" style="
+                    background: linear-gradient(135deg, rgba(76, 175, 80, 0.15), rgba(56, 142, 60, 0.1));
+                    border: 2px solid #4caf50;
+                    border-radius: 12px;
+                    padding: 24px 18px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    color: white;
+                    text-align: center;
+                    min-height: 140px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                " onclick="showGameAnalysis()" onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 10px 25px rgba(76, 175, 80, 0.25)'; this.style.background='linear-gradient(135deg, rgba(76, 175, 80, 0.25), rgba(56, 142, 60, 0.15))'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'; this.style.background='linear-gradient(135deg, rgba(76, 175, 80, 0.15), rgba(56, 142, 60, 0.1))'">
+                    <div style="font-size: 2.2em; margin-bottom: 8px;">📈</div>
+                    <h3 style="font-size: 1em; margin: 0 0 6px 0; color: #4caf50; font-weight: 700;">ANALYSIS</h3>
+                    <p style="font-size: 0.8em; color: #aaa; margin: 0;">Game data</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="position: relative; z-index: 10; text-align: center; color: #666; font-size: 0.85em; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 20px; width: 100%; margin-top: 40px;">
+            <p style="margin: 0;">Strategic thinking meets tactical brilliance • © 2025 ROMGON</p>
+        </div>
+
+        <style>
+            @keyframes moveGrid {
+                0% { transform: translate(0, 0); }
+                100% { transform: translate(50px, 50px); }
+            }
+        </style>
+    </div>
                 
                 <!-- Multiplayer Card -->
                 <button id="start-multiplayer-btn" style="
