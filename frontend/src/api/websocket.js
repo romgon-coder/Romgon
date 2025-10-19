@@ -69,7 +69,8 @@ class WebSocketClient {
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
             return 'http://localhost:3000';
         }
-        return 'https://api.romgon.net';
+        // Production - Railway backend
+        return 'https://romgon-api.up.railway.app';
     }
 
     /**

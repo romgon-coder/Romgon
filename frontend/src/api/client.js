@@ -19,8 +19,8 @@ class APIClient {
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
             return 'http://localhost:3000/api';
         }
-        // Production
-        return 'https://api.romgon.net/api';
+        // Production - Railway backend
+        return 'https://romgon-api.up.railway.app/api';
     }
 
     /**
