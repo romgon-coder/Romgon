@@ -1310,8 +1310,15 @@
         const currentUser = JSON.parse(localStorage.getItem('romgon-user') || '{}');
         const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
         
-        if (!currentUser.username || currentUser.type === 'guest') {
+        console.log('Player Hub - Current User:', currentUser);
+        console.log('Player Hub - All Users Keys:', Object.keys(allUsers));
+        
+        // Check if registered user (has username AND user exists in allUsers)
+        const isRegistered = currentUser.username && allUsers[currentUser.username];
+        
+        if (!isRegistered) {
             // Guest user
+            console.log('Showing as Guest Player');
             document.getElementById('account-sidebar-name').textContent = 'Guest Player';
             document.getElementById('account-sidebar-email').textContent = 'Session: ' + (currentUser.id || 'Anonymous');
             document.getElementById('account-sidebar-date').textContent = 'Not registered';
@@ -1329,14 +1336,23 @@
             document.getElementById('account-games').textContent = total;
             document.getElementById('account-winrate').textContent = total > 0 ? Math.round((guestStats.gamesWon / total) * 100) + '%' : '0%';
             
+            // Hide delete button for guests
+            const deleteBtn = document.querySelector('button[onclick="deleteAccount()"]');
+            if (deleteBtn) deleteBtn.style.display = 'none';
+            
             return;
         }
         
         // Registered user
-        if (!allUsers[currentUser.username]) return;
-        
+        console.log('Showing registered user:', currentUser.username);
         const userAccount = allUsers[currentUser.username];
         const stats = getUserStats(currentUser.username);
+        
+        if (!userAccount) {
+            console.error('User account not found:', currentUser.username);
+            return;
+        }
+        
         const regDate = new Date(userAccount.registeredDate);
         
         // Update sidebar
@@ -1346,43 +1362,61 @@
         
         // Member level based on games played
         let memberLevel = 'Bronze';
-        if (stats.gamesPlayed >= 100) memberLevel = 'Gold';
-        else if (stats.gamesPlayed >= 50) memberLevel = 'Silver';
+        if (stats && stats.gamesPlayed >= 100) memberLevel = 'Gold';
+        else if (stats && stats.gamesPlayed >= 50) memberLevel = 'Silver';
         document.getElementById('account-member-level').textContent = memberLevel;
-        document.getElementById('account-total-games').textContent = stats.gamesPlayed;
+        document.getElementById('account-total-games').textContent = stats ? stats.gamesPlayed : 0;
         
         // Avatar
         const avatarEl = document.getElementById('account-avatar');
         if (userAccount.picture) {
             avatarEl.innerHTML = `<img src="${userAccount.picture}" style="width: 100%; height: 100%; object-fit: cover;" />`;
         } else {
-            avatarEl.textContent = (userAccount.username || 'U').charAt(0).toUpperCase();
+            const initials = (userAccount.username || 'U').charAt(0).toUpperCase();
+            avatarEl.textContent = initials;
         }
+        avatarEl.style.fontSize = '3em';
         
         // Main content
         document.getElementById('account-username').textContent = userAccount.username;
         document.getElementById('account-email').textContent = userAccount.email;
         
-        // Stats
-        document.getElementById('account-wins').textContent = stats.gamesWon || 0;
-        document.getElementById('account-losses').textContent = stats.gamesLost || 0;
-        document.getElementById('account-games').textContent = stats.gamesPlayed || 0;
-        
-        const winRate = stats.gamesPlayed > 0 ? Math.round((stats.gamesWon / stats.gamesPlayed) * 100) : 0;
-        document.getElementById('account-winrate').textContent = winRate + '%';
-        
-        // Activity
-        if (stats.lastLogin) {
-            const lastLoginDate = new Date(stats.lastLogin);
-            document.getElementById('account-last-login').textContent = lastLoginDate.toLocaleString();
+        // Stats - use defaults if stats not available
+        if (stats) {
+            document.getElementById('account-wins').textContent = stats.gamesWon || 0;
+            document.getElementById('account-losses').textContent = stats.gamesLost || 0;
+            document.getElementById('account-games').textContent = stats.gamesPlayed || 0;
+            
+            const winRate = stats.gamesPlayed > 0 ? Math.round((stats.gamesWon / stats.gamesPlayed) * 100) : 0;
+            document.getElementById('account-winrate').textContent = winRate + '%';
+            
+            // Activity
+            if (stats.lastLogin) {
+                const lastLoginDate = new Date(stats.lastLogin);
+                document.getElementById('account-last-login').textContent = lastLoginDate.toLocaleString();
+            } else {
+                document.getElementById('account-last-login').textContent = 'Never';
+            }
+            document.getElementById('account-saved-games').textContent = (stats.savedGames || []).length;
+            document.getElementById('account-total-moves').textContent = stats.totalMoves || 0;
+            document.getElementById('account-total-captures').textContent = stats.totalCaptures || 0;
+        } else {
+            // No stats available yet
+            document.getElementById('account-wins').textContent = 0;
+            document.getElementById('account-losses').textContent = 0;
+            document.getElementById('account-games').textContent = 0;
+            document.getElementById('account-winrate').textContent = '0%';
+            document.getElementById('account-last-login').textContent = 'Never';
+            document.getElementById('account-saved-games').textContent = 0;
+            document.getElementById('account-total-moves').textContent = 0;
+            document.getElementById('account-total-captures').textContent = 0;
         }
-        document.getElementById('account-saved-games').textContent = (stats.savedGames || []).length;
-        document.getElementById('account-total-moves').textContent = stats.totalMoves || 0;
-        document.getElementById('account-total-captures').textContent = stats.totalCaptures || 0;
         
         // Show delete button for registered users
         const deleteBtn = document.querySelector('button[onclick="deleteAccount()"]');
         if (deleteBtn) deleteBtn.style.display = 'block';
+        
+        console.log('Player Hub data updated for:', userAccount.username);
     }
     
     // Modified showAccountModal to use new Player Hub
@@ -1890,7 +1924,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>ROMGON</title>
+    <!-- Version: 2025-10-19-001 -->
     <!-- Socket.IO Client for Multiplayer -->
     <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
     <style>
