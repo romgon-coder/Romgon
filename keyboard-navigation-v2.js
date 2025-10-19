@@ -419,8 +419,8 @@ class KeyboardNavigationSystemV2 {
    * Execute the move with selected rotation
    */
   executeMoveWithRotation(rotationChoice) {
-    if (!this.selectedMovementPos) {
-      this.logDebug('No move to execute');
+    if (!this.selectedMovementPos || !this.selectedPieceElement) {
+      this.logDebug('No move or piece to execute');
       return;
     }
 
@@ -439,16 +439,31 @@ class KeyboardNavigationSystemV2 {
       // 'keep' means no rotation
     }
 
-    // Execute the move through game's drop system
+    // Get the target hex and source hex
     const targetHexId = `hex-${this.selectedMovementPos.row}-${this.selectedMovementPos.col}`;
+    const sourceHexId = `hex-${this.selectedPiecePos.row}-${this.selectedPiecePos.col}`;
     const targetHex = document.getElementById(targetHexId);
+    const sourceHex = document.getElementById(sourceHexId);
     
-    if (targetHex) {
-      targetHex.dispatchEvent(new DragEvent('drop', {
-        bubbles: true,
-        cancelable: true,
-      }));
+    if (!targetHex) {
+      this.logDebug(`Target hex not found: ${targetHexId}`);
+      return;
     }
+
+    // Set up game's drag state for drop handler
+    window.draggedPiece = this.selectedPieceElement;
+    window.draggedFromHex = sourceHex;
+
+    // Dispatch drop event
+    this.logDebug(`Dispatching drop: ${sourceHexId} -> ${targetHexId}`);
+    targetHex.dispatchEvent(new DragEvent('drop', {
+      bubbles: true,
+      cancelable: true,
+    }));
+
+    // Clean up
+    window.draggedPiece = null;
+    window.draggedFromHex = null;
 
     // Reset to piece selection
     this.resetPhase();

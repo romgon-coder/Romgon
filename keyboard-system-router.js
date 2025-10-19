@@ -142,7 +142,11 @@ class KeyboardSystemRouter {
       this.logDebug('✅ General Navigation System activated');
     } else if (window.generalNav) {
       window.generalNav.enabled = true;
-      this.logDebug('✅ General Navigation System re-enabled');
+      // Reset focus when re-enabling so it finds elements on new screen
+      window.generalNav.currentFocusIndex = -1;
+      window.generalNav.focusedElement = null;
+      window.generalNav.updateNavigationElements();
+      this.logDebug('✅ General Navigation System re-enabled (focus reset)');
     }
     
     this.systemActive = 'general';
