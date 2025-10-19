@@ -13255,6 +13255,81 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 showAllButton.style.backgroundColor = showAllMoves ? '#00ff00' : '#666';
             }
         }
+
+        // Keyboard System Toggle Functions
+        function togglePVPKeyboard() {
+            if (typeof window.keyboardNav === 'undefined' || window.keyboardNav === null) {
+                console.log('⚠️ PVP Keyboard system not initialized');
+                alert('PVP Keyboard system not available during this screen');
+                return;
+            }
+
+            const isEnabled = window.keyboardNav.enabled;
+            window.keyboardNav.enabled = !isEnabled;
+
+            const button = document.getElementById('kb-pvp-toggle');
+            if (button) {
+                if (window.keyboardNav.enabled) {
+                    button.style.backgroundColor = '#26de81';
+                    button.innerHTML = '✓ PVP KEYBOARD';
+                    console.log('✅ PVP Keyboard ENABLED');
+                } else {
+                    button.style.backgroundColor = '#888';
+                    button.innerHTML = '○ PVP KEYBOARD';
+                    console.log('❌ PVP Keyboard DISABLED');
+                }
+            }
+        }
+
+        function toggleGeneralNavigation() {
+            if (typeof window.generalNav === 'undefined' || window.generalNav === null) {
+                console.log('⚠️ General Navigation system not initialized');
+                alert('General Navigation system not available during this screen');
+                return;
+            }
+
+            const isEnabled = window.generalNav.enabled;
+            window.generalNav.enabled = !isEnabled;
+
+            const button = document.getElementById('kb-general-toggle');
+            if (button) {
+                if (window.generalNav.enabled) {
+                    button.style.backgroundColor = '#26de81';
+                    button.innerHTML = '✓ GENERAL NAVIGATION';
+                    console.log('✅ General Navigation ENABLED');
+                } else {
+                    button.style.backgroundColor = '#888';
+                    button.innerHTML = '○ GENERAL NAVIGATION';
+                    console.log('❌ General Navigation DISABLED');
+                }
+            }
+        }
+
+        function updateKeyboardToggleButtons() {
+            // Update PVP keyboard button
+            const pvpButton = document.getElementById('kb-pvp-toggle');
+            if (pvpButton && typeof window.keyboardNav !== 'undefined' && window.keyboardNav !== null) {
+                if (window.keyboardNav.enabled) {
+                    pvpButton.style.backgroundColor = '#26de81';
+                    pvpButton.innerHTML = '✓ PVP KEYBOARD';
+                } else {
+                    pvpButton.style.backgroundColor = '#888';
+                    pvpButton.innerHTML = '○ PVP KEYBOARD';
+                }
+            }
+
+            // Update General navigation button
+            const genButton = document.getElementById('kb-general-toggle');
+            if (genButton && typeof window.generalNav !== 'undefined' && window.generalNav !== null) {
+                if (window.generalNav.enabled) {
+                    genButton.style.backgroundColor = '#26de81';
+                    genButton.innerHTML = '✓ GENERAL NAVIGATION';
+                } else {
+                    genButton.style.backgroundColor = '#888';
+                    genButton.innerHTML = '○ GENERAL NAVIGATION';
+                }
+            }
+        }
         
         // Function to display all possible moves for all pieces
         function displayAllPossibleMoves() {
@@ -13972,6 +14047,8 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 const panel = document.getElementById('kb-info-panel');
                 if (panel.style.display === 'none') {
                     panel.style.display = 'block';
+                    // Update button states when panel opens
+                    updateKeyboardToggleButtons();
                 } else {
                     panel.style.display = 'none';
                 }

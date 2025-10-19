@@ -3173,9 +3173,47 @@
             </div>
         </div>
 
-        <div style="border-top: 2px solid #4ecdc4; padding-top: 15px; margin-top: 20px; font-size: 0.85em;">
-            <p style="margin: 0 0 10px 0; color: #26de81;"><strong>✓ Keyboard active</strong></p>
-            <p style="margin: 0; color: #888;">Press the ⌨️ button to toggle this panel</p>
+        <div style="border-top: 2px solid #4ecdc4; padding-top: 15px; margin-top: 20px;">
+            <h3 style="color: #f57d2d; margin: 0 0 15px 0; font-size: 0.95em;">KEYBOARD MODES</h3>
+            
+            <button id="kb-pvp-toggle" onclick="togglePVPKeyboard()" style="
+                width: 100%;
+                padding: 10px;
+                margin-bottom: 10px;
+                background-color: #26de81;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 0.9em;
+                transition: all 0.3s ease;
+                font-family: 'Courier New', monospace;
+            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                ✓ PVP KEYBOARD
+            </button>
+            
+            <button id="kb-general-toggle" onclick="toggleGeneralNavigation()" style="
+                width: 100%;
+                padding: 10px;
+                margin-bottom: 15px;
+                background-color: #888;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 0.9em;
+                transition: all 0.3s ease;
+                font-family: 'Courier New', monospace;
+            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                ○ GENERAL NAVIGATION
+            </button>
+
+            <p style="margin: 0; font-size: 0.85em; color: #888; line-height: 1.6;">
+                <strong>PVP:</strong> Use WASD+E for piece/move selection and rotation<br>
+                <strong>General:</strong> Navigate menus and UI with WASD+E
+            </p>
         </div>
     </div>
 
@@ -13255,6 +13293,130 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 showAllButton.style.backgroundColor = showAllMoves ? '#00ff00' : '#666';
             }
         }
+
+        // Keyboard System Toggle Functions
+        function togglePVPKeyboard() {
+            if (typeof window.keyboardNav === 'undefined' || window.keyboardNav === null) {
+                console.log('⚠️ PVP Keyboard system not initialized');
+                alert('PVP Keyboard system not available during this screen');
+                return;
+            }
+
+            const isEnabled = window.keyboardNav.enabled;
+            window.keyboardNav.enabled = !isEnabled;
+
+            const button = document.getElementById('kb-pvp-toggle');
+            if (button) {
+                if (window.keyboardNav.enabled) {
+                    button.style.backgroundColor = '#26de81';
+                    button.innerHTML = '✓ PVP KEYBOARD';
+                    console.log('✅ PVP Keyboard ENABLED');
+                } else {
+                    button.style.backgroundColor = '#888';
+                    button.innerHTML = '○ PVP KEYBOARD';
+                    console.log('❌ PVP Keyboard DISABLED');
+                }
+            }
+        }
+
+        function toggleGeneralNavigation() {
+            if (typeof window.generalNav === 'undefined' || window.generalNav === null) {
+                console.log('⚠️ General Navigation system not initialized');
+                alert('General Navigation system not available during this screen');
+                return;
+            }
+
+            const isEnabled = window.generalNav.enabled;
+            window.generalNav.enabled = !isEnabled;
+
+            const button = document.getElementById('kb-general-toggle');
+            if (button) {
+                if (window.generalNav.enabled) {
+                    button.style.backgroundColor = '#26de81';
+                    button.innerHTML = '✓ GENERAL NAVIGATION';
+                    console.log('✅ General Navigation ENABLED');
+                } else {
+                    button.style.backgroundColor = '#888';
+                    button.innerHTML = '○ GENERAL NAVIGATION';
+                    console.log('❌ General Navigation DISABLED');
+                }
+            }
+        }
+
+        function updateKeyboardToggleButtons() {
+            // Update PVP keyboard button
+            const pvpButton = document.getElementById('kb-pvp-toggle');
+            if (pvpButton && typeof window.keyboardNav !== 'undefined' && window.keyboardNav !== null) {
+                if (window.keyboardNav.enabled) {
+                    pvpButton.style.backgroundColor = '#26de81';
+                    pvpButton.innerHTML = '✓ PVP KEYBOARD';
+                } else {
+                    pvpButton.style.backgroundColor = '#888';
+                    pvpButton.innerHTML = '○ PVP KEYBOARD';
+                }
+            }
+
+            // Update General navigation button
+            const genButton = document.getElementById('kb-general-toggle');
+            if (genButton && typeof window.generalNav !== 'undefined' && window.generalNav !== null) {
+                if (window.generalNav.enabled) {
+                    genButton.style.backgroundColor = '#26de81';
+                    genButton.innerHTML = '✓ GENERAL NAVIGATION';
+                } else {
+                    genButton.style.backgroundColor = '#888';
+                    genButton.innerHTML = '○ GENERAL NAVIGATION';
+                }
+            }
+        }
+        
+        // Keyboard System Toggle Functions
+        function togglePVPKeyboard() {
+            if (typeof window.keyboardNav === 'undefined' || window.keyboardNav === null) {
+                console.log('⚠️ PVP Keyboard system not initialized');
+                alert('PVP Keyboard system not available during this screen');
+                return;
+            }
+
+            const isEnabled = window.keyboardNav.enabled;
+            window.keyboardNav.enabled = !isEnabled;
+
+            const button = document.getElementById('kb-pvp-toggle');
+            if (button) {
+                if (window.keyboardNav.enabled) {
+                    button.style.backgroundColor = '#26de81';
+                    button.innerHTML = '✓ PVP KEYBOARD';
+                    console.log('✅ PVP Keyboard ENABLED');
+                } else {
+                    button.style.backgroundColor = '#888';
+                    button.innerHTML = '○ PVP KEYBOARD';
+                    console.log('❌ PVP Keyboard DISABLED');
+                }
+            }
+        }
+
+        function toggleGeneralNavigation() {
+            if (typeof window.generalNav === 'undefined' || window.generalNav === null) {
+                console.log('⚠️ General Navigation system not initialized');
+                alert('General Navigation system not available during this screen');
+                return;
+            }
+
+            const isEnabled = window.generalNav.enabled;
+            window.generalNav.enabled = !isEnabled;
+
+            const button = document.getElementById('kb-general-toggle');
+            if (button) {
+                if (window.generalNav.enabled) {
+                    button.style.backgroundColor = '#26de81';
+                    button.innerHTML = '✓ GENERAL NAVIGATION';
+                    console.log('✅ General Navigation ENABLED');
+                } else {
+                    button.style.backgroundColor = '#888';
+                    button.innerHTML = '○ GENERAL NAVIGATION';
+                    console.log('❌ General Navigation DISABLED');
+                }
+            }
+        }
         
         // Function to display all possible moves for all pieces
         function displayAllPossibleMoves() {
@@ -13267,6 +13429,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 : document.querySelectorAll('.white-piece, .white-triangle, .white-rhombus, .white-circle, .white-hexgon');
             
             console.log(`👁️ Displaying all moves for ${pieces.length} ${currentPlayer} pieces`);
+            
             
             pieces.forEach(piece => {
                 const pieceHex = piece.closest('.hexagon');
@@ -13972,6 +14135,8 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 const panel = document.getElementById('kb-info-panel');
                 if (panel.style.display === 'none') {
                     panel.style.display = 'block';
+                    // Update button states when panel opens
+                    updateKeyboardToggleButtons();
                 } else {
                     panel.style.display = 'none';
                 }
