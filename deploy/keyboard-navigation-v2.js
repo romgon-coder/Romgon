@@ -425,21 +425,26 @@ class KeyboardNavigationSystemV2 {
    * End the rotation phase and call switchTurn
    */
   endRotationPhase() {
-    if (this.selectedPiecePos) {
-      const hexId = `hex-${this.selectedMovementPos.row}-${this.selectedMovementPos.col}`;
-      
-      // Mark as rotated (even if no rotation was applied) to ensure proper turn tracking
-      if (typeof pieceActions !== 'undefined') {
-        const actions = pieceActions.get(hexId) || {moved: false, attacked: false, rotated: false};
-        actions.rotated = true;
-        pieceActions.set(hexId, actions);
-      }
+    // Get the current hex where the piece is now (after movement)
+    const targetHexId = `hex-${this.selectedMovementPos.row}-${this.selectedMovementPos.col}`;
+    
+    this.logDebug(`Ending rotation phase for hex: ${targetHexId}`);
+    
+    // Mark as rotated (whether rotation was applied or not) to finalize the turn
+    // This matches the behavior of the KEEP button in the UI
+    if (typeof pieceActions !== 'undefined') {
+      const actions = pieceActions.get(targetHexId) || {moved: false, attacked: false, rotated: false};
+      actions.rotated = true;
+      pieceActions.set(targetHexId, actions);
+      this.logDebug(`Marked ${targetHexId} as rotated`);
     }
-
+    
     // Call switchTurn to end the turn
     if (typeof switchTurn === 'function') {
       this.logDebug('Calling switchTurn to end turn');
       switchTurn();
+    } else {
+      this.logDebug('ERROR: switchTurn function not found!');
     }
 
     this.resetPhase();
