@@ -573,7 +573,8 @@
         const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
         
         if (!currentUser || !currentUser.username || !allUsers[currentUser.username]) {
-            showSignUpError('Please log in first');
+            // Show helpful message instead of error
+            alert('📝 Create an account to access your profile, stats, and settings!\n\nClick "Create Account" on the login screen to get started.');
             return;
         }
         
@@ -618,12 +619,20 @@
         const currentUser = JSON.parse(localStorage.getItem('romgon-user'));
         const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
         
-        if (!currentUser || !currentUser.username || !allUsers[currentUser.username]) {
-            alert('Please log in first');
-            return;
-        }
+        // Allow both registered and guest users to access settings
+        let userSettings = {};
         
-        const userSettings = allUsers[currentUser.username].settings;
+        if (currentUser && currentUser.username && allUsers[currentUser.username]) {
+            // Registered user - load their settings
+            userSettings = allUsers[currentUser.username].settings;
+        } else {
+            // Guest user - use default settings
+            userSettings = {
+                audioEnabled: true,
+                theme: 'dark',
+                boardZoom: 1
+            };
+        }
         
         // Load current settings
         document.getElementById('settings-audio').checked = userSettings.audioEnabled !== false;
@@ -644,20 +653,27 @@
         const currentUser = JSON.parse(localStorage.getItem('romgon-user'));
         const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
         
-        if (!currentUser || !currentUser.username) return;
-        
         const audioEnabled = document.getElementById('settings-audio').checked;
         const theme = document.getElementById('settings-theme').value;
         const zoom = parseFloat(document.getElementById('settings-zoom').value);
         
-        // Update user settings in localStorage
-        allUsers[currentUser.username].settings = {
-            audioEnabled: audioEnabled,
-            theme: theme,
-            boardZoom: zoom
-        };
-        
-        localStorage.setItem('romgon-users', JSON.stringify(allUsers));
+        // Save settings
+        if (currentUser && currentUser.username && allUsers[currentUser.username]) {
+            // Registered user - save to their profile
+            allUsers[currentUser.username].settings = {
+                audioEnabled: audioEnabled,
+                theme: theme,
+                boardZoom: zoom
+            };
+            localStorage.setItem('romgon-users', JSON.stringify(allUsers));
+        } else {
+            // Guest user - save to localStorage with 'guest' key
+            localStorage.setItem('romgon-guest-settings', JSON.stringify({
+                audioEnabled: audioEnabled,
+                theme: theme,
+                boardZoom: zoom
+            }));
+        }
         
         // Apply theme if needed
         if (theme === 'wooden') {
