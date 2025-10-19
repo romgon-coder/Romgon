@@ -422,7 +422,7 @@ class KeyboardNavigationSystemV2 {
   }
 
   /**
-   * End the rotation phase and call switchTurn
+   * End the rotation phase and call switchTurn (mimics keepButton behavior)
    */
   endRotationPhase() {
     // Get the current hex where the piece is now (after movement)
@@ -436,21 +436,36 @@ class KeyboardNavigationSystemV2 {
       rotationControls.style.display = 'none';
     }
     
-    // Mark as rotated (whether rotation was applied or not) to finalize the turn
-    // This matches the behavior of the KEEP button in the UI
+    // Get the selected piece element
+    const selectedPieceElement = document.getElementById(targetHexId);
+    if (!selectedPieceElement) {
+      this.logDebug(`ERROR: Selected piece element not found for ${targetHexId}`);
+      this.resetPhase();
+      return;
+    }
+    
+    // Mark as rotated (mimics keepButton logic)
     if (typeof pieceActions !== 'undefined') {
       const actions = pieceActions.get(targetHexId) || {moved: false, attacked: false, rotated: false};
       actions.rotated = true;
       pieceActions.set(targetHexId, actions);
-      this.logDebug(`Marked ${targetHexId} as rotated`);
+      this.logDebug(`Marked ${targetHexId} as rotated: ${actions}`);
     }
     
-    // Call switchTurn to end the turn
-    if (typeof switchTurn === 'function') {
+    // Call switchTurn to end the turn (same as keepButton)
+    if (typeof switchTurn === 'function' && typeof gameOver !== 'undefined' && !gameOver) {
       this.logDebug('Calling switchTurn to end turn');
       switchTurn();
+      
+      // Also call updateBaseDefenceDisplay and highlightAllPiecesUnderAttack like keepButton does
+      if (typeof updateBaseDefenceDisplay === 'function') {
+        updateBaseDefenceDisplay();
+      }
+      if (typeof highlightAllPiecesUnderAttack === 'function') {
+        highlightAllPiecesUnderAttack();
+      }
     } else {
-      this.logDebug('ERROR: switchTurn function not found!');
+      this.logDebug('ERROR: switchTurn function not found or gameOver is true!');
     }
 
     this.resetPhase();
