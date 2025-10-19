@@ -13617,16 +13617,20 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             const menuButton = document.createElement('button');
             menuButton.innerHTML = '🏠 MENU';
             menuButton.style.cssText = `
-                background-color: #ff6b6b;
+                background-image: url('ASSETS/menuButton.png');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
                 color: white;
                 border: none;
-                padding: 8px 16px;
-                border-radius: 20px;
+                padding: 6px 12px;
+                border-radius: 8px;
                 cursor: pointer;
                 font-weight: bold;
-                font-size: 12px;
-                box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
-                transition: all 0.3s ease;
+                font-size: 9px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+                transition: all 0.2s ease;
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
             `;
             menuButton.onclick = function() {
                 gameInProgress = true;
@@ -13642,16 +13646,20 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 aiModelButton.id = 'ai-model-selector-btn';
                 aiModelButton.innerHTML = '🧠 AI';
                 aiModelButton.style.cssText = `
-                    background-color: #00d2ff;
+                    background-image: url('ASSETS/menuButton.png');
+                    background-size: cover;
+                    background-position: center;
+                    background-repeat: no-repeat;
                     color: white;
                     border: none;
-                    padding: 8px 16px;
-                    border-radius: 20px;
+                    padding: 6px 12px;
+                    border-radius: 8px;
                     cursor: pointer;
                     font-weight: bold;
-                    font-size: 12px;
-                    box-shadow: 0 2px 8px rgba(0, 210, 255, 0.3);
-                    transition: all 0.3s ease;
+                    font-size: 9px;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+                    transition: all 0.2s ease;
+                    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
                 `;
                 aiModelButton.onclick = showAIModelSelector;
                 aiModelButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
@@ -13662,16 +13670,20 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             const coordButton = document.createElement('button');
             coordButton.innerHTML = '📍 COORDS';
             coordButton.style.cssText = `
-                background-color: #ffa500;
+                background-image: url('ASSETS/menuButton.png');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
                 color: white;
                 border: none;
                 padding: 4px 10px;
-                border-radius: 15px;
+                border-radius: 8px;
                 cursor: pointer;
                 font-weight: bold;
-                font-size: 10px;
-                box-shadow: 0 2px 8px rgba(255, 165, 0, 0.3);
-                transition: all 0.3s ease;
+                font-size: 9px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+                transition: all 0.2s ease;
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
             `;
             coordButton.onclick = toggleCoordinates;
             coordButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
@@ -13681,22 +13693,25 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             const defenseButton = document.createElement('button');
             defenseButton.innerHTML = '🛡️ DEFENSE';
             defenseButton.style.cssText = `
-                background-color: #27ae60;
+                background-image: url('ASSETS/menuButton.png');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
                 color: white;
                 border: none;
                 padding: 4px 10px;
-                border-radius: 15px;
+                border-radius: 8px;
                 cursor: pointer;
                 font-weight: bold;
-                font-size: 10px;
-                box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
-                transition: all 0.3s ease;
+                font-size: 9px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+                transition: all 0.2s ease;
                 margin-left: 5px;
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
             `;
             let defenseHighlightEnabled = false;
             defenseButton.onclick = function() {
                 defenseHighlightEnabled = !defenseHighlightEnabled;
-                this.style.backgroundColor = defenseHighlightEnabled ? '#16a085' : '#27ae60';
                 
                 if (defenseHighlightEnabled) {
                     showDefenseHighlights();
@@ -13711,22 +13726,25 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             const fogButton = document.createElement('button');
             fogButton.innerHTML = fogOfWarEnabled ? '👁️ FOG ON' : '👁️ FOG OFF';
             fogButton.style.cssText = `
-                background-color: ${fogOfWarEnabled ? '#8e44ad' : '#95a5a6'};
+                background-image: url('ASSETS/menuButton.png');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
                 color: white;
                 border: none;
                 padding: 4px 10px;
-                border-radius: 15px;
+                border-radius: 8px;
                 cursor: pointer;
                 font-weight: bold;
-                font-size: 10px;
-                box-shadow: 0 2px 8px rgba(142, 68, 173, 0.3);
-                transition: all 0.3s ease;
+                font-size: 9px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+                transition: all 0.2s ease;
                 margin-left: 5px;
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
             `;
             fogButton.onclick = function() {
                 fogOfWarEnabled = !fogOfWarEnabled;
                 this.innerHTML = fogOfWarEnabled ? '👁️ FOG ON' : '👁️ FOG OFF';
-                this.style.backgroundColor = fogOfWarEnabled ? '#8e44ad' : '#95a5a6';
                 updateFogOfWar();
                 console.log('🌫️ Fog of War:', fogOfWarEnabled ? 'ENABLED' : 'DISABLED');
             };
@@ -14030,16 +14048,20 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             const helpButton = document.createElement('button');
             helpButton.innerHTML = '❓ HELP';
             helpButton.style.cssText = `
-                background-color: #4ecdc4;
+                background-image: url('ASSETS/menuButton.png');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
                 color: white;
                 border: none;
-                padding: 8px 16px;
-                border-radius: 20px;
+                padding: 8px 14px;
+                border-radius: 8px;
                 cursor: pointer;
                 font-weight: bold;
-                font-size: 12px;
-                box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
-                transition: all 0.3s ease;
+                font-size: 10px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+                transition: all 0.2s ease;
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
             `;
             helpButton.onclick = showHelp;
             helpButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
@@ -14059,22 +14081,24 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             const updateMusicButtonDisplayLocal = () => {
                 const isMusicOn = gameSettings.music && currentMusicTrack > 0;
                 musicButton.innerHTML = isMusicOn ? '🔊 MUSIC' : '🔇 MUSIC';
-                musicButton.style.backgroundColor = isMusicOn ? '#8B4513' : '#654321'; // Wooden brown colors
-                musicButton.style.border = '2px solid #D2691E'; // Saddle brown border for wooden look
-                musicButton.style.boxShadow = isMusicOn ? '0 2px 8px rgba(139, 69, 19, 0.4)' : '0 2px 8px rgba(101, 67, 33, 0.3)';
             };
             updateMusicButtonDisplayLocal(); // Initial display
             musicButton.style.cssText = `
+                background-image: url('ASSETS/menuButton.png');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
                 color: white;
-                border: 2px solid #D2691E;
+                border: none;
                 padding: 4px 10px;
-                border-radius: 15px;
+                border-radius: 8px;
                 cursor: pointer;
                 font-weight: bold;
-                font-size: 10px;
-                transition: all 0.3s ease;
+                font-size: 9px;
+                transition: all 0.2s ease;
                 margin-left: 5px;
-                background: linear-gradient(135deg, #8B4513, #654321); /* Wooden gradient */
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
             `;
             musicButton.onclick = function() {
                 if (gameSettings.music && currentMusicTrack > 0) {
@@ -14103,17 +14127,21 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             const undoButton = document.createElement('button');
             undoButton.innerHTML = '↩️ UNDO';
             undoButton.style.cssText = `
-                background-color: #8884ff;
+                background-image: url('ASSETS/menuButton.png');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
                 color: white;
                 border: none;
-                padding: 4px 10px;
-                border-radius: 15px;
+                padding: 6px 12px;
+                border-radius: 8px;
                 cursor: pointer;
                 font-weight: bold;
-                font-size: 10px;
-                box-shadow: 0 2px 8px rgba(136, 132, 255, 0.3);
-                transition: all 0.3s ease;
+                font-size: 9px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+                transition: all 0.2s ease;
                 margin-left: 6px;
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
             `;
             undoButton.onclick = undoLastMove;
             undoButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
@@ -14124,17 +14152,21 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             kbHelpButton.innerHTML = '⌨️ HELP';
             kbHelpButton.title = 'Toggle keyboard controls help';
             kbHelpButton.style.cssText = `
-                background-color: #4ecdc4;
+                background-image: url('ASSETS/menuButton.png');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
                 color: white;
                 border: none;
-                padding: 4px 10px;
-                border-radius: 15px;
+                padding: 6px 12px;
+                border-radius: 8px;
                 cursor: pointer;
                 font-weight: bold;
-                font-size: 10px;
-                box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
-                transition: all 0.3s ease;
+                font-size: 9px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+                transition: all 0.2s ease;
                 margin-left: 6px;
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
             `;
             kbHelpButton.onclick = function() {
                 const panel = document.getElementById('kb-info-panel');
@@ -14155,23 +14187,26 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             toggleLastMoveButton.innerHTML = isLastMoveVisible ? '👁️ HIDE' : '👁️ SHOW';
             toggleLastMoveButton.title = 'Toggle last move highlight';
             toggleLastMoveButton.style.cssText = `
-                background-color: ${isLastMoveVisible ? '#ffd700' : '#666'};
+                background-image: url('ASSETS/menuButton.png');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
                 color: white;
                 border: none;
-                padding: 8px 16px;
-                border-radius: 20px;
+                padding: 8px 14px;
+                border-radius: 8px;
                 cursor: pointer;
                 font-weight: bold;
-                font-size: 12px;
-                box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
-                transition: all 0.3s ease;
+                font-size: 10px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+                transition: all 0.2s ease;
                 margin-left: 6px;
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
             `;
             toggleLastMoveButton.onclick = function() {
                 if (typeof gameSettings !== 'undefined') {
                     gameSettings.showLastMove = !gameSettings.showLastMove;
                     this.innerHTML = gameSettings.showLastMove ? '👁️ HIDE' : '👁️ SHOW';
-                    this.style.backgroundColor = gameSettings.showLastMove ? '#ffd700' : '#666';
                     
                     // Update the highlight display
                     if (gameSettings.showLastMove) {
@@ -14190,17 +14225,21 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             showAllMovesButton.innerHTML = showAllMoves ? '👁️ HIDE ALL' : '👁️ SHOW ALL';
             showAllMovesButton.title = 'Show all possible moves for all pieces (including rotations)';
             showAllMovesButton.style.cssText = `
-                background-color: ${showAllMoves ? '#00ff00' : '#666'};
+                background-image: url('ASSETS/menuButton.png');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
                 color: white;
                 border: none;
-                padding: 8px 16px;
-                border-radius: 20px;
+                padding: 8px 14px;
+                border-radius: 8px;
                 cursor: pointer;
                 font-weight: bold;
-                font-size: 12px;
-                box-shadow: 0 2px 8px rgba(0, 255, 0, 0.3);
-                transition: all 0.3s ease;
+                font-size: 10px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+                transition: all 0.2s ease;
                 margin-left: 6px;
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
             `;
             showAllMovesButton.onclick = toggleShowAllMoves;
             showAllMovesButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
@@ -14212,17 +14251,21 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             flipButton.innerHTML = boardFlipped ? '🔄 NORMAL' : '🔄 FLIP';
             flipButton.title = 'Manually flip board orientation (overrides auto-flip)';
             flipButton.style.cssText = `
-                background-color: #ffa500;
+                background-image: url('ASSETS/menuButton.png');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
                 color: white;
                 border: none;
-                padding: 8px 16px;
-                border-radius: 20px;
+                padding: 8px 14px;
+                border-radius: 8px;
                 cursor: pointer;
                 font-weight: bold;
-                font-size: 12px;
-                box-shadow: 0 2px 8px rgba(255, 165, 0, 0.3);
-                transition: all 0.3s ease;
+                font-size: 10px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+                transition: all 0.2s ease;
                 margin-left: 6px;
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
             `;
             flipButton.onclick = function() {
                 toggleBoardFlip();
