@@ -3,3 +3,8 @@ node_modules
 *.log
 .git
 .env
+index.html
+*.HTML
+board.HTML
+live-romgon.html
+*.md

@@ -1,0 +1,10 @@
+{
+  "buildCommand": "",
+  "installCommand": "echo 'No install needed'",
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}

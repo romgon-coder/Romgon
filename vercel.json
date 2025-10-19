@@ -1,11 +1,15 @@
 {
   "buildCommand": "",
-  "outputDirectory": "./frontend",
   "installCommand": "echo 'No install needed'",
+  "outputDirectory": "frontend",
+  "public": "frontend",
   "rewrites": [
     {
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }
