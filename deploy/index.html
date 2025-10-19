@@ -2274,6 +2274,30 @@
             z-index: 9;
             position: relative;
         }
+
+        /* Keyboard Navigation - Piece Selection */
+        .kb-piece-selected {
+            border: 3px solid #ffff00 !important;
+            box-shadow: 0 0 15px #ffff00, inset 0 0 10px rgba(255, 255, 0, 0.5) !important;
+            z-index: 20 !important;
+        }
+
+        .kb-piece-selected .square-piece,
+        .kb-piece-selected .triangle-piece,
+        .kb-piece-selected .rhombus-piece,
+        .kb-piece-selected .circle-piece,
+        .kb-piece-selected .hexgon-piece {
+            border: 2px solid #ffff00 !important;
+            box-shadow: 0 0 10px #ffff00 !important;
+        }
+
+        /* Keyboard Navigation - Move Navigation */
+        .kb-move-navigating {
+            border: 2px solid #00ff00 !important;
+            box-shadow: 0 0 12px #00ff00, inset 0 0 8px rgba(0, 255, 0, 0.3) !important;
+            background-color: rgba(0, 255, 0, 0.1) !important;
+            z-index: 15 !important;
+        }
         
         /* NEW: Highlight for piece that just moved and is under attack */
         .highlight-under-attack {

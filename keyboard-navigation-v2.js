@@ -150,17 +150,24 @@ class KeyboardNavigationSystemV2 {
    * Update UI for piece selection phase
    */
   updatePieceSelectionUI() {
-    // Remove old highlight
+    // Remove old highlight from all pieces
     document.querySelectorAll('.kb-piece-selected').forEach(el => {
       el.classList.remove('kb-piece-selected');
     });
 
-    // Add highlight to current piece
+    // Add highlight to current piece element AND its parent hex
     if (this.selectedPieceElement) {
       this.selectedPieceElement.classList.add('kb-piece-selected');
+      
+      // Also highlight the hex it's in
+      const hexParent = this.selectedPieceElement.closest('[id^="hex-"]');
+      if (hexParent) {
+        hexParent.classList.add('kb-piece-selected');
+      }
     }
 
     this.updatePhaseIndicator('pieceSelection');
+    this.logDebug(`Piece UI updated: [${this.selectedPiecePos.row}, ${this.selectedPiecePos.col}]`);
   }
 
   /**
@@ -179,16 +186,49 @@ class KeyboardNavigationSystemV2 {
     window.draggedPiece = this.selectedPieceElement;
     window.draggedFromHex = hexElement;
 
-    // Show valid moves
-    if (typeof showMovementPattern === 'function') {
-      showMovementPattern(this.selectedPiecePos.row, this.selectedPiecePos.col);
-    }
+    // Show valid moves based on piece type
+    this.showMovesForPiece(this.selectedPiecePos.row, this.selectedPiecePos.col);
 
     this.phase = 'moveSelection';
     this.selectedMovementPos = null;
     this.highlightedMoves = this.getHighlightedMoveHexes();
     this.logDebug(`Move selection phase started, ${this.highlightedMoves.length} valid moves`);
     this.updatePhaseIndicator('moveSelection');
+  }
+
+  /**
+   * Show movement pattern based on piece type
+   */
+  showMovesForPiece(row, col) {
+    if (!this.selectedPieceElement) return;
+
+    // Determine piece type and call appropriate function
+    if (this.selectedPieceElement.classList.contains('circle-piece')) {
+      this.logDebug('Circle piece - calling showCircleMovementPattern');
+      if (typeof showCircleMovementPattern === 'function') {
+        showCircleMovementPattern(row, col);
+      }
+    } else if (this.selectedPieceElement.classList.contains('triangle-piece')) {
+      this.logDebug('Triangle piece - calling showTriangleMovementPattern');
+      if (typeof showTriangleMovementPattern === 'function') {
+        showTriangleMovementPattern(row, col);
+      }
+    } else if (this.selectedPieceElement.classList.contains('hexgon-piece')) {
+      this.logDebug('Hexagon piece - calling showHexgonMovementPattern');
+      if (typeof showHexgonMovementPattern === 'function') {
+        showHexgonMovementPattern(row, col);
+      }
+    } else if (this.selectedPieceElement.classList.contains('rhombus-piece')) {
+      this.logDebug('Rhombus piece - calling showRhombusMovementPattern');
+      if (typeof showRhombusMovementPattern === 'function') {
+        showRhombusMovementPattern(row, col);
+      }
+    } else if (this.selectedPieceElement.classList.contains('square-piece')) {
+      this.logDebug('Square piece - calling showSquareMovementPattern');
+      if (typeof showSquareMovementPattern === 'function') {
+        showSquareMovementPattern(row, col);
+      }
+    }
   }
 
   /**
