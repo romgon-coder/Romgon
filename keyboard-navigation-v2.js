@@ -538,7 +538,7 @@ class KeyboardNavigationSystemV2 {
     const phaseMessages = {
       'idle': '⌨️ Press any key to start - WASD to select piece, E to confirm',
       'pieceSelection': '🎯 Piece Selection: WASD to navigate, E to confirm',
-      'moveSelection': '📍 Move Selection: WASD to navigate, SPACE to confirm (R for rotation)',
+      'moveSelection': '📍 Move Selection: WASD to navigate, SPACE to confirm',
       'rotationSelection': '🔄 Rotation: WASD to choose (Left/Keep/Right), SPACE to execute',
     };
 
@@ -553,6 +553,8 @@ class KeyboardNavigationSystemV2 {
     };
     
     indicator.style.backgroundColor = colors[phase] || '#666';
+    // Only show if not idle (idle means not in active game)
+    indicator.style.display = phase === 'idle' ? 'none' : 'block';
   }
 
   /**
@@ -611,6 +613,7 @@ window.addEventListener('load', () => {
         word-wrap: break-word;
         border: 2px solid #fff;
         box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        display: none; /* Hidden by default, only shown during PVP */
       `;
       
       window.keyboardNav.updatePhaseIndicator('idle');

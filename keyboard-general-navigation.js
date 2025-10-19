@@ -38,6 +38,8 @@ class GeneralNavigationSystem {
         '.nav-item',
         '.menu-item',
         '.selectable',
+        '.game-mode-button', // Menu buttons
+        '[data-nav]', // Custom nav elements
       ].join(','),
       wrapAround: true, // Wrap to start when reaching end
       autoFocus: true,  // Auto-focus first element on context change
@@ -231,7 +233,10 @@ class GeneralNavigationSystem {
       return isVisible;
     });
 
-    this.logDebug(`Found ${this.navigationElements.length} navigable elements`);
+    this.logDebug(`Found ${this.navigationElements.length} navigable elements in context: ${this.currentContext}`);
+    if (this.navigationElements.length === 0) {
+      this.logDebug(`No elements found. Selector: ${this.config.selectableElements}`);
+    }
   }
 
   /**
