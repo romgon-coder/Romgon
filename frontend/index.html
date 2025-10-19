@@ -185,11 +185,11 @@
                     </div>
                 </div>
 
-                <!-- Game Board (Placeholder) -->
+                <!-- Game Board Canvas -->
                 <div class="card mb-4">
                     <div class="card-header">🎮 Game Board</div>
-                    <div class="card-body" style="text-align: center; padding: var(--spacing-2xl);">
-                        <p class="text-muted" style="margin-bottom: 0;">Game board will be rendered here</p>
+                    <div id="game-board" class="card-body" style="padding: 0; height: 600px; position: relative; background: #0f1419; overflow: hidden;">
+                        <!-- Canvas will be inserted here by BoardRenderer -->
                     </div>
                 </div>
 
@@ -242,6 +242,18 @@
     
     <!-- UI Manager Script -->
     <script src="src/js/ui.js"></script>
+    
+    <!-- Game Engine Script -->
+    <script src="src/js/game-engine.js"></script>
+    
+    <!-- Board Renderer Script -->
+    <script src="src/js/board-renderer.js"></script>
+    
+    <!-- Multiplayer Manager Script -->
+    <script src="src/js/multiplayer-manager.js"></script>
+    
+    <!-- Game Integration Script -->
+    <script src="src/js/game-integration.js"></script>
     
     <!-- Main App Script -->
     <script src="src/js/app.js"></script>

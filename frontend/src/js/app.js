@@ -75,6 +75,12 @@ class ROMGONApp {
             }
         });
 
+        // Game start event
+        this.wsClient.on('gameStart', (data) => this.handleGameStart(data));
+        
+        // Game join event
+        this.wsClient.on('playerJoined', (data) => this.handlePlayerJoined(data));
+
         // Prevent accidental page unload during game
         window.addEventListener('beforeunload', (e) => {
             if (this.gameState.currentGame) {
@@ -214,6 +220,47 @@ class ROMGONApp {
         if (uiState.notification) {
             this.uiManager.showNotification(uiState.notification);
         }
+    }
+
+    /**
+     * Handle game start
+     */
+    async handleGameStart(data) {
+        console.log('🎮 Game starting:', data);
+        
+        const { gameId, whitePlayerId, blackPlayerId, playerColor } = data;
+        
+        // Store game data
+        this.gameState.setCurrentGame({
+            gameId,
+            whitePlayerId,
+            blackPlayerId,
+            playerColor,
+            status: 'active'
+        });
+        
+        // Initialize game engine and board
+        const success = await gameIntegration.initializeGame({
+            gameId,
+            playerColor
+        });
+        
+        if (success) {
+            // Show game page
+            this.gameState.navigateTo('game');
+            this.uiManager.showPage('game');
+            this.uiManager.showNotification('🎮 Game started! Make your first move.');
+        }
+    }
+
+    /**
+     * Handle player joined waiting room
+     */
+    handlePlayerJoined(data) {
+        console.log('👤 Player joined:', data);
+        
+        const { gameId, playerName } = data;
+        this.uiManager.showNotification(`👤 ${playerName} joined the game!`);
     }
 }
 
