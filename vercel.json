@@ -1,5 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "bash build.sh",
-  "outputDirectory": "public"
+  "buildCommand": "npm run build:vercel",
+  "outputDirectory": "public",
+  "framework": "static"
 }
