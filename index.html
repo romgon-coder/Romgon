@@ -8819,6 +8819,16 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             console.log('📡 Dispatching gameStarted event:', gameStartEvent.detail);
             document.dispatchEvent(gameStartEvent);
             
+            // DIRECT ACTIVATION: Don't rely on event listeners - call router directly
+            if (window.keyboardRouter) {
+                console.log('🎮 DIRECT: Activating keyboard for mode:', selectedGameMode === 'pvp' ? 'PVP' : 'GENERAL');
+                if (selectedGameMode === 'pvp') {
+                    window.keyboardRouter.activatePVPSystem();
+                } else {
+                    window.keyboardRouter.activateGeneralSystem();
+                }
+            }
+            
             // Reset selectedGameMode after game starts
             selectedGameMode = null;
             
