@@ -21,14 +21,17 @@ class KeyboardSystemRouter {
     setInterval(() => this.detectGameMode(), 500);
     
     // Listen for direct game start event
-    document.addEventListener('gameStarted', (e) => {
+    const gameStartListener = (e) => {
+      console.log('🎯🎯🎯 EVENT LISTENER FIRED:', e.detail);
       this.logDebug(`🎯 Game Start Event Received: isPVP=${e.detail.isPVP}`);
       if (e.detail.isPVP) {
         this.activatePVPSystem();
       } else {
         this.activateGeneralSystem();
       }
-    });
+    };
+    document.addEventListener('gameStarted', gameStartListener);
+    console.log('✅ Registered gameStarted listener');
     
     // Listen for game end
     document.addEventListener('gameEnded', (e) => {
