@@ -430,6 +430,12 @@ class KeyboardNavigationSystemV2 {
     
     this.logDebug(`Ending rotation phase for hex: ${targetHexId}`);
     
+    // Hide rotation controls UI
+    const rotationControls = document.getElementById('rotation-controls');
+    if (rotationControls) {
+      rotationControls.style.display = 'none';
+    }
+    
     // Mark as rotated (whether rotation was applied or not) to finalize the turn
     // This matches the behavior of the KEEP button in the UI
     if (typeof pieceActions !== 'undefined') {
