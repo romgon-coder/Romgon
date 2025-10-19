@@ -16764,6 +16764,15 @@ ${moveHistory || '(No moves played yet - starting position)'}
             
             if (!registeredUsername) {
                 console.log('⚠️ No registered username found for email:', payload.email);
+                // Ask if they want to link to an existing account
+                const linkUsername = prompt('No account found for ' + payload.email + '\n\nDo you have an existing account? Enter your username to link it, or leave blank to create new:\n(Your first account was "nick1")');
+                if (linkUsername && allUsers[linkUsername]) {
+                    // Update the registered account with Google email
+                    allUsers[linkUsername].email = payload.email;
+                    localStorage.setItem('romgon-users', JSON.stringify(allUsers));
+                    registeredUsername = linkUsername;
+                    console.log('✅ Linked Google account to existing username:', registeredUsername);
+                }
             }
             
             const user = {
