@@ -4,8 +4,9 @@
     "builder": "nixpacks"
   },
   "deploy": {
-    "startCommand": "npm start",
+    "startCommand": "cd backend && npm install && npm start",
     "restartPolicyType": "on_failure",
     "restartPolicyMaxRetries": 5
   }
 }
+
