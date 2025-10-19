@@ -1,0 +1,5 @@
+{
+  "version": 2,
+  "buildCommand": "cp -r frontend/* . 2>/dev/null; echo 'Frontend copied'",
+  "installCommand": "echo 'skip install'"
+}
