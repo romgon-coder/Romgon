@@ -2440,6 +2440,31 @@
                 font-size: 14px;
             ">guest@example.com</p>
 
+            <!-- Stats Section -->
+            <div id="user-home-stats" style="
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 15px;
+                width: 100%;
+                margin: 30px 0;
+                padding: 20px;
+                background: rgba(78, 205, 196, 0.1);
+                border-radius: 12px;
+            ">
+                <div style="text-align: center;">
+                    <div style="font-size: 24px; font-weight: bold; color: #26de81;" id="user-home-wins">0</div>
+                    <div style="font-size: 12px; color: #aaa;">Wins</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 24px; font-weight: bold; color: #ff6b6b;" id="user-home-losses">0</div>
+                    <div style="font-size: 12px; color: #aaa;">Losses</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 24px; font-weight: bold; color: #ffd700;" id="user-home-games">0</div>
+                    <div style="font-size: 12px; color: #aaa;">Total</div>
+                </div>
+            </div>
+
             <!-- Start Game Button -->
             <button onclick="hideSplashPage(); document.getElementById('user-home').style.display='none';" style="
                 background: linear-gradient(135deg, #4ecdc4 0%, #45b7aa 100%);
@@ -16020,6 +16045,19 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 }
                 if (nameEl) nameEl.textContent = u.name || u.email || 'Welcome Player';
                 if (emailEl) emailEl.textContent = u.email || (u.type === 'guest' ? 'Guest Session' : 'Not signed in');
+                
+                // Populate stats if user has username (registered user)
+                if (u.username) {
+                    const stats = getUserStats(u.username);
+                    if (stats) {
+                        const winsEl = document.getElementById('user-home-wins');
+                        const lossesEl = document.getElementById('user-home-losses');
+                        const gamesEl = document.getElementById('user-home-games');
+                        if (winsEl) winsEl.textContent = stats.gamesWon || 0;
+                        if (lossesEl) lossesEl.textContent = stats.gamesLost || 0;
+                        if (gamesEl) gamesEl.textContent = stats.gamesPlayed || 0;
+                    }
+                }
             }
             uh.style.display = 'flex';
         }
