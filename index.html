@@ -563,11 +563,39 @@
     
     // Account Modal Functions
     function showAccountModal() {
-        const currentUser = JSON.parse(localStorage.getItem('romgon-user'));
+        const currentUser = JSON.parse(localStorage.getItem('romgon-user') || '{}');
         const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
         
-        if (!currentUser || !currentUser.username || !allUsers[currentUser.username]) {
-            // Show helpful message instead of error
+        // Check if guest user
+        if (!currentUser.username || currentUser.type === 'guest') {
+            // Guest user - show limited profile
+            document.getElementById('account-username').textContent = 'Guest Player';
+            document.getElementById('account-email').textContent = 'Session: ' + (currentUser.id || 'Anonymous');
+            document.getElementById('account-date').textContent = 'Not registered';
+            
+            // Show guest stats from localStorage
+            const guestStats = JSON.parse(localStorage.getItem('romgon-guest-settings') || '{}');
+            document.getElementById('account-wins').textContent = guestStats.gamesWon || 0;
+            document.getElementById('account-losses').textContent = guestStats.gamesLost || 0;
+            document.getElementById('account-games').textContent = (guestStats.gamesWon || 0) + (guestStats.gamesLost || 0);
+            
+            // Hide last login and saved games for guests
+            const lastLoginEl = document.getElementById('account-last-login');
+            const savedGamesEl = document.getElementById('account-saved-games');
+            if (lastLoginEl) lastLoginEl.textContent = 'Session only';
+            if (savedGamesEl) savedGamesEl.textContent = '0 (session)';
+            
+            // Hide delete account button for guests
+            const deleteBtn = document.querySelector('button[onclick="deleteAccount()"]');
+            if (deleteBtn) deleteBtn.style.display = 'none';
+            
+            document.getElementById('account-modal').style.display = 'block';
+            return;
+        }
+        
+        // Registered user
+        if (!allUsers[currentUser.username]) {
+            // User account not found
             alert('📝 Create an account to access your profile, stats, and settings!\n\nClick "Create Account" on the login screen to get started.');
             return;
         }
@@ -604,6 +632,10 @@
             document.getElementById('account-losses').textContent = 0;
             document.getElementById('account-games').textContent = 0;
         }
+        
+        // Show delete account button for registered users
+        const deleteBtn = document.querySelector('button[onclick="deleteAccount()"]');
+        if (deleteBtn) deleteBtn.style.display = 'block';
         
         document.getElementById('account-modal').style.display = 'block';
     }
@@ -2442,7 +2474,7 @@
 
             <!-- Stats Section -->
             <div id="user-home-stats" style="
-                display: grid;
+                display: none;
                 grid-template-columns: 1fr 1fr 1fr;
                 gap: 15px;
                 width: 100%;
@@ -16045,19 +16077,6 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 }
                 if (nameEl) nameEl.textContent = u.name || u.email || 'Welcome Player';
                 if (emailEl) emailEl.textContent = u.email || (u.type === 'guest' ? 'Guest Session' : 'Not signed in');
-                
-                // Populate stats if user has username (registered user)
-                if (u.username) {
-                    const stats = getUserStats(u.username);
-                    if (stats) {
-                        const winsEl = document.getElementById('user-home-wins');
-                        const lossesEl = document.getElementById('user-home-losses');
-                        const gamesEl = document.getElementById('user-home-games');
-                        if (winsEl) winsEl.textContent = stats.gamesWon || 0;
-                        if (lossesEl) lossesEl.textContent = stats.gamesLost || 0;
-                        if (gamesEl) gamesEl.textContent = stats.gamesPlayed || 0;
-                    }
-                }
             }
             uh.style.display = 'flex';
         }
