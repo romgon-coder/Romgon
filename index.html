@@ -13684,6 +13684,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             const menuButton = document.createElement('button');
             menuButton.innerHTML = '🏠 MENU';
             menuButton.className = 'game-menu-button';
+            menuButton.title = 'Return to main menu';
             menuButton.style.cssText = `
                 padding: 6px 12px !important;
                 font-size: 9px !important;
@@ -13702,6 +13703,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 aiModelButton.id = 'ai-model-selector-btn';
                 aiModelButton.innerHTML = '🧠 AI';
                 aiModelButton.className = 'game-menu-button';
+                aiModelButton.title = 'Select AI model for game analysis';
                 aiModelButton.style.cssText = `
                     padding: 6px 12px !important;
                     font-size: 9px !important;
@@ -13715,6 +13717,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             const coordButton = document.createElement('button');
             coordButton.innerHTML = '📍 COORDS';
             coordButton.className = 'game-menu-button';
+            coordButton.title = 'Toggle hexagon coordinates display';
             coordButton.style.cssText = `
                 padding: 4px 10px !important;
                 font-size: 9px !important;
@@ -13727,6 +13730,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             const defenseButton = document.createElement('button');
             defenseButton.innerHTML = '🛡️ DEFENSE';
             defenseButton.className = 'game-menu-button';
+            defenseButton.title = 'Show which pieces are defended by allies';
             defenseButton.style.cssText = `
                 padding: 4px 10px !important;
                 font-size: 9px !important;
@@ -13749,6 +13753,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             const fogButton = document.createElement('button');
             fogButton.innerHTML = fogOfWarEnabled ? '👁️ FOG ON' : '👁️ FOG OFF';
             fogButton.className = 'game-menu-button';
+            fogButton.title = 'Toggle fog of war - hide opponent pieces during planning';
             fogButton.style.cssText = `
                 padding: 4px 10px !important;
                 font-size: 9px !important;
@@ -14060,6 +14065,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             const helpButton = document.createElement('button');
             helpButton.innerHTML = '❓ HELP';
             helpButton.className = 'game-menu-button';
+            helpButton.title = 'Show game help and instructions';
             helpButton.style.cssText = `
                 padding: 8px 14px !important;
                 font-size: 10px !important;
@@ -14076,6 +14082,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             };
             updateMusicButtonDisplayLocal();
             musicButton.className = 'game-menu-button';
+            musicButton.title = 'Toggle background music on/off';
             musicButton.style.cssText = `
                 padding: 8px 14px !important;
                 font-size: 10px !important;
@@ -14102,6 +14109,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             const undoButton = document.createElement('button');
             undoButton.innerHTML = '↩️ UNDO';
             undoButton.className = 'game-menu-button';
+            undoButton.title = 'Undo the last move';
             undoButton.style.cssText = `
                 padding: 8px 14px !important;
                 font-size: 10px !important;
