@@ -1,7 +1,6 @@
 {
-  "buildCommand": "echo 'Static build complete'",
-  "outputDirectory": "frontend",
-  "public": false,
+  "buildCommand": "mkdir -p public && cp -r frontend/* public/ 2>/dev/null || (mkdir -p public && xcopy frontend public /E /I /Y)",
+  "outputDirectory": "public",
   "rewrites": [
     {
       "source": "/(.*)",
