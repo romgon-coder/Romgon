@@ -16745,14 +16745,25 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 return;
             }
             
+            console.log('Google payload email:', payload.email);
+            
             // First, try to find if this email has a registered account
             const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+            console.log('Looking for email match in allUsers:', allUsers);
+            
             let registeredUsername = null;
             for (let username in allUsers) {
-                if (allUsers[username].email && allUsers[username].email.toLowerCase() === payload.email.toLowerCase()) {
+                const storedEmail = allUsers[username].email;
+                console.log('Comparing:', payload.email.toLowerCase(), 'vs', storedEmail ? storedEmail.toLowerCase() : 'NO EMAIL');
+                if (storedEmail && storedEmail.toLowerCase() === payload.email.toLowerCase()) {
                     registeredUsername = username;
+                    console.log('✅ Found match! Username:', registeredUsername);
                     break;
                 }
+            }
+            
+            if (!registeredUsername) {
+                console.log('⚠️ No registered username found for email:', payload.email);
             }
             
             const user = {
@@ -16768,6 +16779,8 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 user.username = registeredUsername;
                 console.log('Google user matched to registered account:', registeredUsername);
             }
+            
+            console.log('Final user object being saved:', user);
             
             // Persist the user and update UI
             try { persistCurrentUser(user); } catch (e) { window.currentUser = user; }
