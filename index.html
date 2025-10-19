@@ -15245,6 +15245,63 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             gameOver = true; // Set game over flag
             gameInProgress = false; // Game is no longer in progress
             
+            // Update user statistics if a user is logged in
+            const currentUser = JSON.parse(localStorage.getItem('romgon-user') || '{}');
+            if (currentUser.username && currentUser.type !== 'guest') {
+                // Get the current user's game records
+                let allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+                if (!allUsers[currentUser.username]) {
+                    allUsers[currentUser.username] = {
+                        username: currentUser.username,
+                        games: [],
+                        stats: {
+                            wins: 0,
+                            losses: 0,
+                            totalGames: 0,
+                            totalMoves: 0,
+                            totalCaptures: 0
+                        }
+                    };
+                }
+                
+                // Determine if current player won or lost
+                const playerIsWhite = true; // Assuming single player is always white in AI mode
+                const playerWon = (winner.toLowerCase() === 'white' && playerIsWhite) || 
+                                 (winner.toLowerCase() === 'black' && !playerIsWhite);
+                
+                // Calculate move count and captures
+                const moveCount = moveHistory ? moveHistory.length : 0;
+                const captureCount = 0; // You may need to track this during gameplay
+                
+                // Record the game
+                const gameRecord = {
+                    date: new Date().toISOString(),
+                    opponent: 'AI',
+                    result: playerWon ? 'win' : 'loss',
+                    winner: winner,
+                    reason: reason,
+                    moves: moveCount,
+                    captures: captureCount
+                };
+                
+                allUsers[currentUser.username].games.push(gameRecord);
+                allUsers[currentUser.username].stats.totalGames += 1;
+                allUsers[currentUser.username].stats.totalMoves += moveCount;
+                allUsers[currentUser.username].stats.totalCaptures += captureCount;
+                
+                if (playerWon) {
+                    allUsers[currentUser.username].stats.wins += 1;
+                } else {
+                    allUsers[currentUser.username].stats.losses += 1;
+                }
+                
+                // Save updated user data
+                localStorage.setItem('romgon-users', JSON.stringify(allUsers));
+                
+                console.log('✅ Game result saved to user stats:', gameRecord);
+                console.log('📊 Updated user stats:', allUsers[currentUser.username].stats);
+            }
+            
             // Notify keyboard systems that game has ended
             const gameEndEvent = new CustomEvent('gameEnded', {
                 detail: {
@@ -15298,10 +15355,16 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 max-width: 400px;
             `;
             
+            // Check if user is logged in to show stats saved message
+            const userStatsMessage = currentUser.username && currentUser.type !== 'guest' 
+                ? '<p style="margin: 15px 0 0 0; font-size: 0.9em; color: #4ecdc4;">✅ Game result saved to your user hub!</p>'
+                : '';
+            
             gameOverContent.innerHTML = `
                 <h1 style="color: #ff6b6b; margin: 0 0 20px 0; font-size: 2.5em;">GAME OVER</h1>
                 <h2 style="color: #4ecdc4; margin: 0 0 20px 0; font-size: 1.8em;">${winner} WINS!</h2>
                 <p style="margin: 0 0 30px 0; font-size: 1.2em;">${reason}</p>
+                ${userStatsMessage}
                 <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
                     <div style="display: flex; gap: 15px; justify-content: center;">
                         <button onclick="backToGameFromGameOver()" style="
