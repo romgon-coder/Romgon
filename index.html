@@ -2717,11 +2717,12 @@
         
         <!-- Main Menu - Text-Based Interface -->
         <div style="
-            max-width: 900px;
-            width: 100%;
+            max-width: 850px;
+            width: 90vw;
             display: flex;
             flex-direction: column;
-            gap: 50px;
+            gap: 40px;
+            padding: 0 15px;
         ">
             <!-- Game Modes Section -->
             <div>
@@ -2740,19 +2741,20 @@
                     flex-direction: column;
                     gap: 20px;
                 ">
-                    <div style="display: flex; align-items: center; gap: 20px;">
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                         <span style="color: #4ecdc4; font-size: 1.8em;">👥</span>
                         <a id="start-game-btn" onclick="startGameWithTime(10)" style="
                             color: #4ecdc4;
-                            font-size: 1.2em;
+                            font-size: 1.1em;
                             font-weight: 600;
                             cursor: pointer;
                             text-decoration: none;
                             letter-spacing: 1px;
                             transition: all 0.3s ease;
                             display: inline-block;
+                            white-space: nowrap;
                         " onmouseover="this.style.color='#5eddd4'; this.style.textShadow='0 0 15px rgba(78, 205, 196, 0.5)'" onmouseout="this.style.color='#4ecdc4'; this.style.textShadow='none'">LOCAL PVP</a>
-                        <span style="color: #666; font-size: 0.9em; margin-left: auto;">Two players • Same device</span>
+                        <span style="color: #666; font-size: 0.8em; margin-left: auto;">Two • Same</span>
                     </div>
                     
                     <div style="display: flex; align-items: center; gap: 20px;">

@@ -2717,11 +2717,12 @@
         
         <!-- Main Menu - Text-Based Interface -->
         <div style="
-            max-width: 900px;
-            width: 100%;
+            max-width: 850px;
+            width: 90vw;
             display: flex;
             flex-direction: column;
-            gap: 50px;
+            gap: 40px;
+            padding: 0 15px;
         ">
             <!-- Game Modes Section -->
             <div>
@@ -2740,64 +2741,68 @@
                     flex-direction: column;
                     gap: 20px;
                 ">
-                    <div style="display: flex; align-items: center; gap: 20px;">
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                         <span style="color: #4ecdc4; font-size: 1.8em;">👥</span>
                         <a id="start-game-btn" onclick="startGameWithTime(10)" style="
                             color: #4ecdc4;
-                            font-size: 1.2em;
+                            font-size: 1.1em;
                             font-weight: 600;
                             cursor: pointer;
                             text-decoration: none;
                             letter-spacing: 1px;
                             transition: all 0.3s ease;
                             display: inline-block;
+                            white-space: nowrap;
                         " onmouseover="this.style.color='#5eddd4'; this.style.textShadow='0 0 15px rgba(78, 205, 196, 0.5)'" onmouseout="this.style.color='#4ecdc4'; this.style.textShadow='none'">LOCAL PVP</a>
-                        <span style="color: #666; font-size: 0.9em; margin-left: auto;">Two players • Same device</span>
+                        <span style="color: #666; font-size: 0.8em; margin-left: auto;">Two players • Same</span>
                     </div>
                     
-                    <div style="display: flex; align-items: center; gap: 20px;">
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                         <span style="color: #26de81; font-size: 1.8em;">🌐</span>
                         <a id="start-multiplayer-btn" style="
                             color: #26de81;
-                            font-size: 1.2em;
+                            font-size: 1.1em;
                             font-weight: 600;
                             cursor: pointer;
                             text-decoration: none;
                             letter-spacing: 1px;
                             transition: all 0.3s ease;
                             display: inline-block;
+                            white-space: nowrap;
                         " onmouseover="this.style.color='#3bed92'; this.style.textShadow='0 0 15px rgba(38, 222, 129, 0.5)'" onmouseout="this.style.color='#26de81'; this.style.textShadow='none'">ONLINE</a>
-                        <span style="color: #666; font-size: 0.9em; margin-left: auto;">Play online • With friends</span>
+                        <span style="color: #666; font-size: 0.8em; margin-left: auto;">Play online • Friends</span>
                     </div>
                     
-                    <div style="display: flex; align-items: center; gap: 20px;">
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                         <span style="color: #a55eea; font-size: 1.8em;">🤖</span>
                         <a id="start-ai-mode-btn" style="
                             color: #a55eea;
-                            font-size: 1.2em;
+                            font-size: 1.1em;
                             font-weight: 600;
                             cursor: pointer;
                             text-decoration: none;
                             letter-spacing: 1px;
                             transition: all 0.3s ease;
                             display: inline-block;
+                            white-space: nowrap;
                         " onmouseover="this.style.color='#b075ff'; this.style.textShadow='0 0 15px rgba(165, 94, 234, 0.5)'" onmouseout="this.style.color='#a55eea'; this.style.textShadow='none'">VS AI</a>
-                        <span style="color: #666; font-size: 0.9em; margin-left: auto;">Smart AI • Opponent</span>
+                        <span style="color: #666; font-size: 0.8em; margin-left: auto;">Smart AI • Opponent</span>
                     </div>
                     
-                    <div style="display: flex; align-items: center; gap: 20px;">
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                         <span style="color: #ffd700; font-size: 1.8em;">🧩</span>
                         <a id="start-puzzles-btn" style="
                             color: #ffd700;
-                            font-size: 1.2em;
+                            font-size: 1.1em;
                             font-weight: 600;
                             cursor: pointer;
                             text-decoration: none;
                             letter-spacing: 1px;
                             transition: all 0.3s ease;
                             display: inline-block;
+                            white-space: nowrap;
                         " onmouseover="this.style.color='#ffed4e'; this.style.textShadow='0 0 15px rgba(255, 215, 0, 0.5)'" onmouseout="this.style.color='#ffd700'; this.style.textShadow='none'">PUZZLES</a>
-                        <span style="color: #666; font-size: 0.9em; margin-left: auto;">Train skills • Solve challenges</span>
+                        <span style="color: #666; font-size: 0.8em; margin-left: auto;">Train skills • Solve</span>
                     </div>
                 </div>
             </div>
@@ -2817,66 +2822,70 @@
                 <div style="
                     display: flex;
                     flex-direction: column;
-                    gap: 20px;
+                    gap: 15px;
                 ">
-                    <div style="display: flex; align-items: center; gap: 20px;">
-                        <span style="color: #f1c40f; font-size: 1.8em;">📊</span>
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <span style="color: #f1c40f; font-size: 1.6em;">📊</span>
                         <a onclick="showStatsDashboard()" style="
                             color: #f1c40f;
-                            font-size: 1.2em;
+                            font-size: 1.05em;
                             font-weight: 600;
                             cursor: pointer;
                             text-decoration: none;
                             letter-spacing: 1px;
                             transition: all 0.3s ease;
                             display: inline-block;
-                        " onmouseover="this.style.color='#ffd700'; this.style.textShadow='0 0 15px rgba(241, 196, 15, 0.5)'" onmouseout="this.style.color='#f1c40f'; this.style.textShadow='none'">STATISTICS DASHBOARD</a>
-                        <span style="color: #666; font-size: 0.9em; margin-left: auto;">Track wins • Piece stats</span>
+                            white-space: nowrap;
+                        " onmouseover="this.style.color='#ffd700'; this.style.textShadow='0 0 15px rgba(241, 196, 15, 0.5)'" onmouseout="this.style.color='#f1c40f'; this.style.textShadow='none'">STATISTICS</a>
+                        <span style="color: #666; font-size: 0.75em; margin-left: auto;">Track • Stats</span>
                     </div>
                     
-                    <div style="display: flex; align-items: center; gap: 20px;">
-                        <span style="color: #4ecdc4; font-size: 1.8em;">📖</span>
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <span style="color: #4ecdc4; font-size: 1.6em;">📖</span>
                         <a onclick="showOpeningBook()" style="
                             color: #4ecdc4;
-                            font-size: 1.2em;
+                            font-size: 1.05em;
                             font-weight: 600;
                             cursor: pointer;
                             text-decoration: none;
                             letter-spacing: 1px;
                             transition: all 0.3s ease;
                             display: inline-block;
+                            white-space: nowrap;
                         " onmouseover="this.style.color='#5eddd4'; this.style.textShadow='0 0 15px rgba(78, 205, 196, 0.5)'" onmouseout="this.style.color='#4ecdc4'; this.style.textShadow='none'">OPENING BOOK</a>
-                        <span style="color: #666; font-size: 0.9em; margin-left: auto;">Standard openings • Diagrams</span>
+                        <span style="color: #666; font-size: 0.75em; margin-left: auto;">Openings • Diagrams</span>
                     </div>
                     
-                    <div style="display: flex; align-items: center; gap: 20px;">
-                        <span style="color: #a55eea; font-size: 1.8em;">🧠</span>
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <span style="color: #a55eea; font-size: 1.6em;">🧠</span>
                         <a onclick="openTheoryModal()" style="
                             color: #a55eea;
-                            font-size: 1.2em;
+                            font-size: 1.05em;
                             font-weight: 600;
                             cursor: pointer;
                             text-decoration: none;
                             letter-spacing: 1px;
                             transition: all 0.3s ease;
                             display: inline-block;
-                        " onmouseover="this.style.color='#b075ff'; this.style.textShadow='0 0 15px rgba(165, 94, 234, 0.5)'" onmouseout="this.style.color='#a55eea'; this.style.textShadow='none'">THEORY & ENDGAMES</a>
-                        <span style="color: #666; font-size: 0.9em; margin-left: auto;">Strategy • Complexity analysis</span>
+                            white-space: nowrap;
+                        " onmouseover="this.style.color='#b075ff'; this.style.textShadow='0 0 15px rgba(165, 94, 234, 0.5)'" onmouseout="this.style.color='#a55eea'; this.style.textShadow='none'">THEORY</a>
+                        <span style="color: #666; font-size: 0.75em; margin-left: auto;">Strategy • Analysis</span>
                     </div>
                     
-                    <div style="display: flex; align-items: center; gap: 20px;">
-                        <span style="color: #f57d2d; font-size: 1.8em;">📜</span>
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <span style="color: #f57d2d; font-size: 1.6em;">📜</span>
                         <a onclick="openRulebookModal()" style="
                             color: #f57d2d;
-                            font-size: 1.2em;
+                            font-size: 1.05em;
                             font-weight: 600;
                             cursor: pointer;
                             text-decoration: none;
                             letter-spacing: 1px;
                             transition: all 0.3s ease;
                             display: inline-block;
+                            white-space: nowrap;
                         " onmouseover="this.style.color='#ffa500'; this.style.textShadow='0 0 15px rgba(245, 125, 45, 0.5)'" onmouseout="this.style.color='#f57d2d'; this.style.textShadow='none'">RULEBOOK</a>
-                        <span style="color: #666; font-size: 0.9em; margin-left: auto;">Full rules • How to play</span>
+                        <span style="color: #666; font-size: 0.75em; margin-left: auto;">Rules • How to play</span>
                     </div>
                 </div>
             </div>
@@ -2896,36 +2905,38 @@
                 <div style="
                     display: flex;
                     flex-direction: column;
-                    gap: 20px;
+                    gap: 15px;
                 ">
-                    <div style="display: flex; align-items: center; gap: 20px;">
-                        <span style="color: #4ecdc4; font-size: 1.8em;">👤</span>
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <span style="color: #4ecdc4; font-size: 1.6em;">👤</span>
                         <a onclick="showAccountModal()" style="
                             color: #4ecdc4;
-                            font-size: 1.2em;
+                            font-size: 1.05em;
                             font-weight: 600;
                             cursor: pointer;
                             text-decoration: none;
                             letter-spacing: 1px;
                             transition: all 0.3s ease;
                             display: inline-block;
-                        " onmouseover="this.style.color='#5eddd4'; this.style.textShadow='0 0 15px rgba(78, 205, 196, 0.5)'" onmouseout="this.style.color='#4ecdc4'; this.style.textShadow='none'">ACCOUNT SETTINGS</a>
-                        <span style="color: #666; font-size: 0.9em; margin-left: auto;">Profile • Stats</span>
+                            white-space: nowrap;
+                        " onmouseover="this.style.color='#5eddd4'; this.style.textShadow='0 0 15px rgba(78, 205, 196, 0.5)'" onmouseout="this.style.color='#4ecdc4'; this.style.textShadow='none'">ACCOUNT</a>
+                        <span style="color: #666; font-size: 0.75em; margin-left: auto;">Profile • Stats</span>
                     </div>
                     
-                    <div style="display: flex; align-items: center; gap: 20px;">
-                        <span style="color: #a55eea; font-size: 1.8em;">⚙️</span>
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <span style="color: #a55eea; font-size: 1.6em;">⚙️</span>
                         <a onclick="showSettingsModal()" style="
                             color: #a55eea;
-                            font-size: 1.2em;
+                            font-size: 1.05em;
                             font-weight: 600;
                             cursor: pointer;
                             text-decoration: none;
                             letter-spacing: 1px;
                             transition: all 0.3s ease;
                             display: inline-block;
+                            white-space: nowrap;
                         " onmouseover="this.style.color='#b075ff'; this.style.textShadow='0 0 15px rgba(165, 94, 234, 0.5)'" onmouseout="this.style.color='#a55eea'; this.style.textShadow='none'">PREFERENCES</a>
-                        <span style="color: #666; font-size: 0.9em; margin-left: auto;">Audio • Display • Themes</span>
+                        <span style="color: #666; font-size: 0.75em; margin-left: auto;">Audio • Display • Theme</span>
                     </div>
                 </div>
             </div>
@@ -3147,66 +3158,54 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     <div style="
                         display: flex;
                         flex-direction: column;
-                        gap: 20px;
+                        gap: 15px;
                     ">
-                        <div style="display: flex; align-items: center; gap: 20px;">
-                            <span style="color: #00d2ff; font-size: 1.8em;">🧠</span>
+                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                            <span style="color: #00d2ff; font-size: 1.6em;">🧠</span>
                             <a id="start-llm-mode-btn" onclick="openGameVariantsModal('llm')" style="
                                 color: #00d2ff;
-                                font-size: 1.2em;
+                                font-size: 1.05em;
                                 font-weight: 600;
                                 cursor: pointer;
                                 text-decoration: none;
                                 letter-spacing: 1px;
                                 transition: all 0.3s ease;
                                 display: inline-block;
+                                white-space: nowrap;
                             " onmouseover="this.style.color='#00ffff'; this.style.textShadow='0 0 15px rgba(0, 210, 255, 0.5)'" onmouseout="this.style.color='#00d2ff'; this.style.textShadow='none'">AI REASONING</a>
-                            <span style="color: #666; font-size: 0.9em; margin-left: auto;">Advanced AI • With explanations</span>
+                            <span style="color: #666; font-size: 0.75em; margin-left: auto;">AI • Explanations</span>
                         </div>
                         
-                        <div style="display: flex; align-items: center; gap: 20px;">
-                            <span style="color: #ff6b6b; font-size: 1.8em;">🎯</span>
+                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                            <span style="color: #ff6b6b; font-size: 1.6em;">🎯</span>
                             <a id="start-game-modes-btn" onclick="openGameModesModal()" style="
                                 color: #ff6b6b;
-                                font-size: 1.2em;
+                                font-size: 1.05em;
                                 font-weight: 600;
                                 cursor: pointer;
                                 text-decoration: none;
                                 letter-spacing: 1px;
                                 transition: all 0.3s ease;
                                 display: inline-block;
-                            " onmouseover="this.style.color='#ff8a8a'; this.style.textShadow='0 0 15px rgba(255, 107, 107, 0.5)'" onmouseout="this.style.color='#ff6b6b'; this.style.textShadow='none'">GAME MODES</a>
-                            <span style="color: #666; font-size: 0.9em; margin-left: auto;">Alternative • Variants</span>
+                                white-space: nowrap;
+                            " onmouseover="this.style.color='#ff8a8a'; this.style.textShadow='0 0 15px rgba(255, 107, 107, 0.5)'" onmouseout="this.style.color='#ff6b6b'; this.style.textShadow='none'">VARIANTS</a>
+                            <span style="color: #666; font-size: 0.75em; margin-left: auto;">Alt • Modes</span>
                         </div>
                         
-                        <div style="display: flex; align-items: center; gap: 20px;">
-                            <span style="color: #f57d2d; font-size: 1.8em;">📜</span>
-                            <a id="start-rulebook-btn" onclick="openRulebookModal()" style="
-                                color: #f57d2d;
-                                font-size: 1.2em;
-                                font-weight: 600;
-                                cursor: pointer;
-                                text-decoration: none;
-                                letter-spacing: 1px;
-                                transition: all 0.3s ease;
-                                display: inline-block;
-                            " onmouseover="this.style.color='#ffa500'; this.style.textShadow='0 0 15px rgba(245, 125, 45, 0.5)'" onmouseout="this.style.color='#f57d2d'; this.style.textShadow='none'">RULEBOOK</a>
-                            <span style="color: #666; font-size: 0.9em; margin-left: auto;">Full rules • How to play</span>
-                        </div>
-                        
-                        <div style="display: flex; align-items: center; gap: 20px;">
-                            <span style="color: #4ecdc4; font-size: 1.8em;">📊</span>
+                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                            <span style="color: #4ecdc4; font-size: 1.6em;">📊</span>
                             <a onclick="openAnalysisModal()" style="
                                 color: #4ecdc4;
-                                font-size: 1.2em;
+                                font-size: 1.05em;
                                 font-weight: 600;
                                 cursor: pointer;
                                 text-decoration: none;
                                 letter-spacing: 1px;
                                 transition: all 0.3s ease;
                                 display: inline-block;
+                                white-space: nowrap;
                             " onmouseover="this.style.color='#5eddd4'; this.style.textShadow='0 0 15px rgba(78, 205, 196, 0.5)'" onmouseout="this.style.color='#4ecdc4'; this.style.textShadow='none'">ANALYSIS</a>
-                            <span style="color: #666; font-size: 0.9em; margin-left: auto;">Load RMN • Review games</span>
+                            <span style="color: #666; font-size: 0.75em; margin-left: auto;">Load • Review</span>
                         </div>
                     </div>
                 </div>
