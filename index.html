@@ -3119,16 +3119,64 @@
 <body>
 
     <!-- Keyboard Navigation Player Indicator -->
-    <div id="kb-player-indicator" style="display: block !important; position: fixed; top: 20px; right: 20px; padding: 12px 20px; background: #333; color: #fff; border-radius: 8px; font-weight: bold; z-index: 9999; border: 2px solid #4ecdc4;">
+    <div id="kb-player-indicator" style="display: none !important; position: fixed; top: 20px; right: 20px; padding: 12px 20px; background: #333; color: #fff; border-radius: 8px; font-weight: bold; z-index: 9999; border: 2px solid #4ecdc4;">
         ⌨️ KB: Loaded
     </div>
 
     <!-- Keyboard Navigation Help -->
-    <div id="kb-help-overlay" style="display: block !important; position: fixed; bottom: 20px; left: 20px; background: rgba(20, 24, 32, 0.95); border: 2px solid #4ecdc4; border-radius: 8px; padding: 15px; font-size: 12px; color: #4ecdc4; max-width: 250px; z-index: 9998; line-height: 1.6; font-family: 'Courier New', monospace;">
+    <div id="kb-help-overlay" style="display: none !important; position: fixed; bottom: 20px; left: 20px; background: rgba(20, 24, 32, 0.95); border: 2px solid #4ecdc4; border-radius: 8px; padding: 15px; font-size: 12px; color: #4ecdc4; max-width: 250px; z-index: 9998; line-height: 1.6; font-family: 'Courier New', monospace;">
         <strong>⌨️ KEYBOARD CONTROLS</strong><br>
         ↑↓←→ / W,A,S,D: Move<br>
         Space / Enter: Confirm<br>
         Esc: Deselect
+    </div>
+
+    <!-- Keyboard Info Side Panel -->
+    <div id="kb-info-panel" style="display: none; position: fixed; right: 0; top: 0; width: 350px; height: 100vh; background: rgba(20, 24, 32, 0.98); border-left: 3px solid #4ecdc4; overflow-y: auto; z-index: 3001; padding: 20px; box-sizing: border-box; font-family: 'Courier New', monospace; color: #4ecdc4; line-height: 1.8;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #4ecdc4; padding-bottom: 15px;">
+            <h2 style="margin: 0; font-size: 1.1em;">⌨️ KEYBOARD INFO</h2>
+            <button onclick="document.getElementById('kb-info-panel').style.display='none'" style="background: none; border: none; color: #4ecdc4; font-size: 1.5em; cursor: pointer; padding: 0;">✕</button>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <h3 style="color: #f57d2d; margin: 0 0 10px 0; font-size: 0.95em;">PIECE SELECTION</h3>
+            <div style="font-size: 0.9em; line-height: 2;">
+                W,A,S,D - Navigate pieces<br>
+                E - Select piece<br>
+                Esc - Deselect
+            </div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <h3 style="color: #f57d2d; margin: 0 0 10px 0; font-size: 0.95em;">MOVE SELECTION</h3>
+            <div style="font-size: 0.9em; line-height: 2;">
+                W,A,S,D - Navigate target hexes<br>
+                E - Execute move<br>
+                Esc - Back to piece selection
+            </div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <h3 style="color: #f57d2d; margin: 0 0 10px 0; font-size: 0.95em;">ROTATION (Triangle/Hexagon)</h3>
+            <div style="font-size: 0.9em; line-height: 2;">
+                A - Rotate LEFT<br>
+                D - Rotate RIGHT<br>
+                Space - End turn
+            </div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <h3 style="color: #f57d2d; margin: 0 0 10px 0; font-size: 0.95em;">OTHER PIECES</h3>
+            <div style="font-size: 0.9em; line-height: 2;">
+                After move: Turn ends<br>
+                (No rotation needed)
+            </div>
+        </div>
+
+        <div style="border-top: 2px solid #4ecdc4; padding-top: 15px; margin-top: 20px; font-size: 0.85em;">
+            <p style="margin: 0 0 10px 0; color: #26de81;"><strong>✓ Keyboard active</strong></p>
+            <p style="margin: 0; color: #888;">Press the ⌨️ button to toggle this panel</p>
+        </div>
     </div>
 
     <!-- Splash Page -->
@@ -13903,6 +13951,34 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             undoButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             undoButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
 
+            // Create keyboard help toggle button
+            const kbHelpButton = document.createElement('button');
+            kbHelpButton.innerHTML = '⌨️ HELP';
+            kbHelpButton.title = 'Toggle keyboard controls help';
+            kbHelpButton.style.cssText = `
+                background-color: #4ecdc4;
+                color: white;
+                border: none;
+                padding: 4px 10px;
+                border-radius: 15px;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 10px;
+                box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
+                transition: all 0.3s ease;
+                margin-left: 6px;
+            `;
+            kbHelpButton.onclick = function() {
+                const panel = document.getElementById('kb-info-panel');
+                if (panel.style.display === 'none') {
+                    panel.style.display = 'block';
+                } else {
+                    panel.style.display = 'none';
+                }
+            };
+            kbHelpButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
+            kbHelpButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
+
             // Create toggle last move highlight button
             const toggleLastMoveButton = document.createElement('button');
             const isLastMoveVisible = typeof gameSettings !== 'undefined' ? gameSettings.showLastMove : true;
@@ -13990,6 +14066,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             turnIndicator.appendChild(showAllMovesButton); // Add show all moves button
             turnIndicator.appendChild(toggleLastMoveButton);
             turnIndicator.appendChild(undoButton);
+            turnIndicator.appendChild(kbHelpButton);
             
             // ============================================
             // RPN SYSTEM BUTTONS
