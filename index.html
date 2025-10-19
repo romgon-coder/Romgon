@@ -2351,9 +2351,10 @@
             font-size: 8px !important;
             color: #ffffff !important;
             font-weight: normal !important;
-            line-height: 1.1 !important;
+            line-height: 1.2 !important;
             text-align: center !important;
             word-break: break-word !important;
+            max-width: 95% !important;
         }
         
         .game-menu-button:hover {
@@ -13702,7 +13703,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
             // Create left button (Main Menu)
             const menuButton = document.createElement('button');
-            menuButton.innerHTML = '<span class="game-menu-button-emoji">🏠</span><span class="game-menu-button-label">MENU</span>';
+            menuButton.innerHTML = '<span class="game-menu-button-emoji">🏠</span><span class="game-menu-button-label">Main<br>Menu</span>';
             menuButton.className = 'game-menu-button';
             menuButton.title = '';
             menuButton.onclick = function() {
@@ -13717,7 +13718,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             if (llmMode) {
                 aiModelButton = document.createElement('button');
                 aiModelButton.id = 'ai-model-selector-btn';
-                aiModelButton.innerHTML = '<span class="game-menu-button-emoji">🧠</span><span class="game-menu-button-label">AI</span>';
+                aiModelButton.innerHTML = '<span class="game-menu-button-emoji">🧠</span><span class="game-menu-button-label">AI<br>Model</span>';
                 aiModelButton.className = 'game-menu-button';
                 aiModelButton.title = '';
                 aiModelButton.onclick = showAIModelSelector;
@@ -13727,7 +13728,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
             // Create coordinate toggle button
             const coordButton = document.createElement('button');
-            coordButton.innerHTML = '<span class="game-menu-button-emoji">📍</span><span class="game-menu-button-label">COORDS</span>';
+            coordButton.innerHTML = '<span class="game-menu-button-emoji">📍</span><span class="game-menu-button-label">Show<br>Coords</span>';
             coordButton.className = 'game-menu-button';
             coordButton.title = '';
             coordButton.onclick = toggleCoordinates;
@@ -13736,7 +13737,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
             // Create defense toggle button
             const defenseButton = document.createElement('button');
-            defenseButton.innerHTML = '<span class="game-menu-button-emoji">🛡️</span><span class="game-menu-button-label">DEF</span>';
+            defenseButton.innerHTML = '<span class="game-menu-button-emoji">🛡️</span><span class="game-menu-button-label">Show<br>Defense</span>';
             defenseButton.className = 'game-menu-button';
             defenseButton.title = '';
             let defenseHighlightEnabled = false;
@@ -13754,12 +13755,12 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
             // Create Fog of War toggle button
             const fogButton = document.createElement('button');
-            fogButton.innerHTML = fogOfWarEnabled ? '<span class="game-menu-button-emoji">👁️</span><span class="game-menu-button-label">FOG</span>' : '<span class="game-menu-button-emoji">👁️</span><span class="game-menu-button-label">FOG</span>';
+            fogButton.innerHTML = fogOfWarEnabled ? '<span class="game-menu-button-emoji">👁️</span><span class="game-menu-button-label">Fog<br>War</span>' : '<span class="game-menu-button-emoji">👁️</span><span class="game-menu-button-label">Fog<br>War</span>';
             fogButton.className = 'game-menu-button';
             fogButton.title = '';
             fogButton.onclick = function() {
                 fogOfWarEnabled = !fogOfWarEnabled;
-                this.innerHTML = '<span class="game-menu-button-emoji">👁️</span><span class="game-menu-button-label">FOG</span>';
+                this.innerHTML = '<span class="game-menu-button-emoji">👁️</span><span class="game-menu-button-label">Fog<br>War</span>';
                 updateFogOfWar();
                 console.log('🌫️ Fog of War:', fogOfWarEnabled ? 'ENABLED' : 'DISABLED');
             };
@@ -14061,7 +14062,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
             // Create right button (Help)
             const helpButton = document.createElement('button');
-            helpButton.innerHTML = '<span class="game-menu-button-emoji">❓</span><span class="game-menu-button-label">HELP</span>';
+            helpButton.innerHTML = '<span class="game-menu-button-emoji">❓</span><span class="game-menu-button-label">Game<br>Help</span>';
             helpButton.className = 'game-menu-button';
             helpButton.title = '';
             helpButton.onclick = showHelp;
@@ -14072,7 +14073,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             const musicButton = document.createElement('button');
             const updateMusicButtonDisplayLocal = () => {
                 const isMusicOn = gameSettings.music && currentMusicTrack > 0;
-                musicButton.innerHTML = isMusicOn ? '<span class="game-menu-button-emoji">🔊</span><span class="game-menu-button-label">MUSIC</span>' : '<span class="game-menu-button-emoji">🔇</span><span class="game-menu-button-label">MUSIC</span>';
+                musicButton.innerHTML = isMusicOn ? '<span class="game-menu-button-emoji">🔊</span><span class="game-menu-button-label">Music<br>On</span>' : '<span class="game-menu-button-emoji">🔇</span><span class="game-menu-button-label">Music<br>Off</span>';
             };
             updateMusicButtonDisplayLocal();
             musicButton.className = 'game-menu-button';
@@ -14097,7 +14098,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
             // Create undo button
             const undoButton = document.createElement('button');
-            undoButton.innerHTML = '<span class="game-menu-button-emoji">↩️</span><span class="game-menu-button-label">UNDO</span>';
+            undoButton.innerHTML = '<span class="game-menu-button-emoji">↩️</span><span class="game-menu-button-label">Undo<br>Move</span>';
             undoButton.className = 'game-menu-button';
             undoButton.title = '';
             undoButton.onclick = undoLastMove;
@@ -14106,7 +14107,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
             // Create keyboard help toggle button
             const kbHelpButton = document.createElement('button');
-            kbHelpButton.innerHTML = '<span class="game-menu-button-emoji">⌨️</span><span class="game-menu-button-label">KB</span>';
+            kbHelpButton.innerHTML = '<span class="game-menu-button-emoji">⌨️</span><span class="game-menu-button-label">Keys<br>Help</span>';
             kbHelpButton.className = 'game-menu-button';
             kbHelpButton.title = '';
             kbHelpButton.onclick = function() {
@@ -14124,7 +14125,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             // Create toggle last move highlight button
             const toggleLastMoveButton = document.createElement('button');
             const isLastMoveVisible = typeof gameSettings !== 'undefined' ? gameSettings.showLastMove : true;
-            toggleLastMoveButton.innerHTML = '<span class="game-menu-button-emoji">👁️</span><span class="game-menu-button-label">LAST</span>';
+            toggleLastMoveButton.innerHTML = '<span class="game-menu-button-emoji">👁️</span><span class="game-menu-button-label">Last<br>Move</span>';
             toggleLastMoveButton.title = '';
             toggleLastMoveButton.className = 'game-menu-button';
             toggleLastMoveButton.onclick = function() {
@@ -14145,7 +14146,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             const showAllMovesButton = document.createElement('button');
             showAllMovesButton.className = 'game-menu-button';
             showAllMovesButton.id = 'show-all-moves-button';
-            showAllMovesButton.innerHTML = '<span class="game-menu-button-emoji">👁️</span><span class="game-menu-button-label">MOVES</span>';
+            showAllMovesButton.innerHTML = '<span class="game-menu-button-emoji">👁️</span><span class="game-menu-button-label">All<br>Moves</span>';
             showAllMovesButton.title = '';
             showAllMovesButton.onclick = toggleShowAllMoves;
             showAllMovesButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
@@ -14154,7 +14155,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             // Create board flip button
             const flipButton = document.createElement('button');
             flipButton.id = 'flip-button';
-            flipButton.innerHTML = '<span class="game-menu-button-emoji">🔄</span><span class="game-menu-button-label">FLIP</span>';
+            flipButton.innerHTML = '<span class="game-menu-button-emoji">🔄</span><span class="game-menu-button-label">Flip<br>Board</span>';
             flipButton.title = '';
             flipButton.className = 'game-menu-button';
             flipButton.onclick = function() {
@@ -14165,7 +14166,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
             // Create copy position button (RPN)
             const copyPositionBtn = document.createElement('button');
-            copyPositionBtn.innerHTML = '<span class="game-menu-button-emoji">📋</span><span class="game-menu-button-label">COPY</span>';
+            copyPositionBtn.innerHTML = '<span class="game-menu-button-emoji">📋</span><span class="game-menu-button-label">Copy<br>Pos</span>';
             copyPositionBtn.title = '';
             copyPositionBtn.className = 'game-menu-button';
             copyPositionBtn.onclick = copyPositionToClipboard;
@@ -14174,7 +14175,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
             // Create load position button (RPN)
             const loadPositionBtn = document.createElement('button');
-            loadPositionBtn.innerHTML = '<span class="game-menu-button-emoji">📥</span><span class="game-menu-button-label">LOAD</span>';
+            loadPositionBtn.innerHTML = '<span class="game-menu-button-emoji">📥</span><span class="game-menu-button-label">Load<br>Pos</span>';
             loadPositionBtn.title = '';
             loadPositionBtn.className = 'game-menu-button';
             loadPositionBtn.onclick = openLoadPositionModal;
@@ -14183,7 +14184,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
             // Create export game button (RPN)
             const exportGameBtn = document.createElement('button');
-            exportGameBtn.innerHTML = '<span class="game-menu-button-emoji">💾</span><span class="game-menu-button-label">SAVE</span>';
+            exportGameBtn.innerHTML = '<span class="game-menu-button-emoji">💾</span><span class="game-menu-button-label">Save<br>Game</span>';
             exportGameBtn.title = '';
             exportGameBtn.className = 'game-menu-button';
             exportGameBtn.onclick = downloadGameRMN;
@@ -14192,7 +14193,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
             // Create log RPN button (dev tool)
             const logRPNBtn = document.createElement('button');
-            logRPNBtn.innerHTML = '<span class="game-menu-button-emoji">🔍</span><span class="game-menu-button-label">LOG</span>';
+            logRPNBtn.innerHTML = '<span class="game-menu-button-emoji">🔍</span><span class="game-menu-button-label">Log<br>RPN</span>';
             logRPNBtn.title = '';
             logRPNBtn.className = 'game-menu-button';
             logRPNBtn.onclick = logPositionRPN;
@@ -14201,7 +14202,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
             // Create dark mode button
             const darkModeBtn = document.createElement('button');
-            darkModeBtn.innerHTML = '<span class="game-menu-button-emoji">🌙</span><span class="game-menu-button-label">DARK</span>';
+            darkModeBtn.innerHTML = '<span class="game-menu-button-emoji">🌙</span><span class="game-menu-button-label">Dark<br>Mode</span>';
             darkModeBtn.title = '';
             darkModeBtn.className = 'game-menu-button';
             darkModeBtn.onclick = toggleDarkMode;
@@ -14210,7 +14211,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
             // Create wooden theme button
             const woodenThemeBtn = document.createElement('button');
-            woodenThemeBtn.innerHTML = '<span class="game-menu-button-emoji">🪵</span><span class="game-menu-button-label">WOOD</span>';
+            woodenThemeBtn.innerHTML = '<span class="game-menu-button-emoji">🪵</span><span class="game-menu-button-label">Wooden<br>Board</span>';
             woodenThemeBtn.title = '';
             woodenThemeBtn.className = 'game-menu-button';
             woodenThemeBtn.onclick = toggleWoodenTheme;
