@@ -131,38 +131,80 @@ class AuthPage {
     }
 
     async show() {
-        this.element = document.getElementById('auth-page');
-        this.setupEventListeners();
+        try {
+            this.element = document.getElementById('auth-page');
+            if (!this.element) {
+                console.error('❌ Auth page element not found');
+                return;
+            }
+            
+            // Make auth page visible
+            this.element.style.display = 'block';
+            
+            // Setup event listeners after ensuring DOM is ready
+            await this.setupEventListeners();
+        } catch (error) {
+            console.error('❌ Error showing auth page:', error);
+        }
     }
 
     hide() {
+        if (this.element) {
+            this.element.style.display = 'none';
+        }
         this.element = null;
     }
 
-    setupEventListeners() {
-        // Toggle between login and register
-        const toggleBtn = document.getElementById('toggle-auth');
-        if (toggleBtn) {
-            toggleBtn.addEventListener('click', () => this.toggleMode());
-        }
+    async setupEventListeners() {
+        // Use setTimeout to ensure DOM is fully ready
+        return new Promise(resolve => {
+            setTimeout(() => {
+                try {
+                    // Toggle between login and register
+                    const toggleBtn = document.getElementById('toggle-auth');
+                    if (toggleBtn) {
+                        toggleBtn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            this.toggleMode();
+                        });
+                    }
 
-        // Login form
-        const loginForm = document.getElementById('login-form');
-        if (loginForm) {
-            loginForm.addEventListener('submit', (e) => this.handleLogin(e));
-        }
+                    // Login form
+                    const loginForm = document.getElementById('login-form');
+                    if (loginForm) {
+                        loginForm.addEventListener('submit', (e) => this.handleLogin(e));
+                    }
 
-        // Register form
-        const registerForm = document.getElementById('register-form');
-        if (registerForm) {
-            registerForm.addEventListener('submit', (e) => this.handleRegister(e));
-        }
+                    // Register form
+                    const registerForm = document.getElementById('register-form');
+                    if (registerForm) {
+                        registerForm.addEventListener('submit', (e) => this.handleRegister(e));
+                    }
+                    
+                    resolve();
+                } catch (error) {
+                    console.error('❌ Error setting up auth page listeners:', error);
+                    resolve();
+                }
+            }, 100);
+        });
     }
 
     toggleMode() {
-        this.isLogin = !this.isLogin;
-        document.getElementById('login-form').style.display = this.isLogin ? 'block' : 'none';
-        document.getElementById('register-form').style.display = this.isLogin ? 'none' : 'block';
+        try {
+            this.isLogin = !this.isLogin;
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const toggleText = document.getElementById('toggle-text');
+            const toggleLink = document.getElementById('toggle-link');
+            
+            if (loginForm) loginForm.style.display = this.isLogin ? 'block' : 'none';
+            if (registerForm) registerForm.style.display = this.isLogin ? 'none' : 'block';
+            if (toggleText) toggleText.textContent = this.isLogin ? "Don't have an account?" : "Already have an account?";
+            if (toggleLink) toggleLink.textContent = this.isLogin ? 'Register' : 'Login';
+        } catch (error) {
+            console.error('❌ Error toggling mode:', error);
+        }
     }
 
     async handleLogin(e) {
@@ -170,8 +212,12 @@ class AuthPage {
         gameState.setLoading(true);
 
         try {
-            const username = document.getElementById('login-username').value;
-            const password = document.getElementById('login-password').value;
+            const username = document.getElementById('login-username')?.value;
+            const password = document.getElementById('login-password')?.value;
+            
+            if (!username || !password) {
+                throw new Error('Username and password required');
+            }
 
             const data = await apiClient.login(username, password);
             gameState.setUser(data.user);
@@ -191,10 +237,14 @@ class AuthPage {
         gameState.setLoading(true);
 
         try {
-            const username = document.getElementById('register-username').value;
-            const email = document.getElementById('register-email').value;
-            const password = document.getElementById('register-password').value;
-            const confirmPassword = document.getElementById('register-confirm').value;
+            const username = document.getElementById('register-username')?.value;
+            const email = document.getElementById('register-email')?.value;
+            const password = document.getElementById('register-password')?.value;
+            const confirmPassword = document.getElementById('register-confirm')?.value;
+            
+            if (!username || !email || !password || !confirmPassword) {
+                throw new Error('All fields required');
+            }
 
             const data = await apiClient.register(username, email, password, confirmPassword);
             gameState.setUser(data.user);

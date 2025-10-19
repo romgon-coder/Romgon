@@ -17,6 +17,13 @@ class ROMGONApp {
         console.log('🎮 Initializing ROMGON Application...');
 
         try {
+            // Wait for DOM to be fully ready
+            if (document.readyState === 'loading') {
+                await new Promise(resolve => {
+                    document.addEventListener('DOMContentLoaded', resolve, { once: true });
+                });
+            }
+
             // Setup UI Manager with pages
             this.setupPages();
 
@@ -29,7 +36,7 @@ class ROMGONApp {
                 await this.initializeGame();
             } else {
                 console.log('📝 Showing login page');
-                this.uiManager.showPage('auth');
+                await this.uiManager.showPage('auth');
             }
 
             // Setup state change listeners
