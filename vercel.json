@@ -1,4 +1,6 @@
 {
-  "version": 2
+  "version": 2,
+  "buildCommand": "echo 'Static files'",
+  "outputDirectory": "frontend"
 }
 
