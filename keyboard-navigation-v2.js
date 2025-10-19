@@ -49,7 +49,10 @@ class KeyboardNavigationSystemV2 {
   handleKeyPress(event) {
     const key = event.key.toLowerCase();
     
-    this.logDebug(`[${this.phase}] Key pressed: ${key} | enabled=${this.enabled}`);
+    // Keep keyboard player in sync with game's current turn
+    this.syncWithGameTurn();
+    
+    this.logDebug(`[${this.phase}] Key pressed: ${key} | enabled=${this.enabled} | activePlayer=${this.activePlayer}`);
     
     // If PVP system not enabled, don't process input
     if (!this.enabled) {
