@@ -14282,6 +14282,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             
             gameButtonsPanel = document.createElement('div');
             gameButtonsPanel.id = 'game-buttons-panel';
+            gameButtonsPanel.classList.add('hidden'); // Start hidden
             
             // Add all buttons to the side panel
             gameButtonsPanel.appendChild(menuButton);
@@ -14308,8 +14309,12 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             gameButtonsPanel.appendChild(woodenThemeBtn);
             
             // Toggle panel functionality
-            togglePanelBtn.onclick = function() {
+            togglePanelBtn.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Toggle button clicked, panel hidden state:', gameButtonsPanel.classList.contains('hidden'));
                 gameButtonsPanel.classList.toggle('hidden');
+                console.log('After toggle, panel hidden state:', gameButtonsPanel.classList.contains('hidden'));
             };
             togglePanelBtn.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             togglePanelBtn.onmouseout = function() { this.style.transform = 'scale(1)'; };
