@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "buildCommand": "mkdir -p .vercel/output/static && cp -r frontend/* .vercel/output/static/",
-  "outputDirectory": ".vercel/output/static"
+  "buildCommand": "exit 0"
 }
 
