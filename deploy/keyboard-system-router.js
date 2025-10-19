@@ -43,6 +43,18 @@ class KeyboardSystemRouter {
                       window.currentPlayer && // Global game variable
                       window.gameOver !== undefined; // Game state exists
     
+    // Debug logging for first detection
+    if (inPVPMode && !this.isPVPMode) {
+      this.logDebug(`🔍 PVP Mode Detected:`);
+      this.logDebug(`  - gameBoard: ${!!gameBoard}`);
+      this.logDebug(`  - currentPlayerIndicator: ${!!currentPlayerIndicator}`);
+      this.logDebug(`  - gameMoveIndicator: ${!!gameMoveIndicator}`);
+      this.logDebug(`  - gameBoard.style.display !== 'none': ${gameBoard?.style.display !== 'none'}`);
+      this.logDebug(`  - menu hidden: ${!mainMenuVisible?.offsetParent}`);
+      this.logDebug(`  - window.currentPlayer: ${window.currentPlayer}`);
+      this.logDebug(`  - window.gameOver defined: ${window.gameOver !== undefined}`);
+    }
+    
     // Switch systems if mode changed
     if (inPVPMode !== this.isPVPMode) {
       this.isPVPMode = inPVPMode;

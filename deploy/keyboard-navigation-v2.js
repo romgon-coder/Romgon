@@ -49,11 +49,11 @@ class KeyboardNavigationSystemV2 {
   handleKeyPress(event) {
     const key = event.key.toLowerCase();
     
-    this.logDebug(`[${this.phase}] Key pressed: ${key}`);
+    this.logDebug(`[${this.phase}] Key pressed: ${key} | enabled=${this.enabled}`);
     
     // If PVP system not enabled, don't process input
     if (!this.enabled) {
-      this.logDebug('PVP system not enabled, skipping');
+      this.logDebug(`PVP system not enabled (enabled=${this.enabled}), skipping`);
       return;
     }
 
