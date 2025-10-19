@@ -446,20 +446,29 @@ class KeyboardNavigationSystemV2 {
     const sourceHex = document.getElementById(sourceHexId);
     
     if (!targetHex) {
-      this.logDebug(`Target hex not found: ${targetHexId}`);
+      this.logDebug(`❌ Target hex not found: ${targetHexId}`);
       return;
     }
+
+    this.logDebug(`✅ Piece: ${this.selectedPieceElement?.className || 'unknown'}`);
+    this.logDebug(`✅ Source: ${sourceHexId}, Target: ${targetHexId}`);
+    this.logDebug(`✅ Target hex has highlights: ${targetHex.className}`);
 
     // Set up game's drag state for drop handler
     window.draggedPiece = this.selectedPieceElement;
     window.draggedFromHex = sourceHex;
 
+    this.logDebug(`✅ Set window.draggedPiece and window.draggedFromHex`);
+
     // Dispatch drop event
-    this.logDebug(`Dispatching drop: ${sourceHexId} -> ${targetHexId}`);
-    targetHex.dispatchEvent(new DragEvent('drop', {
+    this.logDebug(`📤 Dispatching drop event to ${targetHexId}`);
+    const dropEvent = new DragEvent('drop', {
       bubbles: true,
       cancelable: true,
-    }));
+    });
+    targetHex.dispatchEvent(dropEvent);
+
+    this.logDebug(`✅ Drop event dispatched`);
 
     // Clean up
     window.draggedPiece = null;
