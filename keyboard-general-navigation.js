@@ -232,6 +232,12 @@ class GeneralNavigationSystem {
     const openingBookModal = document.getElementById('opening-book-modal');
     const statsDashboardModal = document.getElementById('stats-dashboard-modal');
     
+    // Debug: Log modal states
+    if (signupModal) {
+      const style = window.getComputedStyle(signupModal);
+      this.logDebug(`signup-modal display: ${style.display}, visibility: ${style.visibility}, offsetParent: ${signupModal.offsetParent}`);
+    }
+    
     const openModals = [
       signupModal, 
       accountModal, 
@@ -243,6 +249,8 @@ class GeneralNavigationSystem {
       const style = window.getComputedStyle(modal);
       return style.display !== 'none' && style.visibility !== 'hidden' && modal.offsetParent !== null;
     });
+    
+    this.logDebug(`Open modals count: ${openModals.length}`);
     
     // Filter to only visible elements
     this.navigationElements = elements.filter(el => {
