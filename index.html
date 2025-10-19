@@ -9031,14 +9031,14 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     if (whiteTimeLeft <= 0) {
                         whiteTimeLeft = 0;
                         stopTimer();
-                        showGameOver('Black wins on time!');
+                        showGameOver('Black', 'Black wins on time!');
                     }
                 } else {
                     blackTimeLeft--;
                     if (blackTimeLeft <= 0) {
                         blackTimeLeft = 0;
                         stopTimer();
-                        showGameOver('White wins on time!');
+                        showGameOver('White', 'White wins on time!');
                     }
                 }
                 
@@ -14373,17 +14373,23 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
         // Function to check win conditions
         function checkWinConditions(row, col, piece) {
+            console.log('🎯 checkWinConditions called - Row:', row, 'Col:', col, 'Piece classes:', piece.className);
+            
             // Check if it's a rhombus piece
             if (piece.classList.contains('rhombus-piece')) {
                 const isWhite = piece.classList.contains('white-rhombus');
+                console.log('✅ Rhombus piece detected - IsWhite:', isWhite);
                 
                 // Check if we're in "Escape Race" mode (only rhombuses remain)
                 const isEscapeRaceMode = checkEscapeRaceMode();
+                console.log('🏃 Escape Race Mode:', isEscapeRaceMode);
                 
                 // Black rhombus reaches 3-0 (row 3, col 0) - Black wins
                 if (!isWhite && row == 3 && col == 0) {
+                    console.log('🏴 BLACK RHOMBUS REACHED GOAL!');
                     if (isEscapeRaceMode) {
                         // Escape Race mode - Base Defence disabled, instant win!
+                        console.log('🎉 Calling showGameOver - Black Escape Race Win');
                         showGameOver('Black', '⚔️ ESCAPE RACE! Black rhombus reached the goal first!');
                         return;
                     }
@@ -14392,14 +14398,18 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     const activeDefences = isBaseDefenceActive();
                     if (activeDefences.includes('white')) {
                         // White base defence is active, black cannot win
+                        console.log('🛡️ White base defence active, blocking black win');
                         return;
                     }
+                    console.log('🎉 Calling showGameOver - Black Normal Win');
                     showGameOver('Black', 'Black rhombus reached the goal!');
                 }
                 // White rhombus reaches 3-8 (row 3, col 8) - White wins
                 else if (isWhite && row == 3 && col == 8) {
+                    console.log('⚪ WHITE RHOMBUS REACHED GOAL!');
                     if (isEscapeRaceMode) {
                         // Escape Race mode - Base Defence disabled, instant win!
+                        console.log('🎉 Calling showGameOver - White Escape Race Win');
                         showGameOver('White', '⚔️ ESCAPE RACE! White rhombus reached the goal first!');
                         return;
                     }
@@ -14408,8 +14418,10 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     const activeDefences = isBaseDefenceActive();
                     if (activeDefences.includes('black')) {
                         // Black base defence is active, white cannot win
+                        console.log('🛡️ Black base defence active, blocking white win');
                         return;
                     }
+                    console.log('🎉 Calling showGameOver - White Normal Win');
                     showGameOver('White', 'White rhombus reached the goal!');
                 }
             }
@@ -15242,6 +15254,9 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
         // Function to show game over screen
         function showGameOver(winner, reason) {
+            console.log('🏁 GAME OVER SCREEN TRIGGERED!');
+            console.log('Winner:', winner, 'Reason:', reason);
+            
             gameOver = true; // Set game over flag
             gameInProgress = false; // Game is no longer in progress
             
