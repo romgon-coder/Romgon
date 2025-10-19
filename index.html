@@ -1079,8 +1079,12 @@
     
     // Account Modal Functions
     function showAccountModal() {
+        // Refresh current user data from localStorage
         const currentUser = JSON.parse(localStorage.getItem('romgon-user') || '{}');
         const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+        
+        console.log('📊 Opening account modal - Current user:', currentUser.username);
+        console.log('📊 Current user stats:', currentUser.stats);
         
         // Check if guest user
         if (!currentUser.username || currentUser.type === 'guest') {
@@ -1145,29 +1149,30 @@
         document.getElementById('account-username').textContent = userAccount.username;
         document.getElementById('account-email').textContent = userAccount.email;
         
-        // Populate real stats from getUserStats
-        const stats = getUserStats(userAccount.username);
-        if (stats) {
-            document.getElementById('account-wins').textContent = stats.gamesWon || 0;
-            document.getElementById('account-losses').textContent = stats.gamesLost || 0;
-            document.getElementById('account-games').textContent = stats.gamesPlayed || 0;
-            
-            // Add last login
-            const lastLoginEl = document.getElementById('account-last-login');
-            if (lastLoginEl && stats.lastLogin) {
-                const lastLoginDate = new Date(stats.lastLogin);
-                lastLoginEl.textContent = lastLoginDate.toLocaleString();
-            }
-            
-            // Add saved games count
-            const savedGamesEl = document.getElementById('account-saved-games');
-            if (savedGamesEl) {
-                savedGamesEl.textContent = (stats.savedGames || []).length;
-            }
-        } else {
-            document.getElementById('account-wins').textContent = 0;
-            document.getElementById('account-losses').textContent = 0;
-            document.getElementById('account-games').textContent = 0;
+        // Get stats - use currentUser stats first (most recent), fall back to getUserStats
+        const userStats = currentUser.stats || {};
+        const gamesWon = userStats.wins || 0;
+        const gamesLost = userStats.losses || 0;
+        const gamesPlayed = userStats.totalGames || 0;
+        
+        console.log('📊 Display stats - Won:', gamesWon, 'Lost:', gamesLost, 'Total:', gamesPlayed);
+        
+        // Update wins, losses, total games
+        document.getElementById('account-wins').textContent = gamesWon;
+        document.getElementById('account-losses').textContent = gamesLost;
+        document.getElementById('account-games').textContent = gamesPlayed;
+        
+        // Add last login
+        const lastLoginEl = document.getElementById('account-last-login');
+        if (lastLoginEl && userAccount.lastLogin) {
+            const lastLoginDate = new Date(userAccount.lastLogin);
+            lastLoginEl.textContent = lastLoginDate.toLocaleString();
+        }
+        
+        // Add saved games count
+        const savedGamesEl = document.getElementById('account-saved-games');
+        if (savedGamesEl) {
+            savedGamesEl.textContent = (userAccount.savedGames || []).length;
         }
         
         // Show delete account button for registered users
@@ -1534,20 +1539,27 @@
         const user = allUsers[username];
         if (!user.stats) {
             user.stats = {
-                gamesPlayed: 0,
-                gamesWon: 0,
-                gamesLost: 0,
-                gamesDrawn: 0
+                wins: 0,
+                losses: 0,
+                totalGames: 0,
+                totalMoves: 0,
+                totalCaptures: 0
             };
             // Save the updated user back to localStorage
             localStorage.setItem('romgon-users', JSON.stringify(allUsers));
         }
         
+        // Support both old and new stat formats
+        const stats = user.stats;
+        const gamesWon = stats.wins || stats.gamesWon || 0;
+        const gamesLost = stats.losses || stats.gamesLost || 0;
+        const gamesPlayed = stats.totalGames || stats.gamesPlayed || 0;
+        
         return {
-            gamesPlayed: user.stats.gamesPlayed || 0,
-            gamesWon: user.stats.gamesWon || 0,
-            gamesLost: user.stats.gamesLost || 0,
-            gamesDrawn: user.stats.gamesDrawn || 0,
+            gamesPlayed: gamesPlayed,
+            gamesWon: gamesWon,
+            gamesLost: gamesLost,
+            gamesDrawn: stats.gamesDrawn || 0,
             lastLogin: user.lastLogin || null,
             savedGames: user.savedGames || [],
             pieceStats: user.pieceStats || {
@@ -1559,8 +1571,8 @@
             },
             longestWinStreak: user.longestWinStreak || 0,
             fastestWin: user.fastestWin || null,
-            totalCaptures: user.totalCaptures || 0,
-            totalMoves: user.totalMoves || 0,
+            totalCaptures: stats.totalCaptures || 0,
+            totalMoves: stats.totalMoves || 0,
             registeredDate: user.registeredDate
         };
     }
