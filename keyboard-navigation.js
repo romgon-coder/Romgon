@@ -333,6 +333,25 @@ class KeyboardNavigationSystem {
     this.updatePlayerIndicator();
     this.logDebug(`Switched to Player ${this.activePlayer}`);
   }
+
+  /**
+   * Sync with game's currentPlayer variable
+   * Called by monitor loop to keep keyboard in sync with game turns
+   */
+  syncWithGameTurn() {
+    if (typeof currentPlayer === 'undefined') return; // Game hasn't initialized yet
+    
+    const gameCurrentPlayerIsWhite = currentPlayer === 'white';
+    const keyboardCurrentIsWhite = this.activePlayer === 2;
+    
+    // If out of sync, update keyboard to match game
+    if (gameCurrentPlayerIsWhite !== keyboardCurrentIsWhite) {
+      this.activePlayer = gameCurrentPlayerIsWhite ? 2 : 1;
+      this.deselectPiece(); // Clear old selection when turn changes
+      this.updatePlayerIndicator();
+      this.logDebug(`Auto-sync: Keyboard now Player ${this.activePlayer} (game currentPlayer=${currentPlayer})`);
+    }
+  }
   
   /**
    * Update UI to show current active player
@@ -406,6 +425,18 @@ window.addEventListener('load', () => {
         help.style.display = 'block';
       }
       console.log('✅ Keyboard Navigation initialized');
+      
+      // Start monitoring game turns and sync keyboard with current player
+      // This ensures keyboard stays synchronized when turns change
+      const syncInterval = setInterval(() => {
+        if (window.keyboardNav) {
+          window.keyboardNav.syncWithGameTurn();
+        } else {
+          clearInterval(syncInterval); // Stop if keyboard system removed
+        }
+      }, 250); // Check every 250ms for turn changes
+      
+      console.log('🔄 Turn sync monitor started');
     }
   }, 500);
 });
