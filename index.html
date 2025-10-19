@@ -2335,11 +2335,46 @@
             white-space: nowrap !important;
             vertical-align: middle !important;
             font-size: 9px !important;
+            position: relative !important;
         }
         
         .game-menu-button:hover {
             background-color: #34495e !important;
             box-shadow: 0 4px 12px rgba(78, 205, 196, 0.5) !important;
+        }
+        
+        /* Custom Tooltip Styling for Button Titles */
+        .game-menu-button[title]:hover::after {
+            content: attr(title);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #1a252f !important;
+            color: #ffffff !important;
+            padding: 10px 14px !important;
+            border-radius: 6px !important;
+            font-size: 12px !important;
+            font-weight: normal !important;
+            white-space: nowrap !important;
+            z-index: 10000 !important;
+            margin-bottom: 10px !important;
+            border: 1px solid #4ecdc4 !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8) !important;
+            pointer-events: none !important;
+        }
+        
+        .game-menu-button[title]:hover::before {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #1a252f;
+            z-index: 10001 !important;
+            margin-bottom: -2px !important;
+            margin-left: 0 !important;
         }
         
         /* Side Panel Styling */
