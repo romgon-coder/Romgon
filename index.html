@@ -763,6 +763,8 @@
                 gamesLost: 0,
                 gamesDrawn: 0
             };
+            // Save the updated user back to localStorage
+            localStorage.setItem('romgon-users', JSON.stringify(allUsers));
         }
         
         return {
