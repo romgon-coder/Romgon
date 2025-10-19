@@ -1,7 +1,5 @@
 {
   "version": 2,
-  "public": "frontend",
-  "buildCommand": "",
-  "installCommand": ""
+  "framework": null
 }
 
