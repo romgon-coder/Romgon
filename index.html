@@ -2342,6 +2342,46 @@
             box-shadow: 0 4px 12px rgba(78, 205, 196, 0.5) !important;
         }
         
+        /* Side Panel Styling */
+        #game-buttons-panel {
+            position: fixed;
+            left: 0;
+            top: 100px;
+            width: 300px;
+            max-height: calc(100vh - 120px);
+            background-color: rgba(44, 62, 80, 0.95) !important;
+            border: 2px solid #4ecdc4 !important;
+            border-left: none !important;
+            border-radius: 0 12px 12px 0 !important;
+            padding: 15px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 10px !important;
+            z-index: 2999 !important;
+            overflow-y: auto !important;
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.5) !important;
+            transition: transform 0.3s ease !important;
+        }
+        
+        #game-buttons-panel.hidden {
+            transform: translateX(-320px) !important;
+        }
+        
+        #game-buttons-panel button {
+            width: 100% !important;
+            padding: 10px 12px !important;
+            text-align: left !important;
+            font-size: 11px !important;
+        }
+        
+        #toggle-panel-btn {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-width: 45px !important;
+            min-height: 28px !important;
+        }
+        
         /* NEW: Highlight for piece that just moved and is under attack */
         .highlight-under-attack {
             background-color: #ff4444 !important;
@@ -14025,40 +14065,28 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             helpButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             helpButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
 
-            // Append all elements
-            turnIndicator.appendChild(menuButton);
-            if (aiModelButton) {
-                turnIndicator.appendChild(aiModelButton);
-            }
-            turnIndicator.appendChild(coordButton);
-            turnIndicator.appendChild(defenseButton);
-            turnIndicator.appendChild(fogButton);
-            
-            // Create music toggle button (wooden board style)
+            // Create music toggle button
             const musicButton = document.createElement('button');
             const updateMusicButtonDisplayLocal = () => {
                 const isMusicOn = gameSettings.music && currentMusicTrack > 0;
                 musicButton.innerHTML = isMusicOn ? '🔊 MUSIC' : '🔇 MUSIC';
             };
-            updateMusicButtonDisplayLocal(); // Initial display
+            updateMusicButtonDisplayLocal();
             musicButton.className = 'game-menu-button';
             musicButton.style.cssText = `
-                padding: 4px 10px !important;
-                font-size: 9px !important;
-                margin-left: 5px !important;
+                padding: 8px 14px !important;
+                font-size: 10px !important;
             `;
             musicButton.onclick = function() {
                 if (gameSettings.music && currentMusicTrack > 0) {
-                    // Music is on, turn it off
                     stopBackgroundMusic();
                     gameSettings.music = false;
                 } else {
-                    // Music is off, turn it on
                     gameSettings.music = true;
                     if (gameSettings.currentMusicTrack > 0) {
                         playBackgroundMusic(gameSettings.currentMusicTrack);
                     } else {
-                        playBackgroundMusic(1); // Start with track 1
+                        playBackgroundMusic(1);
                     }
                 }
                 updateMusicButtonDisplayLocal();
@@ -14066,18 +14094,14 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             };
             musicButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             musicButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
-            
-            turnIndicator.appendChild(musicButton);
-            
-            turnIndicator.appendChild(turnDisplay);
+
             // Create undo button
             const undoButton = document.createElement('button');
             undoButton.innerHTML = '↩️ UNDO';
             undoButton.className = 'game-menu-button';
             undoButton.style.cssText = `
-                padding: 6px 12px !important;
-                font-size: 9px !important;
-                margin-left: 6px !important;
+                padding: 8px 14px !important;
+                font-size: 10px !important;
             `;
             undoButton.onclick = undoLastMove;
             undoButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
@@ -14089,17 +14113,15 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             kbHelpButton.className = 'game-menu-button';
             kbHelpButton.title = 'Toggle keyboard controls help';
             kbHelpButton.style.cssText = `
-                padding: 6px 12px !important;
-                font-size: 9px !important;
-                margin-left: 6px !important;
+                padding: 8px 14px !important;
+                font-size: 10px !important;
             `;
             kbHelpButton.onclick = function() {
                 const panel = document.getElementById('kb-info-panel');
-                if (panel.style.display === 'none') {
+                if (panel && panel.style.display === 'none') {
                     panel.style.display = 'block';
-                    // Update button states when panel opens
                     updateKeyboardToggleButtons();
-                } else {
+                } else if (panel) {
                     panel.style.display = 'none';
                 }
             };
@@ -14115,14 +14137,12 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             toggleLastMoveButton.style.cssText = `
                 padding: 8px 14px !important;
                 font-size: 10px !important;
-                margin-left: 6px !important;
             `;
             toggleLastMoveButton.onclick = function() {
                 if (typeof gameSettings !== 'undefined') {
                     gameSettings.showLastMove = !gameSettings.showLastMove;
                     this.innerHTML = gameSettings.showLastMove ? '👁️ HIDE' : '👁️ SHOW';
                     
-                    // Update the highlight display
                     if (gameSettings.showLastMove) {
                         highlightLastMove(lastMoveFrom, lastMoveTo);
                     } else {
@@ -14142,13 +14162,12 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             showAllMovesButton.style.cssText = `
                 padding: 8px 14px !important;
                 font-size: 10px !important;
-                margin-left: 6px !important;
             `;
             showAllMovesButton.onclick = toggleShowAllMoves;
             showAllMovesButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             showAllMovesButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
 
-            // Create board flip button (manual override for auto-flip)
+            // Create board flip button
             const flipButton = document.createElement('button');
             flipButton.id = 'flip-button';
             flipButton.innerHTML = boardFlipped ? '🔄 NORMAL' : '🔄 FLIP';
@@ -14157,7 +14176,6 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             flipButton.style.cssText = `
                 padding: 8px 14px !important;
                 font-size: 10px !important;
-                margin-left: 6px !important;
             `;
             flipButton.onclick = function() {
                 toggleBoardFlip();
@@ -14166,108 +14184,144 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             flipButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             flipButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
 
-            turnIndicator.appendChild(flipButton); // Always show flip button (for both players)
-            turnIndicator.appendChild(helpButton);
-            turnIndicator.appendChild(showAllMovesButton); // Add show all moves button
-            turnIndicator.appendChild(toggleLastMoveButton);
-            turnIndicator.appendChild(undoButton);
-            turnIndicator.appendChild(kbHelpButton);
-            
-            // ============================================
-            // RPN SYSTEM BUTTONS
-            // ============================================
-            
-            // Copy Position button
+            // Create copy position button (RPN)
             const copyPositionBtn = document.createElement('button');
             copyPositionBtn.innerHTML = '📋';
             copyPositionBtn.title = 'Copy position to clipboard (RPN)';
             copyPositionBtn.className = 'game-menu-button';
             copyPositionBtn.style.cssText = `
-                padding: 8px 12px !important;
-                font-size: 1em !important;
-                margin-left: 6px !important;
+                padding: 8px 14px !important;
+                font-size: 10px !important;
             `;
             copyPositionBtn.onclick = copyPositionToClipboard;
             copyPositionBtn.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             copyPositionBtn.onmouseout = function() { this.style.transform = 'scale(1)'; };
-            
-            // Load Position button
+
+            // Create load position button (RPN)
             const loadPositionBtn = document.createElement('button');
             loadPositionBtn.innerHTML = '📥';
             loadPositionBtn.title = 'Load position from RPN notation';
             loadPositionBtn.className = 'game-menu-button';
             loadPositionBtn.style.cssText = `
-                padding: 8px 12px !important;
-                font-size: 1em !important;
-                margin-left: 6px !important;
+                padding: 8px 14px !important;
+                font-size: 10px !important;
             `;
             loadPositionBtn.onclick = openLoadPositionModal;
             loadPositionBtn.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             loadPositionBtn.onmouseout = function() { this.style.transform = 'scale(1)'; };
-            
-            // Export Game button
+
+            // Create export game button (RPN)
             const exportGameBtn = document.createElement('button');
             exportGameBtn.innerHTML = '💾';
             exportGameBtn.title = 'Download game in RMN format';
             exportGameBtn.className = 'game-menu-button';
             exportGameBtn.style.cssText = `
-                padding: 8px 12px !important;
-                font-size: 1em !important;
-                margin-left: 6px !important;
+                padding: 8px 14px !important;
+                font-size: 10px !important;
             `;
             exportGameBtn.onclick = downloadGameRMN;
             exportGameBtn.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             exportGameBtn.onmouseout = function() { this.style.transform = 'scale(1)'; };
-            
-            // Log RPN button (dev tool)
+
+            // Create log RPN button (dev tool)
             const logRPNBtn = document.createElement('button');
             logRPNBtn.innerHTML = '🔍';
             logRPNBtn.title = 'Log current RPN to console';
             logRPNBtn.className = 'game-menu-button';
             logRPNBtn.style.cssText = `
-                padding: 8px 12px !important;
-                font-size: 1em !important;
-                margin-left: 6px !important;
+                padding: 8px 14px !important;
+                font-size: 10px !important;
             `;
             logRPNBtn.onclick = logPositionRPN;
             logRPNBtn.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             logRPNBtn.onmouseout = function() { this.style.transform = 'scale(1)'; };
-            
-            // Dark Mode Toggle button
+
+            // Create dark mode button
             const darkModeBtn = document.createElement('button');
             darkModeBtn.innerHTML = '🌙';
             darkModeBtn.title = 'Toggle Dark/Light Mode';
             darkModeBtn.className = 'game-menu-button';
             darkModeBtn.style.cssText = `
-                padding: 8px 12px !important;
-                font-size: 1em !important;
-                margin-left: 6px !important;
+                padding: 8px 14px !important;
+                font-size: 10px !important;
             `;
             darkModeBtn.onclick = toggleDarkMode;
             darkModeBtn.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             darkModeBtn.onmouseout = function() { this.style.transform = 'scale(1)'; };
-            
-            // Wooden Theme Toggle button
+
+            // Create wooden theme button
             const woodenThemeBtn = document.createElement('button');
             woodenThemeBtn.innerHTML = '🪵';
             woodenThemeBtn.title = 'Toggle Wooden Board';
             woodenThemeBtn.className = 'game-menu-button';
             woodenThemeBtn.style.cssText = `
-                padding: 8px 12px !important;
-                font-size: 1em !important;
-                margin-left: 6px !important;
+                padding: 8px 14px !important;
+                font-size: 10px !important;
             `;
             woodenThemeBtn.onclick = toggleWoodenTheme;
             woodenThemeBtn.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             woodenThemeBtn.onmouseout = function() { this.style.transform = 'scale(1)'; };
+
+            // Create toggle panel button
+            const togglePanelBtn = document.createElement('button');
+            togglePanelBtn.id = 'toggle-panel-btn';
+            togglePanelBtn.innerHTML = '≡';
+            togglePanelBtn.title = 'Toggle side menu panel';
+            togglePanelBtn.className = 'game-menu-button';
+            togglePanelBtn.style.cssText = `
+                padding: 6px 12px !important;
+                font-size: 16px !important;
+                min-width: 45px !important;
+            `;
             
-            // Append RPN buttons
-            turnIndicator.appendChild(copyPositionBtn);
-            turnIndicator.appendChild(loadPositionBtn);
-            turnIndicator.appendChild(exportGameBtn);
-            turnIndicator.appendChild(logRPNBtn);
-            turnIndicator.appendChild(darkModeBtn);
-            turnIndicator.appendChild(woodenThemeBtn);
+            // Create side panel for all other buttons
+            let gameButtonsPanel = document.getElementById('game-buttons-panel');
+            if (gameButtonsPanel) {
+                gameButtonsPanel.remove();
+            }
+            
+            gameButtonsPanel = document.createElement('div');
+            gameButtonsPanel.id = 'game-buttons-panel';
+            
+            // Add all buttons to the side panel
+            gameButtonsPanel.appendChild(menuButton);
+            if (aiModelButton) {
+                gameButtonsPanel.appendChild(aiModelButton);
+            }
+            gameButtonsPanel.appendChild(coordButton);
+            gameButtonsPanel.appendChild(defenseButton);
+            gameButtonsPanel.appendChild(fogButton);
+            gameButtonsPanel.appendChild(musicButton);
+            gameButtonsPanel.appendChild(undoButton);
+            gameButtonsPanel.appendChild(kbHelpButton);
+            gameButtonsPanel.appendChild(toggleLastMoveButton);
+            gameButtonsPanel.appendChild(showAllMovesButton);
+            gameButtonsPanel.appendChild(flipButton);
+            gameButtonsPanel.appendChild(helpButton);
+            
+            // Add RPN buttons to panel
+            gameButtonsPanel.appendChild(copyPositionBtn);
+            gameButtonsPanel.appendChild(loadPositionBtn);
+            gameButtonsPanel.appendChild(exportGameBtn);
+            gameButtonsPanel.appendChild(logRPNBtn);
+            gameButtonsPanel.appendChild(darkModeBtn);
+            gameButtonsPanel.appendChild(woodenThemeBtn);
+            
+            // Toggle panel functionality
+            togglePanelBtn.onclick = function() {
+                gameButtonsPanel.classList.toggle('hidden');
+            };
+            togglePanelBtn.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
+            togglePanelBtn.onmouseout = function() { this.style.transform = 'scale(1)'; };
+            
+            // Add only turn display and toggle button to top
+            turnIndicator.appendChild(togglePanelBtn);
+            turnIndicator.appendChild(turnDisplay);
+            
+            // Append panel and turn indicator to document
+            document.body.appendChild(gameButtonsPanel);
+
+
             
             // ============================================
             // END RPN BUTTONS
