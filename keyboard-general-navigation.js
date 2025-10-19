@@ -339,8 +339,15 @@ class GeneralNavigationSystem {
    */
   setEnabled(enabled) {
     this.enabled = enabled;
+    this.logDebug(`General Navigation ${enabled ? 'ENABLED' : 'DISABLED'}`);
     if (!enabled) {
       this.clearFocus();
+    } else {
+      // When enabling, update elements
+      this.updateNavigationElements();
+      if (this.navigationElements.length > 0 && !this.focusedElement) {
+        this.focusElement(0);
+      }
     }
   }
 

@@ -15,10 +15,13 @@ class KeyboardSystemRouter {
     this.setupListeners();
     this.logDebug('Keyboard System Router Initialized');
     
-    // Start with General Navigation enabled by default (for menus and setup screens)
+    // START DISABLED - Only activate when appropriate
+    // General Navigation will be enabled by modals when they open
+    // This prevents the issue of showing game board elements on sign-in screen
     setTimeout(() => {
       if (!this.systemActive) {
-        this.activateGeneralSystem();
+        // Don't auto-activate on page load - wait for explicit activation
+        this.logDebug('⏳ Waiting for game start or modal activation...');
       }
     }, 100);
   }
