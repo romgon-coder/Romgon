@@ -14,6 +14,13 @@ class KeyboardSystemRouter {
     
     this.setupListeners();
     this.logDebug('Keyboard System Router Initialized');
+    
+    // Start with General Navigation enabled by default (for menus and setup screens)
+    setTimeout(() => {
+      if (!this.systemActive) {
+        this.activateGeneralSystem();
+      }
+    }, 100);
   }
 
   setupListeners() {
