@@ -1,9 +1,23 @@
 {
   "version": 2,
-  "public": "frontend",
-  "buildCommand": "echo 'Building static site'",
-  "installCommand": "echo 'No dependencies needed'",
-  "env": {
-    "NODE_ENV": "production"
-  }
+  "builds": [
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "^/src/(.*)",
+      "dest": "/frontend/src/$1"
+    },
+    {
+      "src": "^/ASSETS/(.*)",
+      "dest": "/frontend/ASSETS/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/index.html"
+    }
+  ]
 }

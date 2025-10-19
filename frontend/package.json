@@ -1,0 +1,12 @@
+{
+  "name": "romgon-frontend",
+  "version": "1.0.0",
+  "description": "ROMGON Frontend - Multiplayer Game",
+  "private": true,
+  "scripts": {
+    "build": "echo 'static build'"
+  },
+  "keywords": ["romgon", "game", "frontend"],
+  "author": "",
+  "license": "MIT"
+}
