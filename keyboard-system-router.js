@@ -69,16 +69,21 @@ class KeyboardSystemRouter {
     
     this.logDebug('🎮 Switching to PVP Keyboard System (Multi-Phase)');
     
-    // DISABLE general navigation completely
+    // COMPLETELY DISABLE general navigation
     if (window.generalNav) {
+      window.generalNav.enabled = false;
       window.generalNav.setEnabled(false);
       window.generalNav.clearFocus();
-      this.logDebug('✅ General Navigation System DISABLED');
+      document.querySelectorAll('.kb-nav-focused').forEach(el => {
+        el.classList.remove('kb-nav-focused');
+      });
+      this.logDebug('✅ General Navigation System COMPLETELY DISABLED');
     }
     
     // Enable PVP system
     if (!window.keyboardNav && typeof KeyboardNavigationSystemV2 !== 'undefined') {
       window.keyboardNav = new KeyboardNavigationSystemV2({ debug: true });
+      window.keyboardNav.enabled = true;
       this.logDebug('✅ PVP Keyboard System activated');
     } else if (window.keyboardNav) {
       window.keyboardNav.enabled = true;
