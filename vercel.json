@@ -1,6 +1,32 @@
 {
   "version": 2,
-  "buildCommand": "cp -r frontend .vercel/output/static || mkdir -p .vercel/output/static && cp -r frontend/* .vercel/output/static/",
-  "outputDirectory": ".vercel/output/static"
+  "builds": [
+    {
+      "src": "frontend/index.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "frontend/src/**/*",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "frontend/ASSETS/**/*",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/src/(.*)",
+      "dest": "/frontend/src/$1"
+    },
+    {
+      "src": "/ASSETS/(.*)",
+      "dest": "/frontend/ASSETS/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/index.html"
+    }
+  ]
 }
 
