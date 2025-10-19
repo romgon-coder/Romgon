@@ -1311,10 +1311,16 @@
         const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
         
         console.log('Player Hub - Current User:', currentUser);
+        console.log('Player Hub - Current User Username:', currentUser.username);
+        console.log('Player Hub - Current User ID:', currentUser.id);
         console.log('Player Hub - All Users Keys:', Object.keys(allUsers));
+        console.log('Player Hub - All Users:', allUsers);
         
         // Check if registered user (has username AND user exists in allUsers)
         const isRegistered = currentUser.username && allUsers[currentUser.username];
+        console.log('Player Hub - Is Registered:', isRegistered);
+        console.log('Player Hub - Has Username:', !!currentUser.username);
+        console.log('Player Hub - User in AllUsers:', !!allUsers[currentUser.username]);
         
         if (!isRegistered) {
             // Guest user
