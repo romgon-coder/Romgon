@@ -1,6 +1,3 @@
 {
-  "version": 2,
-  "framework": "static",
-  "buildCommand": "echo 'no build'",
-  "installCommand": "echo 'no install'"
+  "version": 2
 }
