@@ -231,7 +231,32 @@ class GeneralNavigationSystem {
       const isVisible = style.display !== 'none' && 
                        style.visibility !== 'hidden' && 
                        el.offsetParent !== null;
-      return isVisible;
+      
+      if (!isVisible) return false;
+      
+      // Check if element is inside a hidden or background screen
+      // Exclude elements that are on the game board if a modal is open
+      const modals = document.querySelectorAll('[id*="modal"], [id*="overlay"], .modal, [class*="modal"]');
+      const isInOpenModal = Array.from(modals).some(modal => {
+        const modalStyle = window.getComputedStyle(modal);
+        const modalVisible = modalStyle.display !== 'none' && 
+                            modalStyle.visibility !== 'hidden' && 
+                            modal.offsetParent !== null;
+        return modalVisible && modal.contains(el);
+      });
+      
+      // If a modal is open, only include elements inside that modal
+      if (modals.length > 0) {
+        const anyModalOpen = Array.from(modals).some(m => {
+          const s = window.getComputedStyle(m);
+          return s.display !== 'none' && s.visibility !== 'hidden' && m.offsetParent !== null;
+        });
+        if (anyModalOpen && !isInOpenModal) {
+          return false; // Exclude this element, it's behind a modal
+        }
+      }
+      
+      return true;
     });
 
     this.logDebug(`Found ${this.navigationElements.length} navigable elements in context: ${this.currentContext}`);
