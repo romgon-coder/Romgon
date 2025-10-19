@@ -2325,56 +2325,41 @@
             border: 2px solid #4ecdc4 !important;
             border-radius: 6px !important;
             cursor: pointer !important;
-            font-weight: bold !important;
+            font-weight: normal !important;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6) !important;
             transition: all 0.2s ease !important;
             text-shadow: none !important;
-            display: inline-block !important;
-            min-height: 26px !important;
-            line-height: 1.2 !important;
-            white-space: nowrap !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 8px 10px !important;
+            gap: 4px !important;
+            min-height: auto !important;
+            line-height: 1.1 !important;
+            white-space: normal !important;
             vertical-align: middle !important;
-            font-size: 9px !important;
             position: relative !important;
+        }
+        
+        .game-menu-button-emoji {
+            font-size: 14px !important;
+            line-height: 1 !important;
+        }
+        
+        .game-menu-button-label {
+            font-size: 8px !important;
+            color: #ffffff !important;
+            font-weight: normal !important;
+            line-height: 1.1 !important;
+            text-align: center !important;
+            word-break: break-word !important;
         }
         
         .game-menu-button:hover {
             background-color: #2c3e50 !important;
             box-shadow: 0 4px 12px rgba(78, 205, 196, 0.5) !important;
-        }
-        
-        /* Custom Tooltip Styling for Button Titles */
-        .game-menu-button[title]:hover::after {
-            content: attr(title);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #1a252f !important;
-            color: #ffffff !important;
-            padding: 10px 14px !important;
-            border-radius: 6px !important;
-            font-size: 12px !important;
-            font-weight: normal !important;
-            white-space: nowrap !important;
-            z-index: 10000 !important;
-            margin-bottom: 10px !important;
-            border: 1px solid #4ecdc4 !important;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8) !important;
-            pointer-events: none !important;
-        }
-        
-        .game-menu-button[title]:hover::before {
-            content: '';
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            border: 6px solid transparent;
-            border-top-color: #1a252f;
-            z-index: 10001 !important;
-            margin-bottom: -2px !important;
-            margin-left: 0 !important;
+            transform: scale(1.05) !important;
         }
         
         /* Side Panel Styling */
@@ -13717,13 +13702,9 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
             // Create left button (Main Menu)
             const menuButton = document.createElement('button');
-            menuButton.innerHTML = '🏠 MENU';
+            menuButton.innerHTML = '<span class="game-menu-button-emoji">🏠</span><span class="game-menu-button-label">MENU</span>';
             menuButton.className = 'game-menu-button';
-            menuButton.title = 'Return to main menu';
-            menuButton.style.cssText = `
-                padding: 6px 12px !important;
-                font-size: 9px !important;
-            `;
+            menuButton.title = '';
             menuButton.onclick = function() {
                 gameInProgress = true;
                 showStartMenu();
@@ -13736,13 +13717,9 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             if (llmMode) {
                 aiModelButton = document.createElement('button');
                 aiModelButton.id = 'ai-model-selector-btn';
-                aiModelButton.innerHTML = '🧠 AI';
+                aiModelButton.innerHTML = '<span class="game-menu-button-emoji">🧠</span><span class="game-menu-button-label">AI</span>';
                 aiModelButton.className = 'game-menu-button';
-                aiModelButton.title = 'Select AI model for game analysis';
-                aiModelButton.style.cssText = `
-                    padding: 6px 12px !important;
-                    font-size: 9px !important;
-                `;
+                aiModelButton.title = '';
                 aiModelButton.onclick = showAIModelSelector;
                 aiModelButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
                 aiModelButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
@@ -13750,27 +13727,18 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
             // Create coordinate toggle button
             const coordButton = document.createElement('button');
-            coordButton.innerHTML = '📍 COORDS';
+            coordButton.innerHTML = '<span class="game-menu-button-emoji">📍</span><span class="game-menu-button-label">COORDS</span>';
             coordButton.className = 'game-menu-button';
-            coordButton.title = 'Toggle hexagon coordinates display';
-            coordButton.style.cssText = `
-                padding: 4px 10px !important;
-                font-size: 9px !important;
-            `;
+            coordButton.title = '';
             coordButton.onclick = toggleCoordinates;
             coordButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             coordButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
 
             // Create defense toggle button
             const defenseButton = document.createElement('button');
-            defenseButton.innerHTML = '🛡️ DEFENSE';
+            defenseButton.innerHTML = '<span class="game-menu-button-emoji">🛡️</span><span class="game-menu-button-label">DEF</span>';
             defenseButton.className = 'game-menu-button';
-            defenseButton.title = 'Show which pieces are defended by allies';
-            defenseButton.style.cssText = `
-                padding: 4px 10px !important;
-                font-size: 9px !important;
-                margin-left: 5px !important;
-            `;
+            defenseButton.title = '';
             let defenseHighlightEnabled = false;
             defenseButton.onclick = function() {
                 defenseHighlightEnabled = !defenseHighlightEnabled;
@@ -13786,17 +13754,12 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
             // Create Fog of War toggle button
             const fogButton = document.createElement('button');
-            fogButton.innerHTML = fogOfWarEnabled ? '👁️ FOG ON' : '👁️ FOG OFF';
+            fogButton.innerHTML = fogOfWarEnabled ? '<span class="game-menu-button-emoji">👁️</span><span class="game-menu-button-label">FOG</span>' : '<span class="game-menu-button-emoji">👁️</span><span class="game-menu-button-label">FOG</span>';
             fogButton.className = 'game-menu-button';
-            fogButton.title = 'Toggle fog of war - hide opponent pieces during planning';
-            fogButton.style.cssText = `
-                padding: 4px 10px !important;
-                font-size: 9px !important;
-                margin-left: 5px !important;
-            `;
+            fogButton.title = '';
             fogButton.onclick = function() {
                 fogOfWarEnabled = !fogOfWarEnabled;
-                this.innerHTML = fogOfWarEnabled ? '👁️ FOG ON' : '👁️ FOG OFF';
+                this.innerHTML = '<span class="game-menu-button-emoji">👁️</span><span class="game-menu-button-label">FOG</span>';
                 updateFogOfWar();
                 console.log('🌫️ Fog of War:', fogOfWarEnabled ? 'ENABLED' : 'DISABLED');
             };
@@ -14098,13 +14061,9 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
             // Create right button (Help)
             const helpButton = document.createElement('button');
-            helpButton.innerHTML = '❓ HELP';
+            helpButton.innerHTML = '<span class="game-menu-button-emoji">❓</span><span class="game-menu-button-label">HELP</span>';
             helpButton.className = 'game-menu-button';
-            helpButton.title = 'Show game help and instructions';
-            helpButton.style.cssText = `
-                padding: 8px 14px !important;
-                font-size: 10px !important;
-            `;
+            helpButton.title = '';
             helpButton.onclick = showHelp;
             helpButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             helpButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
@@ -14113,15 +14072,11 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             const musicButton = document.createElement('button');
             const updateMusicButtonDisplayLocal = () => {
                 const isMusicOn = gameSettings.music && currentMusicTrack > 0;
-                musicButton.innerHTML = isMusicOn ? '🔊 MUSIC' : '🔇 MUSIC';
+                musicButton.innerHTML = isMusicOn ? '<span class="game-menu-button-emoji">🔊</span><span class="game-menu-button-label">MUSIC</span>' : '<span class="game-menu-button-emoji">🔇</span><span class="game-menu-button-label">MUSIC</span>';
             };
             updateMusicButtonDisplayLocal();
             musicButton.className = 'game-menu-button';
-            musicButton.title = 'Toggle background music on/off';
-            musicButton.style.cssText = `
-                padding: 8px 14px !important;
-                font-size: 10px !important;
-            `;
+            musicButton.title = '';
             musicButton.onclick = function() {
                 if (gameSettings.music && currentMusicTrack > 0) {
                     stopBackgroundMusic();
@@ -14142,26 +14097,18 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
             // Create undo button
             const undoButton = document.createElement('button');
-            undoButton.innerHTML = '↩️ UNDO';
+            undoButton.innerHTML = '<span class="game-menu-button-emoji">↩️</span><span class="game-menu-button-label">UNDO</span>';
             undoButton.className = 'game-menu-button';
-            undoButton.title = 'Undo the last move';
-            undoButton.style.cssText = `
-                padding: 8px 14px !important;
-                font-size: 10px !important;
-            `;
+            undoButton.title = '';
             undoButton.onclick = undoLastMove;
             undoButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             undoButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
 
             // Create keyboard help toggle button
             const kbHelpButton = document.createElement('button');
-            kbHelpButton.innerHTML = '⌨️ HELP';
+            kbHelpButton.innerHTML = '<span class="game-menu-button-emoji">⌨️</span><span class="game-menu-button-label">KB</span>';
             kbHelpButton.className = 'game-menu-button';
-            kbHelpButton.title = 'Toggle keyboard controls help';
-            kbHelpButton.style.cssText = `
-                padding: 8px 14px !important;
-                font-size: 10px !important;
-            `;
+            kbHelpButton.title = '';
             kbHelpButton.onclick = function() {
                 const panel = document.getElementById('kb-info-panel');
                 if (panel && panel.style.display === 'none') {
@@ -14177,17 +14124,12 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             // Create toggle last move highlight button
             const toggleLastMoveButton = document.createElement('button');
             const isLastMoveVisible = typeof gameSettings !== 'undefined' ? gameSettings.showLastMove : true;
-            toggleLastMoveButton.innerHTML = isLastMoveVisible ? '👁️ HIDE' : '👁️ SHOW';
-            toggleLastMoveButton.title = 'Toggle last move highlight';
+            toggleLastMoveButton.innerHTML = '<span class="game-menu-button-emoji">👁️</span><span class="game-menu-button-label">LAST</span>';
+            toggleLastMoveButton.title = '';
             toggleLastMoveButton.className = 'game-menu-button';
-            toggleLastMoveButton.style.cssText = `
-                padding: 8px 14px !important;
-                font-size: 10px !important;
-            `;
             toggleLastMoveButton.onclick = function() {
                 if (typeof gameSettings !== 'undefined') {
                     gameSettings.showLastMove = !gameSettings.showLastMove;
-                    this.innerHTML = gameSettings.showLastMove ? '👁️ HIDE' : '👁️ SHOW';
                     
                     if (gameSettings.showLastMove) {
                         highlightLastMove(lastMoveFrom, lastMoveTo);
@@ -14203,12 +14145,8 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             const showAllMovesButton = document.createElement('button');
             showAllMovesButton.className = 'game-menu-button';
             showAllMovesButton.id = 'show-all-moves-button';
-            showAllMovesButton.innerHTML = showAllMoves ? '👁️ HIDE ALL' : '👁️ SHOW ALL';
-            showAllMovesButton.title = 'Show all possible moves for all pieces (including rotations)';
-            showAllMovesButton.style.cssText = `
-                padding: 8px 14px !important;
-                font-size: 10px !important;
-            `;
+            showAllMovesButton.innerHTML = '<span class="game-menu-button-emoji">👁️</span><span class="game-menu-button-label">MOVES</span>';
+            showAllMovesButton.title = '';
             showAllMovesButton.onclick = toggleShowAllMoves;
             showAllMovesButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             showAllMovesButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
@@ -14216,94 +14154,65 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             // Create board flip button
             const flipButton = document.createElement('button');
             flipButton.id = 'flip-button';
-            flipButton.innerHTML = boardFlipped ? '🔄 NORMAL' : '🔄 FLIP';
-            flipButton.title = 'Manually flip board orientation (overrides auto-flip)';
+            flipButton.innerHTML = '<span class="game-menu-button-emoji">🔄</span><span class="game-menu-button-label">FLIP</span>';
+            flipButton.title = '';
             flipButton.className = 'game-menu-button';
-            flipButton.style.cssText = `
-                padding: 8px 14px !important;
-                font-size: 10px !important;
-            `;
             flipButton.onclick = function() {
                 toggleBoardFlip();
-                this.innerHTML = boardFlipped ? '🔄 NORMAL' : '🔄 FLIP';
             };
             flipButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             flipButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
 
             // Create copy position button (RPN)
             const copyPositionBtn = document.createElement('button');
-            copyPositionBtn.innerHTML = '📋';
-            copyPositionBtn.title = 'Copy position to clipboard (RPN)';
+            copyPositionBtn.innerHTML = '<span class="game-menu-button-emoji">📋</span><span class="game-menu-button-label">COPY</span>';
+            copyPositionBtn.title = '';
             copyPositionBtn.className = 'game-menu-button';
-            copyPositionBtn.style.cssText = `
-                padding: 8px 14px !important;
-                font-size: 10px !important;
-            `;
             copyPositionBtn.onclick = copyPositionToClipboard;
             copyPositionBtn.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             copyPositionBtn.onmouseout = function() { this.style.transform = 'scale(1)'; };
 
             // Create load position button (RPN)
             const loadPositionBtn = document.createElement('button');
-            loadPositionBtn.innerHTML = '📥';
-            loadPositionBtn.title = 'Load position from RPN notation';
+            loadPositionBtn.innerHTML = '<span class="game-menu-button-emoji">📥</span><span class="game-menu-button-label">LOAD</span>';
+            loadPositionBtn.title = '';
             loadPositionBtn.className = 'game-menu-button';
-            loadPositionBtn.style.cssText = `
-                padding: 8px 14px !important;
-                font-size: 10px !important;
-            `;
             loadPositionBtn.onclick = openLoadPositionModal;
             loadPositionBtn.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             loadPositionBtn.onmouseout = function() { this.style.transform = 'scale(1)'; };
 
             // Create export game button (RPN)
             const exportGameBtn = document.createElement('button');
-            exportGameBtn.innerHTML = '💾';
-            exportGameBtn.title = 'Download game in RMN format';
+            exportGameBtn.innerHTML = '<span class="game-menu-button-emoji">💾</span><span class="game-menu-button-label">SAVE</span>';
+            exportGameBtn.title = '';
             exportGameBtn.className = 'game-menu-button';
-            exportGameBtn.style.cssText = `
-                padding: 8px 14px !important;
-                font-size: 10px !important;
-            `;
             exportGameBtn.onclick = downloadGameRMN;
             exportGameBtn.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             exportGameBtn.onmouseout = function() { this.style.transform = 'scale(1)'; };
 
             // Create log RPN button (dev tool)
             const logRPNBtn = document.createElement('button');
-            logRPNBtn.innerHTML = '🔍';
-            logRPNBtn.title = 'Log current RPN to console';
+            logRPNBtn.innerHTML = '<span class="game-menu-button-emoji">🔍</span><span class="game-menu-button-label">LOG</span>';
+            logRPNBtn.title = '';
             logRPNBtn.className = 'game-menu-button';
-            logRPNBtn.style.cssText = `
-                padding: 8px 14px !important;
-                font-size: 10px !important;
-            `;
             logRPNBtn.onclick = logPositionRPN;
             logRPNBtn.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             logRPNBtn.onmouseout = function() { this.style.transform = 'scale(1)'; };
 
             // Create dark mode button
             const darkModeBtn = document.createElement('button');
-            darkModeBtn.innerHTML = '🌙';
-            darkModeBtn.title = 'Toggle Dark/Light Mode';
+            darkModeBtn.innerHTML = '<span class="game-menu-button-emoji">🌙</span><span class="game-menu-button-label">DARK</span>';
+            darkModeBtn.title = '';
             darkModeBtn.className = 'game-menu-button';
-            darkModeBtn.style.cssText = `
-                padding: 8px 14px !important;
-                font-size: 10px !important;
-            `;
             darkModeBtn.onclick = toggleDarkMode;
             darkModeBtn.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             darkModeBtn.onmouseout = function() { this.style.transform = 'scale(1)'; };
 
             // Create wooden theme button
             const woodenThemeBtn = document.createElement('button');
-            woodenThemeBtn.innerHTML = '🪵';
-            woodenThemeBtn.title = 'Toggle Wooden Board';
+            woodenThemeBtn.innerHTML = '<span class="game-menu-button-emoji">🪵</span><span class="game-menu-button-label">WOOD</span>';
+            woodenThemeBtn.title = '';
             woodenThemeBtn.className = 'game-menu-button';
-            woodenThemeBtn.style.cssText = `
-                padding: 8px 14px !important;
-                font-size: 10px !important;
-            `;
             woodenThemeBtn.onclick = toggleWoodenTheme;
             woodenThemeBtn.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             woodenThemeBtn.onmouseout = function() { this.style.transform = 'scale(1)'; };
