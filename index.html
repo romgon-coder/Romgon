@@ -101,7 +101,7 @@
                     padding: 14px 24px;
                     border-radius: 8px;
                     font-weight: 700;
-                    font-size: 1.1em;
+                    font-size: 0.95em;
                     cursor: pointer;
                     box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
                     transition: all 0.3s ease;
@@ -298,13 +298,13 @@
                 <div>
                     <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
                         <input type="checkbox" id="settings-audio" style="width: 18px; height: 18px; cursor: pointer;">
-                        <span style="color: #4ecdc4; font-weight: 600; font-size: 1.05em;">🔊 Enable Audio</span>
+                        <span style="color: #4ecdc4; font-weight: 600; font-size: 0.95em;">🔊 Enable Audio</span>
                     </label>
                     <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Sound effects and notifications</p>
                 </div>
                 
                 <div>
-                    <label style="display: block; color: #4ecdc4; font-weight: 600; margin-bottom: 8px; font-size: 1.05em;">🎨 Theme</label>
+                    <label style="display: block; color: #4ecdc4; font-weight: 600; margin-bottom: 8px; font-size: 0.95em;">🎨 Theme</label>
                     <select id="settings-theme" style="
                         width: 100%;
                         padding: 10px 12px;
@@ -323,7 +323,7 @@
                 </div>
                 
                 <div>
-                    <label style="display: block; color: #4ecdc4; font-weight: 600; margin-bottom: 12px; font-size: 1.05em;">🔍 Board Zoom</label>
+                    <label style="display: block; color: #4ecdc4; font-weight: 600; margin-bottom: 12px; font-size: 0.95em;">🔍 Board Zoom</label>
                     <div style="display: flex; align-items: center; gap: 12px;">
                         <input type="range" id="settings-zoom" min="0.5" max="2" step="0.1" value="1" style="flex: 1; cursor: pointer;">
                         <span id="zoom-value" style="color: #ffd700; font-weight: bold; min-width: 50px;">100%</span>
@@ -2357,7 +2357,7 @@
             padding: 0 20px;
         ">
             <p style="
-                font-size: 1.1em;
+                font-size: 0.95em;
                 line-height: 1.6;
                 color: #ddd;
                 margin: 0 0 20px 0;
@@ -2403,7 +2403,7 @@
                 border-radius: 50px;
                 cursor: pointer;
                 font-weight: 700;
-                font-size: 1.1em;
+                font-size: 0.95em;
                 box-shadow: 0 6px 20px rgba(66, 133, 244, 0.4);
                 transition: all 0.3s ease;
                 display: flex;
@@ -2430,7 +2430,7 @@
                 border-radius: 50px;
                 cursor: pointer;
                 font-weight: 700;
-                font-size: 1.1em;
+                font-size: 0.95em;
                 box-shadow: 0 4px 15px rgba(78, 205, 196, 0.2);
                 transition: all 0.3s ease;
                 letter-spacing: 0.5px;
@@ -2447,7 +2447,7 @@
                 border-radius: 50px;
                 cursor: pointer;
                 font-weight: 700;
-                font-size: 1.1em;
+                font-size: 0.95em;
                 box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
                 transition: all 0.3s ease;
                 letter-spacing: 0.5px;
@@ -2584,7 +2584,7 @@
                 border-radius: 50px;
                 cursor: pointer;
                 font-weight: 700;
-                font-size: 1.1em;
+                font-size: 0.95em;
                 box-shadow: 0 6px 20px rgba(78, 205, 196, 0.4);
                 transition: all 0.3s ease;
                 margin-bottom: 12px;
@@ -2719,8 +2719,8 @@
         <div style="
             max-width: 850px;
             width: 90vw;
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 40px;
             padding: 0 15px;
         ">
@@ -2745,7 +2745,7 @@
                         <span style="color: #4ecdc4; font-size: 1.8em;">👥</span>
                         <a id="start-game-btn" onclick="startGameWithTime(10)" style="
                             color: #4ecdc4;
-                            font-size: 1.1em;
+                            font-size: 0.95em;
                             font-weight: 600;
                             cursor: pointer;
                             text-decoration: none;
@@ -2928,6 +2928,73 @@
                             display: inline-block;
                         " onmouseover="this.style.color='#b075ff'; this.style.textShadow='0 0 15px rgba(165, 94, 234, 0.5)'" onmouseout="this.style.color='#a55eea'; this.style.textShadow='none'">PREFERENCES</a>
                         <span style="color: #666; font-size: 0.9em; margin-left: auto;">Audio • Display • Themes</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AI & Advanced Options Section -->
+            <div>
+                <h2 style="
+                    color: #00d2ff;
+                    font-size: 1.5em;
+                    margin: 0 0 30px 0;
+                    font-weight: 700;
+                    letter-spacing: 3px;
+                    border-bottom: 2px solid #00d2ff;
+                    padding-bottom: 10px;
+                ">ADVANCED OPTIONS</h2>
+                
+                <div style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 15px;
+                ">
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <span style="color: #00d2ff; font-size: 1.6em;">🧠</span>
+                        <a id="start-llm-mode-btn" onclick="openGameVariantsModal('llm')" style="
+                            color: #00d2ff;
+                            font-size: 0.95em;
+                            font-weight: 600;
+                            cursor: pointer;
+                            text-decoration: none;
+                            letter-spacing: 1px;
+                            transition: all 0.3s ease;
+                            display: inline-block;
+                            white-space: nowrap;
+                        " onmouseover="this.style.color='#00ffff'; this.style.textShadow='0 0 15px rgba(0, 210, 255, 0.5)'" onmouseout="this.style.color='#00d2ff'; this.style.textShadow='none'">AI REASONING</a>
+                        <span style="color: #666; font-size: 0.75em; margin-left: auto;">AI • Explanations</span>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <span style="color: #ff6b6b; font-size: 1.6em;">🎯</span>
+                        <a id="start-game-modes-btn" onclick="openGameModesModal()" style="
+                            color: #ff6b6b;
+                            font-size: 0.95em;
+                            font-weight: 600;
+                            cursor: pointer;
+                            text-decoration: none;
+                            letter-spacing: 1px;
+                            transition: all 0.3s ease;
+                            display: inline-block;
+                            white-space: nowrap;
+                        " onmouseover="this.style.color='#ff8a8a'; this.style.textShadow='0 0 15px rgba(255, 107, 107, 0.5)'" onmouseout="this.style.color='#ff6b6b'; this.style.textShadow='none'">VARIANTS</a>
+                        <span style="color: #666; font-size: 0.75em; margin-left: auto;">Alt • Modes</span>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <span style="color: #4ecdc4; font-size: 1.6em;">📊</span>
+                        <a onclick="openAnalysisModal()" style="
+                            color: #4ecdc4;
+                            font-size: 0.95em;
+                            font-weight: 600;
+                            cursor: pointer;
+                            text-decoration: none;
+                            letter-spacing: 1px;
+                            transition: all 0.3s ease;
+                            display: inline-block;
+                            white-space: nowrap;
+                        " onmouseover="this.style.color='#5eddd4'; this.style.textShadow='0 0 15px rgba(78, 205, 196, 0.5)'" onmouseout="this.style.color='#4ecdc4'; this.style.textShadow='none'">ANALYSIS</a>
+                        <span style="color: #666; font-size: 0.75em; margin-left: auto;">Load • Review</span>
                     </div>
                 </div>
             </div>
@@ -3133,86 +3200,6 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         document.getElementById('theory-modal').style.display = 'none';
     }
     </script>
-                
-                <!-- AI & Advanced Options Section -->
-                <div>
-                    <h2 style="
-                        color: #00d2ff;
-                        font-size: 1.5em;
-                        margin: 0 0 30px 0;
-                        font-weight: 700;
-                        letter-spacing: 3px;
-                        border-bottom: 2px solid #00d2ff;
-                        padding-bottom: 10px;
-                    ">ADVANCED OPTIONS</h2>
-                    
-                    <div style="
-                        display: flex;
-                        flex-direction: column;
-                        gap: 20px;
-                    ">
-                        <div style="display: flex; align-items: center; gap: 20px;">
-                            <span style="color: #00d2ff; font-size: 1.8em;">🧠</span>
-                            <a id="start-llm-mode-btn" onclick="openGameVariantsModal('llm')" style="
-                                color: #00d2ff;
-                                font-size: 1.2em;
-                                font-weight: 600;
-                                cursor: pointer;
-                                text-decoration: none;
-                                letter-spacing: 1px;
-                                transition: all 0.3s ease;
-                                display: inline-block;
-                            " onmouseover="this.style.color='#00ffff'; this.style.textShadow='0 0 15px rgba(0, 210, 255, 0.5)'" onmouseout="this.style.color='#00d2ff'; this.style.textShadow='none'">AI REASONING</a>
-                            <span style="color: #666; font-size: 0.9em; margin-left: auto;">Advanced AI • With explanations</span>
-                        </div>
-                        
-                        <div style="display: flex; align-items: center; gap: 20px;">
-                            <span style="color: #ff6b6b; font-size: 1.8em;">🎯</span>
-                            <a id="start-game-modes-btn" onclick="openGameModesModal()" style="
-                                color: #ff6b6b;
-                                font-size: 1.2em;
-                                font-weight: 600;
-                                cursor: pointer;
-                                text-decoration: none;
-                                letter-spacing: 1px;
-                                transition: all 0.3s ease;
-                                display: inline-block;
-                            " onmouseover="this.style.color='#ff8a8a'; this.style.textShadow='0 0 15px rgba(255, 107, 107, 0.5)'" onmouseout="this.style.color='#ff6b6b'; this.style.textShadow='none'">GAME MODES</a>
-                            <span style="color: #666; font-size: 0.9em; margin-left: auto;">Alternative • Variants</span>
-                        </div>
-                        
-                        <div style="display: flex; align-items: center; gap: 20px;">
-                            <span style="color: #f57d2d; font-size: 1.8em;">📜</span>
-                            <a id="start-rulebook-btn" onclick="openRulebookModal()" style="
-                                color: #f57d2d;
-                                font-size: 1.2em;
-                                font-weight: 600;
-                                cursor: pointer;
-                                text-decoration: none;
-                                letter-spacing: 1px;
-                                transition: all 0.3s ease;
-                                display: inline-block;
-                            " onmouseover="this.style.color='#ffa500'; this.style.textShadow='0 0 15px rgba(245, 125, 45, 0.5)'" onmouseout="this.style.color='#f57d2d'; this.style.textShadow='none'">RULEBOOK</a>
-                            <span style="color: #666; font-size: 0.9em; margin-left: auto;">Full rules • How to play</span>
-                        </div>
-                        
-                        <div style="display: flex; align-items: center; gap: 20px;">
-                            <span style="color: #4ecdc4; font-size: 1.8em;">📊</span>
-                            <a onclick="openAnalysisModal()" style="
-                                color: #4ecdc4;
-                                font-size: 1.2em;
-                                font-weight: 600;
-                                cursor: pointer;
-                                text-decoration: none;
-                                letter-spacing: 1px;
-                                transition: all 0.3s ease;
-                                display: inline-block;
-                            " onmouseover="this.style.color='#5eddd4'; this.style.textShadow='0 0 15px rgba(78, 205, 196, 0.5)'" onmouseout="this.style.color='#4ecdc4'; this.style.textShadow='none'">ANALYSIS</a>
-                            <span style="color: #666; font-size: 0.9em; margin-left: auto;">Load RMN • Review games</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
     <!-- Rulebook Modal -->
     <div id="rulebook-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.92); z-index:10001; justify-content:center; align-items:center; overflow-y:auto;">
         <div style="background:#262421; border:3px solid #f57d2d; border-radius:20px; padding:40px 30px; max-width:900px; width:95vw; margin:40px auto; box-shadow:0 10px 50px rgba(245,125,45,0.2); position:relative; color:#fff;">
@@ -7797,9 +7784,9 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             }
             
             infoPanel.innerHTML = `
-                <h3 style="color: #ffd700; margin: 0 0 8px 0; font-size: 1.1em;">🧩 ${currentPuzzle.name}</h3>
+                <h3 style="color: #ffd700; margin: 0 0 8px 0; font-size: 0.95em;">🧩 ${currentPuzzle.name}</h3>
                 <p style="margin: 0 0 10px 0; color: #ccc; font-size: 0.85em; line-height: 1.3;">${currentPuzzle.description}</p>
-                <div style="font-size: 1.1em; color: #4ecdc4; margin-bottom: 10px;">
+                <div style="font-size: 0.95em; color: #4ecdc4; margin-bottom: 10px;">
                     <strong>Moves:</strong><br/>
                     <span id="puzzle-move-counter" style="font-size: 1.3em;">${puzzleMoves}</span> / ${puzzleMaxMoves}
                 </div>
@@ -9827,7 +9814,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                         padding: 15px;
                         border-radius: 12px;
                         cursor: pointer;
-                        font-size: 1.1em;
+                        font-size: 0.95em;
                         font-weight: bold;
                         transition: all 0.3s ease;
                     ">
@@ -9847,7 +9834,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                         padding: 15px;
                         border-radius: 12px;
                         cursor: pointer;
-                        font-size: 1.1em;
+                        font-size: 0.95em;
                         font-weight: bold;
                         transition: all 0.3s ease;
                     ">
@@ -9867,7 +9854,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                         padding: 15px;
                         border-radius: 12px;
                         cursor: pointer;
-                        font-size: 1.1em;
+                        font-size: 0.95em;
                         font-weight: bold;
                         transition: all 0.3s ease;
                     ">
@@ -9887,7 +9874,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                         padding: 15px;
                         border-radius: 12px;
                         cursor: pointer;
-                        font-size: 1.1em;
+                        font-size: 0.95em;
                         font-weight: bold;
                         transition: all 0.3s ease;
                     ">
