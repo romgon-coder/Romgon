@@ -1,19 +1,5 @@
 {
   "version": 2,
-  "framework": null,
-  "installCommand": "echo 'skip'",
-  "buildCommand": "echo 'skip'",
-  "builds": [
-    {
-      "src": "api/serve.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "api/serve.js"
-    }
-  ]
+  "public": "frontend"
 }
 
