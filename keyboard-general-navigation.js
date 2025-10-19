@@ -225,6 +225,25 @@ class GeneralNavigationSystem {
     // Get all selectable elements visible on screen
     const elements = Array.from(document.querySelectorAll(this.config.selectableElements));
     
+    // Check if any major modal/screen is open
+    const signupModal = document.getElementById('signup-modal');
+    const accountModal = document.getElementById('account-modal');
+    const settingsModal = document.getElementById('settings-modal');
+    const openingBookModal = document.getElementById('opening-book-modal');
+    const statsDashboardModal = document.getElementById('stats-dashboard-modal');
+    
+    const openModals = [
+      signupModal, 
+      accountModal, 
+      settingsModal, 
+      openingBookModal, 
+      statsDashboardModal
+    ].filter(modal => {
+      if (!modal) return false;
+      const style = window.getComputedStyle(modal);
+      return style.display !== 'none' && style.visibility !== 'hidden' && modal.offsetParent !== null;
+    });
+    
     // Filter to only visible elements
     this.navigationElements = elements.filter(el => {
       const style = window.getComputedStyle(el);
@@ -234,27 +253,19 @@ class GeneralNavigationSystem {
       
       if (!isVisible) return false;
       
-      // Check if element is inside a hidden or background screen
-      // Exclude elements that are on the game board if a modal is open
-      const modals = document.querySelectorAll('[id*="modal"], [id*="overlay"], .modal, [class*="modal"]');
-      const isInOpenModal = Array.from(modals).some(modal => {
-        const modalStyle = window.getComputedStyle(modal);
-        const modalVisible = modalStyle.display !== 'none' && 
-                            modalStyle.visibility !== 'hidden' && 
-                            modal.offsetParent !== null;
-        return modalVisible && modal.contains(el);
-      });
-      
       // If a modal is open, only include elements inside that modal
-      if (modals.length > 0) {
-        const anyModalOpen = Array.from(modals).some(m => {
-          const s = window.getComputedStyle(m);
-          return s.display !== 'none' && s.visibility !== 'hidden' && m.offsetParent !== null;
-        });
-        if (anyModalOpen && !isInOpenModal) {
-          return false; // Exclude this element, it's behind a modal
-        }
+      if (openModals.length > 0) {
+        // Element must be inside one of the open modals
+        const isInOpenModal = openModals.some(modal => modal.contains(el));
+        return isInOpenModal;
       }
+      
+      // If no modals are open, exclude game board elements
+      // Only show menu/main screen elements
+      const gameBoard = document.getElementById('game-board');
+      const gameBoardPanel = document.getElementById('game-buttons-panel');
+      if (gameBoard && gameBoard.contains(el)) return false;
+      if (gameBoardPanel && gameBoardPanel.contains(el)) return false;
       
       return true;
     });
