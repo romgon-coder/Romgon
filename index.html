@@ -15346,28 +15346,34 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             // Create game over overlay
             const gameOverOverlay = document.createElement('div');
             gameOverOverlay.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(0, 0, 0, 0.8);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                z-index: 99999;
-                font-family: sans-serif;
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                background-color: rgba(0, 0, 0, 0.8) !important;
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                z-index: 99999 !important;
+                font-family: sans-serif !important;
+                pointer-events: auto !important;
+                visibility: visible !important;
+                opacity: 1 !important;
             `;
             
             const gameOverContent = document.createElement('div');
             gameOverContent.style.cssText = `
-                background-color: #2a2a2a;
-                padding: 40px;
-                border-radius: 15px;
-                border: 3px solid #444;
-                text-align: center;
-                color: white;
-                max-width: 400px;
+                background-color: #2a2a2a !important;
+                padding: 40px !important;
+                border-radius: 15px !important;
+                border: 3px solid #444 !important;
+                text-align: center !important;
+                color: white !important;
+                max-width: 400px !important;
+                position: relative !important;
+                z-index: 100000 !important;
+                pointer-events: auto !important;
             `;
             
             // Check if user is logged in to show stats saved message
@@ -15457,11 +15463,35 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             
             // Force it to show immediately with important flags
             gameOverOverlay.id = 'game-over-overlay';
+            
+            // CRITICAL: Make sure this is visible for ALL users (guest and logged-in)
+            console.log('🏁 SHOWING GAME OVER SCREEN - Current User:', currentUser);
+            console.log('🏁 User type:', currentUser.type);
+            console.log('🏁 Username:', currentUser.username);
+            
+            // Remove any existing game over overlays to avoid conflicts
+            const existingOverlays = document.querySelectorAll('[id="game-over-overlay"]');
+            existingOverlays.forEach(overlay => overlay.remove());
+            
+            // Append to document.body
             document.body.appendChild(gameOverOverlay);
             console.log('✅ Overlay appended to document.body');
             console.log('📦 Checking if overlay in DOM:', document.body.contains(gameOverOverlay));
             console.log('📦 Overlay z-index:', gameOverOverlay.style.zIndex);
             console.log('📦 Overlay display:', gameOverOverlay.style.display);
+            
+            // Force it to be visible immediately
+            gameOverOverlay.style.display = 'flex';
+            gameOverOverlay.style.visibility = 'visible';
+            gameOverOverlay.style.opacity = '1';
+            gameOverOverlay.style.pointerEvents = 'auto';
+            
+            // Double-check after a tiny delay
+            setTimeout(() => {
+                gameOverOverlay.style.display = 'flex';
+                gameOverOverlay.style.visibility = 'visible';
+                gameOverOverlay.style.opacity = '1';
+            }, 10);
             
             // Ensure it's visible by checking computed styles
             setTimeout(() => {
@@ -15474,6 +15504,8 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     console.log('   Z-Index:', computed.zIndex);
                     console.log('   Visibility:', computed.visibility);
                     console.log('   Opacity:', computed.opacity);
+                    console.log('   PointerEvents:', computed.pointerEvents);
+                    console.log('🎯 OVERLAY SHOULD BE VISIBLE NOW');
                 } else {
                     console.error('❌ Game over overlay not found in DOM!');
                 }
