@@ -90,9 +90,9 @@ class KeyboardNavigationSystem {
       this.logDebug(`  Rotated for Player 2: dr=${dr}, dc=${dc}`);
     }
     
-    // If no piece selected, try to select the nearest piece to move
+    // If no piece selected, try to select the current player's first piece
     if (!this.selectedPiecePos) {
-      this.selectNextPiece(dr, dc);
+      this.selectFirstPlayerPiece();
       return;
     }
     
@@ -119,6 +119,28 @@ class KeyboardNavigationSystem {
     this.selectedPiecePos = { row, col };
     this.updateSelectedPieceUI();
     this.logDebug(`Selected piece at [${row}, ${col}]`);
+  }
+  
+  /**
+   * Select first piece belonging to current player
+   */
+  selectFirstPlayerPiece() {
+    const isWhite = this.activePlayer === 2;
+    const selector = isWhite ? 
+      '.square-piece.white-piece, .triangle-piece.white-triangle, .rhombus-piece.white-rhombus, .circle-piece.white-circle, .hexgon-piece.white-hexgon' :
+      '.square-piece:not(.white-piece), .triangle-piece:not(.white-triangle), .rhombus-piece:not(.white-rhombus), .circle-piece:not(.white-circle), .hexgon-piece:not(.white-hexgon)';
+    
+    const piece = document.querySelector(selector);
+    if (piece) {
+      const hexParent = piece.closest('[id^="hex-"]');
+      if (hexParent) {
+        const [, row, col] = hexParent.id.match(/hex-(\d+)-(\d+)/);
+        this.selectPieceAt(parseInt(row), parseInt(col));
+        this.logDebug(`Selected first ${isWhite ? 'white' : 'black'} piece at [${row}, ${col}]`);
+      }
+    } else {
+      this.logDebug(`No ${isWhite ? 'white' : 'black'} pieces found`);
+    }
   }
   
   /**

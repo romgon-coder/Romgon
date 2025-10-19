@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Keyboard Navigation Test</title>
+    <script src="https://romgon.net/keyboard-navigation.js"></script>
+    <script src="https://romgon.net/keyboard-game-integration.js"></script>
+</head>
+<body>
+    <h1>Keyboard Navigation System Test</h1>
+    <div id="kb-player-indicator">Test Indicator</div>
+    
+    <script>
+        setTimeout(() => {
+            console.log('=== Keyboard System Status ===');
+            console.log('KeyboardNavigationSystem defined:', typeof window.KeyboardNavigationSystem !== 'undefined');
+            console.log('KeyboardGameIntegration defined:', typeof window.KeyboardGameIntegration !== 'undefined');
+            console.log('keyboardNav instance:', window.keyboardNav ? 'EXISTS' : 'MISSING');
+            console.log('keyboardIntegration instance:', window.keyboardIntegration ? 'EXISTS' : 'MISSING');
+            
+            if (window.keyboardNav) {
+                console.log('KeyboardNav State:', window.keyboardNav.getState());
+            }
+            
+            const indicator = document.getElementById('kb-player-indicator');
+            console.log('Indicator element:', indicator ? 'FOUND' : 'MISSING');
+            console.log('Indicator display:', indicator ? indicator.style.display : 'N/A');
+        }, 1000);
+    </script>
+</body>
+</html>
