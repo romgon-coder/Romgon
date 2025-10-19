@@ -30,12 +30,18 @@ class KeyboardSystemRouter {
     const currentPlayerIndicator = document.querySelector('[id*="current-player"], [data-player]');
     const gameMoveIndicator = document.querySelector('.game-ui, .player-turn, [data-game-state]');
     
+    // Additional checks for game screen visibility
+    const gameContainer = document.querySelector('.game-container, #game-container, [data-game-active]');
+    const mainMenuVisible = document.querySelector('#menu, .main-menu, [id*="menu"]');
+    
     // Check if it looks like we're in a PVP game screen
     const inPVPMode = gameBoard && 
                       currentPlayerIndicator && 
                       gameMoveIndicator &&
                       gameBoard.style.display !== 'none' &&
-                      window.currentPlayer; // Global game variable
+                      !mainMenuVisible?.offsetParent && // Menu is hidden
+                      window.currentPlayer && // Global game variable
+                      window.gameOver !== undefined; // Game state exists
     
     // Switch systems if mode changed
     if (inPVPMode !== this.isPVPMode) {
