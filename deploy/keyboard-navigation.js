@@ -275,3 +275,18 @@ if (window.KEYBOARD_NAV_DEBUG) {
   window.keyboardNav = new KeyboardNavigationSystem({ debug: true });
   console.log('✅ Keyboard Navigation System loaded with debug mode');
 }
+
+// Auto-initialize after a delay to ensure all game functions are loaded
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    if (!window.keyboardNav && typeof KeyboardNavigationSystem !== 'undefined') {
+      console.log('🔄 Auto-initializing keyboard navigation system...');
+      window.keyboardNav = new KeyboardNavigationSystem({ debug: false });
+      const indicator = document.getElementById('kb-player-indicator');
+      if (indicator) {
+        indicator.style.display = 'block';
+        indicator.textContent = '⌨️ KB: Player 1 (Black)';
+      }
+    }
+  }, 500);
+});
