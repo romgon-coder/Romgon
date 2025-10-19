@@ -1921,7 +1921,9 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>ROMGON</title>
-    <!-- Version: 2025-10-19-001 -->
+    <!-- Version: 2025-10-19-002 -->
+    <!-- Keyboard Navigation System -->
+    <script src="keyboard-navigation.js"></script>
     <!-- Socket.IO Client for Multiplayer -->
     <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
     <style>
@@ -3004,9 +3006,92 @@
             background-color: #666;
         }
 
+        /* ===== KEYBOARD NAVIGATION STYLES ===== */
+        
+        /* Keyboard-selected piece indicator */
+        .kb-selected {
+            outline: 3px solid #4ecdc4 !important;
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.8),
+                        inset 0 0 10px rgba(78, 205, 196, 0.3) !important;
+            animation: kb-pulse 0.6s ease-in-out infinite;
+        }
+        
+        @keyframes kb-pulse {
+            0%, 100% {
+                box-shadow: 0 0 15px rgba(78, 205, 196, 0.8),
+                            inset 0 0 10px rgba(78, 205, 196, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 25px rgba(78, 205, 196, 1),
+                            inset 0 0 15px rgba(78, 205, 196, 0.5);
+            }
+        }
+        
+        /* Keyboard navigation indicator */
+        #kb-player-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: #333;
+            color: #fff;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            letter-spacing: 1px;
+            z-index: 9999;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            border: 2px solid #4ecdc4;
+            transition: all 0.3s ease;
+        }
+        
+        #kb-player-indicator:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(78, 205, 196, 0.4);
+        }
+        
+        /* Keyboard help overlay */
+        #kb-help-overlay {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(20, 24, 32, 0.95);
+            border: 2px solid #4ecdc4;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 12px;
+            color: #4ecdc4;
+            max-width: 250px;
+            z-index: 9998;
+            line-height: 1.6;
+            font-family: 'Courier New', monospace;
+        }
+        
+        #kb-help-overlay strong {
+            color: #fff;
+        }
+        
+        /* Keyboard-accessible board state */
+        .kb-active-control {
+            border: 2px solid #ffd700 !important;
+        }
+
     </style>
 </head>
 <body>
+
+    <!-- Keyboard Navigation Player Indicator -->
+    <div id="kb-player-indicator" style="display: none;">
+        ⌨️ KB: Player 1 (Black)
+    </div>
+
+    <!-- Keyboard Navigation Help -->
+    <div id="kb-help-overlay" style="display: none;">
+        <strong>⌨️ KEYBOARD CONTROLS</strong><br>
+        ↑↓←→ / W,A,S,D: Move<br>
+        Space / Enter: Confirm<br>
+        Esc: Deselect
+    </div>
 
     <!-- Splash Page -->
     <div id="splash-page" style="
