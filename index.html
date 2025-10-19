@@ -15295,8 +15295,9 @@ ${moveHistory || '(No moves played yet - starting position)'}
         }
 
         // Add drag and drop functionality
-        let draggedPiece = null;
-        let draggedFromHex = null;
+        // NOTE: These MUST be global so keyboard navigation can access them
+        window.draggedPiece = null;
+        window.draggedFromHex = null;
 
         // Make pieces draggable
         function setupDragAndDrop() {
