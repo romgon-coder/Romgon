@@ -15295,48 +15295,48 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 console.log('🔧 Initialized gameHistory array');
             }
             
-            // Update user statistics if a user is logged in (has username and is NOT guest)
+            // Determine if current player won or lost
+            const playerIsWhite = true; // Assuming single player is always white in AI mode
+            const playerWon = (winner.toLowerCase() === 'white' && playerIsWhite) || 
+                             (winner.toLowerCase() === 'black' && !playerIsWhite);
+            
+            // Calculate move count and captures
+            const moveCount = moveHistory ? moveHistory.length : 0;
+            const captureCount = 0; // You may need to track this during gameplay
+            
+            // Record the game
+            const gameRecord = {
+                date: new Date().toISOString(),
+                opponent: 'AI',
+                result: playerWon ? 'win' : 'loss',
+                winner: winner,
+                reason: reason,
+                moves: moveCount,
+                captures: captureCount
+            };
+            
+            // Update stats in currentUser object (for BOTH guest and logged-in users)
+            currentUser.stats.totalGames += 1;
+            currentUser.stats.totalMoves += moveCount;
+            currentUser.stats.totalCaptures += captureCount;
+            
+            if (playerWon) {
+                currentUser.stats.wins += 1;
+                console.log('🎉 WIN recorded - Total wins:', currentUser.stats.wins);
+            } else {
+                currentUser.stats.losses += 1;
+                console.log('😢 LOSS recorded - Total losses:', currentUser.stats.losses);
+            }
+            
+            // Add to game history
+            currentUser.gameHistory.push(gameRecord);
+            
+            // Save updated currentUser back to localStorage
+            localStorage.setItem('romgon-user', JSON.stringify(currentUser));
+            
+            // If user is logged in (not guest), also update romgon-users database
             if (currentUser.username && currentUser.type !== 'guest') {
-                console.log('📊 Logged-in user detected, saving game stats...');
-                
-                // Determine if current player won or lost
-                const playerIsWhite = true; // Assuming single player is always white in AI mode
-                const playerWon = (winner.toLowerCase() === 'white' && playerIsWhite) || 
-                                 (winner.toLowerCase() === 'black' && !playerIsWhite);
-                
-                // Calculate move count and captures
-                const moveCount = moveHistory ? moveHistory.length : 0;
-                const captureCount = 0; // You may need to track this during gameplay
-                
-                // Record the game
-                const gameRecord = {
-                    date: new Date().toISOString(),
-                    opponent: 'AI',
-                    result: playerWon ? 'win' : 'loss',
-                    winner: winner,
-                    reason: reason,
-                    moves: moveCount,
-                    captures: captureCount
-                };
-                
-                // Update stats in currentUser object
-                currentUser.stats.totalGames += 1;
-                currentUser.stats.totalMoves += moveCount;
-                currentUser.stats.totalCaptures += captureCount;
-                
-                if (playerWon) {
-                    currentUser.stats.wins += 1;
-                    console.log('🎉 WIN recorded - Total wins:', currentUser.stats.wins);
-                } else {
-                    currentUser.stats.losses += 1;
-                    console.log('😢 LOSS recorded - Total losses:', currentUser.stats.losses);
-                }
-                
-                // Add to game history
-                currentUser.gameHistory.push(gameRecord);
-                
-                // Save updated currentUser back to localStorage
-                localStorage.setItem('romgon-user', JSON.stringify(currentUser));
+                console.log('📊 Logged-in user detected, syncing to user database...');
                 
                 // Also update romgon-users database
                 let allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
@@ -15359,12 +15359,13 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 allUsers[currentUser.username].stats = currentUser.stats;
                 localStorage.setItem('romgon-users', JSON.stringify(allUsers));
                 
-                console.log('✅ Game result saved:', gameRecord);
-                console.log('📊 Updated user stats:', currentUser.stats);
-                console.log('💾 Updated both currentUser and allUsers in localStorage');
+                console.log('✅ Game result synced to user database');
             } else {
-                console.log('👤 Guest user or no username - no stats saved');
+                console.log('👤 Guest user - stats saved locally only');
             }
+            
+            console.log('✅ Game result saved:', gameRecord);
+            console.log('📊 Updated user stats:', currentUser.stats);
             
             // Notify keyboard systems that game has ended
             const gameEndEvent = new CustomEvent('gameEnded', {
@@ -15579,15 +15580,15 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             // Get current user from localStorage
             const currentUser = JSON.parse(localStorage.getItem('romgon-user') || '{}');
             console.log('📋 Current user in Hub:', currentUser);
+            console.log('📋 User type:', currentUser.type);
+            console.log('📋 Username:', currentUser.username);
             
-            // Check if user is logged in (not guest)
-            if (!currentUser.username || currentUser.type === 'guest') {
+            // Check if user has any data at all
+            if (!currentUser.username && currentUser.type !== 'guest') {
                 console.log('❌ User not logged in - showing alert');
                 alert('❌ You must be logged in to view your User Hub.\n\nPlease login first and play another game.');
                 return;
             }
-            
-            console.log('✅ User logged in as:', currentUser.username);
             
             // Close the game over overlay
             const gameOverOverlay = document.getElementById('game-over-overlay');
@@ -15636,6 +15637,15 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             
             console.log('🎮 Recent games count:', recentGames.length);
             
+            // Determine title based on user type
+            const hubTitle = currentUser.type === 'guest' 
+                ? '👤 Guest Session Hub'
+                : `👤 ${currentUser.username}'s User Hub`;
+            
+            const userType = currentUser.type === 'guest' 
+                ? 'Guest'
+                : (currentUser.type || 'Player');
+            
             userHubModal.innerHTML = `
                 <div style="
                     background-color: #2a2a2a !important;
@@ -15651,8 +15661,114 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     position: relative !important;
                     pointer-events: auto !important;
                 ">
-                    <h1 style="color: #4ecdc4 !important; margin: 0 0 10px 0 !important; text-align: center !important; font-size: 2em !important;">👤 ${currentUser.username}'s User Hub</h1>
-                    <p style="color: #999 !important; text-align: center !important; margin: 0 0 30px 0 !important; font-size: 0.9em !important;">User Type: ${currentUser.type || 'Player'}</p>
+                    <h1 style="color: #4ecdc4 !important; margin: 0 0 10px 0 !important; text-align: center !important; font-size: 2em !important;">${hubTitle}</h1>
+                    <p style="color: #999 !important; text-align: center !important; margin: 0 0 30px 0 !important; font-size: 0.9em !important;">User Type: ${userType}</p>
+                    
+                    <div style="display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 20px !important; margin-bottom: 30px !important;">
+                        <div style="
+                            background-color: #1a1a1a !important;
+                            padding: 20px !important;
+                            border-radius: 8px !important;
+                            border-left: 4px solid #4ecdc4 !important;
+                        ">
+                            <div style="color: #999 !important; font-size: 0.9em !important; margin-bottom: 5px !important;">Total Games</div>
+                            <div style="color: #4ecdc4 !important; font-size: 2em !important; font-weight: bold !important;">${userStats.totalGames}</div>
+                        </div>
+                        
+                        <div style="
+                            background-color: #1a1a1a !important;
+                            padding: 20px !important;
+                            border-radius: 8px !important;
+                            border-left: 4px solid #27ae60 !important;
+                        ">
+                            <div style="color: #999 !important; font-size: 0.9em !important; margin-bottom: 5px !important;">Wins</div>
+                            <div style="color: #27ae60 !important; font-size: 2em !important; font-weight: bold !important;">${userStats.wins}</div>
+                        </div>
+                        
+                        <div style="
+                            background-color: #1a1a1a !important;
+                            padding: 20px !important;
+                            border-radius: 8px !important;
+                            border-left: 4px solid #e74c3c !important;
+                        ">
+                            <div style="color: #999 !important; font-size: 0.9em !important; margin-bottom: 5px !important;">Losses</div>
+                            <div style="color: #e74c3c !important; font-size: 2em !important; font-weight: bold !important;">${userStats.losses}</div>
+                        </div>
+                        
+                        <div style="
+                            background-color: #1a1a1a !important;
+                            padding: 20px !important;
+                            border-radius: 8px !important;
+                            border-left: 4px solid #f39c12 !important;
+                        ">
+                            <div style="color: #999 !important; font-size: 0.9em !important; margin-bottom: 5px !important;">Win Rate</div>
+                            <div style="color: #f39c12 !important; font-size: 2em !important; font-weight: bold !important;">${winRate}%</div>
+                        </div>
+                    </div>
+                    
+                    ${recentGames.length > 0 ? `
+                        <div style="margin-bottom: 30px !important;">
+                            <h3 style="color: #4ecdc4 !important; margin: 0 0 15px 0 !important;">📜 Recent Games</h3>
+                            <div style="max-height: 300px !important; overflow-y: auto !important;">
+                                ${recentGames.map((game, idx) => `
+                                    <div style="
+                                        background-color: #1a1a1a !important;
+                                        padding: 12px !important;
+                                        margin-bottom: 8px !important;
+                                        border-radius: 6px !important;
+                                        border-left: 3px solid ${game.result === 'win' ? '#27ae60' : '#e74c3c'} !important;
+                                    ">
+                                        <div style="display: flex !important; justify-content: space-between !important; align-items: center !important;">
+                                            <div>
+                                                <div style="color: #4ecdc4 !important; font-weight: bold !important;">vs ${game.opponent || 'Unknown'}</div>
+                                                <div style="color: #999 !important; font-size: 0.85em !important;">
+                                                    ${new Date(game.date).toLocaleDateString()} - ${game.reason || 'Game'}
+                                                </div>
+                                            </div>
+                                            <div style="
+                                                color: ${game.result === 'win' ? '#27ae60' : '#e74c3c'} !important;
+                                                font-weight: bold !important;
+                                                padding: 5px 10px !important;
+                                                background-color: ${game.result === 'win' ? 'rgba(39, 174, 96, 0.2)' : 'rgba(231, 76, 60, 0.2)'} !important;
+                                                border-radius: 4px !important;
+                                            ">
+                                                ${game.result === 'win' ? '✅ WIN' : '❌ LOSS'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : '<p style="color: #999 !important; text-align: center !important;">No games played yet</p>'}
+                    
+                    <div style="display: flex !important; gap: 15px !important; justify-content: center !important; flex-wrap: wrap !important;">
+                        <button onclick="document.getElementById('user-hub-modal').remove(); location.reload();" style="
+                            background-color: #4ecdc4 !important;
+                            color: white !important;
+                            border: none !important;
+                            padding: 12px 25px !important;
+                            font-size: 1.1em !important;
+                            border-radius: 6px !important;
+                            cursor: pointer !important;
+                            font-weight: bold !important;
+                        ">▶️ Play Again</button>
+                        <button onclick="document.getElementById('user-hub-modal').remove(); showStartMenu();" style="
+                            background-color: #ff6b6b !important;
+                            color: white !important;
+                            border: none !important;
+                            padding: 12px 25px !important;
+                            font-size: 1.1em !important;
+                            border-radius: 6px !important;
+                            cursor: pointer !important;
+                            font-weight: bold !important;
+                        ">🏠 Main Menu</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(userHubModal);
+            console.log('✅ User Hub modal displayed');
+        }
                     
                     <div style="display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 20px !important; margin-bottom: 30px !important;">
                         <div style="
