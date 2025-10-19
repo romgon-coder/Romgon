@@ -2357,14 +2357,17 @@
             display: flex !important;
             flex-direction: column !important;
             gap: 10px !important;
-            z-index: 2999 !important;
+            z-index: 3000 !important;
             overflow-y: auto !important;
             box-shadow: 2px 0 12px rgba(0, 0, 0, 0.5) !important;
             transition: transform 0.3s ease !important;
+            transform: translateX(0) !important;
+            pointer-events: auto !important;
         }
         
         #game-buttons-panel.hidden {
             transform: translateX(-320px) !important;
+            pointer-events: none !important;
         }
         
         #game-buttons-panel button {
@@ -14312,9 +14315,15 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             togglePanelBtn.onclick = function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Toggle button clicked, panel hidden state:', gameButtonsPanel.classList.contains('hidden'));
                 gameButtonsPanel.classList.toggle('hidden');
-                console.log('After toggle, panel hidden state:', gameButtonsPanel.classList.contains('hidden'));
+                // Change button appearance to show state
+                if (gameButtonsPanel.classList.contains('hidden')) {
+                    togglePanelBtn.style.backgroundColor = '#2c3e50';
+                } else {
+                    togglePanelBtn.style.backgroundColor = '#34495e';
+                }
+                console.log('Panel visible:', !gameButtonsPanel.classList.contains('hidden'));
+                console.log('Panel computed style:', window.getComputedStyle(gameButtonsPanel).transform);
             };
             togglePanelBtn.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             togglePanelBtn.onmouseout = function() { this.style.transform = 'scale(1)'; };
