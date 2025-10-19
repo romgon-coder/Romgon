@@ -638,6 +638,24 @@ These items don't require backend changes and can improve the game now:
 - [ ] **Theme Expansion**: More color scheme options
 - [ ] **Sound Design**: Better audio feedback and effects
 - [ ] **Keyboard Shortcuts**: Faster game controls
+  - **Implementation Note for PvP**:
+    - **Player 1 (Black)**: Standard orientation
+      - Arrow keys: Up/Down/Left/Right for hex navigation
+      - WASD: Alternative controls (W=Up, A=Left, S=Down, D=Right)
+      - Solution: Use **logical hex coordinates** (q, r) system
+    - **Player 2 (White)**: Rotated 180° view
+      - **Option A - Auto-rotate input mapping**: Convert Player 2 inputs by rotating 180°
+        - Internally track position in same coordinate system
+        - Player 2's "up" = Player 1's "down" + 180° rotation
+      - **Option B - Player-relative controls**: 
+        - Both players always use same keys (up/down/left/right from their perspective)
+        - System automatically adjusts based on active player
+        - More intuitive for split-screen play
+      - **Option C - Screen rotation toggle**:
+        - Player 1 sees normal board
+        - Player 2 sees board rotated 180°
+        - Same coordinate system, visual transformation only
+    - **Recommended**: Option B for PvP (most intuitive)
 - [ ] **Screenshot/Share**: Easy sharing of game positions
 - [ ] **Local Replay System**: Rewatch your past games locally
 - [ ] **PGN Import/Export**: Import other game formats
@@ -649,6 +667,187 @@ These items don't require backend changes and can improve the game now:
 - [ ] **Easter Eggs**: Fun hidden features for engaged players
 
 **Estimated Effort**: 1-3 weeks total
+
+---
+
+### Keyboard Navigation & Board Rotation Implementation Details
+
+#### Understanding Hexagonal Coordinates
+
+For ROMGON's hexagonal board, use the **Axial Coordinate System (q, r)**:
+
+```
+    q increases →
+    
+    (-1,0) (0,0) (1,0)
+  (-1,1) (0,1) (1,1)
+    (-1,2) (0,2) (1,2)
+    
+r increases ↓
+```
+
+#### Player 1 (Black) Controls - Normal View
+
+```javascript
+const moveMap = {
+  'ArrowUp': { dq: 0, dr: -1 },    // Move up
+  'ArrowDown': { dq: 0, dr: 1 },   // Move down
+  'ArrowLeft': { dq: -1, dr: 0 },  // Move left
+  'ArrowRight': { dq: 1, dr: 0 },  // Move right
+};
+
+// For diagonal movements (if needed):
+'w': { dq: 0, dr: -1 },   // Up
+'a': { dq: -1, dr: 0 },   // Left
+'s': { dq: 0, dr: 1 },    // Down
+'d': { dq: 1, dr: 0 },    // Right
+```
+
+#### Player 2 (White) Controls - Rotated 180°
+
+**Key Insight**: For 180° rotation on hexagonal board:
+- Reverse both q and r directions
+- Player 2's perspective is "upside down"
+
+```javascript
+// Option B Implementation (Player-Relative Controls):
+function getMovementDelta(key, playerNumber) {
+  const player1Moves = {
+    'ArrowUp': { dq: 0, dr: -1 },
+    'ArrowDown': { dq: 0, dr: 1 },
+    'ArrowLeft': { dq: -1, dr: 0 },
+    'ArrowRight': { dq: 1, dr: 0 },
+  };
+  
+  let delta = player1Moves[key];
+  
+  // For Player 2, rotate 180° by negating both q and r
+  if (playerNumber === 2 && delta) {
+    return { dq: -delta.dq, dr: -delta.dr };
+  }
+  
+  return delta;
+}
+
+// Example usage:
+// Player 1 presses ArrowRight: moves +1 on q axis
+// Player 2 presses ArrowRight: moves -1 on q axis (appears as "left" from their rotated view)
+```
+
+#### Visual Board Rotation
+
+```javascript
+// Optional: If displaying board rotated for Player 2
+function drawBoardForPlayer(player) {
+  const ctx = canvas.getContext('2d');
+  
+  if (player === 2) {
+    ctx.save();
+    // Rotate canvas 180° around center
+    ctx.translate(boardCenterX, boardCenterY);
+    ctx.rotate(Math.PI); // 180 degrees
+    ctx.translate(-boardCenterX, -boardCenterY);
+  }
+  
+  // Draw board
+  drawHexagons();
+  
+  if (player === 2) {
+    ctx.restore();
+  }
+}
+```
+
+#### Split-Screen Alternating Control Flow
+
+```javascript
+let activePlayer = 1; // 1 = Black, 2 = White
+
+document.addEventListener('keydown', (e) => {
+  const delta = getMovementDelta(e.key, activePlayer);
+  
+  if (delta) {
+    // Move piece using unified coordinate system
+    moveSelectedPiece(delta.dq, delta.dr);
+    
+    // After move confirmation, switch player
+    // activePlayer = activePlayer === 1 ? 2 : 1;
+  }
+});
+```
+
+#### Handling Different Board Orientations
+
+**Option C - Board Rotation Visualization**:
+
+```javascript
+// All game logic uses same coordinate system
+// Only visual rendering differs
+
+function renderBoard(playerNumber) {
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
+  
+  ctx.save();
+  
+  // Rotate visual representation for Player 2
+  if (playerNumber === 2) {
+    ctx.translate(centerX, centerY);
+    ctx.rotate(Math.PI);
+    ctx.translate(-centerX, -centerY);
+  }
+  
+  // All hex drawing code remains the same
+  for (let q = -3; q <= 3; q++) {
+    for (let r = -3; r <= 3; r++) {
+      drawHexAtCoordinate(q, r);
+    }
+  }
+  
+  ctx.restore();
+}
+```
+
+#### Recommended Implementation Order
+
+1. **Step 1 - Add Unified Keyboard Input Handler**
+   - Track current active player
+   - Map keys to coordinate deltas
+   - Work for single player first
+
+2. **Step 2 - Implement Player 2 Input Rotation**
+   - Modify `getMovementDelta()` to negate coordinates for Player 2
+   - Test alternating between P1 and P2 controls
+
+3. **Step 3 - Optional Visual Board Rotation**
+   - Add canvas rotation for Player 2's view
+   - Keep all logic in same coordinate system
+   - More polished but not necessary
+
+4. **Step 4 - Add UI Indicators**
+   - Show which player's turn
+   - Display whose controls are active
+   - Add move validation feedback
+
+#### Testing Checklist
+
+- [ ] Player 1 can navigate all hexes with arrow keys
+- [ ] Player 2 arrow keys move opposite direction (visually correct from their view)
+- [ ] Coordinate system stays consistent internally
+- [ ] Board rotation (if implemented) matches input mapping
+- [ ] Turn switching works smoothly
+- [ ] No off-by-one coordinate errors
+- [ ] Pieces move to correct positions for both players
+
+#### Code Location in ROMGON
+
+Add these functions to the main game script:
+- `getMovementDelta(key, playerNumber)` - Map keys to coordinate changes
+- `handleKeyboardInput(event)` - Central keyboard handler
+- `switchActivePlayer()` - Change control perspective
+- `renderBoardForPlayer(playerNumber)` - Optional rotation rendering
+
+---
 
 ---
 
