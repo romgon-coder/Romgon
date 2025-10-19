@@ -1,6 +1,7 @@
 {
-  "buildCommand": "",
-  "installCommand": "echo 'No install needed'",
+  "version": 2,
+  "buildCommand": "echo 'static'",
+  "installCommand": "echo 'none'",
   "routes": [
     {
       "src": "/(.*)",

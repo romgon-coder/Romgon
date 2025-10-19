@@ -1,29 +1,9 @@
 {
   "version": 2,
-  "buildCommand": "echo 'static site'",
-  "installCommand": "echo 'no install needed'",
   "public": "frontend",
-  "routes": [
-    {
-      "src": "^/src/(.*)",
-      "dest": "/src/$1",
-      "headers": {
-        "cache-control": "public, max-age=3600"
-      }
-    },
-    {
-      "src": "^/ASSETS/(.*)",
-      "dest": "/ASSETS/$1",
-      "headers": {
-        "cache-control": "public, max-age=86400"
-      }
-    },
-    {
-      "src": "^/(.*)$",
-      "dest": "/index.html",
-      "headers": {
-        "cache-control": "no-cache, no-store, must-revalidate"
-      }
-    }
-  ]
+  "buildCommand": "echo 'Building static site'",
+  "installCommand": "echo 'No dependencies needed'",
+  "env": {
+    "NODE_ENV": "production"
+  }
 }
