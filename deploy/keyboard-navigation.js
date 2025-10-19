@@ -303,12 +303,36 @@ window.addEventListener('load', () => {
   setTimeout(() => {
     if (!window.keyboardNav && typeof KeyboardNavigationSystem !== 'undefined') {
       console.log('🔄 Auto-initializing keyboard navigation system...');
-      window.keyboardNav = new KeyboardNavigationSystem({ debug: false });
+      window.keyboardNav = new KeyboardNavigationSystem({ debug: true });
       const indicator = document.getElementById('kb-player-indicator');
       if (indicator) {
         indicator.style.display = 'block';
         indicator.textContent = '⌨️ KB: Player 1 (Black)';
+        indicator.style.backgroundColor = '#333';
+        indicator.style.color = '#fff';
       }
+      const help = document.getElementById('kb-help-overlay');
+      if (help) {
+        help.style.display = 'block';
+      }
+      console.log('✅ Keyboard Navigation initialized');
     }
   }, 500);
+});
+
+// Also ensure initialization on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    if (!window.keyboardNav && typeof KeyboardNavigationSystem !== 'undefined') {
+      console.log('🔄 DOMContentLoaded: Auto-initializing keyboard navigation system...');
+      window.keyboardNav = new KeyboardNavigationSystem({ debug: true });
+      const indicator = document.getElementById('kb-player-indicator');
+      if (indicator) {
+        indicator.style.display = 'block';
+        indicator.textContent = '⌨️ KB: Player 1 (Black)';
+        indicator.style.backgroundColor = '#333';
+        indicator.style.color = '#fff';
+      }
+    }
+  }, 300);
 });
