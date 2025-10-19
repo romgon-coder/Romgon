@@ -166,7 +166,7 @@
                 
                 <div style="background: rgba(165, 94, 234, 0.1); padding: 20px; border-radius: 12px; margin-bottom: 24px; border-left: 4px solid #a55eea;">
                     <h3 style="color: #a55eea; margin-top: 0;">📊 Game Statistics</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px;">
                         <div style="text-align: center; background: rgba(0, 0, 0, 0.3); padding: 12px; border-radius: 8px;">
                             <div style="color: #26de81; font-size: 1.5em; font-weight: bold;" id="account-wins">0</div>
                             <div style="color: #999; font-size: 0.9em;">Wins</div>
@@ -179,6 +179,10 @@
                             <div style="color: #ffd700; font-size: 1.5em; font-weight: bold;" id="account-games">0</div>
                             <div style="color: #999; font-size: 0.9em;">Total</div>
                         </div>
+                    </div>
+                    <div style="border-top: 1px solid rgba(165, 94, 234, 0.2); padding-top: 16px;">
+                        <p style="color: #aaa; margin: 8px 0;"><strong style="color: #a55eea;">Last Login:</strong> <span id="account-last-login" style="color: #4ecdc4;">Never</span></p>
+                        <p style="color: #aaa; margin: 8px 0;"><strong style="color: #a55eea;">Saved Games:</strong> <span id="account-saved-games" style="color: #4ecdc4;">0</span></p>
                     </div>
                 </div>
                 
@@ -350,74 +354,60 @@
     }
     // Render statistics dashboard content (placeholder data)
     function renderStatsDashboard() {
+        const currentUser = JSON.parse(localStorage.getItem('romgon-user') || '{}');
+        if (!currentUser.username) {
+            const content = document.getElementById('stats-dashboard-content');
+            if (content) content.innerHTML = '<p style="color: #aaa;">Please log in to view statistics</p>';
+            return;
+        }
+        
+        const stats = getUserStats(currentUser.username);
+        if (!stats) {
+            const content = document.getElementById('stats-dashboard-content');
+            if (content) content.innerHTML = '<p style="color: #aaa;">No statistics available</p>';
+            return;
+        }
+        
+        const winRate = getWinRate(currentUser.username);
+        const avgMoves = getAvgMovesPerGame(currentUser.username);
+        const totalCaptures = getTotalCaptures(currentUser.username);
+        
         const content = document.getElementById('stats-dashboard-content');
         content.innerHTML = `
             <div style='margin-bottom:24px;'>
                 <h3 style='color:#4ecdc4;'>🏆 Win/Loss Record</h3>
-                <p style='font-size:1.1em;'>Wins: <b>12</b> | Losses: <b>8</b> | Draws: <b>2</b></p>
+                <p style='font-size:1.1em;'>Wins: <b>${stats.gamesWon}</b> | Losses: <b>${stats.gamesLost}</b> | Draws: <b>${stats.gamesDrawn}</b></p>
+                <p style='color:#aaa; margin-top:8px;'>Win Rate: <b>${winRate}%</b> (${stats.gamesPlayed} total games)</p>
             </div>
             <div style='margin-bottom:24px;'>
                 <h3 style='color:#a55eea;'>♟️ Piece Performance</h3>
                 <table style='width:100%; border-collapse:collapse;'>
                     <thead><tr style='color:#aaa;'><th>Piece</th><th>Captures</th><th>Survived</th><th>Lost</th></tr></thead>
                     <tbody>
-                        <tr><td>Square</td><td>18</td><td>7</td><td>5</td></tr>
-                        <tr><td>Triangle</td><td>14</td><td>6</td><td>8</td></tr>
-                        <tr><td>Rhombus</td><td>3</td><td>2</td><td>8</td></tr>
-                        <tr><td>Circle</td><td>9</td><td>4</td><td>10</td></tr>
-                        <tr><td>Hexagon</td><td>11</td><td>5</td><td>7</td></tr>
+                        <tr><td>Square</td><td>${stats.pieceStats.square.captures}</td><td>${stats.pieceStats.square.survived}</td><td>${stats.pieceStats.square.lost}</td></tr>
+                        <tr><td>Triangle</td><td>${stats.pieceStats.triangle.captures}</td><td>${stats.pieceStats.triangle.survived}</td><td>${stats.pieceStats.triangle.lost}</td></tr>
+                        <tr><td>Rhombus</td><td>${stats.pieceStats.rhombus.captures}</td><td>${stats.pieceStats.rhombus.survived}</td><td>${stats.pieceStats.rhombus.lost}</td></tr>
+                        <tr><td>Circle</td><td>${stats.pieceStats.circle.captures}</td><td>${stats.pieceStats.circle.survived}</td><td>${stats.pieceStats.circle.lost}</td></tr>
+                        <tr><td>Hexagon</td><td>${stats.pieceStats.hexagon.captures}</td><td>${stats.pieceStats.hexagon.survived}</td><td>${stats.pieceStats.hexagon.lost}</td></tr>
                     </tbody>
                 </table>
             </div>
             <div style='margin-bottom:24px;'>
                 <h3 style='color:#00b894;'>📚 Opening Repertoire</h3>
-                <table style='width:100%; border-collapse:collapse;'>
-                    <thead><tr style='color:#aaa;'><th>Opening</th><th>Games Played</th><th>Win Rate</th></tr></thead>
-                    <tbody>
-                        <tr><td>Classic Hex Start</td><td>7</td><td>71%</td></tr>
-                        <tr><td>Triangle Rush</td><td>4</td><td>50%</td></tr>
-                        <tr><td>Circle Flank</td><td>3</td><td>33%</td></tr>
-                        <tr><td>Rhombus Defense</td><td>2</td><td>100%</td></tr>
-                    </tbody>
-                </table>
+                <p style='color:#aaa;'>Opening data will be tracked during gameplay</p>
             </div>
             <div style='margin-bottom:24px;'>
-                <h3 style='color:#0984e3;'>📈 Move Quality</h3>
-                <table style='width:100%; border-collapse:collapse;'>
-                    <thead><tr style='color:#aaa;'><th>Brilliant (!!)</th><th>Good (!)</th><th>Inaccuracy (!?)</th><th>Mistake (?)</th><th>Blunder (??)</th></tr></thead>
-                    <tbody>
-                        <tr><td>3</td><td>28</td><td>7</td><td>5</td><td>2</td></tr>
-                    </tbody>
-                </table>
-            </div>
-            <div style='margin-bottom:24px;'>
-                <h3 style='color:#fdcb6e;'>❌ Blunder Rate</h3>
-                <p style='font-size:1.1em;'>Blunders per game: <b>0.4</b></p>
-            </div>
-            <div style='margin-bottom:24px;'>
-                <h3 style='color:#00cec9;'>📊 Average Evaluation</h3>
-                <p style='font-size:1.1em;'>Avg. evaluation after move 10: <b>+1.2</b></p>
-            </div>
-            <div style='margin-bottom:24px;'>
-                <h3 style='color:#e17055;'>⚡ Tactical Success</h3>
-                <ul style='color:#fff; font-size:1.05em;'>
-                    <li>Forks Executed: <b>6</b></li>
-                    <li>Pins Executed: <b>3</b></li>
-                    <li>Sacrifices Successful: <b>2</b></li>
-                </ul>
-            </div>
-            <div style='margin-bottom:24px;'>
-                <h3 style='color:#ffd700;'>📈 Progress Chart</h3>
-                <div style='background:#181b20; border-radius:8px; padding:16px; color:#aaa; text-align:center;'>
-                    <i>Progress chart coming soon!</i>
-                </div>
+                <h3 style='color:#0984e3;'>� Move Quality</h3>
+                <p style='color:#aaa;'>Average Moves per Game: <b>${avgMoves}</b></p>
+                <p style='color:#aaa;'>Average Captures per Game: <b>${stats.gamesPlayed > 0 ? Math.round(totalCaptures / stats.gamesPlayed) : 0}</b></p>
             </div>
             <div style='margin-bottom:24px;'>
                 <h3 style='color:#ff6b6b;'>🏅 Personal Records</h3>
                 <ul style='color:#fff; font-size:1.05em;'>
-                    <li>Longest Win Streak: <b>5</b></li>
-                    <li>Fastest Win: <b>13 moves</b></li>
-                    <li>Most Captures in a Game: <b>9</b></li>
+                    <li>Longest Win Streak: <b>${stats.longestWinStreak}</b></li>
+                    <li>Fastest Win: <b>${stats.fastestWin ? stats.fastestWin + ' moves' : 'N/A'}</b></li>
+                    <li>Total Pieces Captured: <b>${totalCaptures}</b></li>
+                    <li>Member Since: <b>${new Date(stats.registeredDate).toLocaleDateString()}</b></li>
                 </ul>
             </div>
         `;
@@ -552,6 +542,9 @@
             loginTime: new Date().toISOString()
         }));
         
+        // Record login timestamp
+        recordLastLogin(username);
+        
         // Close modal and show home
         hideSignUpModal();
         hideLoginOptions();
@@ -586,10 +579,30 @@
         document.getElementById('account-email').textContent = userAccount.email;
         document.getElementById('account-date').textContent = regDate.toLocaleDateString();
         
-        // Populate stats
-        document.getElementById('account-wins').textContent = userAccount.stats.gamesWon || 0;
-        document.getElementById('account-losses').textContent = userAccount.stats.gamesLost || 0;
-        document.getElementById('account-games').textContent = (userAccount.stats.gamesPlayed || 0);
+        // Populate real stats from getUserStats
+        const stats = getUserStats(userAccount.username);
+        if (stats) {
+            document.getElementById('account-wins').textContent = stats.gamesWon || 0;
+            document.getElementById('account-losses').textContent = stats.gamesLost || 0;
+            document.getElementById('account-games').textContent = stats.gamesPlayed || 0;
+            
+            // Add last login
+            const lastLoginEl = document.getElementById('account-last-login');
+            if (lastLoginEl && stats.lastLogin) {
+                const lastLoginDate = new Date(stats.lastLogin);
+                lastLoginEl.textContent = lastLoginDate.toLocaleString();
+            }
+            
+            // Add saved games count
+            const savedGamesEl = document.getElementById('account-saved-games');
+            if (savedGamesEl) {
+                savedGamesEl.textContent = (stats.savedGames || []).length;
+            }
+        } else {
+            document.getElementById('account-wins').textContent = 0;
+            document.getElementById('account-losses').textContent = 0;
+            document.getElementById('account-games').textContent = 0;
+        }
         
         document.getElementById('account-modal').style.display = 'block';
     }
@@ -698,6 +711,148 @@
             zoomSlider.addEventListener('input', updateZoomDisplay);
         }
     });
+    
+    // ============================================
+    // STATISTICS TRACKING SYSTEM
+    // ============================================
+    
+    // Initialize or get user statistics
+    function getUserStats(username) {
+        const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+        if (!allUsers[username]) return null;
+        
+        return {
+            gamesPlayed: allUsers[username].stats.gamesPlayed || 0,
+            gamesWon: allUsers[username].stats.gamesWon || 0,
+            gamesLost: allUsers[username].stats.gamesLost || 0,
+            gamesDrawn: allUsers[username].stats.gamesDrawn || 0,
+            lastLogin: allUsers[username].lastLogin || null,
+            savedGames: allUsers[username].savedGames || [],
+            pieceStats: allUsers[username].pieceStats || {
+                square: { captures: 0, survived: 0, lost: 0 },
+                triangle: { captures: 0, survived: 0, lost: 0 },
+                rhombus: { captures: 0, survived: 0, lost: 0 },
+                circle: { captures: 0, survived: 0, lost: 0 },
+                hexagon: { captures: 0, survived: 0, lost: 0 }
+            },
+            longestWinStreak: allUsers[username].longestWinStreak || 0,
+            fastestWin: allUsers[username].fastestWin || null,
+            totalCaptures: allUsers[username].totalCaptures || 0,
+            totalMoves: allUsers[username].totalMoves || 0,
+            registeredDate: allUsers[username].registeredDate
+        };
+    }
+    
+    // Update user statistics after game ends
+    function recordGameResult(username, result) {
+        // result = { winner: 'username', loser: 'username', moves: number, captureCount: number }
+        const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+        
+        if (!allUsers[username]) return false;
+        
+        const stats = allUsers[username].stats;
+        stats.gamesPlayed = (stats.gamesPlayed || 0) + 1;
+        
+        if (result.winner === username) {
+            stats.gamesWon = (stats.gamesWon || 0) + 1;
+        } else if (result.loser === username) {
+            stats.gamesLost = (stats.gamesLost || 0) + 1;
+        } else {
+            stats.gamesDrawn = (stats.gamesDrawn || 0) + 1;
+        }
+        
+        // Update fastest win
+        if (result.winner === username) {
+            const fastestWin = allUsers[username].fastestWin || result.moves;
+            allUsers[username].fastestWin = Math.min(fastestWin, result.moves);
+        }
+        
+        // Track total captures
+        allUsers[username].totalCaptures = (allUsers[username].totalCaptures || 0) + (result.captureCount || 0);
+        allUsers[username].totalMoves = (allUsers[username].totalMoves || 0) + result.moves;
+        
+        localStorage.setItem('romgon-users', JSON.stringify(allUsers));
+        return true;
+    }
+    
+    // Record last login
+    function recordLastLogin(username) {
+        const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+        if (!allUsers[username]) return false;
+        
+        allUsers[username].lastLogin = new Date().toISOString();
+        localStorage.setItem('romgon-users', JSON.stringify(allUsers));
+        return true;
+    }
+    
+    // Save game state
+    function saveGame(username, gameName, gameData) {
+        const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+        if (!allUsers[username]) return false;
+        
+        if (!allUsers[username].savedGames) {
+            allUsers[username].savedGames = [];
+        }
+        
+        const savedGame = {
+            name: gameName,
+            timestamp: new Date().toISOString(),
+            data: gameData
+        };
+        
+        allUsers[username].savedGames.push(savedGame);
+        localStorage.setItem('romgon-users', JSON.stringify(allUsers));
+        return true;
+    }
+    
+    // Get saved games
+    function getSavedGames(username) {
+        const stats = getUserStats(username);
+        return stats ? stats.savedGames : [];
+    }
+    
+    // Get win/loss ratio
+    function getWinRate(username) {
+        const stats = getUserStats(username);
+        if (!stats || stats.gamesPlayed === 0) return 0;
+        return Math.round((stats.gamesWon / stats.gamesPlayed) * 100);
+    }
+    
+    // Get average moves per game
+    function getAvgMovesPerGame(username) {
+        const stats = getUserStats(username);
+        if (!stats || stats.gamesPlayed === 0) return 0;
+        return Math.round(stats.totalMoves / stats.gamesPlayed);
+    }
+    
+    // Get total captures
+    function getTotalCaptures(username) {
+        const stats = getUserStats(username);
+        return stats ? stats.totalCaptures : 0;
+    }
+    
+    // Demo function: Simulate a game result for testing
+    function simulateGameResult(username) {
+        if (!username) {
+            console.warn('No username provided for simulation');
+            return false;
+        }
+        
+        const result = {
+            winner: username,
+            loser: 'AI',
+            moves: Math.floor(Math.random() * 80) + 20,
+            captureCount: Math.floor(Math.random() * 8) + 3
+        };
+        
+        recordGameResult(username, result);
+        console.log('✅ Demo: Game result recorded:', result);
+        
+        // Refresh the stats dashboard if it's displayed
+        renderStatsDashboard();
+        
+        return true;
+    }
     
     // Render opening book content (placeholder for now)
     // --- Opening Book Data ---
