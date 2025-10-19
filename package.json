@@ -4,7 +4,7 @@
   "description": "ROMGON - Multiplayer Hexagonal Strategy Game",
   "private": true,
   "engines": {
-    "node": "18.x"
+    "node": "22.x"
   },
   "scripts": {
     "start": "cd backend && npm install && npm start",
