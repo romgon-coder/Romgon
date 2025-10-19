@@ -722,25 +722,36 @@
         const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
         if (!allUsers[username]) return null;
         
+        // Ensure stats object exists and has proper structure
+        const user = allUsers[username];
+        if (!user.stats) {
+            user.stats = {
+                gamesPlayed: 0,
+                gamesWon: 0,
+                gamesLost: 0,
+                gamesDrawn: 0
+            };
+        }
+        
         return {
-            gamesPlayed: allUsers[username].stats.gamesPlayed || 0,
-            gamesWon: allUsers[username].stats.gamesWon || 0,
-            gamesLost: allUsers[username].stats.gamesLost || 0,
-            gamesDrawn: allUsers[username].stats.gamesDrawn || 0,
-            lastLogin: allUsers[username].lastLogin || null,
-            savedGames: allUsers[username].savedGames || [],
-            pieceStats: allUsers[username].pieceStats || {
+            gamesPlayed: user.stats.gamesPlayed || 0,
+            gamesWon: user.stats.gamesWon || 0,
+            gamesLost: user.stats.gamesLost || 0,
+            gamesDrawn: user.stats.gamesDrawn || 0,
+            lastLogin: user.lastLogin || null,
+            savedGames: user.savedGames || [],
+            pieceStats: user.pieceStats || {
                 square: { captures: 0, survived: 0, lost: 0 },
                 triangle: { captures: 0, survived: 0, lost: 0 },
                 rhombus: { captures: 0, survived: 0, lost: 0 },
                 circle: { captures: 0, survived: 0, lost: 0 },
                 hexagon: { captures: 0, survived: 0, lost: 0 }
             },
-            longestWinStreak: allUsers[username].longestWinStreak || 0,
-            fastestWin: allUsers[username].fastestWin || null,
-            totalCaptures: allUsers[username].totalCaptures || 0,
-            totalMoves: allUsers[username].totalMoves || 0,
-            registeredDate: allUsers[username].registeredDate
+            longestWinStreak: user.longestWinStreak || 0,
+            fastestWin: user.fastestWin || null,
+            totalCaptures: user.totalCaptures || 0,
+            totalMoves: user.totalMoves || 0,
+            registeredDate: user.registeredDate
         };
     }
     
