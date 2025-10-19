@@ -414,9 +414,9 @@ class KeyboardNavigationSystemV2 {
     if (key === 'a' || key === 'd') {
       event.preventDefault();
       this.applyPostMoveRotation(key);
-    } else {
-      // Any other key ends rotation phase
+    } else if (key === ' ') {
       event.preventDefault();
+      this.logDebug('Rotation phase ended by Space');
       this.resetPhase();
     }
   }
@@ -466,7 +466,7 @@ class KeyboardNavigationSystemV2 {
   updatePostMoveRotationUI() {
     const indicator = document.getElementById('kb-phase-indicator');
     if (indicator) {
-      indicator.textContent = `Rotation: Press A for LEFT, D for RIGHT, any other key to skip`;
+      indicator.textContent = `Rotation: Press A for LEFT, D for RIGHT, SPACE to end turn`;
       indicator.style.backgroundColor = '#ff6b00';
     }
   }
