@@ -33,16 +33,17 @@ class GeneralNavigationSystem {
         'button',
         '[role="button"]',
         'a[href]',
+        'a[onclick]', // Links with onclick handlers
         'input[type="button"]',
         'input[type="submit"]',
         '.nav-item',
         '.menu-item',
         '.selectable',
-        '.game-mode-button', // Menu buttons
-        '[data-nav]', // Custom nav elements
+        '.game-mode-button',
+        '[data-nav]',
       ].join(','),
-      wrapAround: true, // Wrap to start when reaching end
-      autoFocus: true,  // Auto-focus first element on context change
+      wrapAround: true,
+      autoFocus: true,
       ...config,
     };
     
@@ -65,18 +66,18 @@ class GeneralNavigationSystem {
   }
 
   handleKeyPress(event) {
+    // PRIORITY: If PVP system is active and enabled, ALWAYS skip
+    if (window.keyboardNav && window.keyboardNav.enabled) {
+      this.logDebug('🚫 PVP system is active and enabled, skipping all General Nav input');
+      return;
+    }
+    
     if (!this.enabled) return;
     
     const key = event.key.toLowerCase();
     
     // Only handle WASD, E, and Escape
     if (!['w', 'a', 's', 'd', 'e', 'escape'].includes(key)) {
-      return;
-    }
-
-    // If PVP system is active, don't handle keyboard
-    if (window.keyboardNav && window.keyboardNav.enabled && window.keyboardNav.phase !== 'idle') {
-      this.logDebug(`PVP system active (phase: ${window.keyboardNav.phase}), skipping general nav`);
       return;
     }
 
