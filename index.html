@@ -14132,6 +14132,8 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             toggleLastMoveButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             toggleLastMoveButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
 
+            // Create show all moves button
+            const showAllMovesButton = document.createElement('button');
             showAllMovesButton.className = 'game-menu-button';
             showAllMovesButton.id = 'show-all-moves-button';
             showAllMovesButton.innerHTML = showAllMoves ? '👁️ HIDE ALL' : '👁️ SHOW ALL';
