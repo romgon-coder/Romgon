@@ -1,8 +1,5 @@
 {
   "version": 2,
-  "framework": "static",
-  "outputDirectory": "frontend",
-  "env": {
-    "NODE_ENV": "production"
-  }
+  "buildCommand": "bash build.sh",
+  "outputDirectory": "public"
 }
