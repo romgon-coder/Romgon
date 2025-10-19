@@ -977,11 +977,24 @@
         document.getElementById('signup-modal').style.display = 'block';
         document.getElementById('signup-error').style.display = 'none';
         document.getElementById('signup-form').reset();
+        
+        // Enable keyboard navigation for the modal
+        if (window.generalNav) {
+            console.log('🎹 Enabling keyboard navigation for signup modal');
+            window.generalNav.setEnabled(true);
+            window.generalNav.updateNavigationElements();
+        }
     }
     
     function hideSignUpModal() {
         document.getElementById('signup-modal').style.display = 'none';
         document.getElementById('signup-error').style.display = 'none';
+        
+        // Disable keyboard navigation when modal closes
+        if (window.generalNav) {
+            console.log('🎹 Disabling keyboard navigation (signup modal closed)');
+            window.generalNav.setEnabled(false);
+        }
     }
     
     function handleSignUp(event) {
@@ -1079,12 +1092,8 @@
     
     // Account Modal Functions
     function showAccountModal() {
-        // Refresh current user data from localStorage
         const currentUser = JSON.parse(localStorage.getItem('romgon-user') || '{}');
         const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
-        
-        console.log('📊 Opening account modal - Current user:', currentUser.username);
-        console.log('📊 Current user stats:', currentUser.stats);
         
         // Check if guest user
         if (!currentUser.username || currentUser.type === 'guest') {
@@ -1149,30 +1158,29 @@
         document.getElementById('account-username').textContent = userAccount.username;
         document.getElementById('account-email').textContent = userAccount.email;
         
-        // Get stats - use currentUser stats first (most recent), fall back to getUserStats
-        const userStats = currentUser.stats || {};
-        const gamesWon = userStats.wins || 0;
-        const gamesLost = userStats.losses || 0;
-        const gamesPlayed = userStats.totalGames || 0;
-        
-        console.log('📊 Display stats - Won:', gamesWon, 'Lost:', gamesLost, 'Total:', gamesPlayed);
-        
-        // Update wins, losses, total games
-        document.getElementById('account-wins').textContent = gamesWon;
-        document.getElementById('account-losses').textContent = gamesLost;
-        document.getElementById('account-games').textContent = gamesPlayed;
-        
-        // Add last login
-        const lastLoginEl = document.getElementById('account-last-login');
-        if (lastLoginEl && userAccount.lastLogin) {
-            const lastLoginDate = new Date(userAccount.lastLogin);
-            lastLoginEl.textContent = lastLoginDate.toLocaleString();
-        }
-        
-        // Add saved games count
-        const savedGamesEl = document.getElementById('account-saved-games');
-        if (savedGamesEl) {
-            savedGamesEl.textContent = (userAccount.savedGames || []).length;
+        // Populate real stats from getUserStats
+        const stats = getUserStats(userAccount.username);
+        if (stats) {
+            document.getElementById('account-wins').textContent = stats.gamesWon || 0;
+            document.getElementById('account-losses').textContent = stats.gamesLost || 0;
+            document.getElementById('account-games').textContent = stats.gamesPlayed || 0;
+            
+            // Add last login
+            const lastLoginEl = document.getElementById('account-last-login');
+            if (lastLoginEl && stats.lastLogin) {
+                const lastLoginDate = new Date(stats.lastLogin);
+                lastLoginEl.textContent = lastLoginDate.toLocaleString();
+            }
+            
+            // Add saved games count
+            const savedGamesEl = document.getElementById('account-saved-games');
+            if (savedGamesEl) {
+                savedGamesEl.textContent = (stats.savedGames || []).length;
+            }
+        } else {
+            document.getElementById('account-wins').textContent = 0;
+            document.getElementById('account-losses').textContent = 0;
+            document.getElementById('account-games').textContent = 0;
         }
         
         // Show delete account button for registered users
@@ -1539,27 +1547,20 @@
         const user = allUsers[username];
         if (!user.stats) {
             user.stats = {
-                wins: 0,
-                losses: 0,
-                totalGames: 0,
-                totalMoves: 0,
-                totalCaptures: 0
+                gamesPlayed: 0,
+                gamesWon: 0,
+                gamesLost: 0,
+                gamesDrawn: 0
             };
             // Save the updated user back to localStorage
             localStorage.setItem('romgon-users', JSON.stringify(allUsers));
         }
         
-        // Support both old and new stat formats
-        const stats = user.stats;
-        const gamesWon = stats.wins || stats.gamesWon || 0;
-        const gamesLost = stats.losses || stats.gamesLost || 0;
-        const gamesPlayed = stats.totalGames || stats.gamesPlayed || 0;
-        
         return {
-            gamesPlayed: gamesPlayed,
-            gamesWon: gamesWon,
-            gamesLost: gamesLost,
-            gamesDrawn: stats.gamesDrawn || 0,
+            gamesPlayed: user.stats.gamesPlayed || 0,
+            gamesWon: user.stats.gamesWon || 0,
+            gamesLost: user.stats.gamesLost || 0,
+            gamesDrawn: user.stats.gamesDrawn || 0,
             lastLogin: user.lastLogin || null,
             savedGames: user.savedGames || [],
             pieceStats: user.pieceStats || {
@@ -1571,8 +1572,8 @@
             },
             longestWinStreak: user.longestWinStreak || 0,
             fastestWin: user.fastestWin || null,
-            totalCaptures: stats.totalCaptures || 0,
-            totalMoves: stats.totalMoves || 0,
+            totalCaptures: user.totalCaptures || 0,
+            totalMoves: user.totalMoves || 0,
             registeredDate: user.registeredDate
         };
     }
@@ -15278,67 +15279,11 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             console.log('🔍 User username:', currentUser.username);
             console.log('🔍 User type:', currentUser.type);
             
-            // Initialize user stats if not present
-            if (!currentUser.stats) {
-                currentUser.stats = {
-                    wins: 0,
-                    losses: 0,
-                    totalGames: 0,
-                    totalMoves: 0,
-                    totalCaptures: 0
-                };
-                console.log('🔧 Initialized stats object');
-            }
-            
-            if (!currentUser.gameHistory) {
-                currentUser.gameHistory = [];
-                console.log('🔧 Initialized gameHistory array');
-            }
-            
-            // Determine if current player won or lost
-            const playerIsWhite = true; // Assuming single player is always white in AI mode
-            const playerWon = (winner.toLowerCase() === 'white' && playerIsWhite) || 
-                             (winner.toLowerCase() === 'black' && !playerIsWhite);
-            
-            // Calculate move count and captures
-            const moveCount = moveHistory ? moveHistory.length : 0;
-            const captureCount = 0; // You may need to track this during gameplay
-            
-            // Record the game
-            const gameRecord = {
-                date: new Date().toISOString(),
-                opponent: 'AI',
-                result: playerWon ? 'win' : 'loss',
-                winner: winner,
-                reason: reason,
-                moves: moveCount,
-                captures: captureCount
-            };
-            
-            // Update stats in currentUser object (for BOTH guest and logged-in users)
-            currentUser.stats.totalGames += 1;
-            currentUser.stats.totalMoves += moveCount;
-            currentUser.stats.totalCaptures += captureCount;
-            
-            if (playerWon) {
-                currentUser.stats.wins += 1;
-                console.log('🎉 WIN recorded - Total wins:', currentUser.stats.wins);
-            } else {
-                currentUser.stats.losses += 1;
-                console.log('😢 LOSS recorded - Total losses:', currentUser.stats.losses);
-            }
-            
-            // Add to game history
-            currentUser.gameHistory.push(gameRecord);
-            
-            // Save updated currentUser back to localStorage
-            localStorage.setItem('romgon-user', JSON.stringify(currentUser));
-            
-            // If user is logged in (not guest), also update romgon-users database
+            // Update user statistics if a user is logged in
             if (currentUser.username && currentUser.type !== 'guest') {
-                console.log('📊 Logged-in user detected, syncing to user database...');
+                console.log('📊 Logged-in user detected, saving game stats...');
                 
-                // Also update romgon-users database
+                // Get the current user's game records
                 let allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
                 if (!allUsers[currentUser.username]) {
                     allUsers[currentUser.username] = {
@@ -15354,18 +15299,51 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     };
                 }
                 
-                // Sync the stats
-                allUsers[currentUser.username].games = currentUser.gameHistory;
-                allUsers[currentUser.username].stats = currentUser.stats;
+                // Determine if current player won or lost
+                const playerIsWhite = true; // Assuming single player is always white in AI mode
+                const playerWon = (winner.toLowerCase() === 'white' && playerIsWhite) || 
+                                 (winner.toLowerCase() === 'black' && !playerIsWhite);
+                
+                // Calculate move count and captures
+                const moveCount = moveHistory ? moveHistory.length : 0;
+                const captureCount = 0; // You may need to track this during gameplay
+                
+                // Record the game
+                const gameRecord = {
+                    date: new Date().toISOString(),
+                    opponent: 'AI',
+                    result: playerWon ? 'win' : 'loss',
+                    winner: winner,
+                    reason: reason,
+                    moves: moveCount,
+                    captures: captureCount
+                };
+                
+                allUsers[currentUser.username].games.push(gameRecord);
+                allUsers[currentUser.username].stats.totalGames += 1;
+                allUsers[currentUser.username].stats.totalMoves += moveCount;
+                allUsers[currentUser.username].stats.totalCaptures += captureCount;
+                
+                if (playerWon) {
+                    allUsers[currentUser.username].stats.wins += 1;
+                } else {
+                    allUsers[currentUser.username].stats.losses += 1;
+                }
+                
+                // Save updated user data
                 localStorage.setItem('romgon-users', JSON.stringify(allUsers));
                 
-                console.log('✅ Game result synced to user database');
+                // ALSO update the currentUser in localStorage with new stats
+                currentUser.stats = allUsers[currentUser.username].stats;
+                currentUser.gameHistory = allUsers[currentUser.username].games;
+                localStorage.setItem('romgon-user', JSON.stringify(currentUser));
+                
+                console.log('✅ Game result saved to user stats:', gameRecord);
+                console.log('📊 Updated user stats:', allUsers[currentUser.username].stats);
+                console.log('💾 Updated currentUser in localStorage');
             } else {
-                console.log('👤 Guest user - stats saved locally only');
+                console.log('👤 Guest user - no stats saved');
             }
-            
-            console.log('✅ Game result saved:', gameRecord);
-            console.log('📊 Updated user stats:', currentUser.stats);
             
             // Notify keyboard systems that game has ended
             const gameEndEvent = new CustomEvent('gameEnded', {
@@ -15525,7 +15503,8 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             document.body.appendChild(gameOverOverlay);
             console.log('✅ Overlay appended to document.body');
             console.log('📦 Checking if overlay in DOM:', document.body.contains(gameOverOverlay));
-            console.log('📦 GAME OVER SCREEN IS NOW VISIBLE - Check your browser!');
+            console.log('📦 Overlay z-index:', gameOverOverlay.style.zIndex);
+            console.log('📦 Overlay display:', gameOverOverlay.style.display);
             
             // Force it to be visible immediately
             gameOverOverlay.style.display = 'flex';
@@ -15577,17 +15556,47 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         function showUserAccountHub() {
             console.log('👤 Opening User Hub...');
             
-            // Get current user from localStorage
+            // Get FRESH current user from localStorage (don't use cached version)
             const currentUser = JSON.parse(localStorage.getItem('romgon-user') || '{}');
-            console.log('📋 Current user in Hub:', currentUser);
-            console.log('📋 User type:', currentUser.type);
-            console.log('📋 Username:', currentUser.username);
+            const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
             
-            // Check if user has any data at all
-            if (!currentUser.username && currentUser.type !== 'guest') {
+            console.log('📋 Current user in Hub:', currentUser);
+            console.log('📋 All users data:', allUsers);
+            
+            // Check if user is logged in (not guest)
+            if (!currentUser.username || currentUser.type === 'guest') {
                 console.log('❌ User not logged in - showing alert');
                 alert('❌ You must be logged in to view your User Hub.\n\nPlease login first and play another game.');
                 return;
+            }
+            
+            console.log('✅ User logged in as:', currentUser.username);
+            
+            // Get FRESH stats from allUsers (this is the authoritative source)
+            let userStats = {
+                totalGames: 0,
+                wins: 0,
+                losses: 0,
+                totalMoves: 0,
+                totalCaptures: 0
+            };
+            
+            if (allUsers[currentUser.username] && allUsers[currentUser.username].stats) {
+                userStats = allUsers[currentUser.username].stats;
+                console.log('✅ Found stats in allUsers:', userStats);
+            } else if (currentUser.stats) {
+                userStats = currentUser.stats;
+                console.log('✅ Using stats from currentUser:', userStats);
+            }
+            
+            // Get game history from allUsers (authoritative source)
+            let gameHistory = [];
+            if (allUsers[currentUser.username] && allUsers[currentUser.username].games) {
+                gameHistory = allUsers[currentUser.username].games;
+                console.log('✅ Found game history in allUsers, count:', gameHistory.length);
+            } else if (currentUser.gameHistory) {
+                gameHistory = currentUser.gameHistory;
+                console.log('✅ Using game history from currentUser, count:', gameHistory.length);
             }
             
             // Close the game over overlay
@@ -15617,34 +15626,17 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 opacity: 1 !important;
             `;
             
-            // Get user stats from current user object
-            const userStats = currentUser.stats || {
-                totalGames: 0,
-                wins: 0,
-                losses: 0,
-                totalMoves: 0,
-                totalCaptures: 0
-            };
-            
-            console.log('📊 User stats:', userStats);
+            console.log('📊 Final stats to display:', userStats);
+            console.log('📊 Final game history to display:', gameHistory);
             
             const winRate = userStats.totalGames > 0 
                 ? ((userStats.wins / userStats.totalGames) * 100).toFixed(1)
                 : 0;
             
-            const gameHistory = currentUser.gameHistory || [];
             const recentGames = gameHistory.slice(-5).reverse();
             
             console.log('🎮 Recent games count:', recentGames.length);
-            
-            // Determine title based on user type
-            const hubTitle = currentUser.type === 'guest' 
-                ? '👤 Guest Session Hub'
-                : `👤 ${currentUser.username}'s User Hub`;
-            
-            const userType = currentUser.type === 'guest' 
-                ? 'Guest'
-                : (currentUser.type || 'Player');
+            console.log('🎮 Recent games:', recentGames);
             
             userHubModal.innerHTML = `
                 <div style="
@@ -15661,114 +15653,8 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     position: relative !important;
                     pointer-events: auto !important;
                 ">
-                    <h1 style="color: #4ecdc4 !important; margin: 0 0 10px 0 !important; text-align: center !important; font-size: 2em !important;">${hubTitle}</h1>
-                    <p style="color: #999 !important; text-align: center !important; margin: 0 0 30px 0 !important; font-size: 0.9em !important;">User Type: ${userType}</p>
-                    
-                    <div style="display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 20px !important; margin-bottom: 30px !important;">
-                        <div style="
-                            background-color: #1a1a1a !important;
-                            padding: 20px !important;
-                            border-radius: 8px !important;
-                            border-left: 4px solid #4ecdc4 !important;
-                        ">
-                            <div style="color: #999 !important; font-size: 0.9em !important; margin-bottom: 5px !important;">Total Games</div>
-                            <div style="color: #4ecdc4 !important; font-size: 2em !important; font-weight: bold !important;">${userStats.totalGames}</div>
-                        </div>
-                        
-                        <div style="
-                            background-color: #1a1a1a !important;
-                            padding: 20px !important;
-                            border-radius: 8px !important;
-                            border-left: 4px solid #27ae60 !important;
-                        ">
-                            <div style="color: #999 !important; font-size: 0.9em !important; margin-bottom: 5px !important;">Wins</div>
-                            <div style="color: #27ae60 !important; font-size: 2em !important; font-weight: bold !important;">${userStats.wins}</div>
-                        </div>
-                        
-                        <div style="
-                            background-color: #1a1a1a !important;
-                            padding: 20px !important;
-                            border-radius: 8px !important;
-                            border-left: 4px solid #e74c3c !important;
-                        ">
-                            <div style="color: #999 !important; font-size: 0.9em !important; margin-bottom: 5px !important;">Losses</div>
-                            <div style="color: #e74c3c !important; font-size: 2em !important; font-weight: bold !important;">${userStats.losses}</div>
-                        </div>
-                        
-                        <div style="
-                            background-color: #1a1a1a !important;
-                            padding: 20px !important;
-                            border-radius: 8px !important;
-                            border-left: 4px solid #f39c12 !important;
-                        ">
-                            <div style="color: #999 !important; font-size: 0.9em !important; margin-bottom: 5px !important;">Win Rate</div>
-                            <div style="color: #f39c12 !important; font-size: 2em !important; font-weight: bold !important;">${winRate}%</div>
-                        </div>
-                    </div>
-                    
-                    ${recentGames.length > 0 ? `
-                        <div style="margin-bottom: 30px !important;">
-                            <h3 style="color: #4ecdc4 !important; margin: 0 0 15px 0 !important;">📜 Recent Games</h3>
-                            <div style="max-height: 300px !important; overflow-y: auto !important;">
-                                ${recentGames.map((game, idx) => `
-                                    <div style="
-                                        background-color: #1a1a1a !important;
-                                        padding: 12px !important;
-                                        margin-bottom: 8px !important;
-                                        border-radius: 6px !important;
-                                        border-left: 3px solid ${game.result === 'win' ? '#27ae60' : '#e74c3c'} !important;
-                                    ">
-                                        <div style="display: flex !important; justify-content: space-between !important; align-items: center !important;">
-                                            <div>
-                                                <div style="color: #4ecdc4 !important; font-weight: bold !important;">vs ${game.opponent || 'Unknown'}</div>
-                                                <div style="color: #999 !important; font-size: 0.85em !important;">
-                                                    ${new Date(game.date).toLocaleDateString()} - ${game.reason || 'Game'}
-                                                </div>
-                                            </div>
-                                            <div style="
-                                                color: ${game.result === 'win' ? '#27ae60' : '#e74c3c'} !important;
-                                                font-weight: bold !important;
-                                                padding: 5px 10px !important;
-                                                background-color: ${game.result === 'win' ? 'rgba(39, 174, 96, 0.2)' : 'rgba(231, 76, 60, 0.2)'} !important;
-                                                border-radius: 4px !important;
-                                            ">
-                                                ${game.result === 'win' ? '✅ WIN' : '❌ LOSS'}
-                                            </div>
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    ` : '<p style="color: #999 !important; text-align: center !important;">No games played yet</p>'}
-                    
-                    <div style="display: flex !important; gap: 15px !important; justify-content: center !important; flex-wrap: wrap !important;">
-                        <button onclick="document.getElementById('user-hub-modal').remove(); location.reload();" style="
-                            background-color: #4ecdc4 !important;
-                            color: white !important;
-                            border: none !important;
-                            padding: 12px 25px !important;
-                            font-size: 1.1em !important;
-                            border-radius: 6px !important;
-                            cursor: pointer !important;
-                            font-weight: bold !important;
-                        ">▶️ Play Again</button>
-                        <button onclick="document.getElementById('user-hub-modal').remove(); showStartMenu();" style="
-                            background-color: #ff6b6b !important;
-                            color: white !important;
-                            border: none !important;
-                            padding: 12px 25px !important;
-                            font-size: 1.1em !important;
-                            border-radius: 6px !important;
-                            cursor: pointer !important;
-                            font-weight: bold !important;
-                        ">🏠 Main Menu</button>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(userHubModal);
-            console.log('✅ User Hub modal displayed');
-        }
+                    <h1 style="color: #4ecdc4 !important; margin: 0 0 10px 0 !important; text-align: center !important; font-size: 2em !important;">👤 ${currentUser.username}'s User Hub</h1>
+                    <p style="color: #999 !important; text-align: center !important; margin: 0 0 30px 0 !important; font-size: 0.9em !important;">User Type: ${currentUser.type || 'Player'}</p>
                     
                     <div style="display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 20px !important; margin-bottom: 30px !important;">
                         <div style="

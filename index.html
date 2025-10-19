@@ -15556,9 +15556,12 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         function showUserAccountHub() {
             console.log('👤 Opening User Hub...');
             
-            // Get current user from localStorage
+            // Get FRESH current user from localStorage (don't use cached version)
             const currentUser = JSON.parse(localStorage.getItem('romgon-user') || '{}');
+            const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+            
             console.log('📋 Current user in Hub:', currentUser);
+            console.log('📋 All users data:', allUsers);
             
             // Check if user is logged in (not guest)
             if (!currentUser.username || currentUser.type === 'guest') {
@@ -15568,6 +15571,33 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             }
             
             console.log('✅ User logged in as:', currentUser.username);
+            
+            // Get FRESH stats from allUsers (this is the authoritative source)
+            let userStats = {
+                totalGames: 0,
+                wins: 0,
+                losses: 0,
+                totalMoves: 0,
+                totalCaptures: 0
+            };
+            
+            if (allUsers[currentUser.username] && allUsers[currentUser.username].stats) {
+                userStats = allUsers[currentUser.username].stats;
+                console.log('✅ Found stats in allUsers:', userStats);
+            } else if (currentUser.stats) {
+                userStats = currentUser.stats;
+                console.log('✅ Using stats from currentUser:', userStats);
+            }
+            
+            // Get game history from allUsers (authoritative source)
+            let gameHistory = [];
+            if (allUsers[currentUser.username] && allUsers[currentUser.username].games) {
+                gameHistory = allUsers[currentUser.username].games;
+                console.log('✅ Found game history in allUsers, count:', gameHistory.length);
+            } else if (currentUser.gameHistory) {
+                gameHistory = currentUser.gameHistory;
+                console.log('✅ Using game history from currentUser, count:', gameHistory.length);
+            }
             
             // Close the game over overlay
             const gameOverOverlay = document.getElementById('game-over-overlay');
@@ -15596,25 +15626,17 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 opacity: 1 !important;
             `;
             
-            // Get user stats from current user object
-            const userStats = currentUser.stats || {
-                totalGames: 0,
-                wins: 0,
-                losses: 0,
-                totalMoves: 0,
-                totalCaptures: 0
-            };
-            
-            console.log('📊 User stats:', userStats);
+            console.log('📊 Final stats to display:', userStats);
+            console.log('📊 Final game history to display:', gameHistory);
             
             const winRate = userStats.totalGames > 0 
                 ? ((userStats.wins / userStats.totalGames) * 100).toFixed(1)
                 : 0;
             
-            const gameHistory = currentUser.gameHistory || [];
             const recentGames = gameHistory.slice(-5).reverse();
             
             console.log('🎮 Recent games count:', recentGames.length);
+            console.log('🎮 Recent games:', recentGames);
             
             userHubModal.innerHTML = `
                 <div style="
