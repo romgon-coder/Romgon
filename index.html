@@ -8807,6 +8807,17 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 gameOver
             });
             
+            // Notify keyboard systems that game has started
+            const gameStartEvent = new CustomEvent('gameStarted', {
+                detail: {
+                    mode: selectedGameMode,
+                    isPVP: selectedGameMode === 'pvp',
+                    currentPlayer,
+                    gameOver
+                }
+            });
+            document.dispatchEvent(gameStartEvent);
+            
             // Reset selectedGameMode after game starts
             selectedGameMode = null;
             

@@ -19,6 +19,22 @@ class KeyboardSystemRouter {
   setupListeners() {
     // Monitor game state to detect PVP mode
     setInterval(() => this.detectGameMode(), 500);
+    
+    // Listen for direct game start event
+    document.addEventListener('gameStarted', (e) => {
+      this.logDebug(`🎯 Game Start Event Received: isPVP=${e.detail.isPVP}`);
+      if (e.detail.isPVP) {
+        this.activatePVPSystem();
+      } else {
+        this.activateGeneralSystem();
+      }
+    });
+    
+    // Listen for game end
+    document.addEventListener('gameEnded', (e) => {
+      this.logDebug(`🎯 Game End Event Received`);
+      this.activateGeneralSystem();
+    });
   }
 
   /**
@@ -43,9 +59,9 @@ class KeyboardSystemRouter {
                       window.currentPlayer && // Global game variable
                       window.gameOver !== undefined; // Game state exists
     
-    // Debug logging
-    if (inPVPMode !== this.isPVPMode) {
-      this.logDebug(`🔍 PVP Mode Detection Changed: ${this.isPVPMode} → ${inPVPMode}`);
+    // Debug logging for first detection
+    if (inPVPMode && !this.isPVPMode) {
+      this.logDebug(`🔍 PVP Mode Detected:`);
       this.logDebug(`  - gameBoard: ${!!gameBoard}`);
       this.logDebug(`  - currentPlayerIndicator: ${!!currentPlayerIndicator}`);
       this.logDebug(`  - gameMoveIndicator: ${!!gameMoveIndicator}`);
