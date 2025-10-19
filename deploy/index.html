@@ -1079,8 +1079,12 @@
     
     // Account Modal Functions
     function showAccountModal() {
+        // Refresh current user data from localStorage
         const currentUser = JSON.parse(localStorage.getItem('romgon-user') || '{}');
         const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+        
+        console.log('📊 Opening account modal - Current user:', currentUser.username);
+        console.log('📊 Current user stats:', currentUser.stats);
         
         // Check if guest user
         if (!currentUser.username || currentUser.type === 'guest') {
@@ -1145,29 +1149,30 @@
         document.getElementById('account-username').textContent = userAccount.username;
         document.getElementById('account-email').textContent = userAccount.email;
         
-        // Populate real stats from getUserStats
-        const stats = getUserStats(userAccount.username);
-        if (stats) {
-            document.getElementById('account-wins').textContent = stats.gamesWon || 0;
-            document.getElementById('account-losses').textContent = stats.gamesLost || 0;
-            document.getElementById('account-games').textContent = stats.gamesPlayed || 0;
-            
-            // Add last login
-            const lastLoginEl = document.getElementById('account-last-login');
-            if (lastLoginEl && stats.lastLogin) {
-                const lastLoginDate = new Date(stats.lastLogin);
-                lastLoginEl.textContent = lastLoginDate.toLocaleString();
-            }
-            
-            // Add saved games count
-            const savedGamesEl = document.getElementById('account-saved-games');
-            if (savedGamesEl) {
-                savedGamesEl.textContent = (stats.savedGames || []).length;
-            }
-        } else {
-            document.getElementById('account-wins').textContent = 0;
-            document.getElementById('account-losses').textContent = 0;
-            document.getElementById('account-games').textContent = 0;
+        // Get stats - use currentUser stats first (most recent), fall back to getUserStats
+        const userStats = currentUser.stats || {};
+        const gamesWon = userStats.wins || 0;
+        const gamesLost = userStats.losses || 0;
+        const gamesPlayed = userStats.totalGames || 0;
+        
+        console.log('📊 Display stats - Won:', gamesWon, 'Lost:', gamesLost, 'Total:', gamesPlayed);
+        
+        // Update wins, losses, total games
+        document.getElementById('account-wins').textContent = gamesWon;
+        document.getElementById('account-losses').textContent = gamesLost;
+        document.getElementById('account-games').textContent = gamesPlayed;
+        
+        // Add last login
+        const lastLoginEl = document.getElementById('account-last-login');
+        if (lastLoginEl && userAccount.lastLogin) {
+            const lastLoginDate = new Date(userAccount.lastLogin);
+            lastLoginEl.textContent = lastLoginDate.toLocaleString();
+        }
+        
+        // Add saved games count
+        const savedGamesEl = document.getElementById('account-saved-games');
+        if (savedGamesEl) {
+            savedGamesEl.textContent = (userAccount.savedGames || []).length;
         }
         
         // Show delete account button for registered users
@@ -1534,20 +1539,27 @@
         const user = allUsers[username];
         if (!user.stats) {
             user.stats = {
-                gamesPlayed: 0,
-                gamesWon: 0,
-                gamesLost: 0,
-                gamesDrawn: 0
+                wins: 0,
+                losses: 0,
+                totalGames: 0,
+                totalMoves: 0,
+                totalCaptures: 0
             };
             // Save the updated user back to localStorage
             localStorage.setItem('romgon-users', JSON.stringify(allUsers));
         }
         
+        // Support both old and new stat formats
+        const stats = user.stats;
+        const gamesWon = stats.wins || stats.gamesWon || 0;
+        const gamesLost = stats.losses || stats.gamesLost || 0;
+        const gamesPlayed = stats.totalGames || stats.gamesPlayed || 0;
+        
         return {
-            gamesPlayed: user.stats.gamesPlayed || 0,
-            gamesWon: user.stats.gamesWon || 0,
-            gamesLost: user.stats.gamesLost || 0,
-            gamesDrawn: user.stats.gamesDrawn || 0,
+            gamesPlayed: gamesPlayed,
+            gamesWon: gamesWon,
+            gamesLost: gamesLost,
+            gamesDrawn: stats.gamesDrawn || 0,
             lastLogin: user.lastLogin || null,
             savedGames: user.savedGames || [],
             pieceStats: user.pieceStats || {
@@ -1559,8 +1571,8 @@
             },
             longestWinStreak: user.longestWinStreak || 0,
             fastestWin: user.fastestWin || null,
-            totalCaptures: user.totalCaptures || 0,
-            totalMoves: user.totalMoves || 0,
+            totalCaptures: stats.totalCaptures || 0,
+            totalMoves: stats.totalMoves || 0,
             registeredDate: user.registeredDate
         };
     }
@@ -2316,6 +2328,94 @@
         button.kb-nav-focused,
         a.kb-nav-focused {
             transform: scale(1.05) !important;
+        }
+        
+        /* Menu Button Styling */
+        .game-menu-button {
+            background-color: #1a252f !important;
+            color: #4ecdc4 !important;
+            border: 2px solid #4ecdc4 !important;
+            border-radius: 6px !important;
+            cursor: pointer !important;
+            font-weight: normal !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6) !important;
+            transition: all 0.2s ease !important;
+            text-shadow: none !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 8px 10px !important;
+            gap: 4px !important;
+            min-height: auto !important;
+            line-height: 1.1 !important;
+            white-space: normal !important;
+            vertical-align: middle !important;
+            position: relative !important;
+        }
+        
+        .game-menu-button-emoji {
+            font-size: 14px !important;
+            line-height: 1 !important;
+        }
+        
+        .game-menu-button-label {
+            font-size: 8px !important;
+            color: #ffffff !important;
+            font-weight: normal !important;
+            line-height: 1.2 !important;
+            text-align: center !important;
+            word-break: break-word !important;
+            max-width: 95% !important;
+        }
+        
+        .game-menu-button:hover {
+            background-color: #2c3e50 !important;
+            box-shadow: 0 4px 12px rgba(78, 205, 196, 0.5) !important;
+            transform: scale(1.05) !important;
+        }
+        
+        /* Side Panel Styling */
+        #game-buttons-panel {
+            position: fixed;
+            left: 0;
+            top: 100px;
+            width: 180px;
+            max-height: calc(100vh - 120px);
+            background-color: rgba(26, 37, 47, 0.95) !important;
+            border: 2px solid #4ecdc4 !important;
+            border-left: none !important;
+            border-radius: 0 12px 12px 0 !important;
+            padding: 10px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 8px !important;
+            z-index: 3000 !important;
+            overflow-y: auto !important;
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.5) !important;
+            transition: transform 0.3s ease !important;
+            transform: translateX(0) !important;
+            pointer-events: auto !important;
+        }
+        
+        #game-buttons-panel.hidden {
+            transform: translateX(-200px) !important;
+            pointer-events: none !important;
+        }
+        
+        #game-buttons-panel button {
+            width: 100% !important;
+            padding: 8px 10px !important;
+            text-align: center !important;
+            font-size: 10px !important;
+        }
+        
+        #toggle-panel-btn {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-width: 45px !important;
+            min-height: 28px !important;
         }
         
         /* NEW: Highlight for piece that just moved and is under attack */
@@ -3178,9 +3278,47 @@
             </div>
         </div>
 
-        <div style="border-top: 2px solid #4ecdc4; padding-top: 15px; margin-top: 20px; font-size: 0.85em;">
-            <p style="margin: 0 0 10px 0; color: #26de81;"><strong>✓ Keyboard active</strong></p>
-            <p style="margin: 0; color: #888;">Press the ⌨️ button to toggle this panel</p>
+        <div style="border-top: 2px solid #4ecdc4; padding-top: 15px; margin-top: 20px;">
+            <h3 style="color: #f57d2d; margin: 0 0 15px 0; font-size: 0.95em;">KEYBOARD MODES</h3>
+            
+            <button id="kb-pvp-toggle" onclick="togglePVPKeyboard()" style="
+                width: 100%;
+                padding: 10px;
+                margin-bottom: 10px;
+                background-color: #26de81;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 0.9em;
+                transition: all 0.3s ease;
+                font-family: 'Courier New', monospace;
+            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                ✓ PVP KEYBOARD
+            </button>
+            
+            <button id="kb-general-toggle" onclick="toggleGeneralNavigation()" style="
+                width: 100%;
+                padding: 10px;
+                margin-bottom: 15px;
+                background-color: #888;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 0.9em;
+                transition: all 0.3s ease;
+                font-family: 'Courier New', monospace;
+            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                ○ GENERAL NAVIGATION
+            </button>
+
+            <p style="margin: 0; font-size: 0.85em; color: #888; line-height: 1.6;">
+                <strong>PVP:</strong> Use WASD+E for piece/move selection and rotation<br>
+                <strong>General:</strong> Navigate menus and UI with WASD+E
+            </p>
         </div>
     </div>
 
@@ -8905,14 +9043,14 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     if (whiteTimeLeft <= 0) {
                         whiteTimeLeft = 0;
                         stopTimer();
-                        showGameOver('Black wins on time!');
+                        showGameOver('Black', 'Black wins on time!');
                     }
                 } else {
                     blackTimeLeft--;
                     if (blackTimeLeft <= 0) {
                         blackTimeLeft = 0;
                         stopTimer();
-                        showGameOver('White wins on time!');
+                        showGameOver('White', 'White wins on time!');
                     }
                 }
                 
@@ -13336,6 +13474,55 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             }
         }
         
+        // Keyboard System Toggle Functions
+        function togglePVPKeyboard() {
+            if (typeof window.keyboardNav === 'undefined' || window.keyboardNav === null) {
+                console.log('⚠️ PVP Keyboard system not initialized');
+                alert('PVP Keyboard system not available during this screen');
+                return;
+            }
+
+            const isEnabled = window.keyboardNav.enabled;
+            window.keyboardNav.enabled = !isEnabled;
+
+            const button = document.getElementById('kb-pvp-toggle');
+            if (button) {
+                if (window.keyboardNav.enabled) {
+                    button.style.backgroundColor = '#26de81';
+                    button.innerHTML = '✓ PVP KEYBOARD';
+                    console.log('✅ PVP Keyboard ENABLED');
+                } else {
+                    button.style.backgroundColor = '#888';
+                    button.innerHTML = '○ PVP KEYBOARD';
+                    console.log('❌ PVP Keyboard DISABLED');
+                }
+            }
+        }
+
+        function toggleGeneralNavigation() {
+            if (typeof window.generalNav === 'undefined' || window.generalNav === null) {
+                console.log('⚠️ General Navigation system not initialized');
+                alert('General Navigation system not available during this screen');
+                return;
+            }
+
+            const isEnabled = window.generalNav.enabled;
+            window.generalNav.enabled = !isEnabled;
+
+            const button = document.getElementById('kb-general-toggle');
+            if (button) {
+                if (window.generalNav.enabled) {
+                    button.style.backgroundColor = '#26de81';
+                    button.innerHTML = '✓ GENERAL NAVIGATION';
+                    console.log('✅ General Navigation ENABLED');
+                } else {
+                    button.style.backgroundColor = '#888';
+                    button.innerHTML = '○ GENERAL NAVIGATION';
+                    console.log('❌ General Navigation DISABLED');
+                }
+            }
+        }
+        
         // Function to display all possible moves for all pieces
         function displayAllPossibleMoves() {
             // Clear any existing highlights first
@@ -13347,6 +13534,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 : document.querySelectorAll('.white-piece, .white-triangle, .white-rhombus, .white-circle, .white-hexgon');
             
             console.log(`👁️ Displaying all moves for ${pieces.length} ${currentPlayer} pieces`);
+            
             
             pieces.forEach(piece => {
                 const pieceHex = piece.closest('.hexagon');
@@ -13527,23 +13715,9 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
             // Create left button (Main Menu)
             const menuButton = document.createElement('button');
-            menuButton.innerHTML = '🏠 MENU';
-            menuButton.style.cssText = `
-                background-image: url('ASSETS/menuButton.png');
-                background-size: cover;
-                background-position: center;
-                background-repeat: no-repeat;
-                color: white;
-                border: none;
-                padding: 6px 12px;
-                border-radius: 8px;
-                cursor: pointer;
-                font-weight: bold;
-                font-size: 9px;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-                transition: all 0.2s ease;
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
-            `;
+            menuButton.innerHTML = '<span class="game-menu-button-emoji">🏠</span><span class="game-menu-button-label">Main<br>Menu</span>';
+            menuButton.className = 'game-menu-button';
+            menuButton.title = '';
             menuButton.onclick = function() {
                 gameInProgress = true;
                 showStartMenu();
@@ -13556,23 +13730,9 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             if (llmMode) {
                 aiModelButton = document.createElement('button');
                 aiModelButton.id = 'ai-model-selector-btn';
-                aiModelButton.innerHTML = '🧠 AI';
-                aiModelButton.style.cssText = `
-                    background-image: url('ASSETS/menuButton.png');
-                    background-size: cover;
-                    background-position: center;
-                    background-repeat: no-repeat;
-                    color: white;
-                    border: none;
-                    padding: 6px 12px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-weight: bold;
-                    font-size: 9px;
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-                    transition: all 0.2s ease;
-                    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
-                `;
+                aiModelButton.innerHTML = '<span class="game-menu-button-emoji">🧠</span><span class="game-menu-button-label">AI<br>Model</span>';
+                aiModelButton.className = 'game-menu-button';
+                aiModelButton.title = '';
                 aiModelButton.onclick = showAIModelSelector;
                 aiModelButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
                 aiModelButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
@@ -13580,47 +13740,18 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
             // Create coordinate toggle button
             const coordButton = document.createElement('button');
-            coordButton.innerHTML = '📍 COORDS';
-            coordButton.style.cssText = `
-                background-image: url('ASSETS/menuButton.png');
-                background-size: cover;
-                background-position: center;
-                background-repeat: no-repeat;
-                color: white;
-                border: none;
-                padding: 4px 10px;
-                border-radius: 8px;
-                cursor: pointer;
-                font-weight: bold;
-                font-size: 9px;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-                transition: all 0.2s ease;
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
-            `;
+            coordButton.innerHTML = '<span class="game-menu-button-emoji">📍</span><span class="game-menu-button-label">Show<br>Coords</span>';
+            coordButton.className = 'game-menu-button';
+            coordButton.title = '';
             coordButton.onclick = toggleCoordinates;
             coordButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             coordButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
 
             // Create defense toggle button
             const defenseButton = document.createElement('button');
-            defenseButton.innerHTML = '🛡️ DEFENSE';
-            defenseButton.style.cssText = `
-                background-image: url('ASSETS/menuButton.png');
-                background-size: cover;
-                background-position: center;
-                background-repeat: no-repeat;
-                color: white;
-                border: none;
-                padding: 4px 10px;
-                border-radius: 8px;
-                cursor: pointer;
-                font-weight: bold;
-                font-size: 9px;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-                transition: all 0.2s ease;
-                margin-left: 5px;
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
-            `;
+            defenseButton.innerHTML = '<span class="game-menu-button-emoji">🛡️</span><span class="game-menu-button-label">Show<br>Defense</span>';
+            defenseButton.className = 'game-menu-button';
+            defenseButton.title = '';
             let defenseHighlightEnabled = false;
             defenseButton.onclick = function() {
                 defenseHighlightEnabled = !defenseHighlightEnabled;
@@ -13636,27 +13767,12 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
             // Create Fog of War toggle button
             const fogButton = document.createElement('button');
-            fogButton.innerHTML = fogOfWarEnabled ? '👁️ FOG ON' : '👁️ FOG OFF';
-            fogButton.style.cssText = `
-                background-image: url('ASSETS/menuButton.png');
-                background-size: cover;
-                background-position: center;
-                background-repeat: no-repeat;
-                color: white;
-                border: none;
-                padding: 4px 10px;
-                border-radius: 8px;
-                cursor: pointer;
-                font-weight: bold;
-                font-size: 9px;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-                transition: all 0.2s ease;
-                margin-left: 5px;
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
-            `;
+            fogButton.innerHTML = fogOfWarEnabled ? '<span class="game-menu-button-emoji">👁️</span><span class="game-menu-button-label">Fog<br>War</span>' : '<span class="game-menu-button-emoji">👁️</span><span class="game-menu-button-label">Fog<br>War</span>';
+            fogButton.className = 'game-menu-button';
+            fogButton.title = '';
             fogButton.onclick = function() {
                 fogOfWarEnabled = !fogOfWarEnabled;
-                this.innerHTML = fogOfWarEnabled ? '👁️ FOG ON' : '👁️ FOG OFF';
+                this.innerHTML = '<span class="game-menu-button-emoji">👁️</span><span class="game-menu-button-label">Fog<br>War</span>';
                 updateFogOfWar();
                 console.log('🌫️ Fog of War:', fogOfWarEnabled ? 'ENABLED' : 'DISABLED');
             };
@@ -13958,72 +14074,32 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
             // Create right button (Help)
             const helpButton = document.createElement('button');
-            helpButton.innerHTML = '❓ HELP';
-            helpButton.style.cssText = `
-                background-image: url('ASSETS/menuButton.png');
-                background-size: cover;
-                background-position: center;
-                background-repeat: no-repeat;
-                color: white;
-                border: none;
-                padding: 8px 14px;
-                border-radius: 8px;
-                cursor: pointer;
-                font-weight: bold;
-                font-size: 10px;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-                transition: all 0.2s ease;
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
-            `;
+            helpButton.innerHTML = '<span class="game-menu-button-emoji">❓</span><span class="game-menu-button-label">Game<br>Help</span>';
+            helpButton.className = 'game-menu-button';
+            helpButton.title = '';
             helpButton.onclick = showHelp;
             helpButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             helpButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
 
-            // Append all elements
-            turnIndicator.appendChild(menuButton);
-            if (aiModelButton) {
-                turnIndicator.appendChild(aiModelButton);
-            }
-            turnIndicator.appendChild(coordButton);
-            turnIndicator.appendChild(defenseButton);
-            turnIndicator.appendChild(fogButton);
-            
-            // Create music toggle button (wooden board style)
+            // Create music toggle button
             const musicButton = document.createElement('button');
             const updateMusicButtonDisplayLocal = () => {
                 const isMusicOn = gameSettings.music && currentMusicTrack > 0;
-                musicButton.innerHTML = isMusicOn ? '🔊 MUSIC' : '🔇 MUSIC';
+                musicButton.innerHTML = isMusicOn ? '<span class="game-menu-button-emoji">🔊</span><span class="game-menu-button-label">Music<br>On</span>' : '<span class="game-menu-button-emoji">🔇</span><span class="game-menu-button-label">Music<br>Off</span>';
             };
-            updateMusicButtonDisplayLocal(); // Initial display
-            musicButton.style.cssText = `
-                background-image: url('ASSETS/menuButton.png');
-                background-size: cover;
-                background-position: center;
-                background-repeat: no-repeat;
-                color: white;
-                border: none;
-                padding: 4px 10px;
-                border-radius: 8px;
-                cursor: pointer;
-                font-weight: bold;
-                font-size: 9px;
-                transition: all 0.2s ease;
-                margin-left: 5px;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
-            `;
+            updateMusicButtonDisplayLocal();
+            musicButton.className = 'game-menu-button';
+            musicButton.title = '';
             musicButton.onclick = function() {
                 if (gameSettings.music && currentMusicTrack > 0) {
-                    // Music is on, turn it off
                     stopBackgroundMusic();
                     gameSettings.music = false;
                 } else {
-                    // Music is off, turn it on
                     gameSettings.music = true;
                     if (gameSettings.currentMusicTrack > 0) {
                         playBackgroundMusic(gameSettings.currentMusicTrack);
                     } else {
-                        playBackgroundMusic(1); // Start with track 1
+                        playBackgroundMusic(1);
                     }
                 }
                 updateMusicButtonDisplayLocal();
@@ -14031,62 +14107,27 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             };
             musicButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             musicButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
-            
-            turnIndicator.appendChild(musicButton);
-            
-            turnIndicator.appendChild(turnDisplay);
+
             // Create undo button
             const undoButton = document.createElement('button');
-            undoButton.innerHTML = '↩️ UNDO';
-            undoButton.style.cssText = `
-                background-image: url('ASSETS/menuButton.png');
-                background-size: cover;
-                background-position: center;
-                background-repeat: no-repeat;
-                color: white;
-                border: none;
-                padding: 6px 12px;
-                border-radius: 8px;
-                cursor: pointer;
-                font-weight: bold;
-                font-size: 9px;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-                transition: all 0.2s ease;
-                margin-left: 6px;
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
-            `;
+            undoButton.innerHTML = '<span class="game-menu-button-emoji">↩️</span><span class="game-menu-button-label">Undo<br>Move</span>';
+            undoButton.className = 'game-menu-button';
+            undoButton.title = '';
             undoButton.onclick = undoLastMove;
             undoButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             undoButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
 
             // Create keyboard help toggle button
             const kbHelpButton = document.createElement('button');
-            kbHelpButton.innerHTML = '⌨️ HELP';
-            kbHelpButton.title = 'Toggle keyboard controls help';
-            kbHelpButton.style.cssText = `
-                background-image: url('ASSETS/menuButton.png');
-                background-size: cover;
-                background-position: center;
-                background-repeat: no-repeat;
-                color: white;
-                border: none;
-                padding: 6px 12px;
-                border-radius: 8px;
-                cursor: pointer;
-                font-weight: bold;
-                font-size: 9px;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-                transition: all 0.2s ease;
-                margin-left: 6px;
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
-            `;
+            kbHelpButton.innerHTML = '<span class="game-menu-button-emoji">⌨️</span><span class="game-menu-button-label">Keys<br>Help</span>';
+            kbHelpButton.className = 'game-menu-button';
+            kbHelpButton.title = '';
             kbHelpButton.onclick = function() {
                 const panel = document.getElementById('kb-info-panel');
-                if (panel.style.display === 'none') {
+                if (panel && panel.style.display === 'none') {
                     panel.style.display = 'block';
-                    // Update button states when panel opens
                     updateKeyboardToggleButtons();
-                } else {
+                } else if (panel) {
                     panel.style.display = 'none';
                 }
             };
@@ -14096,31 +14137,13 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             // Create toggle last move highlight button
             const toggleLastMoveButton = document.createElement('button');
             const isLastMoveVisible = typeof gameSettings !== 'undefined' ? gameSettings.showLastMove : true;
-            toggleLastMoveButton.innerHTML = isLastMoveVisible ? '👁️ HIDE' : '👁️ SHOW';
-            toggleLastMoveButton.title = 'Toggle last move highlight';
-            toggleLastMoveButton.style.cssText = `
-                background-image: url('ASSETS/menuButton.png');
-                background-size: cover;
-                background-position: center;
-                background-repeat: no-repeat;
-                color: white;
-                border: none;
-                padding: 8px 14px;
-                border-radius: 8px;
-                cursor: pointer;
-                font-weight: bold;
-                font-size: 10px;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-                transition: all 0.2s ease;
-                margin-left: 6px;
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
-            `;
+            toggleLastMoveButton.innerHTML = '<span class="game-menu-button-emoji">👁️</span><span class="game-menu-button-label">Last<br>Move</span>';
+            toggleLastMoveButton.title = '';
+            toggleLastMoveButton.className = 'game-menu-button';
             toggleLastMoveButton.onclick = function() {
                 if (typeof gameSettings !== 'undefined') {
                     gameSettings.showLastMove = !gameSettings.showLastMove;
-                    this.innerHTML = gameSettings.showLastMove ? '👁️ HIDE' : '👁️ SHOW';
                     
-                    // Update the highlight display
                     if (gameSettings.showLastMove) {
                         highlightLastMove(lastMoveFrom, lastMoveTo);
                     } else {
@@ -14131,205 +14154,153 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             toggleLastMoveButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             toggleLastMoveButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
 
-            // Create "Show All Moves" button
+            // Create show all moves button
             const showAllMovesButton = document.createElement('button');
+            showAllMovesButton.className = 'game-menu-button';
             showAllMovesButton.id = 'show-all-moves-button';
-            showAllMovesButton.innerHTML = showAllMoves ? '👁️ HIDE ALL' : '👁️ SHOW ALL';
-            showAllMovesButton.title = 'Show all possible moves for all pieces (including rotations)';
-            showAllMovesButton.style.cssText = `
-                background-image: url('ASSETS/menuButton.png');
-                background-size: cover;
-                background-position: center;
-                background-repeat: no-repeat;
-                color: white;
-                border: none;
-                padding: 8px 14px;
-                border-radius: 8px;
-                cursor: pointer;
-                font-weight: bold;
-                font-size: 10px;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-                transition: all 0.2s ease;
-                margin-left: 6px;
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
-            `;
+            showAllMovesButton.innerHTML = '<span class="game-menu-button-emoji">👁️</span><span class="game-menu-button-label">All<br>Moves</span>';
+            showAllMovesButton.title = '';
             showAllMovesButton.onclick = toggleShowAllMoves;
             showAllMovesButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             showAllMovesButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
 
-            // Create board flip button (manual override for auto-flip)
+            // Create board flip button
             const flipButton = document.createElement('button');
             flipButton.id = 'flip-button';
-            flipButton.innerHTML = boardFlipped ? '🔄 NORMAL' : '🔄 FLIP';
-            flipButton.title = 'Manually flip board orientation (overrides auto-flip)';
-            flipButton.style.cssText = `
-                background-image: url('ASSETS/menuButton.png');
-                background-size: cover;
-                background-position: center;
-                background-repeat: no-repeat;
-                color: white;
-                border: none;
-                padding: 8px 14px;
-                border-radius: 8px;
-                cursor: pointer;
-                font-weight: bold;
-                font-size: 10px;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-                transition: all 0.2s ease;
-                margin-left: 6px;
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
-            `;
+            flipButton.innerHTML = '<span class="game-menu-button-emoji">🔄</span><span class="game-menu-button-label">Flip<br>Board</span>';
+            flipButton.title = '';
+            flipButton.className = 'game-menu-button';
             flipButton.onclick = function() {
                 toggleBoardFlip();
-                this.innerHTML = boardFlipped ? '🔄 NORMAL' : '🔄 FLIP';
             };
             flipButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             flipButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
 
-            turnIndicator.appendChild(flipButton); // Always show flip button (for both players)
-            turnIndicator.appendChild(helpButton);
-            turnIndicator.appendChild(showAllMovesButton); // Add show all moves button
-            turnIndicator.appendChild(toggleLastMoveButton);
-            turnIndicator.appendChild(undoButton);
-            turnIndicator.appendChild(kbHelpButton);
-            
-            // ============================================
-            // RPN SYSTEM BUTTONS
-            // ============================================
-            
-            // Copy Position button
+            // Create copy position button (RPN)
             const copyPositionBtn = document.createElement('button');
-            copyPositionBtn.innerHTML = '📋';
-            copyPositionBtn.title = 'Copy position to clipboard (RPN)';
-            copyPositionBtn.style.cssText = `
-                background: #4ecdc4;
-                color: white;
-                border: none;
-                padding: 8px 12px;
-                border-radius: 6px;
-                cursor: pointer;
-                font-weight: 600;
-                font-size: 1em;
-                box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
-                transition: all 0.3s ease;
-                margin-left: 6px;
-            `;
+            copyPositionBtn.innerHTML = '<span class="game-menu-button-emoji">📋</span><span class="game-menu-button-label">Copy<br>Pos</span>';
+            copyPositionBtn.title = '';
+            copyPositionBtn.className = 'game-menu-button';
             copyPositionBtn.onclick = copyPositionToClipboard;
             copyPositionBtn.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             copyPositionBtn.onmouseout = function() { this.style.transform = 'scale(1)'; };
-            
-            // Load Position button
+
+            // Create load position button (RPN)
             const loadPositionBtn = document.createElement('button');
-            loadPositionBtn.innerHTML = '📥';
-            loadPositionBtn.title = 'Load position from RPN notation';
-            loadPositionBtn.style.cssText = `
-                background: #a55eea;
-                color: white;
-                border: none;
-                padding: 8px 12px;
-                border-radius: 6px;
-                cursor: pointer;
-                font-weight: 600;
-                font-size: 1em;
-                box-shadow: 0 2px 8px rgba(165, 94, 234, 0.3);
-                transition: all 0.3s ease;
-                margin-left: 6px;
-            `;
+            loadPositionBtn.innerHTML = '<span class="game-menu-button-emoji">📥</span><span class="game-menu-button-label">Load<br>Pos</span>';
+            loadPositionBtn.title = '';
+            loadPositionBtn.className = 'game-menu-button';
             loadPositionBtn.onclick = openLoadPositionModal;
             loadPositionBtn.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             loadPositionBtn.onmouseout = function() { this.style.transform = 'scale(1)'; };
-            
-            // Export Game button
+
+            // Create export game button (RPN)
             const exportGameBtn = document.createElement('button');
-            exportGameBtn.innerHTML = '💾';
-            exportGameBtn.title = 'Download game in RMN format';
-            exportGameBtn.style.cssText = `
-                background: #ffd700;
-                color: #262421;
-                border: none;
-                padding: 8px 12px;
-                border-radius: 6px;
-                cursor: pointer;
-                font-weight: 600;
-                font-size: 1em;
-                box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
-                transition: all 0.3s ease;
-                margin-left: 6px;
-            `;
+            exportGameBtn.innerHTML = '<span class="game-menu-button-emoji">💾</span><span class="game-menu-button-label">Save<br>Game</span>';
+            exportGameBtn.title = '';
+            exportGameBtn.className = 'game-menu-button';
             exportGameBtn.onclick = downloadGameRMN;
             exportGameBtn.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             exportGameBtn.onmouseout = function() { this.style.transform = 'scale(1)'; };
-            
-            // Log RPN button (dev tool)
+
+            // Create log RPN button (dev tool)
             const logRPNBtn = document.createElement('button');
-            logRPNBtn.innerHTML = '🔍';
-            logRPNBtn.title = 'Log current RPN to console';
-            logRPNBtn.style.cssText = `
-                background: #555;
-                color: white;
-                border: none;
-                padding: 8px 12px;
-                border-radius: 6px;
-                cursor: pointer;
-                font-weight: 600;
-                font-size: 1em;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-                transition: all 0.3s ease;
-                margin-left: 6px;
-            `;
+            logRPNBtn.innerHTML = '<span class="game-menu-button-emoji">🔍</span><span class="game-menu-button-label">Log<br>RPN</span>';
+            logRPNBtn.title = '';
+            logRPNBtn.className = 'game-menu-button';
             logRPNBtn.onclick = logPositionRPN;
             logRPNBtn.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             logRPNBtn.onmouseout = function() { this.style.transform = 'scale(1)'; };
-            
-            // Dark Mode Toggle button
+
+            // Create dark mode button
             const darkModeBtn = document.createElement('button');
-            darkModeBtn.innerHTML = '🌙';
-            darkModeBtn.title = 'Toggle Dark/Light Mode';
-            darkModeBtn.style.cssText = `
-                background: #7f8c8d;
-                color: white;
-                border: none;
-                padding: 8px 12px;
-                border-radius: 6px;
-                cursor: pointer;
-                font-weight: 600;
-                font-size: 1em;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-                transition: all 0.3s ease;
-                margin-left: 6px;
-            `;
+            darkModeBtn.innerHTML = '<span class="game-menu-button-emoji">🌙</span><span class="game-menu-button-label">Dark<br>Mode</span>';
+            darkModeBtn.title = '';
+            darkModeBtn.className = 'game-menu-button';
             darkModeBtn.onclick = toggleDarkMode;
             darkModeBtn.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             darkModeBtn.onmouseout = function() { this.style.transform = 'scale(1)'; };
-            
-            // Wooden Theme Toggle button
+
+            // Create wooden theme button
             const woodenThemeBtn = document.createElement('button');
-            woodenThemeBtn.innerHTML = '🪵';
-            woodenThemeBtn.title = 'Toggle Wooden Board';
-            woodenThemeBtn.style.cssText = `
-                background: #8B4513;
-                color: white;
-                border: none;
-                padding: 8px 12px;
-                border-radius: 6px;
-                cursor: pointer;
-                font-weight: 600;
-                font-size: 1em;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-                transition: all 0.3s ease;
-                margin-left: 6px;
-            `;
+            woodenThemeBtn.innerHTML = '<span class="game-menu-button-emoji">🪵</span><span class="game-menu-button-label">Wooden<br>Board</span>';
+            woodenThemeBtn.title = '';
+            woodenThemeBtn.className = 'game-menu-button';
             woodenThemeBtn.onclick = toggleWoodenTheme;
             woodenThemeBtn.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             woodenThemeBtn.onmouseout = function() { this.style.transform = 'scale(1)'; };
+
+            // Create toggle panel button
+            const togglePanelBtn = document.createElement('button');
+            togglePanelBtn.id = 'toggle-panel-btn';
+            togglePanelBtn.innerHTML = '≡';
+            togglePanelBtn.title = 'Toggle side menu panel';
+            togglePanelBtn.className = 'game-menu-button';
+            togglePanelBtn.style.cssText = `
+                padding: 6px 12px !important;
+                font-size: 16px !important;
+                min-width: 45px !important;
+            `;
             
-            // Append RPN buttons
-            turnIndicator.appendChild(copyPositionBtn);
-            turnIndicator.appendChild(loadPositionBtn);
-            turnIndicator.appendChild(exportGameBtn);
-            turnIndicator.appendChild(logRPNBtn);
-            turnIndicator.appendChild(darkModeBtn);
-            turnIndicator.appendChild(woodenThemeBtn);
+            // Create side panel for all other buttons
+            let gameButtonsPanel = document.getElementById('game-buttons-panel');
+            if (gameButtonsPanel) {
+                gameButtonsPanel.remove();
+            }
+            
+            gameButtonsPanel = document.createElement('div');
+            gameButtonsPanel.id = 'game-buttons-panel';
+            gameButtonsPanel.classList.add('hidden'); // Start hidden
+            
+            // Add all buttons to the side panel
+            gameButtonsPanel.appendChild(menuButton);
+            if (aiModelButton) {
+                gameButtonsPanel.appendChild(aiModelButton);
+            }
+            gameButtonsPanel.appendChild(coordButton);
+            gameButtonsPanel.appendChild(defenseButton);
+            gameButtonsPanel.appendChild(fogButton);
+            gameButtonsPanel.appendChild(musicButton);
+            gameButtonsPanel.appendChild(undoButton);
+            gameButtonsPanel.appendChild(kbHelpButton);
+            gameButtonsPanel.appendChild(toggleLastMoveButton);
+            gameButtonsPanel.appendChild(showAllMovesButton);
+            gameButtonsPanel.appendChild(flipButton);
+            gameButtonsPanel.appendChild(helpButton);
+            
+            // Add RPN buttons to panel
+            gameButtonsPanel.appendChild(copyPositionBtn);
+            gameButtonsPanel.appendChild(loadPositionBtn);
+            gameButtonsPanel.appendChild(exportGameBtn);
+            gameButtonsPanel.appendChild(logRPNBtn);
+            gameButtonsPanel.appendChild(darkModeBtn);
+            gameButtonsPanel.appendChild(woodenThemeBtn);
+            
+            // Toggle panel functionality
+            togglePanelBtn.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                gameButtonsPanel.classList.toggle('hidden');
+                // Change button appearance to show state
+                if (gameButtonsPanel.classList.contains('hidden')) {
+                    togglePanelBtn.style.backgroundColor = '#2c3e50';
+                } else {
+                    togglePanelBtn.style.backgroundColor = '#34495e';
+                }
+                console.log('Panel visible:', !gameButtonsPanel.classList.contains('hidden'));
+                console.log('Panel computed style:', window.getComputedStyle(gameButtonsPanel).transform);
+            };
+            togglePanelBtn.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
+            togglePanelBtn.onmouseout = function() { this.style.transform = 'scale(1)'; };
+            
+            // Add only turn display and toggle button to top
+            turnIndicator.appendChild(togglePanelBtn);
+            turnIndicator.appendChild(turnDisplay);
+            
+            // Append panel and turn indicator to document
+            document.body.appendChild(gameButtonsPanel);
+
+
             
             // ============================================
             // END RPN BUTTONS
@@ -14414,17 +14385,23 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
         // Function to check win conditions
         function checkWinConditions(row, col, piece) {
+            console.log('🎯 checkWinConditions called - Row:', row, 'Col:', col, 'Piece classes:', piece.className);
+            
             // Check if it's a rhombus piece
             if (piece.classList.contains('rhombus-piece')) {
                 const isWhite = piece.classList.contains('white-rhombus');
+                console.log('✅ Rhombus piece detected - IsWhite:', isWhite);
                 
                 // Check if we're in "Escape Race" mode (only rhombuses remain)
                 const isEscapeRaceMode = checkEscapeRaceMode();
+                console.log('🏃 Escape Race Mode:', isEscapeRaceMode);
                 
                 // Black rhombus reaches 3-0 (row 3, col 0) - Black wins
                 if (!isWhite && row == 3 && col == 0) {
+                    console.log('🏴 BLACK RHOMBUS REACHED GOAL!');
                     if (isEscapeRaceMode) {
                         // Escape Race mode - Base Defence disabled, instant win!
+                        console.log('🎉 Calling showGameOver - Black Escape Race Win');
                         showGameOver('Black', '⚔️ ESCAPE RACE! Black rhombus reached the goal first!');
                         return;
                     }
@@ -14433,14 +14410,18 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     const activeDefences = isBaseDefenceActive();
                     if (activeDefences.includes('white')) {
                         // White base defence is active, black cannot win
+                        console.log('🛡️ White base defence active, blocking black win');
                         return;
                     }
+                    console.log('🎉 Calling showGameOver - Black Normal Win');
                     showGameOver('Black', 'Black rhombus reached the goal!');
                 }
                 // White rhombus reaches 3-8 (row 3, col 8) - White wins
                 else if (isWhite && row == 3 && col == 8) {
+                    console.log('⚪ WHITE RHOMBUS REACHED GOAL!');
                     if (isEscapeRaceMode) {
                         // Escape Race mode - Base Defence disabled, instant win!
+                        console.log('🎉 Calling showGameOver - White Escape Race Win');
                         showGameOver('White', '⚔️ ESCAPE RACE! White rhombus reached the goal first!');
                         return;
                     }
@@ -14449,8 +14430,10 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     const activeDefences = isBaseDefenceActive();
                     if (activeDefences.includes('black')) {
                         // Black base defence is active, white cannot win
+                        console.log('🛡️ Black base defence active, blocking white win');
                         return;
                     }
+                    console.log('🎉 Calling showGameOver - White Normal Win');
                     showGameOver('White', 'White rhombus reached the goal!');
                 }
             }
@@ -15283,8 +15266,106 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
         // Function to show game over screen
         function showGameOver(winner, reason) {
+            console.log('🏁 GAME OVER SCREEN TRIGGERED!');
+            console.log('Winner:', winner, 'Reason:', reason);
+            
             gameOver = true; // Set game over flag
             gameInProgress = false; // Game is no longer in progress
+            
+            // Get current user FIRST before any checks
+            const currentUser = JSON.parse(localStorage.getItem('romgon-user') || '{}');
+            console.log('🔍 Current User from localStorage:', currentUser);
+            console.log('🔍 User username:', currentUser.username);
+            console.log('🔍 User type:', currentUser.type);
+            
+            // Initialize user stats if not present
+            if (!currentUser.stats) {
+                currentUser.stats = {
+                    wins: 0,
+                    losses: 0,
+                    totalGames: 0,
+                    totalMoves: 0,
+                    totalCaptures: 0
+                };
+                console.log('🔧 Initialized stats object');
+            }
+            
+            if (!currentUser.gameHistory) {
+                currentUser.gameHistory = [];
+                console.log('🔧 Initialized gameHistory array');
+            }
+            
+            // Determine if current player won or lost
+            const playerIsWhite = true; // Assuming single player is always white in AI mode
+            const playerWon = (winner.toLowerCase() === 'white' && playerIsWhite) || 
+                             (winner.toLowerCase() === 'black' && !playerIsWhite);
+            
+            // Calculate move count and captures
+            const moveCount = moveHistory ? moveHistory.length : 0;
+            const captureCount = 0; // You may need to track this during gameplay
+            
+            // Record the game
+            const gameRecord = {
+                date: new Date().toISOString(),
+                opponent: 'AI',
+                result: playerWon ? 'win' : 'loss',
+                winner: winner,
+                reason: reason,
+                moves: moveCount,
+                captures: captureCount
+            };
+            
+            // Update stats in currentUser object (for BOTH guest and logged-in users)
+            currentUser.stats.totalGames += 1;
+            currentUser.stats.totalMoves += moveCount;
+            currentUser.stats.totalCaptures += captureCount;
+            
+            if (playerWon) {
+                currentUser.stats.wins += 1;
+                console.log('🎉 WIN recorded - Total wins:', currentUser.stats.wins);
+            } else {
+                currentUser.stats.losses += 1;
+                console.log('😢 LOSS recorded - Total losses:', currentUser.stats.losses);
+            }
+            
+            // Add to game history
+            currentUser.gameHistory.push(gameRecord);
+            
+            // Save updated currentUser back to localStorage
+            localStorage.setItem('romgon-user', JSON.stringify(currentUser));
+            
+            // If user is logged in (not guest), also update romgon-users database
+            if (currentUser.username && currentUser.type !== 'guest') {
+                console.log('📊 Logged-in user detected, syncing to user database...');
+                
+                // Also update romgon-users database
+                let allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+                if (!allUsers[currentUser.username]) {
+                    allUsers[currentUser.username] = {
+                        username: currentUser.username,
+                        games: [],
+                        stats: {
+                            wins: 0,
+                            losses: 0,
+                            totalGames: 0,
+                            totalMoves: 0,
+                            totalCaptures: 0
+                        }
+                    };
+                }
+                
+                // Sync the stats
+                allUsers[currentUser.username].games = currentUser.gameHistory;
+                allUsers[currentUser.username].stats = currentUser.stats;
+                localStorage.setItem('romgon-users', JSON.stringify(allUsers));
+                
+                console.log('✅ Game result synced to user database');
+            } else {
+                console.log('👤 Guest user - stats saved locally only');
+            }
+            
+            console.log('✅ Game result saved:', gameRecord);
+            console.log('📊 Updated user stats:', currentUser.stats);
             
             // Notify keyboard systems that game has ended
             const gameEndEvent = new CustomEvent('gameEnded', {
@@ -15315,38 +15396,50 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             // Create game over overlay
             const gameOverOverlay = document.createElement('div');
             gameOverOverlay.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(0, 0, 0, 0.8);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                z-index: 1000;
-                font-family: sans-serif;
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                background-color: rgba(0, 0, 0, 0.8) !important;
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                z-index: 99999 !important;
+                font-family: sans-serif !important;
+                pointer-events: auto !important;
+                visibility: visible !important;
+                opacity: 1 !important;
             `;
             
             const gameOverContent = document.createElement('div');
             gameOverContent.style.cssText = `
-                background-color: #2a2a2a;
-                padding: 40px;
-                border-radius: 15px;
-                border: 3px solid #444;
-                text-align: center;
-                color: white;
-                max-width: 400px;
+                background-color: #2a2a2a !important;
+                padding: 40px !important;
+                border-radius: 15px !important;
+                border: 3px solid #444 !important;
+                text-align: center !important;
+                color: white !important;
+                max-width: 400px !important;
+                position: relative !important;
+                z-index: 100000 !important;
+                pointer-events: auto !important;
             `;
+            
+            // Check if user is logged in to show stats saved message
+            const userStatsMessage = currentUser.username && currentUser.type !== 'guest' 
+                ? '<p style="margin: 15px 0 0 0; font-size: 0.9em; color: #4ecdc4;">✅ Game result saved to your user hub!</p>'
+                : '';
             
             gameOverContent.innerHTML = `
                 <h1 style="color: #ff6b6b; margin: 0 0 20px 0; font-size: 2.5em;">GAME OVER</h1>
                 <h2 style="color: #4ecdc4; margin: 0 0 20px 0; font-size: 1.8em;">${winner} WINS!</h2>
                 <p style="margin: 0 0 30px 0; font-size: 1.2em;">${reason}</p>
+                ${userStatsMessage}
                 <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
-                    <div style="display: flex; gap: 15px; justify-content: center;">
-                        <button onclick="backToGameFromGameOver()" style="
-                            background-color: #3498db;
+                    <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                        <button onclick="showUserAccountHub()" style="
+                            background-color: #27ae60;
                             color: white;
                             border: none;
                             padding: 15px 30px;
@@ -15354,7 +15447,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                             border-radius: 8px;
                             cursor: pointer;
                             font-weight: bold;
-                        ">🎮 Back to Game</button>
+                        ">👤 User Hub</button>
                         <button onclick="analyzeGameFromGameOver()" style="
                             background-color: #9b59b6;
                             color: white;
@@ -15364,9 +15457,9 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                             border-radius: 8px;
                             cursor: pointer;
                             font-weight: bold;
-                        ">📊 Analyze Game</button>
+                        ">📊 Analyze</button>
                     </div>
-                    <div style="display: flex; gap: 15px; justify-content: center;">
+                    <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
                         <button onclick="copyRPNFromGameOver()" style="
                             background-color: #16a085;
                             color: white;
@@ -15388,7 +15481,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                             font-weight: bold;
                         ">💾 Save Game</button>
                     </div>
-                    <div style="display: flex; gap: 15px; justify-content: center;">
+                    <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
                         <button onclick="location.reload()" style="
                             background-color: #4ecdc4;
                             color: white;
@@ -15398,7 +15491,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                             border-radius: 8px;
                             cursor: pointer;
                             font-weight: bold;
-                        ">Play Again</button>
+                        ">▶️ Play Again</button>
                         <button onclick="showStartMenu()" style="
                             background-color: #ff6b6b;
                             color: white;
@@ -15408,13 +15501,62 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                             border-radius: 8px;
                             cursor: pointer;
                             font-weight: bold;
-                        ">Main Menu</button>
+                        ">🏠 Main Menu</button>
                     </div>
                 </div>
             `;
             
             gameOverOverlay.appendChild(gameOverContent);
+            console.log('✅ Overlay content appended');
+            console.log('📦 gameOverOverlay element:', gameOverOverlay);
+            console.log('📦 gameOverOverlay styles:', gameOverOverlay.style.cssText);
+            
+            // Force it to show immediately with important flags
+            gameOverOverlay.id = 'game-over-overlay';
+            
+            console.log('🏁 ABOUT TO APPEND GAME OVER SCREEN');
+            
+            // Remove any existing game over overlays to avoid conflicts
+            const existingOverlays = document.querySelectorAll('[id="game-over-overlay"]');
+            console.log('🔍 Found', existingOverlays.length, 'existing overlays - removing them');
+            existingOverlays.forEach(overlay => overlay.remove());
+            
+            // Append to document.body
             document.body.appendChild(gameOverOverlay);
+            console.log('✅ Overlay appended to document.body');
+            console.log('📦 Checking if overlay in DOM:', document.body.contains(gameOverOverlay));
+            console.log('📦 GAME OVER SCREEN IS NOW VISIBLE - Check your browser!');
+            
+            // Force it to be visible immediately
+            gameOverOverlay.style.display = 'flex';
+            gameOverOverlay.style.visibility = 'visible';
+            gameOverOverlay.style.opacity = '1';
+            gameOverOverlay.style.pointerEvents = 'auto';
+            
+            // Double-check after a tiny delay
+            setTimeout(() => {
+                gameOverOverlay.style.display = 'flex';
+                gameOverOverlay.style.visibility = 'visible';
+                gameOverOverlay.style.opacity = '1';
+            }, 10);
+            
+            // Ensure it's visible by checking computed styles
+            setTimeout(() => {
+                const overlay = document.getElementById('game-over-overlay');
+                if (overlay) {
+                    const computed = window.getComputedStyle(overlay);
+                    console.log('⏱️ Computed styles after append:');
+                    console.log('   Position:', computed.position);
+                    console.log('   Display:', computed.display);
+                    console.log('   Z-Index:', computed.zIndex);
+                    console.log('   Visibility:', computed.visibility);
+                    console.log('   Opacity:', computed.opacity);
+                    console.log('   PointerEvents:', computed.pointerEvents);
+                    console.log('🎯 OVERLAY SHOULD BE VISIBLE NOW');
+                } else {
+                    console.error('❌ Game over overlay not found in DOM!');
+                }
+            }, 100);
         }
 
         // Function to go back to game from game over screen (spectate mode)
@@ -15429,6 +15571,309 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             // User can now view the board, copy RPN, or take screenshots
             console.log('✅ Game board visible. You can now spectate the final position.');
             console.log('💾 To save RPN, open console and type: exportPositionRPN()');
+        }
+
+        // Function to show user account hub with updated stats
+        function showUserAccountHub() {
+            console.log('👤 Opening User Hub...');
+            
+            // Get current user from localStorage
+            const currentUser = JSON.parse(localStorage.getItem('romgon-user') || '{}');
+            console.log('📋 Current user in Hub:', currentUser);
+            console.log('📋 User type:', currentUser.type);
+            console.log('📋 Username:', currentUser.username);
+            
+            // Check if user has any data at all
+            if (!currentUser.username && currentUser.type !== 'guest') {
+                console.log('❌ User not logged in - showing alert');
+                alert('❌ You must be logged in to view your User Hub.\n\nPlease login first and play another game.');
+                return;
+            }
+            
+            // Close the game over overlay
+            const gameOverOverlay = document.getElementById('game-over-overlay');
+            if (gameOverOverlay) {
+                console.log('🔍 Closing game over overlay');
+                gameOverOverlay.remove();
+            }
+            
+            // Create and display user hub modal
+            const userHubModal = document.createElement('div');
+            userHubModal.id = 'user-hub-modal';
+            userHubModal.style.cssText = `
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                background-color: rgba(0, 0, 0, 0.9) !important;
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                z-index: 99999 !important;
+                font-family: sans-serif !important;
+                pointer-events: auto !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            `;
+            
+            // Get user stats from current user object
+            const userStats = currentUser.stats || {
+                totalGames: 0,
+                wins: 0,
+                losses: 0,
+                totalMoves: 0,
+                totalCaptures: 0
+            };
+            
+            console.log('📊 User stats:', userStats);
+            
+            const winRate = userStats.totalGames > 0 
+                ? ((userStats.wins / userStats.totalGames) * 100).toFixed(1)
+                : 0;
+            
+            const gameHistory = currentUser.gameHistory || [];
+            const recentGames = gameHistory.slice(-5).reverse();
+            
+            console.log('🎮 Recent games count:', recentGames.length);
+            
+            // Determine title based on user type
+            const hubTitle = currentUser.type === 'guest' 
+                ? '👤 Guest Session Hub'
+                : `👤 ${currentUser.username}'s User Hub`;
+            
+            const userType = currentUser.type === 'guest' 
+                ? 'Guest'
+                : (currentUser.type || 'Player');
+            
+            userHubModal.innerHTML = `
+                <div style="
+                    background-color: #2a2a2a !important;
+                    border-radius: 12px !important;
+                    padding: 40px !important;
+                    max-width: 800px !important;
+                    width: 90% !important;
+                    max-height: 80vh !important;
+                    overflow-y: auto !important;
+                    box-shadow: 0 0 40px rgba(78, 205, 196, 0.3) !important;
+                    border: 2px solid #4ecdc4 !important;
+                    z-index: 100000 !important;
+                    position: relative !important;
+                    pointer-events: auto !important;
+                ">
+                    <h1 style="color: #4ecdc4 !important; margin: 0 0 10px 0 !important; text-align: center !important; font-size: 2em !important;">${hubTitle}</h1>
+                    <p style="color: #999 !important; text-align: center !important; margin: 0 0 30px 0 !important; font-size: 0.9em !important;">User Type: ${userType}</p>
+                    
+                    <div style="display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 20px !important; margin-bottom: 30px !important;">
+                        <div style="
+                            background-color: #1a1a1a !important;
+                            padding: 20px !important;
+                            border-radius: 8px !important;
+                            border-left: 4px solid #4ecdc4 !important;
+                        ">
+                            <div style="color: #999 !important; font-size: 0.9em !important; margin-bottom: 5px !important;">Total Games</div>
+                            <div style="color: #4ecdc4 !important; font-size: 2em !important; font-weight: bold !important;">${userStats.totalGames}</div>
+                        </div>
+                        
+                        <div style="
+                            background-color: #1a1a1a !important;
+                            padding: 20px !important;
+                            border-radius: 8px !important;
+                            border-left: 4px solid #27ae60 !important;
+                        ">
+                            <div style="color: #999 !important; font-size: 0.9em !important; margin-bottom: 5px !important;">Wins</div>
+                            <div style="color: #27ae60 !important; font-size: 2em !important; font-weight: bold !important;">${userStats.wins}</div>
+                        </div>
+                        
+                        <div style="
+                            background-color: #1a1a1a !important;
+                            padding: 20px !important;
+                            border-radius: 8px !important;
+                            border-left: 4px solid #e74c3c !important;
+                        ">
+                            <div style="color: #999 !important; font-size: 0.9em !important; margin-bottom: 5px !important;">Losses</div>
+                            <div style="color: #e74c3c !important; font-size: 2em !important; font-weight: bold !important;">${userStats.losses}</div>
+                        </div>
+                        
+                        <div style="
+                            background-color: #1a1a1a !important;
+                            padding: 20px !important;
+                            border-radius: 8px !important;
+                            border-left: 4px solid #f39c12 !important;
+                        ">
+                            <div style="color: #999 !important; font-size: 0.9em !important; margin-bottom: 5px !important;">Win Rate</div>
+                            <div style="color: #f39c12 !important; font-size: 2em !important; font-weight: bold !important;">${winRate}%</div>
+                        </div>
+                    </div>
+                    
+                    ${recentGames.length > 0 ? `
+                        <div style="margin-bottom: 30px !important;">
+                            <h3 style="color: #4ecdc4 !important; margin: 0 0 15px 0 !important;">📜 Recent Games</h3>
+                            <div style="max-height: 300px !important; overflow-y: auto !important;">
+                                ${recentGames.map((game, idx) => `
+                                    <div style="
+                                        background-color: #1a1a1a !important;
+                                        padding: 12px !important;
+                                        margin-bottom: 8px !important;
+                                        border-radius: 6px !important;
+                                        border-left: 3px solid ${game.result === 'win' ? '#27ae60' : '#e74c3c'} !important;
+                                    ">
+                                        <div style="display: flex !important; justify-content: space-between !important; align-items: center !important;">
+                                            <div>
+                                                <div style="color: #4ecdc4 !important; font-weight: bold !important;">vs ${game.opponent || 'Unknown'}</div>
+                                                <div style="color: #999 !important; font-size: 0.85em !important;">
+                                                    ${new Date(game.date).toLocaleDateString()} - ${game.reason || 'Game'}
+                                                </div>
+                                            </div>
+                                            <div style="
+                                                color: ${game.result === 'win' ? '#27ae60' : '#e74c3c'} !important;
+                                                font-weight: bold !important;
+                                                padding: 5px 10px !important;
+                                                background-color: ${game.result === 'win' ? 'rgba(39, 174, 96, 0.2)' : 'rgba(231, 76, 60, 0.2)'} !important;
+                                                border-radius: 4px !important;
+                                            ">
+                                                ${game.result === 'win' ? '✅ WIN' : '❌ LOSS'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : '<p style="color: #999 !important; text-align: center !important;">No games played yet</p>'}
+                    
+                    <div style="display: flex !important; gap: 15px !important; justify-content: center !important; flex-wrap: wrap !important;">
+                        <button onclick="document.getElementById('user-hub-modal').remove(); location.reload();" style="
+                            background-color: #4ecdc4 !important;
+                            color: white !important;
+                            border: none !important;
+                            padding: 12px 25px !important;
+                            font-size: 1.1em !important;
+                            border-radius: 6px !important;
+                            cursor: pointer !important;
+                            font-weight: bold !important;
+                        ">▶️ Play Again</button>
+                        <button onclick="document.getElementById('user-hub-modal').remove(); showStartMenu();" style="
+                            background-color: #ff6b6b !important;
+                            color: white !important;
+                            border: none !important;
+                            padding: 12px 25px !important;
+                            font-size: 1.1em !important;
+                            border-radius: 6px !important;
+                            cursor: pointer !important;
+                            font-weight: bold !important;
+                        ">🏠 Main Menu</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(userHubModal);
+            console.log('✅ User Hub modal displayed');
+        }
+                    
+                    <div style="display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 20px !important; margin-bottom: 30px !important;">
+                        <div style="
+                            background-color: #1a1a1a !important;
+                            padding: 20px !important;
+                            border-radius: 8px !important;
+                            border-left: 4px solid #4ecdc4 !important;
+                        ">
+                            <div style="color: #999 !important; font-size: 0.9em !important; margin-bottom: 5px !important;">Total Games</div>
+                            <div style="color: #4ecdc4 !important; font-size: 2em !important; font-weight: bold !important;">${userStats.totalGames}</div>
+                        </div>
+                        
+                        <div style="
+                            background-color: #1a1a1a !important;
+                            padding: 20px !important;
+                            border-radius: 8px !important;
+                            border-left: 4px solid #27ae60 !important;
+                        ">
+                            <div style="color: #999 !important; font-size: 0.9em !important; margin-bottom: 5px !important;">Wins</div>
+                            <div style="color: #27ae60 !important; font-size: 2em !important; font-weight: bold !important;">${userStats.wins}</div>
+                        </div>
+                        
+                        <div style="
+                            background-color: #1a1a1a !important;
+                            padding: 20px !important;
+                            border-radius: 8px !important;
+                            border-left: 4px solid #e74c3c !important;
+                        ">
+                            <div style="color: #999 !important; font-size: 0.9em !important; margin-bottom: 5px !important;">Losses</div>
+                            <div style="color: #e74c3c !important; font-size: 2em !important; font-weight: bold !important;">${userStats.losses}</div>
+                        </div>
+                        
+                        <div style="
+                            background-color: #1a1a1a !important;
+                            padding: 20px !important;
+                            border-radius: 8px !important;
+                            border-left: 4px solid #f39c12 !important;
+                        ">
+                            <div style="color: #999 !important; font-size: 0.9em !important; margin-bottom: 5px !important;">Win Rate</div>
+                            <div style="color: #f39c12 !important; font-size: 2em !important; font-weight: bold !important;">${winRate}%</div>
+                        </div>
+                    </div>
+                    
+                    ${recentGames.length > 0 ? `
+                        <div style="margin-bottom: 30px !important;">
+                            <h3 style="color: #4ecdc4 !important; margin: 0 0 15px 0 !important;">📜 Recent Games</h3>
+                            <div style="max-height: 300px !important; overflow-y: auto !important;">
+                                ${recentGames.map((game, idx) => `
+                                    <div style="
+                                        background-color: #1a1a1a !important;
+                                        padding: 12px !important;
+                                        margin-bottom: 8px !important;
+                                        border-radius: 6px !important;
+                                        border-left: 3px solid ${game.result === 'win' ? '#27ae60' : '#e74c3c'} !important;
+                                    ">
+                                        <div style="display: flex !important; justify-content: space-between !important; align-items: center !important;">
+                                            <div>
+                                                <div style="color: #4ecdc4 !important; font-weight: bold !important;">vs ${game.opponent || 'Unknown'}</div>
+                                                <div style="color: #999 !important; font-size: 0.85em !important;">
+                                                    ${new Date(game.date).toLocaleDateString()} - ${game.reason || 'Game'}
+                                                </div>
+                                            </div>
+                                            <div style="
+                                                color: ${game.result === 'win' ? '#27ae60' : '#e74c3c'} !important;
+                                                font-weight: bold !important;
+                                                padding: 5px 10px !important;
+                                                background-color: ${game.result === 'win' ? 'rgba(39, 174, 96, 0.2)' : 'rgba(231, 76, 60, 0.2)'} !important;
+                                                border-radius: 4px !important;
+                                            ">
+                                                ${game.result === 'win' ? '✅ WIN' : '❌ LOSS'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : '<p style="color: #999 !important; text-align: center !important;">No games played yet</p>'}
+                    
+                    <div style="display: flex !important; gap: 15px !important; justify-content: center !important; flex-wrap: wrap !important;">
+                        <button onclick="document.getElementById('user-hub-modal').remove(); location.reload();" style="
+                            background-color: #4ecdc4 !important;
+                            color: white !important;
+                            border: none !important;
+                            padding: 12px 25px !important;
+                            font-size: 1.1em !important;
+                            border-radius: 6px !important;
+                            cursor: pointer !important;
+                            font-weight: bold !important;
+                        ">▶️ Play Again</button>
+                        <button onclick="document.getElementById('user-hub-modal').remove(); showStartMenu();" style="
+                            background-color: #ff6b6b !important;
+                            color: white !important;
+                            border: none !important;
+                            padding: 12px 25px !important;
+                            font-size: 1.1em !important;
+                            border-radius: 6px !important;
+                            cursor: pointer !important;
+                            font-weight: bold !important;
+                        ">🏠 Main Menu</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(userHubModal);
+            console.log('✅ User Hub modal displayed');
         }
 
         // Function to copy RPN notation from game over screen
