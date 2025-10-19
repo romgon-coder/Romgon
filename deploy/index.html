@@ -1924,6 +1924,7 @@
     <!-- Version: 2025-10-19-002 -->
     <!-- Keyboard Navigation System -->
     <script src="keyboard-navigation.js"></script>
+    <script src="keyboard-game-integration.js"></script>
     <!-- Socket.IO Client for Multiplayer -->
     <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
     <style>
@@ -15310,12 +15311,44 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 setupDragAndDrop();
                 // Initial check for pieces under attack at game start
                 setTimeout(() => highlightAllPiecesUnderAttack(), 100);
+                // Initialize keyboard navigation system
+                setTimeout(() => initializeKeyboardNavigation(), 200);
             });
         } else {
             initAudio();
             setupDragAndDrop();
             // Initial check for pieces under attack at game start
             setTimeout(() => highlightAllPiecesUnderAttack(), 100);
+            // Initialize keyboard navigation system
+            setTimeout(() => initializeKeyboardNavigation(), 200);
+        }
+
+        /**
+         * Initialize the keyboard navigation system after game is loaded
+         */
+        function initializeKeyboardNavigation() {
+            if (typeof KeyboardNavigationSystem === 'undefined') {
+                console.warn('⚠️ KeyboardNavigationSystem not loaded');
+                return;
+            }
+            
+            // Create keyboard nav instance
+            window.keyboardNav = new KeyboardNavigationSystem({
+                debug: false // Set to true for console logging
+            });
+            
+            // Show keyboard indicator
+            const indicator = document.getElementById('kb-player-indicator');
+            if (indicator) {
+                indicator.style.display = 'block';
+                indicator.textContent = '⌨️ KB: Player 1 (Black)';
+                indicator.style.backgroundColor = '#333';
+                indicator.style.color = '#fff';
+            }
+            
+            console.log('✅ Keyboard Navigation System initialized and ready!');
+            console.log('⌨️ Use arrow keys or WASD to move pieces');
+            console.log('📍 Space/Enter to confirm, Escape to deselect');
         }
 
 
