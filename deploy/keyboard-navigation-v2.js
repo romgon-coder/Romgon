@@ -23,6 +23,7 @@ class KeyboardNavigationSystemV2 {
   constructor(gameConfig = {}) {
     this.activePlayer = 1; // 1 = Black, 2 = White
     this.debugMode = gameConfig.debug || false;
+    this.enabled = true; // System is enabled by default when created
     
     // Current game phase
     this.phase = 'idle'; // 'idle' | 'pieceSelection' | 'moveSelection' | 'rotationSelection'
