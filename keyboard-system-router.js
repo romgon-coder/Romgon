@@ -43,9 +43,9 @@ class KeyboardSystemRouter {
                       window.currentPlayer && // Global game variable
                       window.gameOver !== undefined; // Game state exists
     
-    // Debug logging for first detection
-    if (inPVPMode && !this.isPVPMode) {
-      this.logDebug(`🔍 PVP Mode Detected:`);
+    // Debug logging
+    if (inPVPMode !== this.isPVPMode) {
+      this.logDebug(`🔍 PVP Mode Detection Changed: ${this.isPVPMode} → ${inPVPMode}`);
       this.logDebug(`  - gameBoard: ${!!gameBoard}`);
       this.logDebug(`  - currentPlayerIndicator: ${!!currentPlayerIndicator}`);
       this.logDebug(`  - gameMoveIndicator: ${!!gameMoveIndicator}`);
@@ -164,11 +164,25 @@ class KeyboardSystemRouter {
 
 // Auto-initialize
 window.addEventListener('load', () => {
-  setTimeout(() => {
+  if (!window.keyboardRouter && typeof KeyboardSystemRouter !== 'undefined') {
+    console.log('🔄 Initializing Keyboard System Router...');
+    window.keyboardRouter = new KeyboardSystemRouter();
+    console.log('✅ Keyboard System Router ready');
+  }
+});
+
+// Also try to initialize immediately in case 'load' already fired
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
     if (!window.keyboardRouter && typeof KeyboardSystemRouter !== 'undefined') {
-      console.log('🔄 Initializing Keyboard System Router...');
+      console.log('🔄 Initializing Keyboard System Router (DOMContentLoaded)...');
       window.keyboardRouter = new KeyboardSystemRouter();
       console.log('✅ Keyboard System Router ready');
     }
-  }, 1000);
-});
+  });
+} else if (!window.keyboardRouter && typeof KeyboardSystemRouter !== 'undefined') {
+  // Document already loaded, initialize immediately
+  console.log('🔄 Initializing Keyboard System Router (immediate)...');
+  window.keyboardRouter = new KeyboardSystemRouter();
+  console.log('✅ Keyboard System Router ready');
+}
