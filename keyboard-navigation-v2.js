@@ -191,8 +191,16 @@ class KeyboardNavigationSystemV2 {
 
     this.phase = 'moveSelection';
     this.selectedMovementPos = null;
-    this.highlightedMoves = this.getHighlightedMoveHexes();
-    this.logDebug(`Move selection phase started, ${this.highlightedMoves.length} valid moves`);
+    
+    // Small delay to allow game to render highlights
+    setTimeout(() => {
+      this.highlightedMoves = this.getHighlightedMoveHexes();
+      this.logDebug(`Move selection phase started, ${this.highlightedMoves.length} valid moves available`);
+      if (this.highlightedMoves.length === 0) {
+        this.logDebug('⚠️ WARNING: No highlighted moves found. Movement pattern may not have rendered.');
+      }
+    }, 50);
+    
     this.updatePhaseIndicator('moveSelection');
   }
 

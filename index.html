@@ -1922,8 +1922,10 @@
     <meta http-equiv="Expires" content="0">
     <title>ROMGON</title>
     <!-- Version: 2025-10-19-003 -->
-    <!-- Keyboard Navigation System v2 (Multi-Phase) -->
+    <!-- Keyboard Navigation Systems -->
     <script src="keyboard-navigation-v2.js"></script>
+    <script src="keyboard-general-navigation.js"></script>
+    <script src="keyboard-system-router.js"></script>
     <!-- Socket.IO Client for Multiplayer -->
     <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
     <style>
@@ -2297,6 +2299,18 @@
             box-shadow: 0 0 12px #00ff00, inset 0 0 8px rgba(0, 255, 0, 0.3) !important;
             background-color: rgba(0, 255, 0, 0.1) !important;
             z-index: 15 !important;
+        }
+
+        /* General Navigation - Focus State */
+        .kb-nav-focused {
+            outline: 3px solid #00ccff !important;
+            outline-offset: 2px !important;
+            box-shadow: 0 0 15px rgba(0, 204, 255, 0.8) !important;
+        }
+
+        button.kb-nav-focused,
+        a.kb-nav-focused {
+            transform: scale(1.05) !important;
         }
         
         /* NEW: Highlight for piece that just moved and is under attack */
