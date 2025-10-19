@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "echo 'Static files'",
-  "outputDirectory": "frontend"
+  "buildCommand": "mkdir -p .vercel/output/static && cp -r frontend/* .vercel/output/static/",
+  "outputDirectory": ".vercel/output/static"
 }
 
