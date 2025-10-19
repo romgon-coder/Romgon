@@ -37,9 +37,6 @@ class KeyboardSystemRouter {
     });
   }
 
-  /**
-   * Detect if we're in PVP mode
-   */
   detectGameMode() {
     // Check if game board is visible and game is active
     const gameBoard = document.getElementById('game-board') || document.querySelector('[id*="board"]');
@@ -61,7 +58,7 @@ class KeyboardSystemRouter {
     
     // Debug logging for first detection
     if (inPVPMode && !this.isPVPMode) {
-      this.logDebug(`🔍 PVP Mode Detected:`);
+      this.logDebug(`🔍 PVP Mode Detected via polling:`);
       this.logDebug(`  - gameBoard: ${!!gameBoard}`);
       this.logDebug(`  - currentPlayerIndicator: ${!!currentPlayerIndicator}`);
       this.logDebug(`  - gameMoveIndicator: ${!!gameMoveIndicator}`);
