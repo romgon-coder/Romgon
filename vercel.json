@@ -2,5 +2,5 @@
   "version": 2,
   "buildCommand": "node build-frontend.js",
   "installCommand": "echo 'skip install'",
-  "outputDirectory": "."
+  "outputDirectory": "public"
 }

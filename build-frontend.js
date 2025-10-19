@@ -2,10 +2,15 @@
 const fs = require('fs');
 const path = require('path');
 
-console.log('Copying frontend files to root...');
+console.log('Copying frontend files to public directory...');
 
 const frontendDir = path.join(__dirname, 'frontend');
-const rootDir = __dirname;
+const publicDir = path.join(__dirname, 'public');
+
+// Create public directory
+if (!fs.existsSync(publicDir)) {
+  fs.mkdirSync(publicDir, { recursive: true });
+}
 
 function copyFiles(src, dest) {
   if (!fs.existsSync(src)) {
@@ -39,8 +44,8 @@ function copyFiles(src, dest) {
 }
 
 try {
-  copyFiles(frontendDir, rootDir);
-  console.log('✅ Frontend files copied successfully');
+  copyFiles(frontendDir, publicDir);
+  console.log('✅ Frontend files copied to public directory successfully');
   process.exit(0);
 } catch (err) {
   console.error('❌ Error copying files:', err);
