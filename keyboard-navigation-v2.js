@@ -608,51 +608,6 @@ class KeyboardNavigationSystemV2 {
 // Export
 window.KeyboardNavigationSystemV2 = KeyboardNavigationSystemV2;
 
-// Auto-initialize after game loads
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    if (!window.keyboardNav && typeof KeyboardNavigationSystemV2 !== 'undefined') {
-      console.log('🔄 Auto-initializing Keyboard Navigation v2 (Multi-Phase)...');
-      window.keyboardNav = new KeyboardNavigationSystemV2({ debug: true });
-      
-      // Create or update phase indicator
-      let indicator = document.getElementById('kb-phase-indicator');
-      if (!indicator) {
-        indicator = document.createElement('div');
-        indicator.id = 'kb-phase-indicator';
-        document.body.appendChild(indicator);
-      }
-      
-      indicator.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        left: 20px;
-        padding: 12px 16px;
-        background-color: #666;
-        color: #fff;
-        font-family: 'Arial', sans-serif;
-        font-size: 12px;
-        border-radius: 4px;
-        z-index: 10000;
-        max-width: 400px;
-        word-wrap: break-word;
-        border: 2px solid #fff;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        display: none; /* Hidden by default, only shown during PVP */
-      `;
-      
-      window.keyboardNav.updatePhaseIndicator('idle');
-      
-      // Start turn sync monitor
-      const syncInterval = setInterval(() => {
-        if (window.keyboardNav) {
-          window.keyboardNav.syncWithGameTurn();
-        } else {
-          clearInterval(syncInterval);
-        }
-      }, 250);
-      
-      console.log('✅ Keyboard Navigation v2 initialized with multi-phase system');
-    }
-  }, 500);
-});
+// NOTE: PVP system is NOT auto-initialized
+// The keyboard-system-router.js will instantiate it when a PVP game starts
+// This prevents keyboard interference on menus and signin screens
