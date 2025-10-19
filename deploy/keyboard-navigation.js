@@ -96,20 +96,39 @@ class KeyboardNavigationSystem {
       return;
     }
     
-    // Move selected piece
-    const newPos = {
+    // Calculate target position
+    const targetPos = {
       row: this.selectedPiecePos.row + dr,
       col: this.selectedPiecePos.col + dc,
     };
     
-    // Validate move is within bounds
-    if (this.isValidBoardPosition(newPos)) {
-      this.selectedPiecePos = newPos;
-      this.updateSelectedPieceUI();
-      this.logDebug(`  Piece moved to: [${newPos.row}, ${newPos.col}]`);
-    } else {
-      this.logDebug(`  Move out of bounds: [${newPos.row}, ${newPos.col}]`);
+    // Check if target is valid and highlighted (i.e., is a legal move)
+    const targetHexId = `hex-${targetPos.row}-${targetPos.col}`;
+    const targetHex = document.getElementById(targetHexId);
+    
+    if (!targetHex) {
+      this.logDebug(`Target hex out of bounds: ${targetHexId}`);
+      return;
     }
+    
+    // Check if this is a valid highlighted move
+    const isValidMove = targetHex.classList.contains('highlight-green') || 
+                        targetHex.classList.contains('highlight-red') ||
+                        targetHex.classList.contains('highlight-diagonal') ||
+                        targetHex.classList.contains('highlight-danger');
+    
+    if (!isValidMove) {
+      this.logDebug(`Target ${targetHexId} is not a highlighted valid move`);
+      return;
+    }
+    
+    // Move is valid! Update selected position to show preview
+    this.selectedPiecePos = targetPos;
+    this.logDebug(`Navigating to valid move: [${targetPos.row}, ${targetPos.col}]`);
+    
+    // Update UI to show we're at this new position
+    // But don't actually execute the move - wait for Space/Enter
+    this.updateSelectedPieceUI();
   }
   
   /**
@@ -147,9 +166,24 @@ class KeyboardNavigationSystem {
    * Deselect current piece
    */
   deselectPiece() {
+    // Clear visual highlights
+    document.querySelectorAll('.kb-selected').forEach(el => {
+      el.classList.remove('kb-selected');
+      el.style.outline = '';
+      el.style.boxShadow = '';
+    });
+    
+    // Clear game's drag state
+    window.draggedPiece = null;
+    window.draggedFromHex = null;
+    
+    // Clear highlighted moves from the game
+    document.querySelectorAll('.highlight-green, .highlight-red, .highlight-diagonal, .highlight-danger, .highlight-threat').forEach(hex => {
+      hex.classList.remove('highlight-green', 'highlight-red', 'highlight-diagonal', 'highlight-danger', 'highlight-threat');
+    });
+    
     this.selectedPiecePos = null;
-    this.updateSelectedPieceUI();
-    this.logDebug('Piece deselected');
+    this.logDebug('Piece deselected and highlights cleared');
   }
   
   /**
@@ -184,13 +218,46 @@ class KeyboardNavigationSystem {
    */
   confirmMove() {
     if (!this.selectedPiecePos) {
-      this.logDebug('No piece to confirm');
+      this.logDebug('No position to confirm');
       return;
     }
     
-    // Call game's move confirmation (must be implemented)
-    if (window.gameConfirmMove) {
-      window.gameConfirmMove(this.selectedPiecePos.row, this.selectedPiecePos.col);
+    const targetHexId = `hex-${this.selectedPiecePos.row}-${this.selectedPiecePos.col}`;
+    const targetHex = document.getElementById(targetHexId);
+    
+    if (!targetHex) {
+      this.logDebug('Target hex not found');
+      return;
+    }
+    
+    // Check if target is a valid move (highlighted)
+    const isValidMove = targetHex.classList.contains('highlight-green') || 
+                        targetHex.classList.contains('highlight-red') ||
+                        targetHex.classList.contains('highlight-diagonal') ||
+                        targetHex.classList.contains('highlight-danger');
+    
+    if (!isValidMove) {
+      this.logDebug(`Target ${targetHexId} is not a valid highlighted move`);
+      return;
+    }
+    
+    this.logDebug(`Confirming move to: ${targetHexId}`);
+    
+    // Simulate drop on the target hex
+    // This triggers the game's drop handler which executes the move
+    if (window.draggedPiece && window.draggedFromHex) {
+      const dropEvent = new DragEvent('drop', {
+        bubbles: true,
+        cancelable: true,
+      });
+      
+      // Manually trigger drop logic by calling the drop handler
+      // The game's drop handler checks for draggedPiece and draggedFromHex
+      targetHex.dispatchEvent(dropEvent);
+      
+      this.logDebug('Drop event dispatched to target hex');
+    } else {
+      this.logDebug('draggedPiece or draggedFromHex is null');
     }
   }
   
@@ -213,14 +280,37 @@ class KeyboardNavigationSystem {
     
     if (!this.selectedPiecePos) return;
     
-    // Highlight selected piece (requires game to have piece elements with data attributes)
-    const selector = `[data-row="${this.selectedPiecePos.row}"][data-col="${this.selectedPiecePos.col}"]`;
-    const element = document.querySelector(selector);
+    const hexId = `hex-${this.selectedPiecePos.row}-${this.selectedPiecePos.col}`;
+    const hexElement = document.getElementById(hexId);
     
-    if (element) {
-      element.classList.add('kb-selected');
-      element.style.outline = '3px solid #4ecdc4';
-      element.style.boxShadow = '0 0 10px rgba(78, 205, 196, 0.8)';
+    if (!hexElement) {
+      this.logDebug(`Hex element not found: ${hexId}`);
+      return;
+    }
+    
+    const piece = hexElement.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
+    
+    if (!piece) {
+      this.logDebug(`No piece found at ${hexId}`);
+      return;
+    }
+    
+    // Add visual highlight
+    hexElement.classList.add('kb-selected');
+    hexElement.style.outline = '3px solid #4ecdc4';
+    hexElement.style.boxShadow = '0 0 10px rgba(78, 205, 196, 0.8)';
+    
+    // CRITICAL: Trigger the game's piece selection system
+    // This makes the game show movement patterns and highlights
+    window.draggedPiece = piece;
+    window.draggedFromHex = hexElement;
+    
+    this.logDebug(`Selected piece at ${hexId}, triggering game selection...`);
+    
+    // Call the game's movement pattern function if it exists
+    if (typeof showMovementPattern === 'function') {
+      showMovementPattern(this.selectedPiecePos.row, this.selectedPiecePos.col);
+      this.logDebug(`Called showMovementPattern for [${this.selectedPiecePos.row}, ${this.selectedPiecePos.col}]`);
     }
   }
   
