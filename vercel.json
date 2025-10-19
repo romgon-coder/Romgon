@@ -1,15 +1,22 @@
 {
   "buildCommand": "",
-  "installCommand": "echo 'No install needed'",
+  "installCommand": "npm install",
   "outputDirectory": "frontend",
-  "public": "frontend",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ],
   "env": {
     "NODE_ENV": "production"
-  }
+  },
+  "routes": [
+    {
+      "src": "/src/.*",
+      "dest": "/src/$1"
+    },
+    {
+      "src": "/ASSETS/.*",
+      "dest": "/ASSETS/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
 }
