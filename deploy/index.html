@@ -15265,6 +15265,328 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             }
         }
 
+        // ============================================
+        // RATING SYSTEM - ELO & SKILL TRACKING
+        // ============================================
+
+        const INITIAL_RATING = 1600;
+        const K_FACTOR = 32; // Standard K-factor for rating calculation
+        
+        /**
+         * Calculate new ELO rating based on game result
+         * Standard ELO formula: New Rating = Old Rating + K × (Score - Expected Score)
+         * @param {number} playerRating - Player's current rating
+         * @param {number} opponentRating - Opponent's current rating
+         * @param {number} score - 1 for win, 0 for loss, 0.5 for draw
+         * @returns {number} New rating
+         */
+        function calculateEloRating(playerRating, opponentRating, score) {
+            // Expected score for player
+            const expectedScore = 1 / (1 + Math.pow(10, (opponentRating - playerRating) / 400));
+            
+            // New rating
+            const newRating = playerRating + K_FACTOR * (score - expectedScore);
+            
+            return Math.round(newRating);
+        }
+
+        /**
+         * Get opponent's rating (AI or other player)
+         * @param {string} opponentName - Opponent name
+         * @returns {number} Opponent's rating
+         */
+        function getOpponentRating(opponentName) {
+            const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+            
+            // Check if opponent is a registered player
+            if (allUsers[opponentName] && allUsers[opponentName].rating) {
+                return allUsers[opponentName].rating;
+            }
+            
+            // AI difficulty levels (adjust as needed)
+            const aiRatings = {
+                'AI': 1600,
+                'AI_Easy': 1200,
+                'AI_Medium': 1600,
+                'AI_Hard': 2000,
+                'AI_Expert': 2400
+            };
+            
+            return aiRatings[opponentName] || 1600; // Default to 1600
+        }
+
+        /**
+         * Initialize rating for new user
+         * @param {string} username - Username
+         */
+        function initializeUserRating(username) {
+            const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+            
+            if (allUsers[username]) {
+                if (!allUsers[username].rating) {
+                    allUsers[username].rating = INITIAL_RATING;
+                }
+                if (!allUsers[username].ratingHistory) {
+                    allUsers[username].ratingHistory = [{
+                        date: new Date().toISOString(),
+                        rating: INITIAL_RATING,
+                        change: 0,
+                        opponent: 'Game Start',
+                        result: 'start'
+                    }];
+                }
+                localStorage.setItem('romgon-users', JSON.stringify(allUsers));
+            }
+        }
+
+        /**
+         * Update player rating after game end
+         * @param {string} username - Username
+         * @param {boolean} playerWon - Whether player won
+         * @param {string} opponent - Opponent name
+         */
+        function updatePlayerRating(username, playerWon, opponent) {
+            const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+            
+            if (!allUsers[username]) {
+                console.warn('❌ User not found for rating update:', username);
+                return;
+            }
+            
+            // Initialize rating if not exists
+            if (!allUsers[username].rating) {
+                allUsers[username].rating = INITIAL_RATING;
+            }
+            if (!allUsers[username].ratingHistory) {
+                allUsers[username].ratingHistory = [];
+            }
+            
+            // Get opponent rating
+            const opponentRating = getOpponentRating(opponent);
+            
+            // Calculate new rating
+            const score = playerWon ? 1 : 0;
+            const oldRating = allUsers[username].rating;
+            const newRating = calculateEloRating(oldRating, opponentRating, score);
+            const ratingChange = newRating - oldRating;
+            
+            // Update rating
+            allUsers[username].rating = newRating;
+            
+            // Add to history
+            allUsers[username].ratingHistory.push({
+                date: new Date().toISOString(),
+                rating: newRating,
+                change: ratingChange,
+                opponent: opponent,
+                result: playerWon ? 'win' : 'loss',
+                opponentRating: opponentRating
+            });
+            
+            // Keep only last 100 rating changes
+            if (allUsers[username].ratingHistory.length > 100) {
+                allUsers[username].ratingHistory = allUsers[username].ratingHistory.slice(-100);
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('romgon-users', JSON.stringify(allUsers));
+            
+            console.log(`⭐ Rating Update for ${username}:`);
+            console.log(`   Old Rating: ${oldRating}`);
+            console.log(`   New Rating: ${newRating}`);
+            console.log(`   Change: ${ratingChange > 0 ? '+' : ''}${ratingChange}`);
+            console.log(`   Opponent: ${opponent} (Rating: ${opponentRating})`);
+            
+            return {
+                oldRating,
+                newRating,
+                ratingChange
+            };
+        }
+
+        /**
+         * Get rating badge/tier based on rating
+         * @param {number} rating - Player's rating
+         * @returns {object} Badge info {name, emoji, color}
+         */
+        function getRatingTier(rating) {
+            if (rating >= 2400) return { name: 'Grandmaster', emoji: '👑', color: '#FFD700' };
+            if (rating >= 2200) return { name: 'Master', emoji: '🏆', color: '#FF69B4' };
+            if (rating >= 2000) return { name: 'Expert', emoji: '⭐', color: '#FF6B6B' };
+            if (rating >= 1800) return { name: 'Advanced', emoji: '🥇', color: '#F39C12' };
+            if (rating >= 1600) return { name: 'Intermediate', emoji: '🥈', color: '#4ecdc4' };
+            if (rating >= 1400) return { name: 'Beginner', emoji: '🥉', color: '#27ae60' };
+            return { name: 'Novice', emoji: '🎯', color: '#3498db' };
+        }
+
+        /**
+         * Create rating change indicator HTML
+         * @param {number} change - Rating change amount
+         * @returns {string} HTML string
+         */
+        function getRatingChangeHTML(change) {
+            if (change === 0) return '<span style="color: #999;">±0</span>';
+            if (change > 0) {
+                return `<span style="color: #27ae60; font-weight: bold;">+${change}</span>`;
+            }
+            return `<span style="color: #e74c3c; font-weight: bold;">${change}</span>`;
+        }
+
+        /**
+         * Show leaderboard of top-rated players
+         */
+        function showLeaderboard() {
+            console.log('🏆 Opening Leaderboard...');
+            
+            const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+            
+            // Get all users sorted by rating (descending)
+            const players = Object.values(allUsers)
+                .filter(user => user.rating !== undefined)
+                .map(user => ({
+                    username: user.username,
+                    rating: user.rating || INITIAL_RATING,
+                    tier: getRatingTier(user.rating || INITIAL_RATING),
+                    wins: user.stats?.wins || 0,
+                    losses: user.stats?.losses || 0,
+                    totalGames: user.stats?.totalGames || 0,
+                    winRate: user.stats?.totalGames > 0 
+                        ? ((user.stats.wins / user.stats.totalGames) * 100).toFixed(1)
+                        : 0
+                }))
+                .sort((a, b) => b.rating - a.rating);
+            
+            // Create leaderboard modal
+            const leaderboardModal = document.createElement('div');
+            leaderboardModal.id = 'leaderboard-modal';
+            leaderboardModal.style.cssText = `
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                background-color: rgba(0, 0, 0, 0.9) !important;
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                z-index: 99999 !important;
+                font-family: sans-serif !important;
+                pointer-events: auto !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            `;
+            
+            const leaderboardContent = document.createElement('div');
+            leaderboardContent.style.cssText = `
+                background-color: #2a2a2a !important;
+                border-radius: 12px !important;
+                padding: 40px !important;
+                max-width: 900px !important;
+                width: 90% !important;
+                max-height: 85vh !important;
+                overflow-y: auto !important;
+                box-shadow: 0 0 40px rgba(78, 205, 196, 0.3) !important;
+                border: 2px solid #4ecdc4 !important;
+                z-index: 100000 !important;
+                position: relative !important;
+                pointer-events: auto !important;
+            `;
+            
+            leaderboardContent.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                    <h1 style="color: #4ecdc4 !important; margin: 0 !important; font-size: 2em !important;">🏆 Global Leaderboard</h1>
+                    <button onclick="document.getElementById('leaderboard-modal').remove();" style="
+                        background-color: #ff6b6b !important;
+                        color: white !important;
+                        border: none !important;
+                        padding: 8px 16px !important;
+                        font-size: 1em !important;
+                        border-radius: 6px !important;
+                        cursor: pointer !important;
+                        font-weight: bold !important;
+                    ">✖️ Close</button>
+                </div>
+                
+                <div style="margin-bottom: 20px; padding: 15px; background-color: rgba(78, 205, 196, 0.1); border-radius: 8px; border-left: 4px solid #4ecdc4;">
+                    <div style="color: #999; font-size: 0.9em;">Total Players: ${players.length}</div>
+                    <div style="color: #999; font-size: 0.9em;">Top Rating: ${players.length > 0 ? players[0].rating : 'N/A'}</div>
+                </div>
+                
+                ${players.length > 0 ? `
+                    <div style="overflow-x: auto;">
+                        <table style="
+                            width: 100%;
+                            border-collapse: collapse;
+                            font-size: 0.95em;
+                        ">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #4ecdc4;">
+                                    <th style="text-align: left; padding: 12px; color: #4ecdc4; font-weight: bold;">Rank</th>
+                                    <th style="text-align: left; padding: 12px; color: #4ecdc4; font-weight: bold;">Player</th>
+                                    <th style="text-align: center; padding: 12px; color: #4ecdc4; font-weight: bold;">Rating</th>
+                                    <th style="text-align: center; padding: 12px; color: #4ecdc4; font-weight: bold;">Tier</th>
+                                    <th style="text-align: center; padding: 12px; color: #4ecdc4; font-weight: bold;">W-L</th>
+                                    <th style="text-align: center; padding: 12px; color: #4ecdc4; font-weight: bold;">Win Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${players.map((player, idx) => {
+                                    const rankEmoji = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '';
+                                    const medalColor = idx === 0 ? '#FFD700' : idx === 1 ? '#C0C0C0' : idx === 2 ? '#CD7F32' : '#999';
+                                    
+                                    return `
+                                        <tr style="border-bottom: 1px solid #444; transition: all 0.3s ease;" onmouseover="this.style.backgroundColor='rgba(78, 205, 196, 0.1)'" onmouseout="this.style.backgroundColor='transparent'">
+                                            <td style="padding: 12px; color: ${medalColor}; font-weight: bold; text-align: left;">
+                                                ${rankEmoji} #${idx + 1}
+                                            </td>
+                                            <td style="padding: 12px; color: #4ecdc4; font-weight: bold;">
+                                                ${player.username}
+                                            </td>
+                                            <td style="padding: 12px; color: #fff; text-align: center; font-weight: bold;">
+                                                ${player.rating}
+                                            </td>
+                                            <td style="padding: 12px; text-align: center;">
+                                                <span style="color: ${player.tier.color}; font-weight: bold;">
+                                                    ${player.tier.emoji} ${player.tier.name}
+                                                </span>
+                                            </td>
+                                            <td style="padding: 12px; color: #999; text-align: center;">
+                                                <span style="color: #27ae60;">${player.wins}W</span> - <span style="color: #e74c3c;">${player.losses}L</span>
+                                            </td>
+                                            <td style="padding: 12px; color: #f39c12; text-align: center; font-weight: bold;">
+                                                ${player.winRate}%
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                ` : `
+                    <div style="text-align: center; color: #999; padding: 40px;">
+                        <p>No players with ratings yet. Start playing to appear on the leaderboard!</p>
+                    </div>
+                `}
+                
+                <div style="margin-top: 30px; padding: 20px; background-color: rgba(78, 205, 196, 0.1); border-radius: 8px;">
+                    <h3 style="color: #4ecdc4; margin: 0 0 15px 0;">📊 Rating Tiers</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9em;">
+                        <div><span style="color: #FFD700;">👑</span> Grandmaster: 2400+</div>
+                        <div><span style="color: #FF69B4;">🏆</span> Master: 2200-2399</div>
+                        <div><span style="color: #FF6B6B;">⭐</span> Expert: 2000-2199</div>
+                        <div><span style="color: #F39C12;">🥇</span> Advanced: 1800-1999</div>
+                        <div><span style="color: #4ecdc4;">🥈</span> Intermediate: 1600-1799</div>
+                        <div><span style="color: #27ae60;">🥉</span> Beginner: 1400-1599</div>
+                    </div>
+                </div>
+            `;
+            
+            leaderboardModal.appendChild(leaderboardContent);
+            document.body.appendChild(leaderboardModal);
+            
+            console.log('🏆 Leaderboard displayed with', players.length, 'players');
+        }
+
         // Function to show game over screen
         function showGameOver(winner, reason) {
             console.log('🏁 GAME OVER SCREEN TRIGGERED!');
@@ -15330,16 +15652,36 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     allUsers[currentUser.username].stats.losses += 1;
                 }
                 
+                // ============================================
+                // RATING SYSTEM - Update player rating
+                // ============================================
+                
+                // Initialize rating if not exists
+                initializeUserRating(currentUser.username);
+                
+                // Update rating based on game result
+                const ratingUpdate = updatePlayerRating(currentUser.username, playerWon, 'AI');
+                
+                // Store rating update info in gameRecord
+                gameRecord.ratingChange = ratingUpdate.ratingChange;
+                gameRecord.oldRating = ratingUpdate.oldRating;
+                gameRecord.newRating = ratingUpdate.newRating;
+                
+                // Update game record with rating info
+                allUsers[currentUser.username].games[allUsers[currentUser.username].games.length - 1] = gameRecord;
+                
                 // Save updated user data
                 localStorage.setItem('romgon-users', JSON.stringify(allUsers));
                 
-                // ALSO update the currentUser in localStorage with new stats
+                // ALSO update the currentUser in localStorage with new stats and rating
                 currentUser.stats = allUsers[currentUser.username].stats;
+                currentUser.rating = allUsers[currentUser.username].rating;
                 currentUser.gameHistory = allUsers[currentUser.username].games;
                 localStorage.setItem('romgon-user', JSON.stringify(currentUser));
                 
                 console.log('✅ Game result saved to user stats:', gameRecord);
                 console.log('📊 Updated user stats:', allUsers[currentUser.username].stats);
+                console.log('⭐ Updated user rating:', allUsers[currentUser.username].rating);
                 console.log('💾 Updated currentUser in localStorage');
             } else {
                 console.log('👤 Guest user - no stats saved');
@@ -15405,6 +15747,45 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             `;
             
             // Check if user is logged in to show stats saved message
+            let ratingDisplayHTML = '';
+            if (currentUser.username && currentUser.type !== 'guest') {
+                // Get rating update info from the latest game
+                const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+                if (allUsers[currentUser.username] && allUsers[currentUser.username].games) {
+                    const lastGame = allUsers[currentUser.username].games[allUsers[currentUser.username].games.length - 1];
+                    if (lastGame && lastGame.ratingChange !== undefined) {
+                        const ratingChangeColor = lastGame.ratingChange > 0 ? '#27ae60' : '#e74c3c';
+                        const ratingChangeSymbol = lastGame.ratingChange > 0 ? '+' : '';
+                        ratingDisplayHTML = `
+                            <div style="
+                                background-color: rgba(78, 205, 196, 0.1) !important;
+                                border: 2px solid #4ecdc4 !important;
+                                border-radius: 8px !important;
+                                padding: 15px !important;
+                                margin: 15px 0 0 0 !important;
+                            ">
+                                <p style="color: #4ecdc4 !important; margin: 0 0 10px 0 !important; font-size: 0.9em !important;">⭐ Rating Update</p>
+                                <div style="display: flex; justify-content: space-around; align-items: center; gap: 10px;">
+                                    <div>
+                                        <div style="color: #999 !important; font-size: 0.8em !important;">Before</div>
+                                        <div style="color: #fff !important; font-size: 1.3em !important; font-weight: bold !important;">${lastGame.oldRating}</div>
+                                    </div>
+                                    <div style="color: #4ecdc4; font-size: 1.5em;">→</div>
+                                    <div>
+                                        <div style="color: #999 !important; font-size: 0.8em !important;">After</div>
+                                        <div style="color: #fff !important; font-size: 1.3em !important; font-weight: bold !important;">${lastGame.newRating}</div>
+                                    </div>
+                                    <div style="border-left: 2px solid #444; padding-left: 10px;">
+                                        <div style="color: #999 !important; font-size: 0.8em !important;">Change</div>
+                                        <div style="color: ${ratingChangeColor} !important; font-size: 1.3em !important; font-weight: bold !important;">${ratingChangeSymbol}${lastGame.ratingChange}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+            }
+            
             const userStatsMessage = currentUser.username && currentUser.type !== 'guest' 
                 ? '<p style="margin: 15px 0 0 0; font-size: 0.9em; color: #4ecdc4;">✅ Game result saved to your user hub!</p>'
                 : '';
@@ -15412,9 +15793,10 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             gameOverContent.innerHTML = `
                 <h1 style="color: #ff6b6b; margin: 0 0 20px 0; font-size: 2.5em;">GAME OVER</h1>
                 <h2 style="color: #4ecdc4; margin: 0 0 20px 0; font-size: 1.8em;">${winner} WINS!</h2>
-                <p style="margin: 0 0 30px 0; font-size: 1.2em;">${reason}</p>
+                <p style="margin: 0 0 20px 0; font-size: 1.2em;">${reason}</p>
+                ${ratingDisplayHTML}
                 ${userStatsMessage}
-                <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
+                <div style="display: flex; flex-direction: column; gap: 15px; align-items: center; margin-top: 20px;">
                     <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
                         <button onclick="showUserAccountHub()" style="
                             background-color: #27ae60;
@@ -15426,6 +15808,16 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                             cursor: pointer;
                             font-weight: bold;
                         ">👤 User Hub</button>
+                        <button onclick="showLeaderboard()" style="
+                            background-color: #f39c12;
+                            color: white;
+                            border: none;
+                            padding: 15px 30px;
+                            font-size: 1.2em;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-weight: bold;
+                        ">🏆 Leaderboard</button>
                         <button onclick="analyzeGameFromGameOver()" style="
                             background-color: #9b59b6;
                             color: white;
@@ -15449,7 +15841,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                             font-weight: bold;
                         ">📋 Copy RPN</button>
                         <button onclick="saveGameFromGameOver()" style="
-                            background-color: #f39c12;
+                            background-color: #e67e22;
                             color: white;
                             border: none;
                             padding: 15px 30px;
@@ -15698,6 +16090,95 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                         </div>
                     </div>
                     
+                    <!-- RATING SYSTEM DISPLAY -->
+                    ${(() => {
+                        // Get rating information
+                        const playerRating = allUsers[currentUser.username]?.rating || INITIAL_RATING;
+                        const ratingTier = getRatingTier(playerRating);
+                        const ratingHistory = allUsers[currentUser.username]?.ratingHistory || [];
+                        
+                        // Get last 5 rating changes
+                        const recentRatings = ratingHistory.slice(-5).reverse();
+                        
+                        return `
+                            <div style="
+                                background: linear-gradient(135deg, rgba(78, 205, 196, 0.1), rgba(155, 89, 182, 0.1));
+                                border: 2px solid #4ecdc4;
+                                border-radius: 8px;
+                                padding: 20px;
+                                margin-bottom: 30px;
+                            ">
+                                <h3 style="color: #4ecdc4 !important; margin: 0 0 20px 0 !important;">⭐ Rating & Skill</h3>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                                    <div style="
+                                        background-color: #1a1a1a;
+                                        padding: 20px;
+                                        border-radius: 8px;
+                                        border: 2px solid ${ratingTier.color};
+                                        text-align: center;
+                                    ">
+                                        <div style="font-size: 2.5em; margin-bottom: 10px;">${ratingTier.emoji}</div>
+                                        <div style="color: #999; font-size: 0.9em; margin-bottom: 5px;">Current Rating</div>
+                                        <div style="color: #4ecdc4; font-size: 2em; font-weight: bold;">${playerRating}</div>
+                                        <div style="color: ${ratingTier.color}; font-size: 0.9em; margin-top: 10px; font-weight: bold;">${ratingTier.name}</div>
+                                    </div>
+                                    
+                                    <div style="
+                                        background-color: #1a1a1a;
+                                        padding: 20px;
+                                        border-radius: 8px;
+                                        border-left: 4px solid #f39c12;
+                                    ">
+                                        <div style="color: #999; font-size: 0.9em; margin-bottom: 5px;">Rating Stats</div>
+                                        <div style="color: #f39c12; font-size: 1.5em; font-weight: bold; margin-bottom: 10px;">
+                                            ${ratingHistory.length > 0 ? `+${ratingHistory[ratingHistory.length - 1].rating - INITIAL_RATING}` : '0'}
+                                        </div>
+                                        <div style="color: #999; font-size: 0.85em;">
+                                            Games Played: ${userStats.totalGames}
+                                        </div>
+                                        <div style="color: #999; font-size: 0.85em;">
+                                            Rating Changes: ${ratingHistory.length}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                ${recentRatings.length > 0 ? `
+                                    <div>
+                                        <div style="color: #999; font-size: 0.9em; margin-bottom: 10px;">📊 Recent Rating Changes</div>
+                                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                                            ${recentRatings.map(rating => {
+                                                const changeColor = rating.change > 0 ? '#27ae60' : (rating.change < 0 ? '#e74c3c' : '#999');
+                                                const changeSymbol = rating.change > 0 ? '+' : '';
+                                                return `
+                                                    <div style="
+                                                        display: flex;
+                                                        justify-content: space-between;
+                                                        align-items: center;
+                                                        background-color: rgba(0,0,0,0.2);
+                                                        padding: 8px 12px;
+                                                        border-radius: 4px;
+                                                        font-size: 0.85em;
+                                                    ">
+                                                        <div style="color: #999;">
+                                                            vs ${rating.opponent} • ${new Date(rating.date).toLocaleDateString()}
+                                                        </div>
+                                                        <div style="
+                                                            color: ${changeColor};
+                                                            font-weight: bold;
+                                                        ">
+                                                            ${rating.result === 'win' ? '✅' : '❌'} ${changeSymbol}${rating.change}
+                                                        </div>
+                                                    </div>
+                                                `;
+                                            }).join('')}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    })()}
+                    
                     ${recentGames.length > 0 ? `
                         <div style="margin-bottom: 30px !important;">
                             <h3 style="color: #4ecdc4 !important; margin: 0 0 15px 0 !important;">📜 Recent Games</h3>
@@ -15717,14 +16198,28 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                                                     ${new Date(game.date).toLocaleDateString()} - ${game.reason || 'Game'}
                                                 </div>
                                             </div>
-                                            <div style="
-                                                color: ${game.result === 'win' ? '#27ae60' : '#e74c3c'} !important;
-                                                font-weight: bold !important;
-                                                padding: 5px 10px !important;
-                                                background-color: ${game.result === 'win' ? 'rgba(39, 174, 96, 0.2)' : 'rgba(231, 76, 60, 0.2)'} !important;
-                                                border-radius: 4px !important;
-                                            ">
-                                                ${game.result === 'win' ? '✅ WIN' : '❌ LOSS'}
+                                            <div style="display: flex; gap: 10px; align-items: center;">
+                                                ${game.ratingChange !== undefined ? `
+                                                    <div style="
+                                                        background-color: rgba(0,0,0,0.3);
+                                                        padding: 4px 8px;
+                                                        border-radius: 4px;
+                                                        font-size: 0.8em;
+                                                        color: ${game.ratingChange > 0 ? '#27ae60' : '#e74c3c'};
+                                                        font-weight: bold;
+                                                    ">
+                                                        ${game.ratingChange > 0 ? '+' : ''}${game.ratingChange}
+                                                    </div>
+                                                ` : ''}
+                                                <div style="
+                                                    color: ${game.result === 'win' ? '#27ae60' : '#e74c3c'} !important;
+                                                    font-weight: bold !important;
+                                                    padding: 5px 10px !important;
+                                                    background-color: ${game.result === 'win' ? 'rgba(39, 174, 96, 0.2)' : 'rgba(231, 76, 60, 0.2)'} !important;
+                                                    border-radius: 4px !important;
+                                                ">
+                                                    ${game.result === 'win' ? '✅ WIN' : '❌ LOSS'}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -15744,6 +16239,16 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                             cursor: pointer !important;
                             font-weight: bold !important;
                         ">▶️ Play Again</button>
+                        <button onclick="showLeaderboard()" style="
+                            background-color: #f39c12 !important;
+                            color: white !important;
+                            border: none !important;
+                            padding: 12px 25px !important;
+                            font-size: 1.1em !important;
+                            border-radius: 6px !important;
+                            cursor: pointer !important;
+                            font-weight: bold !important;
+                        ">🏆 Leaderboard</button>
                         <button onclick="document.getElementById('user-hub-modal').remove(); showStartMenu();" style="
                             background-color: #ff6b6b !important;
                             color: white !important;
