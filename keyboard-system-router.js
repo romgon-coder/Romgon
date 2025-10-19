@@ -125,15 +125,14 @@ class KeyboardSystemRouter {
    * Activate general navigation system
    */
   activateGeneralSystem() {
-    if (this.systemActive === 'general') return;
-    
     this.logDebug('📱 Switching to General Navigation System (Menus)');
     
-    // Reset PVP system completely
+    // COMPLETELY DISABLE PVP system
     if (window.keyboardNav) {
       window.keyboardNav.resetPhase();
       window.keyboardNav.enabled = false;
-      this.logDebug('✅ PVP Keyboard System DISABLED');
+      window.keyboardNav.phase = 'idle';
+      this.logDebug('✅ PVP Keyboard System COMPLETELY DISABLED');
     }
     
     // Enable general navigation

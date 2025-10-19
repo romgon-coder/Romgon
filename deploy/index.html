@@ -15084,6 +15084,23 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             gameOver = true; // Set game over flag
             gameInProgress = false; // Game is no longer in progress
             
+            // Notify keyboard systems that game has ended
+            const gameEndEvent = new CustomEvent('gameEnded', {
+                detail: {
+                    winner,
+                    reason,
+                    isPVP: false
+                }
+            });
+            console.log('📡 Dispatching gameEnded event');
+            document.dispatchEvent(gameEndEvent);
+            
+            // DIRECT: Switch back to General Navigation
+            if (window.keyboardRouter) {
+                console.log('🎮 DIRECT: Switching to General Navigation after game end');
+                window.keyboardRouter.activateGeneralSystem();
+            }
+            
             // Hide rotation controls on game over
             const rotationControls = document.getElementById('rotation-controls');
             if (rotationControls) {
