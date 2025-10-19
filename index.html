@@ -15355,7 +15355,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                z-index: 1000;
+                z-index: 99999;
                 font-family: sans-serif;
             `;
             
@@ -15451,7 +15451,14 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             `;
             
             gameOverOverlay.appendChild(gameOverContent);
+            console.log('✅ Overlay content appended');
+            console.log('📦 gameOverOverlay element:', gameOverOverlay);
+            console.log('📦 gameOverOverlay styles:', gameOverOverlay.style.cssText);
             document.body.appendChild(gameOverOverlay);
+            console.log('✅ Overlay appended to document.body');
+            console.log('📦 Checking if overlay in DOM:', document.body.contains(gameOverOverlay));
+            console.log('📦 Overlay z-index:', gameOverOverlay.style.zIndex);
+            console.log('📦 Overlay display:', gameOverOverlay.style.display);
         }
 
         // Function to go back to game from game over screen (spectate mode)
