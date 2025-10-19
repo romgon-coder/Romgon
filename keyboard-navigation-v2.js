@@ -75,6 +75,9 @@ class KeyboardNavigationSystemV2 {
       case 'rotationSelection':
         this.handleRotationSelectionPhase(key, event);
         break;
+      case 'postMoveRotation':
+        this.handlePostMoveRotationPhase(key, event);
+        break;
     }
   }
 
@@ -333,7 +336,7 @@ class KeyboardNavigationSystemV2 {
   }
 
   /**
-   * Confirm move selection - check if piece needs rotation
+   * Confirm move selection - execute move immediately and check for rotation
    */
   confirmMoveSelection() {
     if (!this.selectedMovementPos) {
@@ -341,103 +344,34 @@ class KeyboardNavigationSystemV2 {
       return;
     }
 
-    // Check if selected piece is rotatable
+    // Execute move first
+    this.executeMove();
+    
+    // Check if selected piece is rotatable - if so, enter post-move rotation phase
     const isRotatable = this.selectedPieceElement && 
       (this.selectedPieceElement.classList.contains('triangle-piece') ||
        this.selectedPieceElement.classList.contains('hexgon-piece'));
 
     if (isRotatable) {
-      this.logDebug('Rotatable piece detected, entering rotation phase');
-      this.phase = 'rotationSelection';
-      this.rotationChoice = 'keep'; // Default choice
-      this.updateRotationSelectionUI();
+      this.logDebug('Rotatable piece moved, entering post-move rotation phase');
+      this.phase = 'postMoveRotation';
+      this.updatePostMoveRotationUI();
     } else {
-      // Non-rotatable piece, execute move immediately
-      this.executeMoveWithRotation('keep');
+      // Non-rotatable piece, turn ends automatically
+      this.resetPhase();
     }
   }
 
   /**
-   * PHASE 3: Rotation Selection
-   * Choose rotation for rotatable pieces
+   * Execute the move without rotation (dispatch drop event)
    */
-  handleRotationSelectionPhase(key, event) {
-    if (['w', 'a', 's', 'd'].includes(key)) {
-      event.preventDefault();
-      this.navigateRotation(key);
-    } else if (key === 'e') {
-      event.preventDefault();
-      this.confirmRotationSelection();
-    } else if (key === ' ') {
-      event.preventDefault();
-      this.executeMoveWithRotation(this.rotationChoice);
-    }
-  }
-
-  /**
-   * Navigate rotation options: Left, Keep, Right
-   */
-  navigateRotation(direction) {
-    const rotations = ['left', 'keep', 'right'];
-    const currentIndex = rotations.indexOf(this.rotationChoice);
-    
-    let nextIndex = currentIndex;
-    if (direction === 'a' || direction === 'w') {
-      nextIndex = (currentIndex - 1 + rotations.length) % rotations.length;
-    } else if (direction === 'd' || direction === 's') {
-      nextIndex = (currentIndex + 1) % rotations.length;
-    }
-
-    this.rotationChoice = rotations[nextIndex];
-    this.updateRotationSelectionUI();
-    this.logDebug(`Rotation choice: ${this.rotationChoice}`);
-  }
-
-  /**
-   * Update UI for rotation selection
-   */
-  updateRotationSelectionUI() {
-    const indicator = document.getElementById('kb-phase-indicator');
-    if (indicator) {
-      const choices = `LEFT ← ${this.rotationChoice === 'left' ? '✓' : ' '} | KEEP ↕ ${this.rotationChoice === 'keep' ? '✓' : ' '} | RIGHT → ${this.rotationChoice === 'right' ? '✓' : ' '}`;
-      indicator.textContent = `Rotation: ${choices} [SPACE to confirm]`;
-      indicator.style.backgroundColor = '#ff6b00';
-    }
-  }
-
-  /**
-   * Confirm rotation selection
-   */
-  confirmRotationSelection() {
-    this.logDebug(`Rotation confirmed: ${this.rotationChoice}`);
-    // After E, they still need to press Space to execute
-    this.updatePhaseIndicator('moveSelection');
-    this.logDebug('Press SPACE to execute move');
-  }
-
-  /**
-   * Execute the move with selected rotation
-   */
-  executeMoveWithRotation(rotationChoice) {
+  executeMove() {
     if (!this.selectedMovementPos || !this.selectedPieceElement) {
       this.logDebug('No move or piece to execute');
       return;
     }
 
-    this.logDebug(`Executing move to [${this.selectedMovementPos.row}, ${this.selectedMovementPos.col}] with rotation: ${rotationChoice}`);
-
-    // Handle rotation if piece is rotatable
-    if (this.selectedPieceElement && 
-        (this.selectedPieceElement.classList.contains('triangle-piece') ||
-         this.selectedPieceElement.classList.contains('hexgon-piece'))) {
-      
-      if (rotationChoice === 'left') {
-        this.selectedPieceElement.style.transform = 'rotate(-60deg)';
-      } else if (rotationChoice === 'right') {
-        this.selectedPieceElement.style.transform = 'rotate(60deg)';
-      }
-      // 'keep' means no rotation
-    }
+    this.logDebug(`Executing move to [${this.selectedMovementPos.row}, ${this.selectedMovementPos.col}]`);
 
     // Get the target hex and source hex
     const targetHexId = `hex-${this.selectedMovementPos.row}-${this.selectedMovementPos.col}`;
@@ -452,13 +386,10 @@ class KeyboardNavigationSystemV2 {
 
     this.logDebug(`✅ Piece: ${this.selectedPieceElement?.className || 'unknown'}`);
     this.logDebug(`✅ Source: ${sourceHexId}, Target: ${targetHexId}`);
-    this.logDebug(`✅ Target hex has highlights: ${targetHex.className}`);
 
     // Set up game's drag state for drop handler
     window.draggedPiece = this.selectedPieceElement;
     window.draggedFromHex = sourceHex;
-
-    this.logDebug(`✅ Set window.draggedPiece and window.draggedFromHex`);
 
     // Dispatch drop event
     this.logDebug(`📤 Dispatching drop event to ${targetHexId}`);
@@ -473,10 +404,79 @@ class KeyboardNavigationSystemV2 {
     // Clean up
     window.draggedPiece = null;
     window.draggedFromHex = null;
-
-    // Reset to piece selection
-    this.resetPhase();
   }
+
+  /**
+   * PHASE 3: Post-Move Rotation (for rotatable pieces AFTER move)
+   * Choose rotation after piece has been moved
+   */
+  handlePostMoveRotationPhase(key, event) {
+    if (key === 'a' || key === 'd') {
+      event.preventDefault();
+      this.applyPostMoveRotation(key);
+    } else {
+      // Any other key ends rotation phase
+      event.preventDefault();
+      this.resetPhase();
+    }
+  }
+
+  /**
+   * Apply rotation to the piece that just moved
+   */
+  applyPostMoveRotation(direction) {
+    if (!this.selectedPiecePos) {
+      this.logDebug('No selected piece position for rotation');
+      return;
+    }
+
+    const targetHexId = `hex-${this.selectedMovementPos.row}-${this.selectedMovementPos.col}`;
+    const piece = this.selectedPieceElement;
+
+    if (!piece) {
+      this.logDebug('No piece to rotate');
+      return;
+    }
+
+    // Call the game's rotation functions
+    if (piece.classList.contains('triangle-piece')) {
+      if (direction === 'a') {
+        this.logDebug('Rotating triangle LEFT');
+        rotateTriangleLeft(targetHexId);
+      } else if (direction === 'd') {
+        this.logDebug('Rotating triangle RIGHT');
+        rotateTriangleRight(targetHexId);
+      }
+    } else if (piece.classList.contains('hexgon-piece')) {
+      if (direction === 'a') {
+        this.logDebug('Rotating hexagon LEFT');
+        rotateHexgonLeft(targetHexId);
+      } else if (direction === 'd') {
+        this.logDebug('Rotating hexagon RIGHT');
+        rotateHexgonRight(targetHexId);
+      }
+    }
+
+    this.logDebug('Rotation applied');
+  }
+
+  /**
+   * Update UI for post-move rotation phase
+   */
+  updatePostMoveRotationUI() {
+    const indicator = document.getElementById('kb-phase-indicator');
+    if (indicator) {
+      indicator.textContent = `Rotation: Press A for LEFT, D for RIGHT, any other key to skip`;
+      indicator.style.backgroundColor = '#ff6b00';
+    }
+  }
+
+  /**
+   * PHASE 3: Rotation Selection (OLD - keeping for backward compatibility)
+   * Choose rotation for rotatable pieces
+   */
+  // OLD METHOD - REMOVED IN FAVOR OF POST-MOVE ROTATION HANDLING
+  // handleRotationSelectionPhase is no longer used
 
   /**
    * Handle escape key - go back to previous phase
