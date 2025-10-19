@@ -1,11 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "echo 'static'",
-  "installCommand": "echo 'none'",
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ]
+  "framework": "static",
+  "buildCommand": "echo 'no build'",
+  "installCommand": "echo 'no install'"
 }
