@@ -50,6 +50,12 @@ class KeyboardNavigationSystemV2 {
     
     this.logDebug(`[${this.phase}] Key pressed: ${key}`);
     
+    // If General Navigation has focus, don't interfere
+    if (window.generalNav && window.generalNav.enabled && window.generalNav.focusedElement) {
+      this.logDebug('General Navigation has focus, skipping PVP nav');
+      return;
+    }
+
     // Global escape: Always can go back
     if (key === 'escape') {
       this.handleEscape();

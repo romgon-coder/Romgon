@@ -72,6 +72,12 @@ class GeneralNavigationSystem {
       return;
     }
 
+    // If PVP system is active, don't handle keyboard
+    if (window.keyboardNav && window.keyboardNav.enabled && window.keyboardNav.phase !== 'idle') {
+      this.logDebug(`PVP system active (phase: ${window.keyboardNav.phase}), skipping general nav`);
+      return;
+    }
+
     this.logDebug(`[${this.currentContext}] Key pressed: ${key}`);
 
     // Handle different keys

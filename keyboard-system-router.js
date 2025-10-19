@@ -69,10 +69,11 @@ class KeyboardSystemRouter {
     
     this.logDebug('🎮 Switching to PVP Keyboard System (Multi-Phase)');
     
-    // Disable general navigation
+    // DISABLE general navigation completely
     if (window.generalNav) {
       window.generalNav.setEnabled(false);
       window.generalNav.clearFocus();
+      this.logDebug('✅ General Navigation System DISABLED');
     }
     
     // Enable PVP system
@@ -80,7 +81,7 @@ class KeyboardSystemRouter {
       window.keyboardNav = new KeyboardNavigationSystemV2({ debug: true });
       this.logDebug('✅ PVP Keyboard System activated');
     } else if (window.keyboardNav) {
-      window.keyboardNav.setEnabled(true);
+      window.keyboardNav.enabled = true;
       this.logDebug('✅ PVP Keyboard System re-enabled');
     }
     
@@ -95,10 +96,11 @@ class KeyboardSystemRouter {
     
     this.logDebug('📱 Switching to General Navigation System (Menus)');
     
-    // Disable PVP system
+    // Reset PVP system completely
     if (window.keyboardNav) {
       window.keyboardNav.resetPhase();
-      // Don't disable, just let it sit idle
+      window.keyboardNav.enabled = false;
+      this.logDebug('✅ PVP Keyboard System DISABLED');
     }
     
     // Enable general navigation
