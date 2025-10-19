@@ -326,13 +326,6 @@ class GeneralNavigationSystem {
 // Export
 window.GeneralNavigationSystem = GeneralNavigationSystem;
 
-// Auto-initialize after DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => {
-    if (!window.generalNav && typeof GeneralNavigationSystem !== 'undefined') {
-      console.log('🔄 Initializing General Navigation System...');
-      window.generalNav = new GeneralNavigationSystem({ debug: true });
-      console.log('✅ General Navigation System initialized');
-    }
-  }, 100);
-});
+// NOTE: General Navigation is NOT auto-initialized
+// The keyboard-system-router.js will instantiate it when needed
+// This prevents General Nav from interfering with PVP during gameplay

@@ -123,9 +123,10 @@ class KeyboardSystemRouter {
     // Enable general navigation
     if (!window.generalNav && typeof GeneralNavigationSystem !== 'undefined') {
       window.generalNav = new GeneralNavigationSystem({ debug: true });
+      window.generalNav.enabled = true;
       this.logDebug('✅ General Navigation System activated');
     } else if (window.generalNav) {
-      window.generalNav.setEnabled(true);
+      window.generalNav.enabled = true;
       this.logDebug('✅ General Navigation System re-enabled');
     }
     
