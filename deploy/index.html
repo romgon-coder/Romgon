@@ -129,7 +129,8 @@
         backdrop-filter: blur(4px);
     ">
         <div style="
-            max-width: 900px;
+            max-width: 850px;
+            width: 95vw;
             margin: 40px auto;
             background: #23272e;
             border-radius: 18px;
@@ -143,24 +144,24 @@
             <!-- Sidebar with Avatar -->
             <div id="account-sidebar" style="
                 background: linear-gradient(135deg, #a55eea 0%, #667eea 100%);
-                padding: 40px 30px;
+                padding: 30px 25px;
                 text-align: center;
-                min-width: 280px;
+                min-width: 220px;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
             ">
                 <div id="account-avatar" style="
-                    width: 120px;
-                    height: 120px;
+                    width: 100px;
+                    height: 100px;
                     border-radius: 50%;
                     background: rgba(255, 255, 255, 0.2);
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    margin-bottom: 20px;
-                    font-size: 3em;
+                    margin-bottom: 15px;
+                    font-size: 2.5em;
                     border: 3px solid rgba(255, 255, 255, 0.5);
                     overflow: hidden;
                 ">
@@ -194,8 +195,10 @@
             <!-- Main Content -->
             <div style="
                 flex: 1;
-                padding: 40px 36px;
+                padding: 30px 25px;
                 position: relative;
+                overflow-y: auto;
+                max-height: 80vh;
             ">
                 <button onclick="hideAccountModal()" style="
                     position: absolute; top: 18px; right: 18px;
