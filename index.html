@@ -15266,25 +15266,26 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             console.log('🔍 User username:', currentUser.username);
             console.log('🔍 User type:', currentUser.type);
             
-            // Update user statistics if a user is logged in
+            // Initialize user stats if not present
+            if (!currentUser.stats) {
+                currentUser.stats = {
+                    wins: 0,
+                    losses: 0,
+                    totalGames: 0,
+                    totalMoves: 0,
+                    totalCaptures: 0
+                };
+                console.log('🔧 Initialized stats object');
+            }
+            
+            if (!currentUser.gameHistory) {
+                currentUser.gameHistory = [];
+                console.log('🔧 Initialized gameHistory array');
+            }
+            
+            // Update user statistics if a user is logged in (has username and is NOT guest)
             if (currentUser.username && currentUser.type !== 'guest') {
                 console.log('📊 Logged-in user detected, saving game stats...');
-                
-                // Get the current user's game records
-                let allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
-                if (!allUsers[currentUser.username]) {
-                    allUsers[currentUser.username] = {
-                        username: currentUser.username,
-                        games: [],
-                        stats: {
-                            wins: 0,
-                            losses: 0,
-                            totalGames: 0,
-                            totalMoves: 0,
-                            totalCaptures: 0
-                        }
-                    };
-                }
                 
                 // Determine if current player won or lost
                 const playerIsWhite = true; // Assuming single player is always white in AI mode
@@ -15306,30 +15307,51 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     captures: captureCount
                 };
                 
-                allUsers[currentUser.username].games.push(gameRecord);
-                allUsers[currentUser.username].stats.totalGames += 1;
-                allUsers[currentUser.username].stats.totalMoves += moveCount;
-                allUsers[currentUser.username].stats.totalCaptures += captureCount;
+                // Update stats in currentUser object
+                currentUser.stats.totalGames += 1;
+                currentUser.stats.totalMoves += moveCount;
+                currentUser.stats.totalCaptures += captureCount;
                 
                 if (playerWon) {
-                    allUsers[currentUser.username].stats.wins += 1;
+                    currentUser.stats.wins += 1;
+                    console.log('🎉 WIN recorded - Total wins:', currentUser.stats.wins);
                 } else {
-                    allUsers[currentUser.username].stats.losses += 1;
+                    currentUser.stats.losses += 1;
+                    console.log('😢 LOSS recorded - Total losses:', currentUser.stats.losses);
                 }
                 
-                // Save updated user data
-                localStorage.setItem('romgon-users', JSON.stringify(allUsers));
+                // Add to game history
+                currentUser.gameHistory.push(gameRecord);
                 
-                // ALSO update the currentUser in localStorage with new stats
-                currentUser.stats = allUsers[currentUser.username].stats;
-                currentUser.gameHistory = allUsers[currentUser.username].games;
+                // Save updated currentUser back to localStorage
                 localStorage.setItem('romgon-user', JSON.stringify(currentUser));
                 
-                console.log('✅ Game result saved to user stats:', gameRecord);
-                console.log('📊 Updated user stats:', allUsers[currentUser.username].stats);
-                console.log('💾 Updated currentUser in localStorage');
+                // Also update romgon-users database
+                let allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+                if (!allUsers[currentUser.username]) {
+                    allUsers[currentUser.username] = {
+                        username: currentUser.username,
+                        games: [],
+                        stats: {
+                            wins: 0,
+                            losses: 0,
+                            totalGames: 0,
+                            totalMoves: 0,
+                            totalCaptures: 0
+                        }
+                    };
+                }
+                
+                // Sync the stats
+                allUsers[currentUser.username].games = currentUser.gameHistory;
+                allUsers[currentUser.username].stats = currentUser.stats;
+                localStorage.setItem('romgon-users', JSON.stringify(allUsers));
+                
+                console.log('✅ Game result saved:', gameRecord);
+                console.log('📊 Updated user stats:', currentUser.stats);
+                console.log('💾 Updated both currentUser and allUsers in localStorage');
             } else {
-                console.log('👤 Guest user - no stats saved');
+                console.log('👤 Guest user or no username - no stats saved');
             }
             
             // Notify keyboard systems that game has ended
@@ -15490,8 +15512,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             document.body.appendChild(gameOverOverlay);
             console.log('✅ Overlay appended to document.body');
             console.log('📦 Checking if overlay in DOM:', document.body.contains(gameOverOverlay));
-            console.log('📦 Overlay z-index:', gameOverOverlay.style.zIndex);
-            console.log('📦 Overlay display:', gameOverOverlay.style.display);
+            console.log('📦 GAME OVER SCREEN IS NOW VISIBLE - Check your browser!');
             
             // Force it to be visible immediately
             gameOverOverlay.style.display = 'flex';
