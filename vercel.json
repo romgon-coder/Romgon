@@ -1,6 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "",
+  "framework": null,
+  "buildCommand": false,
   "builds": [
     {
       "src": "api/serve.js",
