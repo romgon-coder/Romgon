@@ -416,9 +416,33 @@ class KeyboardNavigationSystemV2 {
       this.applyPostMoveRotation(key);
     } else if (key === ' ') {
       event.preventDefault();
-      this.logDebug('Rotation phase ended by Space');
-      this.resetPhase();
+      this.logDebug('Ending turn after rotation phase');
+      this.endRotationPhase();
     }
+  }
+
+  /**
+   * End the rotation phase and call switchTurn
+   */
+  endRotationPhase() {
+    if (this.selectedPiecePos) {
+      const hexId = `hex-${this.selectedMovementPos.row}-${this.selectedMovementPos.col}`;
+      
+      // Mark as rotated (even if no rotation was applied) to ensure proper turn tracking
+      if (typeof pieceActions !== 'undefined') {
+        const actions = pieceActions.get(hexId) || {moved: false, attacked: false, rotated: false};
+        actions.rotated = true;
+        pieceActions.set(hexId, actions);
+      }
+    }
+
+    // Call switchTurn to end the turn
+    if (typeof switchTurn === 'function') {
+      this.logDebug('Calling switchTurn to end turn');
+      switchTurn();
+    }
+
+    this.resetPhase();
   }
 
   /**
