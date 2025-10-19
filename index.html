@@ -3082,12 +3082,12 @@
 <body>
 
     <!-- Keyboard Navigation Player Indicator -->
-    <div id="kb-player-indicator" style="display: none;">
-        ⌨️ KB: Player 1 (Black)
+    <div id="kb-player-indicator" style="display: block !important; position: fixed; top: 20px; right: 20px; padding: 12px 20px; background: #333; color: #fff; border-radius: 8px; font-weight: bold; z-index: 9999; border: 2px solid #4ecdc4;">
+        ⌨️ KB: Loaded
     </div>
 
     <!-- Keyboard Navigation Help -->
-    <div id="kb-help-overlay" style="display: none;">
+    <div id="kb-help-overlay" style="display: block !important; position: fixed; bottom: 20px; left: 20px; background: rgba(20, 24, 32, 0.95); border: 2px solid #4ecdc4; border-radius: 8px; padding: 15px; font-size: 12px; color: #4ecdc4; max-width: 250px; z-index: 9998; line-height: 1.6; font-family: 'Courier New', monospace;">
         <strong>⌨️ KEYBOARD CONTROLS</strong><br>
         ↑↓←→ / W,A,S,D: Move<br>
         Space / Enter: Confirm<br>
@@ -17085,6 +17085,49 @@ ${moveHistory || '(No moves played yet - starting position)'}
         // ============================================
         // END OF RPN SYSTEM
         // ============================================
+        
+        // ============================================
+        // KEYBOARD NAVIGATION INITIALIZATION (FALLBACK)
+        // ============================================
+        
+        // Force initialize keyboard navigation system after slight delay
+        setTimeout(() => {
+            console.log('🔄 [INIT] Keyboard Navigation Initialization Starting...');
+            
+            // Show indicators
+            const indicator = document.getElementById('kb-player-indicator');
+            if (indicator) {
+                indicator.style.display = 'block';
+                indicator.style.backgroundColor = '#333';
+                indicator.style.color = '#fff';
+                indicator.textContent = '⌨️ KB: Ready (P1)';
+                console.log('✅ [INIT] Player indicator shown');
+            }
+            
+            const help = document.getElementById('kb-help-overlay');
+            if (help) {
+                help.style.display = 'block';
+                console.log('✅ [INIT] Help overlay shown');
+            }
+            
+            // Initialize keyboard system if not already done
+            if (!window.keyboardNav && typeof KeyboardNavigationSystem !== 'undefined') {
+                console.log('🔄 [INIT] Creating KeyboardNavigationSystem instance...');
+                window.keyboardNav = new KeyboardNavigationSystem({ debug: true });
+                console.log('✅ [INIT] KeyboardNavigationSystem created');
+            } else if (window.keyboardNav) {
+                console.log('✅ [INIT] KeyboardNavigationSystem already exists');
+            } else {
+                console.warn('⚠️ [INIT] KeyboardNavigationSystem class not found!');
+            }
+            
+            // Log final status
+            console.log('📊 [INIT] Final Status:');
+            console.log('  - KeyboardNavigationSystem:', typeof window.KeyboardNavigationSystem);
+            console.log('  - keyboardNav instance:', typeof window.keyboardNav);
+            console.log('  - Indicator visible:', indicator && indicator.style.display !== 'none');
+            console.log('✅ [INIT] Keyboard Navigation System Fully Initialized');
+        }, 1000);
 
     </script>
 </body>
