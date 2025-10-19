@@ -1,22 +1,29 @@
 {
-  "buildCommand": "",
-  "installCommand": "npm install",
-  "outputDirectory": "frontend",
-  "env": {
-    "NODE_ENV": "production"
-  },
+  "version": 2,
+  "buildCommand": "echo 'static site'",
+  "installCommand": "echo 'no install needed'",
+  "public": "frontend",
   "routes": [
     {
-      "src": "/src/.*",
-      "dest": "/src/$1"
+      "src": "^/src/(.*)",
+      "dest": "/src/$1",
+      "headers": {
+        "cache-control": "public, max-age=3600"
+      }
     },
     {
-      "src": "/ASSETS/.*",
-      "dest": "/ASSETS/$1"
+      "src": "^/ASSETS/(.*)",
+      "dest": "/ASSETS/$1",
+      "headers": {
+        "cache-control": "public, max-age=86400"
+      }
     },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "src": "^/(.*)$",
+      "dest": "/index.html",
+      "headers": {
+        "cache-control": "no-cache, no-store, must-revalidate"
+      }
     }
   ]
 }
