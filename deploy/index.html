@@ -16744,6 +16744,17 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 alert('Google sign-in failed to parse credentials.');
                 return;
             }
+            
+            // First, try to find if this email has a registered account
+            const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+            let registeredUsername = null;
+            for (let username in allUsers) {
+                if (allUsers[username].email && allUsers[username].email.toLowerCase() === payload.email.toLowerCase()) {
+                    registeredUsername = username;
+                    break;
+                }
+            }
+            
             const user = {
                 provider: 'google',
                 id: payload.sub,
@@ -16751,6 +16762,13 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 email: payload.email,
                 picture: payload.picture || null,
             };
+            
+            // If user is registered, add their username
+            if (registeredUsername) {
+                user.username = registeredUsername;
+                console.log('Google user matched to registered account:', registeredUsername);
+            }
+            
             // Persist the user and update UI
             try { persistCurrentUser(user); } catch (e) { window.currentUser = user; }
             // Close modal if open
