@@ -1,7 +1,8 @@
 {
   "version": 2,
   "framework": null,
-  "buildCommand": false,
+  "installCommand": "echo 'skip'",
+  "buildCommand": "echo 'skip'",
   "builds": [
     {
       "src": "api/serve.js",
