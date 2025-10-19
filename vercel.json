@@ -5,6 +5,16 @@
       "src": "frontend/index.html",
       "use": "@vercel/static"
     }
+  ],
+  "routes": [
+    {
+      "src": "/src/(.*)",
+      "dest": "/frontend/src/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/index.html"
+    }
   ]
 }
 
