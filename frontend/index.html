@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROMGON - Multiplayer Game</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75' fill='%234ecdc4'>🎮</text></svg>">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="src/css/style.css">
+    
+    <!-- Socket.io Client -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+<body>
+    <!-- Notification Container -->
+    <div id="notifications" class="notifications-container"></div>
+
+    <!-- Main App Container -->
+    <div id="app" class="app-container">
+        
+        <!-- Auth Page -->
+        <section id="auth-page" class="page" style="display: block;">
+            <div class="container flex-center" style="min-height: 100vh;">
+                <div class="card" style="max-width: 500px; width: 100%;">
+                    <div class="text-center mb-4">
+                        <h1 style="font-size: 3rem; margin-bottom: 0;">🎮</h1>
+                        <h2 style="color: var(--primary);">ROMGON</h2>
+                        <p class="text-muted">Multiplayer Strategy Game</p>
+                    </div>
+
+                    <!-- Login Form -->
+                    <form id="login-form" class="form" style="display: block;">
+                        <h3 style="text-align: center; margin-bottom: var(--spacing-lg);">Login</h3>
+                        
+                        <div class="form-group">
+                            <label for="login-username">Username</label>
+                            <input type="text" id="login-username" placeholder="Enter username" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="login-password">Password</label>
+                            <input type="password" id="login-password" placeholder="Enter password" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block btn-lg">
+                            Login
+                        </button>
+                    </form>
+
+                    <!-- Register Form -->
+                    <form id="register-form" class="form" style="display: none;">
+                        <h3 style="text-align: center; margin-bottom: var(--spacing-lg);">Create Account</h3>
+                        
+                        <div class="form-group">
+                            <label for="register-username">Username</label>
+                            <input type="text" id="register-username" placeholder="Choose username (3-30 chars)" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="register-email">Email</label>
+                            <input type="email" id="register-email" placeholder="Enter email" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="register-password">Password</label>
+                            <input type="password" id="register-password" placeholder="Enter password (6+ chars)" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="register-confirm">Confirm Password</label>
+                            <input type="password" id="register-confirm" placeholder="Confirm password" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block btn-lg">
+                            Create Account
+                        </button>
+                    </form>
+
+                    <!-- Toggle Link -->
+                    <div class="text-center mt-4">
+                        <p class="text-muted">
+                            <span id="toggle-text">Don't have an account?</span>
+                            <a href="#" id="toggle-auth" class="text-primary">
+                                <span id="toggle-link">Register</span>
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lobby Page -->
+        <section id="lobby-page" class="page" style="display: none;">
+            <div class="container mt-4">
+                <!-- Header -->
+                <div class="flex-between mb-4">
+                    <div>
+                        <h1 style="margin: 0;">Welcome back! 👋</h1>
+                        <p class="text-muted mb-0" id="user-info"></p>
+                    </div>
+                    <div>
+                        <button id="create-game-btn" class="btn btn-primary btn-lg">
+                            ➕ New Game
+                        </button>
+                        <button id="logout-btn" class="btn btn-outline">
+                            Logout
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Row -->
+                <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+                    <!-- Rating Card -->
+                    <div class="card">
+                        <div class="card-header">📊 Your Rating</div>
+                        <div class="card-body">
+                            <div class="text-center">
+                                <div style="font-size: 2.5rem; font-weight: 700; color: var(--primary);" id="player-rating">1600</div>
+                                <p class="text-muted mb-2" id="player-tier">Intermediate</p>
+                                <p class="text-muted mb-0" id="player-tier-emoji" style="font-size: 2rem;">🥈</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Card -->
+                    <div class="card">
+                        <div class="card-header">🎯 Statistics</div>
+                        <div class="card-body">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                                <div>
+                                    <p class="text-muted mb-1">Games</p>
+                                    <p style="font-size: 1.5rem; font-weight: 700;" id="player-games">0</p>
+                                </div>
+                                <div>
+                                    <p class="text-muted mb-1">Win Rate</p>
+                                    <p style="font-size: 1.5rem; font-weight: 700; color: var(--success);" id="player-winrate">0%</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Wins/Losses Card -->
+                    <div class="card">
+                        <div class="card-header">🏆 Record</div>
+                        <div class="card-body">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                                <div>
+                                    <p class="text-muted mb-1">Wins</p>
+                                    <p style="font-size: 1.5rem; font-weight: 700; color: var(--success);" id="player-wins">0</p>
+                                </div>
+                                <div>
+                                    <p class="text-muted mb-1">Losses</p>
+                                    <p style="font-size: 1.5rem; font-weight: 700; color: var(--error);" id="player-losses">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Leaderboard -->
+                <div class="card">
+                    <div class="card-header">🏅 Top Players</div>
+                    <div class="card-body" id="leaderboard-container">
+                        <p class="text-muted text-center">Loading leaderboard...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Game Page -->
+        <section id="game-page" class="page" style="display: none;">
+            <div class="container mt-4">
+                <!-- Game Header -->
+                <div class="flex-between mb-4">
+                    <div>
+                        <h2 style="margin: 0;">Game In Progress</h2>
+                        <p class="text-muted mb-0" id="game-status">Waiting for opponent...</p>
+                    </div>
+                    <div style="display: flex; gap: var(--spacing-md);">
+                        <button id="resign-btn" class="btn btn-danger">Resign</button>
+                        <button id="draw-btn" class="btn btn-outline">Offer Draw</button>
+                    </div>
+                </div>
+
+                <!-- Game Board (Placeholder) -->
+                <div class="card mb-4">
+                    <div class="card-header">🎮 Game Board</div>
+                    <div class="card-body" style="text-align: center; padding: var(--spacing-2xl);">
+                        <p class="text-muted" style="margin-bottom: 0;">Game board will be rendered here</p>
+                    </div>
+                </div>
+
+                <!-- Game Info -->
+                <div class="grid" style="grid-template-columns: repeat(2, 1fr); gap: var(--spacing-lg);">
+                    <div class="card">
+                        <div class="card-header">White Player</div>
+                        <div class="card-body" id="white-player-info">
+                            <p class="text-muted">Loading...</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">Black Player</div>
+                        <div class="card-body" id="black-player-info">
+                            <p class="text-muted">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Waiting Page -->
+        <section id="waiting-page" class="page" style="display: none;">
+            <div class="container flex-center" style="min-height: 100vh;">
+                <div class="card text-center" style="max-width: 500px;">
+                    <div style="font-size: 3rem; margin-bottom: var(--spacing-lg);">⏳</div>
+                    <h2>Waiting for Opponent</h2>
+                    <p class="text-muted mb-4">Your game ID:</p>
+                    <div style="background: var(--light); padding: var(--spacing-md); border-radius: var(--radius-md); margin-bottom: var(--spacing-lg); font-family: var(--font-mono); font-weight: 700;">
+                        <span id="game-id-display">Loading...</span>
+                    </div>
+                    <p class="text-muted mb-4">Share this ID with your opponent or wait for someone to join.</p>
+                    <button id="cancel-waiting-btn" class="btn btn-outline btn-block">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- API Client Script -->
+    <script src="src/api/client.js"></script>
+    
+    <!-- WebSocket Client Script -->
+    <script src="src/api/websocket.js"></script>
+    
+    <!-- State Management Script -->
+    <script src="src/js/state.js"></script>
+    
+    <!-- UI Manager Script -->
+    <script src="src/js/ui.js"></script>
+    
+    <!-- Main App Script -->
+    <script src="src/js/app.js"></script>
+</body>
+</html>

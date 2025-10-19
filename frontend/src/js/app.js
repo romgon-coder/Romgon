@@ -1,0 +1,241 @@
+// ============================================
+// MAIN APPLICATION INITIALIZATION
+// ============================================
+
+class ROMGONApp {
+    constructor() {
+        this.uiManager = uiManager;
+        this.gameState = gameState;
+        this.apiClient = apiClient;
+        this.wsClient = wsClient;
+    }
+
+    /**
+     * Initialize application
+     */
+    async init() {
+        console.log('🎮 Initializing ROMGON Application...');
+
+        try {
+            // Setup UI Manager with pages
+            this.setupPages();
+
+            // Setup event listeners
+            this.setupEventListeners();
+
+            // Check if user is already logged in
+            if (this.gameState.isAuthenticated) {
+                console.log('✅ User already authenticated');
+                await this.initializeGame();
+            } else {
+                console.log('📝 Showing login page');
+                this.uiManager.showPage('auth');
+            }
+
+            // Setup state change listeners
+            this.gameState.subscribe((event) => this.handleStateChange(event));
+
+            console.log('✅ Application initialized successfully');
+        } catch (error) {
+            console.error('❌ Failed to initialize application:', error);
+            this.uiManager.showError('Failed to initialize application');
+        }
+    }
+
+    /**
+     * Setup page components
+     */
+    setupPages() {
+        this.uiManager.registerPage('auth', new AuthPage());
+        this.uiManager.registerPage('lobby', new LobbyPage());
+        this.uiManager.registerPage('game', new GamePage());
+        this.uiManager.registerPage('waiting', new WaitingPage());
+    }
+
+    /**
+     * Setup global event listeners
+     */
+    setupEventListeners() {
+        // Handle back button navigation
+        window.addEventListener('popstate', () => {
+            const page = this.gameState.uiState.currentPage;
+            this.uiManager.showPage(page);
+        });
+
+        // Handle page visibility
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                console.log('📱 App hidden');
+                if (this.wsClient.isConnected()) {
+                    this.wsClient.leaveGame();
+                }
+            } else {
+                console.log('📱 App visible');
+                this.loadUserProfile();
+            }
+        });
+
+        // Prevent accidental page unload during game
+        window.addEventListener('beforeunload', (e) => {
+            if (this.gameState.currentGame) {
+                e.preventDefault();
+                e.returnValue = 'Are you sure you want to leave?';
+            }
+        });
+    }
+
+    /**
+     * Initialize game after login
+     */
+    async initializeGame() {
+        try {
+            // Load user profile
+            await this.loadUserProfile();
+
+            // Connect to WebSocket
+            if (this.gameState.user) {
+                await this.wsClient.connect(this.gameState.user.id);
+                console.log('✅ WebSocket connected');
+            }
+
+            // Navigate to lobby
+            this.gameState.navigateTo('lobby');
+            await this.uiManager.showPage('lobby');
+        } catch (error) {
+            console.error('❌ Failed to initialize game:', error);
+            this.uiManager.showError('Failed to load game');
+        }
+    }
+
+    /**
+     * Load user profile
+     */
+    async loadUserProfile() {
+        try {
+            const profile = await this.apiClient.getCurrentUserProfile();
+            this.gameState.setUser(profile);
+            this.updatePlayerStats();
+        } catch (error) {
+            console.error('❌ Failed to load profile:', error);
+        }
+    }
+
+    /**
+     * Update player stats display
+     */
+    updatePlayerStats() {
+        const user = this.gameState.user;
+        if (!user) return;
+
+        // Update user info
+        const userInfo = document.getElementById('user-info');
+        if (userInfo) {
+            userInfo.textContent = `Rating: ${user.rating} • Games: ${user.stats.totalGames}`;
+        }
+
+        // Update stats cards
+        document.getElementById('player-rating').textContent = user.rating;
+        document.getElementById('player-tier').textContent = user.tier.name;
+        document.getElementById('player-tier-emoji').textContent = user.tier.emoji;
+        document.getElementById('player-games').textContent = user.stats.totalGames;
+        document.getElementById('player-wins').textContent = user.stats.wins;
+        document.getElementById('player-losses').textContent = user.stats.losses;
+
+        const winRate = user.stats.totalGames > 0 ? 
+            (user.stats.wins / user.stats.totalGames * 100).toFixed(1) : 
+            '0';
+        document.getElementById('player-winrate').textContent = winRate + '%';
+    }
+
+    /**
+     * Handle state changes
+     */
+    handleStateChange(event) {
+        console.log('📊 State changed:', event);
+
+        switch (event) {
+            case 'user-changed':
+                this.updatePlayerStats();
+                break;
+
+            case 'game-changed':
+                this.handleGameStateChange();
+                break;
+
+            case 'navigation':
+                const page = this.gameState.uiState.currentPage;
+                this.uiManager.showPage(page);
+                break;
+
+            case 'ui-changed':
+                this.updateUI();
+                break;
+        }
+    }
+
+    /**
+     * Handle game state change
+     */
+    handleGameStateChange() {
+        const game = this.gameState.currentGame;
+        if (!game) return;
+
+        console.log('🎮 Game state changed:', game);
+
+        // Update game display
+        const statusElement = document.getElementById('game-status');
+        if (statusElement) {
+            if (game.status === 'active') {
+                statusElement.textContent = 'Game in progress...';
+            } else {
+                statusElement.textContent = `Game finished - Winner: ${game.winner}`;
+            }
+        }
+    }
+
+    /**
+     * Update UI elements
+     */
+    updateUI() {
+        // Show/hide loading spinner
+        const uiState = this.gameState.uiState;
+        if (uiState.loading) {
+            this.uiManager.showLoading();
+        } else {
+            this.uiManager.hideLoading();
+        }
+
+        // Show error if any
+        if (uiState.error) {
+            this.uiManager.showError(uiState.error);
+        }
+
+        // Show notification if any
+        if (uiState.notification) {
+            this.uiManager.showNotification(uiState.notification);
+        }
+    }
+}
+
+// ============================================
+// APPLICATION BOOTSTRAP
+// ============================================
+
+// Initialize app when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        const app = new ROMGONApp();
+        app.init();
+    });
+} else {
+    const app = new ROMGONApp();
+    app.init();
+}
+
+// Export for debugging
+window.ROMGON = {
+    apiClient,
+    wsClient,
+    gameState,
+    uiManager
+};
