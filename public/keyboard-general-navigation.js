@@ -227,6 +227,7 @@ class GeneralNavigationSystem {
     
     // Check if any major modal/screen is open
     const signupModal = document.getElementById('signup-modal');
+    const signinModal = document.getElementById('signin-modal');
     const accountModal = document.getElementById('account-modal');
     const settingsModal = document.getElementById('settings-modal');
     const openingBookModal = document.getElementById('opening-book-modal');
@@ -237,9 +238,14 @@ class GeneralNavigationSystem {
       const style = window.getComputedStyle(signupModal);
       this.logDebug(`signup-modal display: ${style.display}, visibility: ${style.visibility}, offsetParent: ${signupModal.offsetParent}`);
     }
+    if (signinModal) {
+      const style = window.getComputedStyle(signinModal);
+      this.logDebug(`signin-modal display: ${style.display}, visibility: ${style.visibility}, offsetParent: ${signinModal.offsetParent}`);
+    }
     
     const openModals = [
-      signupModal, 
+      signupModal,
+      signinModal,
       accountModal, 
       settingsModal, 
       openingBookModal, 
@@ -247,7 +253,10 @@ class GeneralNavigationSystem {
     ].filter(modal => {
       if (!modal) return false;
       const style = window.getComputedStyle(modal);
-      return style.display !== 'none' && style.visibility !== 'hidden' && modal.offsetParent !== null;
+      // Fixed position modals may have offsetParent === null, so check display and visibility only
+      const isDisplayed = style.display !== 'none';
+      const isVisible = style.visibility !== 'hidden';
+      return isDisplayed && isVisible;
     });
     
     this.logDebug(`Open modals count: ${openModals.length}`);
