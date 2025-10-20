@@ -18652,6 +18652,8 @@ ${moveHistory || '(No moves played yet - starting position)'}
 
         // Initialize splash page
         function initializeSplashPage() {
+            console.log('🚀 Initializing splash page...');
+            
             // Show splash page on load
             showSplashPage();
 
@@ -18660,8 +18662,15 @@ ${moveHistory || '(No moves played yet - starting position)'}
             const signinBtn = document.getElementById('signin-login-btn');
             const guestBtn = document.getElementById('guest-login-btn');
 
+            console.log('🔍 Button elements found:', {
+                googleBtn: !!googleBtn,
+                signinBtn: !!signinBtn,
+                guestBtn: !!guestBtn
+            });
+
             if (googleBtn) {
                 googleBtn.addEventListener('click', handleGoogleLogin);
+                console.log('✅ Google login button event listener attached');
             }
 
             if (signinBtn) {
@@ -18670,8 +18679,8 @@ ${moveHistory || '(No moves played yet - starting position)'}
             }
 
             if (guestBtn) {
-                // Use backend-integrated guest login
                 guestBtn.addEventListener('click', handleGuestLoginWithBackend);
+                console.log('✅ Guest button event listener attached');
             }
         }
 
