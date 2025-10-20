@@ -4093,7 +4093,7 @@
                 box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
                 transition: all 0.3s ease;
                 letter-spacing: 0.5px;
-            " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 30px rgba(102, 126, 234, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.4)'" onclick="showSignInModal()">
+            " id="signin-login-btn" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 30px rgba(102, 126, 234, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.4)'">
                 🔐 Sign In
             </button>
 
@@ -18657,10 +18657,16 @@ ${moveHistory || '(No moves played yet - starting position)'}
 
             // Add event listeners
             const googleBtn = document.getElementById('google-login-btn');
+            const signinBtn = document.getElementById('signin-login-btn');
             const guestBtn = document.getElementById('guest-login-btn');
 
             if (googleBtn) {
                 googleBtn.addEventListener('click', handleGoogleLogin);
+            }
+
+            if (signinBtn) {
+                signinBtn.addEventListener('click', showSignInModal);
+                console.log('✅ Sign In button event listener attached');
             }
 
             if (guestBtn) {
