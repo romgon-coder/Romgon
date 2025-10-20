@@ -97,6 +97,7 @@ class GeneralNavigationSystem {
       event.preventDefault();
       this.navigate('right');
     } else if (key === 'e') {
+      console.log('🎯 [KeyboardNav] E key pressed - calling confirmSelection()');
       event.preventDefault();
       this.confirmSelection();
     } else if (key === 'escape') {
@@ -180,10 +181,15 @@ class GeneralNavigationSystem {
     }
 
     this.logDebug(`Confirming: ${this.focusedElement.tagName} - ${this.focusedElement.textContent.substring(0, 30)}`);
+    console.log('🎯 [KeyboardNav] Calling .click() on:', this.focusedElement);
+    console.log('🎯 [KeyboardNav] Element onclick:', this.focusedElement.onclick);
+    console.log('🎯 [KeyboardNav] Element getAttribute(onclick):', this.focusedElement.getAttribute('onclick'));
 
     // Simulate click/activation
     if (this.focusedElement.tagName === 'BUTTON' || this.focusedElement.getAttribute('role') === 'button') {
+      console.log('🎯 [KeyboardNav] Clicking button...');
       this.focusedElement.click();
+      console.log('🎯 [KeyboardNav] Button clicked!');
     } else if (this.focusedElement.tagName === 'A') {
       this.focusedElement.click();
     } else if (this.focusedElement.tagName === 'INPUT') {
