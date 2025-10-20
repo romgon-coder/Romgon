@@ -1437,17 +1437,42 @@
     // ============================================
     
     function showSignInModal() {
-        document.getElementById('signin-modal').style.display = 'block';
-        document.getElementById('signin-error').style.display = 'none';
-        document.getElementById('signin-form').reset();
-        
-        // Try to load active players count
-        loadActivePlayersCount();
-        
-        // Enable keyboard navigation
-        if (window.generalNav) {
-            window.generalNav.setEnabled(true);
-            window.generalNav.updateNavigationElements();
+        try {
+            console.log('🔐 Opening Sign In modal...');
+            
+            const modal = document.getElementById('signin-modal');
+            const errorDiv = document.getElementById('signin-error');
+            const form = document.getElementById('signin-form');
+            
+            if (!modal) {
+                console.error('❌ signin-modal element not found!');
+                return;
+            }
+            
+            modal.style.display = 'block';
+            console.log('✅ Modal display set to block');
+            
+            if (errorDiv) errorDiv.style.display = 'none';
+            if (form) form.reset();
+            
+            // Try to load active players count
+            try {
+                loadActivePlayersCount();
+            } catch (e) {
+                console.warn('⚠️ Failed to load active players count:', e);
+            }
+            
+            // Enable keyboard navigation
+            if (window.generalNav) {
+                window.generalNav.setEnabled(true);
+                window.generalNav.updateNavigationElements();
+                console.log('✅ Keyboard navigation enabled');
+            }
+            
+            console.log('✅ Sign In modal opened successfully');
+        } catch (error) {
+            console.error('❌ Error opening Sign In modal:', error);
+            alert('Error opening Sign In modal. Check console for details.');
         }
     }
     
