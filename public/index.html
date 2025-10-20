@@ -19247,9 +19247,12 @@ ${moveHistory || '(No moves played yet - starting position)'}
 
         // ============================================
         // EMERGENCY BUTTON INITIALIZATION (BACKUP)
+        // VERSION: 2024-10-20-v3
         // ============================================
-        console.log('🚨 Running emergency button initialization...');
+        console.log('🚨 Running emergency button initialization v3...');
+        console.log('🚨 EMERGENCY CODE IS RUNNING - Version 3');
         setTimeout(() => {
+            console.log('🚨 Emergency timeout fired (500ms elapsed)');
             const signinBtn = document.getElementById('signin-login-btn');
             const guestBtn = document.getElementById('guest-login-btn');
             const googleBtn = document.getElementById('google-login-btn');
