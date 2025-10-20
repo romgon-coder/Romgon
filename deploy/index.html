@@ -19245,6 +19245,40 @@ ${moveHistory || '(No moves played yet - starting position)'}
         // Keyboard systems are now managed by keyboard-system-router.js
         // which automatically switches between PVP and General modes
 
+        // ============================================
+        // EMERGENCY BUTTON INITIALIZATION (BACKUP)
+        // ============================================
+        console.log('🚨 Running emergency button initialization...');
+        setTimeout(() => {
+            const signinBtn = document.getElementById('signin-login-btn');
+            const guestBtn = document.getElementById('guest-login-btn');
+            const googleBtn = document.getElementById('google-login-btn');
+            
+            console.log('🚨 Emergency check - buttons found:', {
+                signin: !!signinBtn,
+                guest: !!guestBtn,
+                google: !!googleBtn
+            });
+            
+            if (signinBtn && !signinBtn._listenerAttached) {
+                signinBtn.addEventListener('click', showSignInModal);
+                signinBtn._listenerAttached = true;
+                console.log('🚨 Emergency: Sign In listener attached');
+            }
+            
+            if (guestBtn && !guestBtn._listenerAttached) {
+                guestBtn.addEventListener('click', handleGuestLoginWithBackend);
+                guestBtn._listenerAttached = true;
+                console.log('🚨 Emergency: Guest listener attached');
+            }
+            
+            if (googleBtn && !googleBtn._listenerAttached) {
+                googleBtn.addEventListener('click', handleGoogleLogin);
+                googleBtn._listenerAttached = true;
+                console.log('🚨 Emergency: Google listener attached');
+            }
+        }, 500);
+
     </script>
 </body>
 </html>
