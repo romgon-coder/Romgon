@@ -203,6 +203,26 @@ class AuthPage {
                     if (registerUsername) {
                         registerUsername.addEventListener('input', (e) => this.validateUsername(e));
                     }
+
+                    // Google login buttons
+                    const googleLoginBtn = document.getElementById('google-login-btn');
+                    const googleRegisterBtn = document.getElementById('google-register-btn');
+                    if (googleLoginBtn) {
+                        googleLoginBtn.addEventListener('click', () => this.handleGoogleAuth());
+                    }
+                    if (googleRegisterBtn) {
+                        googleRegisterBtn.addEventListener('click', () => this.handleGoogleAuth());
+                    }
+
+                    // Guest mode buttons
+                    const guestLoginBtn = document.getElementById('guest-login-btn');
+                    const guestRegisterBtn = document.getElementById('guest-register-btn');
+                    if (guestLoginBtn) {
+                        guestLoginBtn.addEventListener('click', () => this.handleGuestLogin());
+                    }
+                    if (guestRegisterBtn) {
+                        guestRegisterBtn.addEventListener('click', () => this.handleGuestLogin());
+                    }
                     
                     resolve();
                 } catch (error) {
@@ -409,6 +429,60 @@ class AuthPage {
         } finally {
             submitBtn.classList.remove('loading');
             submitBtn.disabled = false;
+            gameState.setLoading(false);
+        }
+    }
+
+    /**
+     * Handle Google OAuth login
+     */
+    async handleGoogleAuth() {
+        try {
+            gameState.setLoading(true);
+            uiManager.showNotification('🔍 Redirecting to Google...', 'info');
+            
+            // Get the API base URL
+            const apiUrl = apiClient.getBaseURL().replace('/api', '');
+            
+            // Redirect to Google OAuth endpoint
+            window.location.href = `${apiUrl}/api/auth/google`;
+        } catch (error) {
+            console.error('❌ Error initiating Google auth:', error);
+            uiManager.showError('Failed to connect with Google');
+            gameState.setLoading(false);
+        }
+    }
+
+    /**
+     * Handle Guest login (play without registration)
+     */
+    async handleGuestLogin() {
+        try {
+            gameState.setLoading(true);
+            uiManager.showNotification('👤 Creating guest account...', 'info');
+
+            // Generate random guest username
+            const guestId = Math.random().toString(36).substring(2, 8);
+            const guestUsername = `Guest_${guestId}`;
+
+            // Call guest login endpoint
+            const data = await apiClient.post('/auth/guest', {
+                username: guestUsername
+            }, { includeAuth: false });
+
+            // Set user as guest
+            const guestUser = {
+                ...data.user,
+                isGuest: true
+            };
+
+            gameState.setUser(guestUser);
+            uiManager.showSuccess('👤 Playing as guest! Have fun!');
+            gameState.navigateTo('lobby');
+            await uiManager.showPage('lobby');
+        } catch (error) {
+            console.error('❌ Error creating guest account:', error);
+            uiManager.showError('Failed to create guest account: ' + error.message);
             gameState.setLoading(false);
         }
     }

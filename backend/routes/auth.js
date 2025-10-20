@@ -234,6 +234,150 @@ router.post('/verify', async (req, res) => {
 });
 
 // ============================================
+// GUEST LOGIN ENDPOINT
+// ============================================
+
+router.post('/guest', async (req, res) => {
+    try {
+        const { username } = req.body;
+
+        if (!username || !username.startsWith('Guest_')) {
+            return res.status(400).json({
+                error: 'Invalid guest username'
+            });
+        }
+
+        // Create temporary guest user
+        const guestId = uuidv4();
+        const result = await dbPromise.run(
+            `INSERT INTO users (username, email, password_hash, rating, is_guest) 
+             VALUES (?, ?, ?, 1600, 1)`,
+            [username, `${username}@guest.romgon.net`, 'guest']
+        );
+
+        const userId = result.lastID;
+
+        // Generate token
+        const token = generateToken(userId, username);
+
+        res.status(201).json({
+            message: 'Guest account created',
+            token,
+            user: {
+                id: userId,
+                username,
+                rating: 1600,
+                isGuest: true
+            }
+        });
+
+    } catch (err) {
+        console.error('❌ Guest login error:', err);
+        res.status(500).json({
+            error: 'Failed to create guest account',
+            message: err.message
+        });
+    }
+});
+
+// ============================================
+// GOOGLE OAUTH ENDPOINTS
+// ============================================
+
+// Redirect to Google for authentication
+router.get('/google', (req, res) => {
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/auth/google/callback';
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+
+    if (!clientId) {
+        return res.status(500).json({
+            error: 'Google OAuth not configured',
+            message: 'GOOGLE_CLIENT_ID environment variable is missing'
+        });
+    }
+
+    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+        `client_id=${clientId}&` +
+        `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+        `response_type=code&` +
+        `scope=openid%20profile%20email&` +
+        `access_type=offline&` +
+        `prompt=consent`;
+
+    res.redirect(googleAuthUrl);
+});
+
+// Handle Google OAuth callback
+router.get('/google/callback', async (req, res) => {
+    try {
+        const { code } = req.query;
+
+        if (!code) {
+            return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}?error=no_code`);
+        }
+
+        // Exchange code for tokens
+        const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                code,
+                client_id: process.env.GOOGLE_CLIENT_ID,
+                client_secret: process.env.GOOGLE_CLIENT_SECRET,
+                redirect_uri: process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/auth/google/callback',
+                grant_type: 'authorization_code'
+            })
+        });
+
+        const tokens = await tokenResponse.json();
+
+        if (!tokens.access_token) {
+            throw new Error('No access token received');
+        }
+
+        // Get user info from Google
+        const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+            headers: { Authorization: `Bearer ${tokens.access_token}` }
+        });
+
+        const googleUser = await userInfoResponse.json();
+
+        // Check if user exists
+        let user = await dbPromise.get(
+            'SELECT * FROM users WHERE email = ?',
+            [googleUser.email]
+        );
+
+        if (!user) {
+            // Create new user
+            const username = googleUser.email.split('@')[0] + '_' + Math.random().toString(36).substring(2, 6);
+            const result = await dbPromise.run(
+                `INSERT INTO users (username, email, password_hash, rating, google_id) 
+                 VALUES (?, ?, ?, 1600, ?)`,
+                [username, googleUser.email, 'google_oauth', googleUser.id]
+            );
+
+            user = {
+                id: result.lastID,
+                username,
+                email: googleUser.email,
+                rating: 1600
+            };
+        }
+
+        // Generate JWT token
+        const token = generateToken(user.id, user.username);
+
+        // Redirect to frontend with token
+        res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}?token=${token}`);
+
+    } catch (err) {
+        console.error('❌ Google OAuth error:', err);
+        res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}?error=auth_failed`);
+    }
+});
+
+// ============================================
 // LOGOUT ENDPOINT
 // ============================================
 

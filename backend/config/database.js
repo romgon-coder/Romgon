@@ -34,12 +34,18 @@ function initializeTables() {
             total_moves INTEGER DEFAULT 0,
             total_captures INTEGER DEFAULT 0,
             member_level TEXT DEFAULT 'Bronze',
+            is_guest INTEGER DEFAULT 0,
+            google_id TEXT UNIQUE,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     `, (err) => {
         if (err) console.error('❌ Error creating users table:', err);
         else console.log('✅ Users table ready');
+        
+        // Add columns if they don't exist (for existing databases)
+        db.run('ALTER TABLE users ADD COLUMN is_guest INTEGER DEFAULT 0', () => {});
+        db.run('ALTER TABLE users ADD COLUMN google_id TEXT UNIQUE', () => {});
     });
 
     // Games table

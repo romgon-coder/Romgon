@@ -30,6 +30,9 @@ class ROMGONApp {
             // Setup event listeners
             this.setupEventListeners();
 
+            // Check for OAuth callback token in URL
+            await this.handleOAuthCallback();
+
             // Check if user is already logged in
             if (this.gameState.isAuthenticated) {
                 console.log('✅ User already authenticated');
@@ -57,6 +60,45 @@ class ROMGONApp {
         this.uiManager.registerPage('lobby', new LobbyPage());
         this.uiManager.registerPage('game', new GamePage());
         this.uiManager.registerPage('waiting', new WaitingPage());
+    }
+
+    /**
+     * Handle OAuth callback
+     */
+    async handleOAuthCallback() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const error = urlParams.get('error');
+
+        if (error) {
+            this.uiManager.showError('❌ Authentication failed: ' + error);
+            // Clean URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+            return;
+        }
+
+        if (token) {
+            try {
+                // Store the token
+                this.apiClient.setToken(token);
+                
+                // Verify and get user info
+                const data = await this.apiClient.verifyToken();
+                this.gameState.setUser(data.user);
+                
+                this.uiManager.showSuccess('🎉 Login successful! Welcome!');
+                
+                // Clean URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+                
+                // Initialize game
+                await this.initializeGame();
+            } catch (error) {
+                console.error('❌ Error processing OAuth callback:', error);
+                this.uiManager.showError('Failed to complete authentication');
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
     }
 
     /**
