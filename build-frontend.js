@@ -2,9 +2,9 @@
 const fs = require('fs');
 const path = require('path');
 
-console.log('Copying frontend files to public directory...');
+console.log('Copying deploy files to public directory...');
 
-const frontendDir = path.join(__dirname, 'frontend');
+const deployDir = path.join(__dirname, 'deploy');
 const publicDir = path.join(__dirname, 'public');
 
 // Create public directory
@@ -25,7 +25,7 @@ function copyFiles(src, dest) {
     const destPath = path.join(dest, file);
     
     // Skip node_modules and .git
-    if (file === 'node_modules' || file === '.git' || file === 'vercel.json') {
+    if (file === 'node_modules' || file === '.git') {
       return;
     }
 
@@ -44,21 +44,10 @@ function copyFiles(src, dest) {
 }
 
 try {
-  // Copy frontend files
-  copyFiles(frontendDir, publicDir);
+  // Copy deploy files
+  copyFiles(deployDir, publicDir);
   
-  // Copy ASSETS folder from root if it exists
-  const assetsDir = path.join(__dirname, 'ASSETS');
-  const assetsDestDir = path.join(publicDir, 'ASSETS');
-  if (fs.existsSync(assetsDir)) {
-    console.log('Copying ASSETS folder...');
-    if (!fs.existsSync(assetsDestDir)) {
-      fs.mkdirSync(assetsDestDir, { recursive: true });
-    }
-    copyFiles(assetsDir, assetsDestDir);
-  }
-  
-  console.log('✅ Frontend files copied to public directory successfully');
+  console.log('✅ Deploy files copied to public directory successfully');
   process.exit(0);
 } catch (err) {
   console.error('❌ Error copying files:', err);
