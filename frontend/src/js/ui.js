@@ -180,6 +180,29 @@ class AuthPage {
                     if (registerForm) {
                         registerForm.addEventListener('submit', (e) => this.handleRegister(e));
                     }
+
+                    // Password toggle buttons
+                    document.querySelectorAll('.toggle-password').forEach(btn => {
+                        btn.addEventListener('click', (e) => this.togglePasswordVisibility(e));
+                    });
+
+                    // Password strength checker
+                    const registerPassword = document.getElementById('register-password');
+                    if (registerPassword) {
+                        registerPassword.addEventListener('input', (e) => this.checkPasswordStrength(e));
+                    }
+
+                    // Real-time validation
+                    const registerConfirm = document.getElementById('register-confirm');
+                    if (registerConfirm) {
+                        registerConfirm.addEventListener('input', (e) => this.validatePasswordMatch(e));
+                    }
+
+                    // Username validation
+                    const registerUsername = document.getElementById('register-username');
+                    if (registerUsername) {
+                        registerUsername.addEventListener('input', (e) => this.validateUsername(e));
+                    }
                     
                     resolve();
                 } catch (error) {
@@ -188,6 +211,97 @@ class AuthPage {
                 }
             }, 100);
         });
+    }
+
+    togglePasswordVisibility(e) {
+        const btn = e.currentTarget;
+        const targetId = btn.getAttribute('data-target');
+        const input = document.getElementById(targetId);
+        const showIcon = btn.querySelector('.show-icon');
+        const hideIcon = btn.querySelector('.hide-icon');
+
+        if (input) {
+            if (input.type === 'password') {
+                input.type = 'text';
+                showIcon.style.display = 'none';
+                hideIcon.style.display = 'inline';
+            } else {
+                input.type = 'password';
+                showIcon.style.display = 'inline';
+                hideIcon.style.display = 'none';
+            }
+        }
+    }
+
+    checkPasswordStrength(e) {
+        const password = e.target.value;
+        const strengthFill = document.getElementById('strength-fill');
+        const strengthText = document.getElementById('strength-text');
+
+        if (!strengthFill || !strengthText) return;
+
+        let strength = 0;
+        let text = 'Weak';
+
+        if (password.length >= 6) strength++;
+        if (password.length >= 10) strength++;
+        if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+        if (/[0-9]/.test(password)) strength++;
+        if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+        // Remove all classes
+        strengthFill.className = 'strength-fill';
+        strengthText.className = 'strength-text';
+
+        if (password.length === 0) {
+            text = 'Enter a password';
+        } else if (strength <= 2) {
+            strengthFill.classList.add('weak');
+            strengthText.classList.add('weak');
+            text = 'Weak password';
+        } else if (strength <= 3) {
+            strengthFill.classList.add('medium');
+            strengthText.classList.add('medium');
+            text = 'Medium password';
+        } else {
+            strengthFill.classList.add('strong');
+            strengthText.classList.add('strong');
+            text = 'Strong password';
+        }
+
+        strengthText.textContent = text;
+    }
+
+    validatePasswordMatch(e) {
+        const confirmInput = e.target;
+        const password = document.getElementById('register-password')?.value;
+        const confirm = confirmInput.value;
+
+        if (confirm.length === 0) {
+            confirmInput.classList.remove('valid', 'invalid');
+        } else if (password === confirm) {
+            confirmInput.classList.remove('invalid');
+            confirmInput.classList.add('valid');
+        } else {
+            confirmInput.classList.remove('valid');
+            confirmInput.classList.add('invalid');
+        }
+    }
+
+    validateUsername(e) {
+        const input = e.target;
+        const username = input.value;
+        const usernameRegex = /^[a-zA-Z0-9_]{3,30}$/;
+
+        if (username.length === 0) {
+            input.classList.remove('valid', 'invalid');
+        } else if (usernameRegex.test(username)) {
+            input.classList.remove('invalid');
+            input.classList.add('valid');
+        } else {
+            input.classList.remove('valid');
+            input.classList.add('invalid');
+        }
     }
 
     toggleMode() {
@@ -209,31 +323,52 @@ class AuthPage {
 
     async handleLogin(e) {
         e.preventDefault();
+        
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        submitBtn.classList.add('loading');
+        submitBtn.disabled = true;
         gameState.setLoading(true);
 
         try {
             const username = document.getElementById('login-username')?.value;
             const password = document.getElementById('login-password')?.value;
+            const rememberMe = document.getElementById('remember-me')?.checked;
             
             if (!username || !password) {
                 throw new Error('Username and password required');
             }
 
             const data = await apiClient.login(username, password);
+            
+            // Store remember me preference
+            if (rememberMe) {
+                localStorage.setItem('romgon_remember', 'true');
+                localStorage.setItem('romgon_username', username);
+            } else {
+                localStorage.removeItem('romgon_remember');
+                localStorage.removeItem('romgon_username');
+            }
+
             gameState.setUser(data.user);
-            uiManager.showSuccess('Login successful!');
+            uiManager.showSuccess('🎉 Login successful! Welcome back!');
             gameState.navigateTo('lobby');
             await uiManager.showPage('lobby');
         } catch (error) {
             gameState.setError(error.message);
-            uiManager.showError(error.message);
+            uiManager.showError('❌ ' + error.message);
         } finally {
+            submitBtn.classList.remove('loading');
+            submitBtn.disabled = false;
             gameState.setLoading(false);
         }
     }
 
     async handleRegister(e) {
         e.preventDefault();
+        
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        submitBtn.classList.add('loading');
+        submitBtn.disabled = true;
         gameState.setLoading(true);
 
         try {
@@ -242,19 +377,38 @@ class AuthPage {
             const password = document.getElementById('register-password')?.value;
             const confirmPassword = document.getElementById('register-confirm')?.value;
             
+            // Validation
             if (!username || !email || !password || !confirmPassword) {
-                throw new Error('All fields required');
+                throw new Error('All fields are required');
+            }
+
+            if (username.length < 3 || username.length > 30) {
+                throw new Error('Username must be between 3-30 characters');
+            }
+
+            if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                throw new Error('Username can only contain letters, numbers, and underscores');
+            }
+
+            if (password.length < 6) {
+                throw new Error('Password must be at least 6 characters');
+            }
+
+            if (password !== confirmPassword) {
+                throw new Error('Passwords do not match');
             }
 
             const data = await apiClient.register(username, email, password, confirmPassword);
             gameState.setUser(data.user);
-            uiManager.showSuccess('Registration successful!');
+            uiManager.showSuccess('🎉 Account created successfully! Welcome to ROMGON!');
             gameState.navigateTo('lobby');
             await uiManager.showPage('lobby');
         } catch (error) {
             gameState.setError(error.message);
-            uiManager.showError(error.message);
+            uiManager.showError('❌ ' + error.message);
         } finally {
+            submitBtn.classList.remove('loading');
+            submitBtn.disabled = false;
             gameState.setLoading(false);
         }
     }

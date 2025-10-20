@@ -26,70 +26,121 @@
         
         <!-- Auth Page -->
         <section id="auth-page" class="page" style="display: block;">
+            <div class="auth-background"></div>
             <div class="container flex-center" style="min-height: 100vh;">
-                <div class="card" style="max-width: 500px; width: 100%;">
-                    <div class="text-center mb-4">
-                        <h1 style="font-size: 3rem; margin-bottom: 0;">🎮</h1>
-                        <h2 style="color: var(--primary);">ROMGON</h2>
-                        <p class="text-muted">Multiplayer Strategy Game</p>
+                <div class="auth-card">
+                    <!-- Header -->
+                    <div class="auth-header">
+                        <div class="auth-logo">🎮</div>
+                        <h1 class="auth-title">ROMGON</h1>
+                        <p class="auth-subtitle">Multiplayer Hexagonal Strategy Game</p>
                     </div>
 
                     <!-- Login Form -->
-                    <form id="login-form" class="form" style="display: block;">
-                        <h3 style="text-align: center; margin-bottom: var(--spacing-lg);">Login</h3>
+                    <form id="login-form" class="auth-form" style="display: block;">
+                        <h3 class="form-title">Welcome Back</h3>
                         
                         <div class="form-group">
                             <label for="login-username">Username</label>
-                            <input type="text" id="login-username" placeholder="Enter username" required>
+                            <div class="input-wrapper">
+                                <span class="input-icon">👤</span>
+                                <input type="text" id="login-username" placeholder="Enter username" required autocomplete="username">
+                            </div>
                         </div>
 
                         <div class="form-group">
                             <label for="login-password">Password</label>
-                            <input type="password" id="login-password" placeholder="Enter password" required>
+                            <div class="input-wrapper">
+                                <span class="input-icon">🔒</span>
+                                <input type="password" id="login-password" placeholder="Enter password" required autocomplete="current-password">
+                                <button type="button" class="toggle-password" data-target="login-password">
+                                    <span class="show-icon">👁️</span>
+                                    <span class="hide-icon" style="display:none;">🙈</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-options">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="remember-me">
+                                <span>Remember me</span>
+                            </label>
                         </div>
 
                         <button type="submit" class="btn btn-primary btn-block btn-lg">
-                            Login
+                            <span class="btn-text">Login</span>
+                            <span class="btn-loader" style="display:none;">⏳ Logging in...</span>
                         </button>
                     </form>
 
                     <!-- Register Form -->
-                    <form id="register-form" class="form" style="display: none;">
-                        <h3 style="text-align: center; margin-bottom: var(--spacing-lg);">Create Account</h3>
+                    <form id="register-form" class="auth-form" style="display: none;">
+                        <h3 class="form-title">Create Account</h3>
                         
                         <div class="form-group">
                             <label for="register-username">Username</label>
-                            <input type="text" id="register-username" placeholder="Choose username (3-30 chars)" required>
+                            <div class="input-wrapper">
+                                <span class="input-icon">👤</span>
+                                <input type="text" id="register-username" placeholder="Choose username (3-30 chars)" required minlength="3" maxlength="30" autocomplete="username">
+                            </div>
+                            <small class="input-hint">3-30 characters, letters and numbers only</small>
                         </div>
 
                         <div class="form-group">
                             <label for="register-email">Email</label>
-                            <input type="email" id="register-email" placeholder="Enter email" required>
+                            <div class="input-wrapper">
+                                <span class="input-icon">📧</span>
+                                <input type="email" id="register-email" placeholder="Enter email" required autocomplete="email">
+                            </div>
                         </div>
 
                         <div class="form-group">
                             <label for="register-password">Password</label>
-                            <input type="password" id="register-password" placeholder="Enter password (6+ chars)" required>
+                            <div class="input-wrapper">
+                                <span class="input-icon">🔒</span>
+                                <input type="password" id="register-password" placeholder="Enter password (6+ chars)" required minlength="6" autocomplete="new-password">
+                                <button type="button" class="toggle-password" data-target="register-password">
+                                    <span class="show-icon">👁️</span>
+                                    <span class="hide-icon" style="display:none;">🙈</span>
+                                </button>
+                            </div>
+                            <div class="password-strength">
+                                <div class="strength-bar">
+                                    <div class="strength-fill" id="strength-fill"></div>
+                                </div>
+                                <small class="strength-text" id="strength-text">Enter a password</small>
+                            </div>
                         </div>
 
                         <div class="form-group">
                             <label for="register-confirm">Confirm Password</label>
-                            <input type="password" id="register-confirm" placeholder="Confirm password" required>
+                            <div class="input-wrapper">
+                                <span class="input-icon">🔒</span>
+                                <input type="password" id="register-confirm" placeholder="Confirm password" required autocomplete="new-password">
+                                <button type="button" class="toggle-password" data-target="register-confirm">
+                                    <span class="show-icon">👁️</span>
+                                    <span class="hide-icon" style="display:none;">🙈</span>
+                                </button>
+                            </div>
                         </div>
 
                         <button type="submit" class="btn btn-primary btn-block btn-lg">
-                            Create Account
+                            <span class="btn-text">Create Account</span>
+                            <span class="btn-loader" style="display:none;">⏳ Creating account...</span>
                         </button>
                     </form>
 
                     <!-- Toggle Link -->
-                    <div class="text-center mt-4">
-                        <p class="text-muted">
-                            <span id="toggle-text">Don't have an account?</span>
-                            <a href="#" id="toggle-auth" class="text-primary">
-                                <span id="toggle-link">Register</span>
-                            </a>
-                        </p>
+                    <div class="auth-toggle">
+                        <span id="toggle-text" class="toggle-text">Don't have an account?</span>
+                        <a href="#" id="toggle-auth" class="toggle-link">
+                            <span id="toggle-link">Register</span>
+                        </a>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="auth-footer">
+                        <p>© 2025 ROMGON • A Strategic Masterpiece</p>
                     </div>
                 </div>
             </div>
