@@ -1,7 +1,4 @@
 {
   "buildCommand": "node build-frontend.js",
-  "outputDirectory": "public",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  "outputDirectory": "public"
 }
