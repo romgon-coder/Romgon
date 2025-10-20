@@ -31,22 +31,6 @@
         </div>
     </div>
     <script>
-    /*
-     Google Sign-In integration (client-side):
-     - Implements a small shim and handler `handleGoogleLogin()` which loads
-         Google's Identity Services script and renders a Google Sign-In button into
-         the account modal element with id `account-google-btn`.
-     - To enable: create an OAuth 2.0 Client ID in Google Cloud Console, add your
-         authorized JavaScript origin (e.g., https://romgon.net), then set the
-         client ID either by adding a meta tag:
-             <meta name="google-client-id" content="629995302527-1t22gstg5590d0as9espopm5mdicrjoj.apps.googleusercontent.com">
-         or by assigning it at runtime before this script runs:
-             window.GOOGLE_CLIENT_ID = '629995302527-1t22gstg5590d0as9espopm5mdicrjoj.apps.googleusercontent.com'
-     - On successful sign-in, `handleGoogleCredentialResponse` parses the JWT and
-         stores a minimal `currentUser` in localStorage.
-     - This is client-side only. For server-verified auth, send the ID token to
-         your server and verify it with Google's token verification endpoints.
-    */
     // Show/hide Statistics Dashboard modal
     function showStatsDashboard() {
         document.getElementById('stats-dashboard-modal').style.display = 'block';
@@ -338,19 +322,6 @@
             description: 'Rhombus and circle both advance.'
         }
     ];
-
-    // Update the small side-panel indicators showing the active base variant
-    function updateVariantIndicators() {
-        try {
-            var label = (window.baseDefenseVariant === 'shape-defense') ? 'BASE: Shape Defence' : 'BASE: Original';
-            var w = document.getElementById('white-variant-indicator');
-            var b = document.getElementById('black-variant-indicator');
-            if (w) w.textContent = label;
-            if (b) b.textContent = label;
-        } catch (e) {
-            // Fail silently if indicators missing
-        }
-    }
 
     // Render a mini board for a given RPN (simple static rendering)
     function renderMiniBoardForRPN(rpn) {
@@ -1024,22 +995,6 @@
             z-index: 10;
             pointer-events: none;
         }
-        .variant-indicator {
-            background-color: #2d2d2d;
-            color: #fff;
-            padding: 6px 10px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 12px;
-            text-align: center;
-            margin-bottom: 8px;
-            border: 1px solid #444;
-        }
-
-        /* Guest indicator badge and tooltip */
-        .guest-indicator-badge { user-select: none; }
-        .guest-indicator-badge:focus { outline: none; box-shadow: 0 0 0 3px rgba(255,107,107,0.15); }
-        .guest-tooltip { pointer-events: none; }
 
         .eliminated-section {
             width: 180px;
@@ -1049,10 +1004,8 @@
             border: 1px solid #3d3935;
             padding: 15px;
             pointer-events: auto;
-            /* Let the whole panel size naturally; only the moves list should scroll.
-               This keeps the variant indicator and opening name visible and fixed. */
-            max-height: none;
-            overflow: visible;
+            max-height: 60vh;
+            overflow-y: auto;
             box-shadow: 0 4px 12px rgba(0,0,0,0.4);
         }
 
@@ -1065,38 +1018,6 @@
             font-weight: 600;
         }
 
-        /* Embedded movement-section inside each eliminated panel */
-        .movement-section {
-            width: 100%;
-            text-align: left;
-            background-color: transparent;
-            border-radius: 6px;
-            padding: 8px 0 0 0;
-            max-height: 220px;
-            overflow-y: auto;
-            overflow-x: hidden;
-            scroll-behavior: smooth;
-            pointer-events: auto;
-            box-shadow: none;
-            margin-top: 8px;
-            border-top: 1px solid rgba(255,255,255,0.03);
-        }
-
-        .movement-section h3 {
-            color: #ddd;
-            margin: 0 0 6px 0;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 4px 0;
-            font-weight: 700;
-        }
-
-        .movement-list { list-style: none; padding: 0; margin: 0; }
-        .movement-item { color: #ccc; font-size: 11px; margin: 3px 0; padding: 4px 6px; background-color: #1f1f1f; border-radius: 4px; font-family: monospace; word-wrap: break-word; }
-        .movement-item.white-move { color: #fff; background-color: #2b2b2b; }
-        .movement-item.black-move { color: #ddd; background-color: #2f2f2f; }
-
         /* Eliminated circle sizes */
         .eliminated-piece.circle-piece {
             width: 40px;
@@ -1104,7 +1025,99 @@
             transform: rotate(90deg);
         }
         
-        /* Movement tracking container removed (styles for .movement-section will be applied in-panel) */
+        /* Movement tracking panels */
+        #movement-tracking-container {
+            position: fixed;
+            top: 270px; /* Adjusted for new eliminated panels position */
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .movement-section {
+            width: 180px;
+            text-align: center;
+            background-color: #262421; /* Chess.com panel color */
+            border-radius: 8px;
+            border: 1px solid #3d3935;
+            padding: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            pointer-events: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+        
+        /* Custom scrollbar styling - Chess.com style */
+        .movement-section::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .movement-section::-webkit-scrollbar-track {
+            background: #1a1714;
+            border-radius: 4px;
+        }
+        
+        .movement-section::-webkit-scrollbar-thumb {
+            background: #4a463f;
+            border-radius: 4px;
+        }
+        
+        .movement-section::-webkit-scrollbar-thumb:hover {
+            background: #777;
+        }
+        
+        .movement-section h3 {
+            color: #fff;
+            margin: 0 0 8px 0;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: sticky;
+            top: 0;
+            background-color: #1a1a1a;
+            padding: 5px 0;
+            z-index: 1;
+            border-bottom: 1px solid #555;
+        }
+        
+        .movement-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .movement-item {
+            color: #ccc;
+            font-size: 11px;
+            margin: 3px 0;
+            padding: 4px 6px;
+            background-color: #333;
+            border-radius: 4px;
+            font-family: monospace;
+            word-wrap: break-word;
+            transition: background-color 0.2s ease;
+        }
+        
+        .movement-item.white-move {
+            color: #fff;
+            background-color: #444;
+        }
+        
+        .movement-item.black-move {
+            color: #ddd;
+            background-color: #555;
+        }
+        
+        /* Hover effect for move items */
+        .movement-item:hover {
+            opacity: 0.8;
+        }
 
         .eliminated-pieces {
             display: flex;
@@ -1957,8 +1970,8 @@
         <li>Threat detection and deadlock/draglock recognition are nontrivial.</li>
     </ul>
 
-    <h3 style="color:#a55eea;">Endgame and Base Defense Rules in Romgon</h3>
-        <div style="margin-bottom:10px; color:#ffd700; font-weight:bold;">Romgon endgames can reach rare situations where a lone rhombus is blocked by non-rhombus pieces, creating a fortress or blockade. The game supports two base-defense variants to handle these:</div>
+    <h3 style="color:#a55eea;">Fortress, Blockade, and Endgame Rules in Romgon</h3>
+    <div style="margin-bottom:10px; color:#ffd700; font-weight:bold;">Romgon endgames can reach rare situations where a lone rhombus is blocked by non-rhombus pieces, creating a fortress or blockade. There are several ways to resolve these:</div>
     <ol style="margin-left:18px;">
         <li><b style="color:#4ecdc4;">Repetition Rule (Default):</b> If the same position occurs three times, the player who repeats <span style="color:#ff6b6b;">loses</span>. Prevents endless blockades. <span style="color:#4ecdc4;">Pros:</span> Familiar, fair. <span style="color:#ff6b6b;">Cons:</span> Sometimes a player with a big advantage cannot win if blocked by a fortress.</li>
         <li><b style="color:#a55eea;">Unstoppable Rhombus Wins (Variant):</b> If a rhombus is one move from the goal and cannot be stopped or captured, that player wins immediately. <span style="color:#4ecdc4;">Pros:</span> Dramatic, rewards skillful play. <span style="color:#ff6b6b;">Cons:</span> Requires clear adjudication.</li>
@@ -2161,7 +2174,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 <h4>10. FAQ & Tips</h4>
 <ul><li><b>Q: Can I rotate a triangle after attacking?</b><br>A: No, rotation is only allowed after a non-capturing move.</li><li><b>Q: What happens if both rhombuses reach the goal at the same time?</b><br>A: The first to reach wins; if simultaneous, the player who moved first wins.</li><li><b>Q: Can I undo moves?</b><br>A: Yes, unless in online/tournament mode.</li><li><b>Q: How do I export my game?</b><br>A: Use the export button in the analysis modal or copy RPN/RMN.</li><li><b>Q: Where can I find more strategy?</b><br>A: See the Opening Book and Analysis Features in the main menu.</li></ul>
 <h4>11. Base Defense Rule</h4>
-<ul><li><b>Original:</b> Only the defending rhombus (on its own base) can prevent the opponent’s rhombus from entering the base. This is the classic, casual rule where rhombus escapes are allowed unless the defending rhombus itself defends the base.<ul><li>If the defending rhombus is not present, the opponent’s rhombus may enter and win.</li></ul></li><li><b>Shape Defence:</b> Any attacking shape that threatens the base hex can prevent the opponent’s rhombus from entering until it is eliminated or moved. This enforces more tactical base defense.</li></ul>
+<ul><li><b>Standard Rule:</b> Only the defending rhombus (on its own base) can prevent the opponent’s rhombus from entering the base. Other pieces do not block entry, even if their attack pattern covers the base.<ul><li>If the defending rhombus is not present, the opponent’s rhombus may enter and win.</li><li>The game will prevent illegal rhombus escapes if the base is defended by the rhombus.</li></ul></li><li><b>Fortress Variant:</b> Any piece (not just the rhombus) that attacks the base hex can prevent the opponent’s rhombus from entering, until it is eliminated or moved.<ul><li>The pop-up for illegal movement will appear if the base is defended by any opponent piece’s attack pattern.</li><li>This variant allows for more complex blockades and defensive tactics.</li></ul></li></ul>
 <hr/>
 <p>Enjoy playing Romgon! For more, see the in-game help, analysis, and statistics dashboards.</p>
             `;
@@ -2322,8 +2335,8 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             <div style="display:flex;justify-content:center;align-items:center;margin-bottom:18px;gap:12px;">
                 <label for="base-defense-variant-tc" style="color:#ffd700;font-size:1.08em;">Base Defense:</label>
                 <select id="base-defense-variant-tc" style="font-size:1em;padding:4px 10px;border-radius:6px;">
-                    <option value="original">Original (Only Rhombus)</option>
-                    <option value="shape-defense">Shape Defence</option>
+                    <option value="standard">Standard (Only Rhombus)</option>
+                    <option value="fortress">Fortress (Any Piece)</option>
                 </select>
                 <span id="base-defense-variant-tc-desc" style="color:#aaa;font-size:0.95em;margin-left:10px;"></span>
             </div>
@@ -2339,15 +2352,14 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 const desc = document.getElementById('base-defense-variant-tc-desc');
                 const fogCheckbox = document.getElementById('fog-of-war-variant-tc');
                 if (sel) {
-                    // Initialize dropdown from saved settings, or fallback to runtime value
-                    sel.value = window.gameSettings.baseDefenseVariant || window.baseDefenseVariant || 'original';
+                    sel.value = gameSettings.baseDefenseVariant;
                     function updateDesc() {
-                        if (sel.value === 'original') desc.textContent = 'Original rules: only the rhombus defends the base (casual mode).';
-                        else if (sel.value === 'shape-defense') desc.textContent = "Shape Defence: rhombus can only escape if the opponent's base is not under attack.";
+                        if (sel.value === 'standard') desc.textContent = 'Only the rhombus can defend the base.';
+                        else desc.textContent = 'Any piece can defend the base.';
                     }
                     sel.addEventListener('change', function() {
-                        window.gameSettings.baseDefenseVariant = sel.value;
-                        window.baseDefenseVariant = sel.value;
+                        gameSettings.baseDefenseVariant = sel.value;
+                        baseDefenseVariant = sel.value;
                         updateBaseDefenceDisplay();
                         updateDesc();
                         saveSettings();
@@ -2355,9 +2367,9 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     updateDesc();
                 }
                 if (fogCheckbox) {
-                    fogCheckbox.checked = !!window.gameSettings.fogOfWar;
+                    fogCheckbox.checked = !!gameSettings.fogOfWar;
                     fogCheckbox.addEventListener('change', function() {
-                        window.gameSettings.fogOfWar = fogCheckbox.checked;
+                        gameSettings.fogOfWar = fogCheckbox.checked;
                         fogOfWarEnabled = fogCheckbox.checked;
                         saveSettings();
                     });
@@ -2656,7 +2668,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 <div style="margin-top: 20px; padding: 15px; background: rgba(78, 205, 196, 0.1); border: 2px solid #4ecdc4; border-radius: 8px;">
                     <div style="display: grid; grid-template-columns: 60px 1fr 100px 100px; gap: 10px; align-items: center;">
                         <div style="color: #4ecdc4; font-weight: 600;">---</div>
-                        <div style="color: #fff; font-weight: 600;">LOGGED IN AS GUEST</div>
+                        <div style="color: #fff; font-weight: 600;">You (Guest)</div>
                         <div style="color: #4ecdc4;">0</div>
                         <div style="color: #4ecdc4; font-weight: 700;">1200</div>
                     </div>
@@ -3283,26 +3295,12 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             <div class="eliminated-section">
                 <h3>White Eliminated</h3>
                 <div id="white-eliminated" class="eliminated-pieces"></div>
-                <!-- Base defence indicator placeholder will be inserted here by updateBaseDefenceDisplay() -->
-                <div id="white-base-defence-placeholder"></div>
-                <div id="white-variant-indicator" class="variant-indicator" style="margin-top:6px;">BASE: Original</div>
-                <div id="white-opening-name" style="margin-top:6px;text-align:center;color:#4ecdc4;font-size:0.95em;font-weight:600;"></div>
-                <div class="movement-section">
-                    <h3>White Moves</h3>
-                    <ul id="white-moves" class="movement-list"></ul>
-                </div>
+                <div id="white-opening-name" style="margin-top:10px;text-align:center;color:#4ecdc4;font-size:1em;font-weight:600;"></div>
             </div>
             <div class="eliminated-section">
                 <h3>Black Eliminated</h3>
                 <div id="black-eliminated" class="eliminated-pieces"></div>
-                <!-- Base defence indicator placeholder will be inserted here by updateBaseDefenceDisplay() -->
-                <div id="black-base-defence-placeholder"></div>
-                <div id="black-variant-indicator" class="variant-indicator" style="margin-top:6px;">BASE: Original</div>
-                <div id="black-opening-name" style="margin-top:6px;text-align:center;color:#ffd700;font-size:0.95em;font-weight:600;"></div>
-                <div class="movement-section">
-                    <h3>Black Moves</h3>
-                    <ul id="black-moves" class="movement-list"></ul>
-                </div>
+                <div id="black-opening-name" style="margin-top:10px;text-align:center;color:#ffd700;font-size:1em;font-weight:600;"></div>
     <script>
     // --- Opening Recognition Logic ---
     // List of all named openings from openings.md
@@ -3342,24 +3340,21 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
     function normalizeMoveNotation(move) {
         // Normalize move notation for comparison: remove spaces, unify > and -
-        if (!move) return '';
-        // Remove any trailing capture/rotation/special flags (x, @, d)
-        const stripped = move.replace(/[x@d]+$/i, '');
-        return stripped.toLowerCase().replace(/\s+/g, '').replace(/>/g, '-');
+        return move.toLowerCase().replace(/\s+/g, '').replace(/>/g, '-');
     }
 
     function getOpeningNameForPlayer(player) {
         // Get the first two moves played in the game (regardless of player)
     // Get first two moves by the specified player
-    const playerMoves = window.rpnMoveHistory.filter(m => m.player === player).slice(0,2);
+    const playerMoves = rpnMoveHistory.filter(m => m.player === player).slice(0,2);
     const rawMoves = playerMoves.map(m => m.notation);
     const moves = rawMoves.map(m => normalizeMoveNotation(m));
     // Also get the first two moves in the game (for backward compatibility)
-    const firstTwoMoves = window.rpnMoveHistory.slice(0,2).map(m => normalizeMoveNotation(m.notation));
+    const firstTwoMoves = rpnMoveHistory.slice(0,2).map(m => normalizeMoveNotation(m.notation));
         // Prefer 4-move opening only if all 4 moves match
         for (const opening of ROMGON_OPENINGS) {
             if (opening.moves.length === 4) {
-                const firstFourMoves = window.rpnMoveHistory.slice(0,4).map(m => normalizeMoveNotation(m.notation));
+                const firstFourMoves = rpnMoveHistory.slice(0,4).map(m => normalizeMoveNotation(m.notation));
                 if (firstFourMoves.length === 4 &&
                     firstFourMoves[0] === normalizeMoveNotation(opening.moves[0]) &&
                     firstFourMoves[1] === normalizeMoveNotation(opening.moves[1]) &&
@@ -3388,7 +3383,13 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
 
     function updateOpeningDisplay() {
-    // Opening detection reads from window.rpnMoveHistory (first two moves per player)
+    // Debug: Log the first two moves by each player and their notations
+    const whiteMoves = rpnMoveHistory.filter(m => m.player === 'white').map(m => m.notation);
+    const blackMoves = rpnMoveHistory.filter(m => m.player === 'black').map(m => m.notation);
+    console.log('[Opening Debug] First two White moves:', whiteMoves.slice(0,2));
+    console.log('[Opening Debug] First two Black moves:', blackMoves.slice(0,2));
+    // Also log the full rpnMoveHistory for reference
+    console.log('[Opening Debug] Full rpnMoveHistory:', rpnMoveHistory.map(m => m.notation));
         // Show opening name for each player if their first two moves match an opening
         let whiteName = getOpeningNameForPlayer('white');
         let blackName = getOpeningNameForPlayer('black');
@@ -3426,18 +3427,28 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     // Initial call
     setTimeout(updateOpeningDisplay, 500);
     // --- Move panels spacing fix ---
-    // Move the move panels slightly further down to avoid overlap
+    // Move the move panels further down to avoid overlap
     document.addEventListener('DOMContentLoaded', function() {
         var whiteMoves = document.getElementById('white-moves');
         var blackMoves = document.getElementById('black-moves');
-        if (whiteMoves) whiteMoves.parentElement.style.marginTop = '80px';
-        if (blackMoves) blackMoves.parentElement.style.marginTop = '80px';
+        if (whiteMoves) whiteMoves.parentElement.style.marginTop = '60px';
+        if (blackMoves) blackMoves.parentElement.style.marginTop = '60px';
     });
     </script>
             </div>
         </div>
         
-        <!-- Movement tracking display removed (moves lists are embedded into each side panel) -->
+        <!-- Movement tracking display -->
+        <div id="movement-tracking-container">
+            <div class="movement-section">
+                <h3>White Moves</h3>
+                <ul id="white-moves" class="movement-list"></ul>
+            </div>
+            <div class="movement-section">
+                <h3>Black Moves</h3>
+                <ul id="black-moves" class="movement-list"></ul>
+            </div>
+        </div>
         
         <div class="board" id="game-board">
              <!-- Board Rows 0-6 with coordinates and classes -->
@@ -3569,7 +3580,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         let backgroundMusicTracks = [];
         
         // Track move history for RPN game export (separate from undo moveHistory)
-        window.rpnMoveHistory = [];
+        let rpnMoveHistory = [];
         
         // Initialize audio when page loads
         function initAudio() {
@@ -3699,7 +3710,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 console.log('Background music play error:', error);
             });
             currentMusicTrack = trackNumber;
-            window.gameSettings.currentMusicTrack = trackNumber;
+            gameSettings.currentMusicTrack = trackNumber;
             updateMusicButtonDisplay();
         }
         
@@ -3711,7 +3722,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 }
             });
             currentMusicTrack = 0;
-            window.gameSettings.currentMusicTrack = 0;
+            gameSettings.currentMusicTrack = 0;
             updateMusicButtonDisplay();
         }
         
@@ -3741,7 +3752,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             const buttons = turnIndicator.querySelectorAll('button');
             for (const button of buttons) {
                 if (button.innerHTML.includes('MUSIC')) {
-                    const isMusicOn = window.gameSettings.music && currentMusicTrack > 0;
+                    const isMusicOn = gameSettings.music && currentMusicTrack > 0;
                     button.innerHTML = isMusicOn ? '🔊 MUSIC' : '🔇 MUSIC';
                     button.style.backgroundColor = isMusicOn ? '#8B4513' : '#654321';
                     button.style.boxShadow = isMusicOn ? '0 2px 8px rgba(139, 69, 19, 0.4)' : '0 2px 8px rgba(101, 67, 33, 0.3)';
@@ -4102,7 +4113,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             clearLastMoveHighlight();
             
             // Only apply highlights if setting is enabled
-            if (!window.gameSettings.showLastMove) {
+            if (!gameSettings.showLastMove) {
                 lastMoveFrom = fromHexId;
                 lastMoveTo = toHexId;
                 return;
@@ -4329,39 +4340,32 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             }
             
             const len = zoneOrder.length;
-            // circle attack tracing removed
             
             // Check clockwise direction
             let clockwiseBlocked = false;
             let clockwiseSteps = (targetIdx - startIdx + len) % len;
-            const clockwiseBlockedHexes = [];
             for (let step = 1; step < clockwiseSteps; step++) {
                 const idx = (startIdx + step) % len;
                 const [r, c] = zoneOrder[idx].split('-');
                 const hex = document.getElementById(`hex-${r}-${c}`);
                 if (hex && hex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece')) {
                     clockwiseBlocked = true;
-                    clockwiseBlockedHexes.push(`${r}-${c}`);
                     break;
                 }
             }
-            // circle attack tracing removed
             
             // Check counter-clockwise direction
             let counterClockwiseBlocked = false;
             let counterClockwiseSteps = (startIdx - targetIdx + len) % len;
-            const counterBlockedHexes = [];
             for (let step = 1; step < counterClockwiseSteps; step++) {
                 const idx = (startIdx - step + len) % len;
                 const [r, c] = zoneOrder[idx].split('-');
                 const hex = document.getElementById(`hex-${r}-${c}`);
                 if (hex && hex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece')) {
                     counterClockwiseBlocked = true;
-                    counterBlockedHexes.push(`${r}-${c}`);
                     break;
                 }
             }
-            // circle attack tracing removed
             
             // Can attack if at least one direction is clear
             return !clockwiseBlocked || !counterClockwiseBlocked;
@@ -5848,7 +5852,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         ]);
 
         // Settings state - must be defined before updateTurnDisplay() is called
-        window.gameSettings = {
+        const gameSettings = {
             soundEffects: true,
             music: false,
             coordinates: false,
@@ -5861,10 +5865,6 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             fogRadius: 2,
             currentMusicTrack: 0
         };
-        // Ensure base defense variant is tracked in settings
-        if (typeof window.gameSettings.baseDefenseVariant === 'undefined') {
-            window.gameSettings.baseDefenseVariant = window.baseDefenseVariant || 'original';
-        }
 
         // Simple move history for undo (stack of last actions)
         const moveHistory = []; // entries: {fromId,toId,pieceClass,capturedHTML,endedTurn,isTriangle}
@@ -5880,16 +5880,16 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         updateBaseDefenceDisplay();
 
         // ===== BASE DEFENSE VARIANT LOGIC =====
-    // Variant: 'original' (only rhombus can defend base), 'shape-defense' (shapes defend base)
-    window.baseDefenseVariant = 'original'; // Default, will be set by UI
+        // Variant: 'standard' (only rhombus can defend base), 'fortress' (any piece can defend base)
+        let baseDefenseVariant = 'standard'; // Default, will be set by UI
 
         // Helper: Check if a piece is defending the base
         function isDefendingBase(pieceType, isWhite) {
-            // 'original' : only rhombus defends the base
-            // 'shape-defense' : any attacking shape can defend the base
-            if (window.baseDefenseVariant === 'original') {
+            if (baseDefenseVariant === 'standard') {
+                // Only rhombus can defend base
                 return pieceType === 'rhombus';
-            } else if (window.baseDefenseVariant === 'shape-defense') {
+            } else if (baseDefenseVariant === 'fortress') {
+                // Any piece can defend base
                 return true;
             }
             return false;
@@ -5897,8 +5897,8 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
 
         // Helper: Get base hex for each player
         function getBaseHex(isWhite) {
-            // Standard base hexes (updated to match win conditions)
-            return isWhite ? '3-0' : '3-8';
+            // Standard base hexes (update if board changes)
+            return isWhite ? '3-7' : '3-1';
         }
 
         // Helper: Is a piece currently defending its base?
@@ -5933,43 +5933,15 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             const fromIdCanonical = normalize(fromHexId);
 
             if (fromIdCanonical === baseHex) {
-                    if (window.baseDefenseVariant === 'original') {
+                if (baseDefenseVariant === 'standard') {
                     // Only rhombus can leave the base
                     if (pieceType !== 'rhombus') {
                         showBaseDefenseWarning();
                         return false;
                     }
                     // If rhombus, allow move to any hex (including opponent's base)
-                } else if (window.baseDefenseVariant === 'shape-defense') {
-                    // Shape defense: rhombus cannot move to opponent's base if that destination base is under attack
-                    if (pieceType === 'rhombus' && toHexId === oppBaseHex) {
-                        // Check if the opponent's base hex (the destination) is under threat by the opponent
-                        const [, destRow, destCol] = oppBaseHex.match(/hex-(\d+)-(\d+)/);
-                        // Simulate placing the rhombus at the destination and check if the opponent
-                        // would be able to attack that square (captures the rhombus). This avoids
-                        // false negatives caused by path blockers that would be removed/changed
-                        // in the post-move position.
-                        try {
-                            const destHexEl = document.getElementById('hex-' + destRow + '-' + destCol);
-                            let temp = null;
-                            if (destHexEl) {
-                                temp = document.createElement('div');
-                                // Use appropriate color for the simulated rhombus so piece checkers behave
-                                temp.className = isWhite ? 'rhombus-piece white-rhombus' : 'rhombus-piece';
-                                temp.setAttribute('data-temp-simulation', 'true');
-                                destHexEl.appendChild(temp);
-                            }
-                            const attackable = isPieceUnderThreat(parseInt(destRow), parseInt(destCol), !isWhite);
-                            // enforcement simulation log removed
-                            if (temp) temp.remove();
-                            if (attackable) {
-                                showShapeDefenseWarning(pieceType);
-                                return false;
-                            }
-                        } catch (e) {
-                            // simulation error logging removed
-                        }
-                    }
+                } else if (baseDefenseVariant === 'fortress') {
+                    // Fortress: any piece can leave the base - allowed
                 }
             }
             return true;
@@ -5978,72 +5950,6 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         // Show popup/warning for illegal base defense move
         function showBaseDefenseWarning() {
             alert('❌ Illegal move: Only the allowed piece(s) can leave the base in this variant!');
-        }
-
-        // Check if a piece can leave base under shape defense rules
-        function canLeaveBaseUnderShapeDefense(pieceType, isWhite) {
-            // Shape defense only applies to rhombus - other pieces can always leave
-            if (pieceType !== 'rhombus') return true;
-
-            // This function is no longer used for rhombus - rhombus movement to opponent's base
-            // is now checked separately in enforceBaseDefenseRule
-            return true;
-        }
-
-    // Debug tracing removed
-
-        // Helper: check if a square (row,col) is attackable by pieces of a given color
-        function isSquareAttackableByColor(row, col, attackerIsWhite) {
-            // isSquareAttackableByColor tracing removed
-            const attackerSelectors = attackerIsWhite ?
-                ['.square-piece.white-piece', '.triangle-piece.white-triangle', '.rhombus-piece.white-rhombus', '.circle-piece.white-circle', '.hexgon-piece.white-hexgon'] :
-                ['.square-piece:not(.white-piece)', '.triangle-piece:not(.white-triangle)', '.rhombus-piece:not(.white-rhombus)', '.circle-piece:not(.white-circle)', '.hexgon-piece:not(.white-hexgon)'];
-
-            for (let sel of attackerSelectors) {
-                const attackers = document.querySelectorAll(sel);
-                for (let attacker of attackers) {
-                    try {
-                        if (attacker.style.display === 'none' || attacker.hasAttribute('data-temp-simulation')) continue;
-                        const attackerHex = attacker.closest('.hexagon');
-                        if (!attackerHex) continue;
-                        const [, aRow, aCol] = attackerHex.id.match(/hex-(\d+)-(\d+)/);
-                        const canAttack = canPieceActuallyAttack(parseInt(aRow), parseInt(aCol), row, col, attacker);
-                        // per-attacker tracing removed
-                        if (canAttack) {
-                            // per-attacker positive trace removed
-                            return true;
-                        }
-                    } catch (e) {
-                        // per-attacker error logging removed
-                        continue;
-                    }
-                }
-            }
-            // Fallback: use existing isPieceUnderThreat helper which enumerates opponent pieces
-            // and may catch cases missed by the selector-based scan (especially complex circle
-            // perimeter checks). Note: isPieceUnderThreat expects the 'isWhite' parameter
-            // indicating the color of the piece being checked; here we invert attackerIsWhite
-            // to pass the correct side.
-            try {
-                const fallback = isPieceUnderThreat(row, col, !attackerIsWhite);
-                // fallback tracing removed
-                if (fallback) {
-                    // fallback positive trace removed
-                    return true;
-                }
-            } catch (e) {
-                // fallback error logging removed
-            }
-            return false;
-        }
-
-        // Show popup/warning for shape defense violation
-        function showShapeDefenseWarning(pieceType) {
-            if (pieceType === 'rhombus') {
-                alert('Shape Defense: Cannot escape - your base is not under threat. Position your shapes to defend the base first.');
-            } else {
-                alert(`❌ Illegal move: ${pieceType} cannot leave base under shape defense rules!`);
-            }
         }
 
         // Patch into move logic: before allowing a move from base, enforce rule
@@ -6891,7 +6797,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             
             // If there's an active game, restore it
             // (Hide start menu and show board if we have moves or are in a game)
-            if (moveCount > 0 || window.rpnMoveHistory.length > 0 || !gameOver) {
+            if (moveCount > 0 || rpnMoveHistory.length > 0 || !gameOver) {
                 const startMenu = document.getElementById('start-menu');
                 if (startMenu) {
                     startMenu.style.display = 'none';
@@ -6921,9 +6827,9 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         // Load current game
         function loadCurrentGame() {
             console.log('📊 Loading current game for analysis...');
-            console.log(`   rpnMoveHistory.length: ${window.rpnMoveHistory.length}`);
+            console.log(`   rpnMoveHistory.length: ${rpnMoveHistory.length}`);
             
-            if (window.rpnMoveHistory.length === 0) {
+            if (rpnMoveHistory.length === 0) {
                 // Allow analyzing starting position even with no moves
                 const confirm = window.confirm('No moves have been made yet. Analyze starting position?');
                 if (!confirm) return;
@@ -7865,13 +7771,13 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         function updateSettingsUI() {
             // Update all toggle switches to match current settings
             const settingElements = {
-                'sound-effects': window.gameSettings.soundEffects,
-                'music': window.gameSettings.music,
-                'coordinates': window.gameSettings.coordinates,
-                'highlight-moves': window.gameSettings.highlightMoves,
-                'confirm-moves': window.gameSettings.confirmMoves,
-                'show-threats': window.gameSettings.showThreats,
-                'show-last-move': window.gameSettings.showLastMove
+                'sound-effects': gameSettings.soundEffects,
+                'music': gameSettings.music,
+                'coordinates': gameSettings.coordinates,
+                'highlight-moves': gameSettings.highlightMoves,
+                'confirm-moves': gameSettings.confirmMoves,
+                'show-threats': gameSettings.showThreats,
+                'show-last-move': gameSettings.showLastMove
             };
             
             for (const [key, value] of Object.entries(settingElements)) {
@@ -7899,30 +7805,17 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             }
             
             // Update animation speed slider
-            document.getElementById('setting-animation-speed').value = window.gameSettings.animationSpeed;
+            document.getElementById('setting-animation-speed').value = gameSettings.animationSpeed;
         }
         
         function applySettings() {
             // Apply settings to the game
-            console.log('Settings applied:', window.gameSettings);
-
-            // Ensure base defense runtime variant matches saved settings
-            if (typeof window.gameSettings.baseDefenseVariant !== 'undefined') {
-                window.baseDefenseVariant = window.gameSettings.baseDefenseVariant;
-                // applySettings runtime sync log removed
-            }
-            // No floating badge: side-panel indicators are the single source of truth
-            // Update side-panel indicators if present
-            try {
-                updateVariantIndicators();
-            } catch (e) {
-                // ignore if not yet defined or DOM not ready
-            }
+            console.log('Settings applied:', gameSettings);
             
             // Apply music setting
-            if (window.gameSettings.music) {
-                if (currentMusicTrack === 0 && window.gameSettings.currentMusicTrack > 0) {
-                    playBackgroundMusic(window.gameSettings.currentMusicTrack); // Resume last track
+            if (gameSettings.music) {
+                if (currentMusicTrack === 0 && gameSettings.currentMusicTrack > 0) {
+                    playBackgroundMusic(gameSettings.currentMusicTrack); // Resume last track
                 } else if (currentMusicTrack === 0) {
                     playBackgroundMusic(1); // Start with track 1 if music is enabled
                 }
@@ -7934,7 +7827,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             updateMusicButtonDisplay();
             
             // Example: Apply coordinate display setting
-            if (window.gameSettings.coordinates) {
+            if (gameSettings.coordinates) {
                 // Show coordinates (you can integrate with existing coordinate toggle)
                 console.log('Coordinates enabled');
             }
@@ -7942,15 +7835,15 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         
         function resetSettings() {
             // Reset to defaults
-            window.gameSettings.soundEffects = true;
-            window.gameSettings.music = false;
-            window.gameSettings.coordinates = false;
-            window.gameSettings.highlightMoves = true;
-            window.gameSettings.animationSpeed = 2;
-            window.gameSettings.confirmMoves = false;
-            window.gameSettings.showThreats = true;
-            window.gameSettings.showLastMove = true;
-            window.gameSettings.currentMusicTrack = 0;
+            gameSettings.soundEffects = true;
+            gameSettings.music = false;
+            gameSettings.coordinates = false;
+            gameSettings.highlightMoves = true;
+            gameSettings.animationSpeed = 2;
+            gameSettings.confirmMoves = false;
+            gameSettings.showThreats = true;
+            gameSettings.showLastMove = true;
+            gameSettings.currentMusicTrack = 0;
             
             // Stop any playing music
             stopBackgroundMusic();
@@ -11736,7 +11629,6 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     font-weight: bold;
                     margin-left: 10px;
                     border: 1px solid #fff;
-                    text-transform: uppercase;
                 `;
                 guestIndicator.textContent = 'GUEST';
                 turnDisplay.appendChild(guestIndicator);
@@ -12465,7 +12357,10 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         
         // NEW: Check if a move would result in checkmate for your own rhombus
         function wouldMoveResultInOwnCheckmate(fromHexId, toHexId, movingPieceClasses, capturedPiece) {
-            // Check if a move would result in own rhombus being checkmated
+            console.log('🔍 Checking if move would result in own checkmate...');
+            console.log('From:', fromHexId, 'To:', toHexId);
+            console.log('Moving piece classes:', movingPieceClasses);
+            console.log('[DEBUG] Early details -> toHexId:', toHexId);
             
             // Find the player's rhombus
             const isWhiteMoving = movingPieceClasses.includes('white-piece') || 
@@ -12474,7 +12369,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                                  movingPieceClasses.includes('white-circle') ||
                                  movingPieceClasses.includes('white-hexgon');
             
-            // determine if white is moving
+            console.log('Is white moving:', isWhiteMoving);
             
             const rhombusSelector = isWhiteMoving ? '.rhombus-piece.white-rhombus' : '.rhombus-piece:not(.white-rhombus)';
             const playerRhombus = document.querySelector(rhombusSelector);
@@ -12488,11 +12383,11 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             const rhombusId = rhombusHex.id;
             const [, rhombusRow, rhombusCol] = rhombusId.match(/hex-(\d+)-(\d+)/);
             
-            // player rhombus coordinates: rhombusRow,rhombusCol
+            console.log('Player rhombus at:', rhombusRow, rhombusCol);
             
             // Check if the rhombus itself is being moved
             const isMovingRhombus = movingPieceClasses.includes('rhombus-piece');
-            // flag: isMovingRhombus
+            console.log('Is moving the rhombus itself:', isMovingRhombus, 'movingPieceClasses:', movingPieceClasses);
             
             // Get the piece being moved
             const fromHex = document.getElementById(fromHexId);
@@ -12500,8 +12395,11 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             const movingPiece = fromHex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
             
             if (!movingPiece) {
+                console.log('Moving piece not found!');
                 return false;
             }
+            
+            console.log('Setting up simulation...');
             
             // Temporarily hide the moving piece and captured piece for simulation
             movingPiece.style.display = 'none';
@@ -12514,47 +12412,16 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             tempPiece.setAttribute('data-temp-simulation', 'true');
             toHex.appendChild(tempPiece);
             
-            // temp piece created at destination for simulation
+            console.log('Temp piece created at destination');
             
             // QUICK WIN CASE: If the move places the player's rhombus onto the opponent's goal hex, it's an immediate win -> NOT illegal
             // Note: Winning goal hexes are fixed: Black goal = hex-3-0, White goal = hex-3-8
             const moverIsWhite = movingPieceClasses.includes('white-rhombus') || movingPieceClasses.includes('white-piece');
             // The goal hex for the mover: White wins by reaching hex-3-8, Black wins by reaching hex-3-0
             const moverGoalHex = moverIsWhite ? 'hex-3-8' : 'hex-3-0';
-            // quick-win mover details
+            console.log('[DEBUG] moverIsWhite:', moverIsWhite, 'moverGoalHex:', moverGoalHex, 'toHexId:', toHexId);
             if (isMovingRhombus && toHexId === moverGoalHex) {
-                // For shape-defense variant, do not auto-allow a rhombus win if the destination
-                // goal hex is attackable by the opponent. In that case, the move should be
-                // considered illegal (blocked) unless the attacker is captured.
-                try {
-                    // Check either the global variable or the settings-backed variant (UI may set gameSettings)
-                    const currentBaseDefense = (typeof window.baseDefenseVariant !== 'undefined') ? window.baseDefenseVariant : (window.gameSettings && window.gameSettings.baseDefenseVariant);
-                    // current base defense variant checked
-                    if (currentBaseDefense === 'shape-defense') {
-                        const [, destR, destC] = toHexId.match(/hex-(\d+)-(\d+)/);
-                        const destAttackable = isSquareAttackableByColor(parseInt(destR), parseInt(destC), !moverIsWhite);
-                        // wouldMoveResultInOwnCheckmate tracing removed
-                        if (destAttackable) {
-                            // Clean up simulation before returning that move is illegal
-                            tempPiece.remove();
-                            movingPiece.style.display = '';
-                            if (capturedPiece && capturedPieceBackup !== null) {
-                                capturedPiece.style.display = capturedPieceBackup;
-                            }
-                            return true; // mark as illegal
-                        }
-                    }
-                } catch (e) {
-                    console.warn('Error evaluating shape-defense on quick win:', e);
-                }
-
-                // move places rhombus on mover goal hex - allow as win
-                // Clean up the temp simulation before returning
-                tempPiece.remove();
-                movingPiece.style.display = '';
-                if (capturedPiece && capturedPieceBackup !== null) {
-                    capturedPiece.style.display = capturedPieceBackup;
-                }
+                console.log('[DEBUG] Move places rhombus on mover goal hex - allow as win (not illegal)');
                 return false;
             }
 
@@ -12890,24 +12757,20 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             // Remove existing base defence indicators
             const existingWhiteIndicator = document.getElementById('white-base-defence');
             const existingBlackIndicator = document.getElementById('black-base-defence');
-            const existingGuestIndicatorBlack = document.getElementById('guest-indicator-black');
-            const existingGuestIndicatorWhite = document.getElementById('guest-indicator-white');
+            const existingGuestIndicator = document.getElementById('guest-indicator');
             if (existingWhiteIndicator) existingWhiteIndicator.remove();
             if (existingBlackIndicator) existingBlackIndicator.remove();
-            if (existingGuestIndicatorBlack) existingGuestIndicatorBlack.remove();
-            if (existingGuestIndicatorWhite) existingGuestIndicatorWhite.remove();
+            if (existingGuestIndicator) existingGuestIndicator.remove();
 
             const activeDefences = isBaseDefenceActive();
             
-            // Add guest indicator above BOTH eliminated sections if user is guest
+            // Add guest indicator above black eliminated section if user is guest
             if (isGuestUser()) {
                 const blackEliminatedSection = document.querySelector('.eliminated-section:last-child');
-                const whiteEliminatedSection = document.querySelector('.eliminated-section:first-child');
-                const makeGuestIndicator = (id) => {
-                    const el = document.createElement('div');
-                    el.id = id;
-                    el.className = 'guest-indicator-badge';
-                    el.style.cssText = `
+                if (blackEliminatedSection) {
+                    const guestIndicator = document.createElement('div');
+                    guestIndicator.id = 'guest-indicator';
+                    guestIndicator.style.cssText = `
                         background-color: #ff6b6b;
                         color: white;
                         padding: 8px 12px;
@@ -12918,55 +12781,15 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                         margin-bottom: 10px;
                         border: 2px solid #fff;
                         box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-                        cursor: pointer;
-                        position: relative;
                     `;
-                    el.textContent = '👤 Logged in as Guest';
-
-                    // Tooltip element
-                    const tip = document.createElement('div');
-                    tip.className = 'guest-tooltip';
-                    tip.style.cssText = `
-                        position: absolute;
-                        top: 110%;
-                        left: 50%;
-                        transform: translateX(-50%);
-                        background: rgba(0,0,0,0.85);
-                        color: #fff;
-                        padding: 6px 8px;
-                        font-size: 11px;
-                        border-radius: 6px;
-                        white-space: nowrap;
-                        display: none;
-                        z-index: 100;
-                    `;
-                    tip.textContent = 'Guest: limited features (no cloud saves, no online ranking)';
-                    el.appendChild(tip);
-
-                    // Show tooltip on hover
-                    el.addEventListener('mouseenter', () => { tip.style.display = 'block'; });
-                    el.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
-
-                    // Click to prompt login
-                    el.addEventListener('click', (e) => { e.stopPropagation(); showAccountModal(); });
-
-                    return el;
-                };
-
-                if (blackEliminatedSection) {
-                    const guestIndicatorBlack = makeGuestIndicator('guest-indicator-black');
-                    blackEliminatedSection.insertBefore(guestIndicatorBlack, blackEliminatedSection.firstChild);
-                }
-                if (whiteEliminatedSection) {
-                    const guestIndicatorWhite = makeGuestIndicator('guest-indicator-white');
-                    whiteEliminatedSection.insertBefore(guestIndicatorWhite, whiteEliminatedSection.firstChild);
+                    guestIndicator.textContent = 'GUEST';
+                    blackEliminatedSection.parentNode.insertBefore(guestIndicator, blackEliminatedSection);
                 }
             }
             
-            // Insert white base defence indicator into its placeholder so ordering is
-            // eliminated -> base-defence -> variant -> openings -> moves
-            const whitePlaceholder = document.getElementById('white-base-defence-placeholder');
-            if (whitePlaceholder) {
+            // Add white base defence indicator below white eliminated panel
+            const whiteEliminatedSection = document.querySelector('.eliminated-section:first-child');
+            if (whiteEliminatedSection) {
                 const whiteIndicator = document.createElement('div');
                 whiteIndicator.id = 'white-base-defence';
                 const isWhiteDefending = activeDefences.includes('white');
@@ -12983,13 +12806,12 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     box-shadow: 0 2px 6px rgba(0,0,0,0.3);
                 `;
                 whiteIndicator.textContent = isWhiteDefending ? 'BASE DEFENCE' : 'BASE OPEN';
-                whitePlaceholder.innerHTML = ''; // clear existing placeholder
-                whitePlaceholder.appendChild(whiteIndicator);
+                whiteEliminatedSection.appendChild(whiteIndicator);
             }
 
-            // Insert black base defence indicator into its placeholder
-            const blackPlaceholder = document.getElementById('black-base-defence-placeholder');
-            if (blackPlaceholder) {
+            // Add black base defence indicator below black eliminated panel
+            const blackEliminatedSection = document.querySelector('.eliminated-section:last-child');
+            if (blackEliminatedSection) {
                 const blackIndicator = document.createElement('div');
                 blackIndicator.id = 'black-base-defence';
                 const isBlackDefending = activeDefences.includes('black');
@@ -13006,8 +12828,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     box-shadow: 0 2px 6px rgba(0,0,0,0.3);
                 `;
                 blackIndicator.textContent = isBlackDefending ? 'BASE DEFENCE' : 'BASE OPEN';
-                blackPlaceholder.innerHTML = '';
-                blackPlaceholder.appendChild(blackIndicator);
+                blackEliminatedSection.appendChild(blackIndicator);
             }
         }
 
@@ -13329,6 +13150,11 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 
                 // Check if this is a valid move (highlighted position)
                 // Note: highlight-threat is just a visual warning and doesn't block movement
+                console.log('🎯 DROP: Checking valid move for target:', targetId);
+                console.log('  - Has green:', targetHex.classList.contains('highlight-green'));
+                console.log('  - Has red:', targetHex.classList.contains('highlight-red'));
+                console.log('  - Has danger:', targetHex.classList.contains('highlight-danger'));
+                console.log('  - Has diagonal:', targetHex.classList.contains('highlight-diagonal'));
                 
                 if (!targetHex.classList.contains('highlight-green') && 
                     !targetHex.classList.contains('highlight-red') && 
@@ -13350,33 +13176,6 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 // ENFORCE BASE DEFENSE RULE (use already declared fromHexId and toHexId below)
                 if (!enforceBaseDefenseRule(draggedFromHex.id, targetHex.id, draggedPiece, isDraggedWhite)) return;
 
-                // Additional shape defense check: block rhombus escape if opponent's base (destination) is under attack
-                if (window.baseDefenseVariant === 'shape-defense' && 
-                    draggedPiece.classList.contains('rhombus-piece') && 
-                    targetHex.id === 'hex-' + getBaseHex(!isDraggedWhite)) {
-                    // Destination is opponent base - check if opponent can attack that base
-                    const [, destRow, destCol] = targetHex.id.match(/hex-(\d+)-(\d+)/);
-                    // Simulate the rhombus at the destination and test if opponent could attack it
-                    try {
-                        const destHexEl = document.getElementById('hex-' + destRow + '-' + destCol);
-                        let tempSim = null;
-                        if (destHexEl) {
-                            tempSim = document.createElement('div');
-                            tempSim.className = isDraggedWhite ? 'rhombus-piece white-rhombus' : 'rhombus-piece';
-                            tempSim.setAttribute('data-temp-simulation', 'true');
-                            destHexEl.appendChild(tempSim);
-                        }
-                            const attackable = isPieceUnderThreat(parseInt(destRow), parseInt(destCol), !isDraggedWhite);
-                            if (tempSim) tempSim.remove();
-                        if (attackable) {
-                            showShapeDefenseWarning('rhombus');
-                            return;
-                        }
-                    } catch (e) {
-                        // drop-handler simulation error suppressed
-                    }
-                }
-
                 // Check if there's an opponent piece to capture
                 const existingPiece = targetHex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
 
@@ -13387,8 +13186,10 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 // Patch: Use full hex ID format for base hexes
                 const fromBaseHex = 'hex-' + getBaseHex(isDraggedWhite);
                 const toOppBaseHex = 'hex-' + getBaseHex(!isDraggedWhite);
+                console.log('[DEBUG] Dragged piece:', draggedPiece.className, 'From:', draggedFromHex.id, 'To:', targetId);
+                console.log('[DEBUG] fromBaseHex:', fromBaseHex, 'toOppBaseHex:', toOppBaseHex);
                 if (isDraggedRhombus && draggedFromHex.id === fromBaseHex && targetId === toOppBaseHex) {
-                    // skipping checkmate check for rhombus moving from base to opponent base
+                    console.log('[DEBUG] Skipping checkmate check for rhombus moving from base to opponent base');
                 } else {
                     if (wouldMoveResultInOwnCheckmate(draggedFromHex.id, targetId, pieceClasses, existingPiece)) {
                         alert('❌ ILLEGAL MOVE! This move puts your rhombus under attack. You can only do this if you capture the attacking piece!');
@@ -13525,25 +13326,6 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     pieceActions.delete(fromHexId);
                 } else {
                     pieceActions.set(fromHexId, actions);
-                }
-
-                // If a RHOMBUS moved from its base, update base defence display immediately
-                try {
-                    const movedIsRhombus = newPiece.classList.contains('rhombus-piece');
-                    if (movedIsRhombus && fromHexId) {
-                        const m = fromHexId.match(/hex-(\d+)-(\d+)/);
-                        if (m) {
-                            const fromR = parseInt(m[1], 10);
-                            const fromC = parseInt(m[2], 10);
-                            // white base is 3-0, black base is 3-8
-                            if ((fromR === 3 && fromC === 0) || (fromR === 3 && fromC === 8)) {
-                                // Rhombus left its base — refresh indicators
-                                updateBaseDefenceDisplay();
-                            }
-                        }
-                    }
-                } catch (e) {
-                    // ignore UI update failures
                 }
                 
                 // Play click sound
@@ -13757,8 +13539,7 @@ ${moveHistory || '(No moves played yet - starting position)'}
         // ============================================
         
         // Track move history for RPN game export (separate from undo moveHistory)
-        // let rpnMoveHistory = []; // Moved to global scope above
-        
+        let rpnMoveHistory = [];
         let gameMetadata = {
             white: 'Player 1',
             black: 'Player 2 (AI)',
@@ -13947,7 +13728,7 @@ ${moveHistory || '(No moves played yet - starting position)'}
             
             // Add metadata
             const activePlayer = currentPlayer === 'white' ? 'w' : 'b';
-            const moveCount = Math.floor(window.rpnMoveHistory.length / 2);
+            const moveCount = Math.floor(rpnMoveHistory.length / 2);
             
             // Build captured pieces notation
             const capturedWhite = capturedWhitePieces.join('') || '-';
@@ -13968,8 +13749,8 @@ ${moveHistory || '(No moves played yet - starting position)'}
             const actionStateStr = actionStates.length > 0 ? actionStates.join(',') : '-';
             
             // Build move history (format: move1;move2;move3...)
-            const moveHistoryStr = window.rpnMoveHistory.length > 0 
-                ? window.rpnMoveHistory.map(m => m.notation).join(';') 
+            const moveHistoryStr = rpnMoveHistory.length > 0 
+                ? rpnMoveHistory.map(m => m.notation).join(';') 
                 : '-';
             
             // Get base defence state (format: w|b|wb|-)
@@ -13993,7 +13774,7 @@ ${moveHistory || '(No moves played yet - starting position)'}
             console.log(`📦 Captured White: ${capturedWhite}, Captured Black: ${capturedBlack}`);
             console.log(`⚡ Action States: ${actionStateStr}`);
             console.log(`📜 Move History: ${moveHistoryStr.substring(0, 100)}${moveHistoryStr.length > 100 ? '...' : ''}`);
-            // Base Defence log removed
+            console.log(`🛡️ Base Defence: ${baseDefenceStr}`);
             console.log(`🎲 Active Piece: ${activePieceStr}`);
             console.log(`⏱️ Timer State: ${timerStr}`);
             console.log('🔍 === RPN EXPORT COMPLETE ===');
@@ -14044,8 +13825,8 @@ ${moveHistory || '(No moves played yet - starting position)'}
             
             // Rebuild from rpnMoveHistory
             let moveNumber = 1;
-            for (let i = 0; i < window.rpnMoveHistory.length; i++) {
-                const move = window.rpnMoveHistory[i];
+            for (let i = 0; i < rpnMoveHistory.length; i++) {
+                const move = rpnMoveHistory[i];
                 const isWhiteMove = i % 2 === 1;
                 const moveList = isWhiteMove ? whiteMovesList : blackMovesList;
 
@@ -14375,8 +14156,6 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     timestamp: new Date().toISOString()
                 });
                 console.log(`   ✅ Move recorded. Total moves: ${rpnMoveHistory.length}`);
-                // Update opening display immediately after recording a move
-                try { alwaysUpdateOpeningDisplay(); } catch (e) { /* ignore */ }
             } else {
                 console.warn('   ⚠️ No notation generated, move not recorded');
             }
@@ -14732,7 +14511,7 @@ ${moveHistory || '(No moves played yet - starting position)'}
         // ============================================
 
         // Global login state
-        window.currentUser = null;
+        let currentUser = null;
 
         // Initialize splash page
         function initializeSplashPage() {
@@ -14770,344 +14549,52 @@ ${moveHistory || '(No moves played yet - starting position)'}
             if (startMenu) startMenu.style.display = 'flex';
         }
 
-        // Handle Google login (delegates to preferred handler if present)
+        // Handle Google login (placeholder for future implementation)
         function handleGoogleLogin() {
-            // delegate to preferredLoginHandler which prefers the in-development handler
-            try { return preferredLoginHandler(); } catch (e) { console.warn('preferredLoginHandler failed', e); }
+            // For now, show a message that Google login is coming soon
+            alert('Google login will be implemented soon! Please use Guest login for now.');
+
+            // Future implementation would look like:
+            // - Initialize Google OAuth
+            // - Handle authentication
+            // - Set currentUser with Google profile info
+            // - Call hideSplashPage()
         }
 
         // Handle guest login
         function handleGuestLogin() {
             // Set guest user
-            window.currentUser = {
+            currentUser = {
                 type: 'guest',
                 name: 'Guest Player',
                 id: 'guest_' + Date.now()
             };
 
             // Save to localStorage for persistence
-            localStorage.setItem('romgon-user', JSON.stringify(window.currentUser));
+            localStorage.setItem('romgon-user', JSON.stringify(currentUser));
 
             // Hide splash page and show main menu
             hideSplashPage();
 
-            console.log('👤 Logged in as Guest:', window.currentUser);
+            console.log('👤 Logged in as Guest:', currentUser);
         }
 
         // Get current user info
         function getCurrentUser() {
-            if (!window.currentUser) {
+            if (!currentUser) {
                 // Try to load from localStorage
                 const savedUser = localStorage.getItem('romgon-user');
                 if (savedUser) {
-                    window.currentUser = JSON.parse(savedUser);
+                    currentUser = JSON.parse(savedUser);
                 }
             }
-            return window.currentUser;
+            return currentUser;
         }
 
         // Check if user is logged in as guest
         function isGuestUser() {
             const user = getCurrentUser();
             return user && user.type === 'guest';
-        }
-
-        // Prompt login - open start menu / splash page and focus login area
-        function promptLogin() {
-            const startMenu = document.getElementById('start-menu');
-            const splash = document.getElementById('splash-page');
-            // Show start menu (login options) and hide splash if necessary
-            if (startMenu) startMenu.style.display = 'flex';
-            if (splash) splash.style.display = 'none';
-            // Optionally focus the guest login button
-            const guestBtn = document.getElementById('guest-login-btn');
-            if (guestBtn) {
-                guestBtn.focus();
-            }
-        }
-
-        // Preferred login handler shim: call the in-development handler if present,
-        // otherwise fall back to promptLogin(). This lets you wire the new handler
-        // later without changing every callsite.
-        function preferredLoginHandler() {
-            try {
-                // Prefer a complete login flow implementation if present.
-                if (typeof handleLoginFlow === 'function') {
-                    return handleLoginFlow();
-                }
-                // Do not call handleGoogleLogin() here to avoid recursion where
-                // handleGoogleLogin might delegate back to this shim in some builds.
-            } catch (e) {
-                console.warn('preferredLoginHandler: preferred handler threw, falling back', e);
-            }
-            return promptLogin();
-        }
-
-        // ----------------------
-        // Google Sign-In helpers
-        // ----------------------
-        // Usage: set `window.GOOGLE_CLIENT_ID = 'your-client-id.apps.googleusercontent.com'` before calling,
-        // or add <meta name="google-client-id" content="YOUR_CLIENT_ID"> to the page.
-
-        function loadGoogleIdentityScript() {
-            return new Promise((resolve, reject) => {
-                if (window.google && window.google.accounts && window.google.accounts.id) return resolve();
-                const s = document.createElement('script');
-                s.src = 'https://accounts.google.com/gsi/client';
-                s.async = true; s.defer = true;
-                s.onload = () => setTimeout(resolve, 50);
-                s.onerror = reject;
-                document.head.appendChild(s);
-            });
-        }
-
-        function getGoogleClientId() {
-            if (window.GOOGLE_CLIENT_ID) return window.GOOGLE_CLIENT_ID;
-            const m = document.querySelector('meta[name="google-client-id"]');
-            if (m) return m.content;
-            return null;
-        }
-
-        function parseJwt (token) {
-            try {
-                const base64Url = token.split('.')[1];
-                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                }).join(''));
-                return JSON.parse(jsonPayload);
-            } catch (e) {
-                return null;
-            }
-        }
-
-        function persistCurrentUser(user) {
-            window.currentUser = user;
-            try { localStorage.setItem('romgon_current_user', JSON.stringify(user)); } catch (e) {}
-            // If you have UI update hooks, call them here (example: refresh panel badges)
-            if (typeof updateBaseDefenceDisplay === 'function') updateBaseDefenceDisplay();
-            if (typeof updateVariantIndicators === 'function') updateVariantIndicators();
-            // Show a small profile badge in the UI
-            try { showLoggedInUser(user); } catch (e) {}
-        }
-
-        function handleGoogleCredentialResponse(response) {
-            // response.credential is a JWT
-            const payload = parseJwt(response.credential);
-            if (!payload) {
-                alert('Google sign-in failed to parse credentials.');
-                return;
-            }
-            const user = {
-                provider: 'google',
-                id: payload.sub,
-                name: payload.name || payload.email,
-                email: payload.email,
-                picture: payload.picture || null,
-            };
-            persistCurrentUser(user);
-            // Close modal if open
-            closeAccountModal();
-            // Optional: show a quick welcome
-            console.info('Signed in as', user.email);
-        }
-
-        async function handleGoogleLogin() {
-            const clientId = getGoogleClientId();
-            if (!clientId) {
-                const msg = 'No Google Client ID configured.\n\nCreate an OAuth 2.0 Client ID in Google Cloud Console, add your origin (e.g., https://romgon.net) to authorized JavaScript origins, then set window.GOOGLE_CLIENT_ID to the value or add <meta name="google-client-id" content="YOUR_CLIENT_ID"> to the page.';
-                alert(msg);
-                console.warn(msg);
-                return;
-            }
-            try {
-                await loadGoogleIdentityScript();
-                if (!window.google || !window.google.accounts || !window.google.accounts.id) {
-                    alert('Google Identity library failed to load.');
-                    return;
-                }
-                // Initialize the Google Identity Services client
-                google.accounts.id.initialize({
-                    client_id: clientId,
-                    callback: handleGoogleCredentialResponse,
-                    auto_select: false,
-                });
-
-                // If there's a placeholder button in the modal, render the Google button into it
-                const holder = document.getElementById('account-google-btn');
-                if (holder) {
-                    // Clear any text and render Google's button
-                    holder.innerHTML = '';
-                    google.accounts.id.renderButton(holder, { theme: 'outline', size: 'large' });
-                }
-
-                // Trigger the one-tap prompt (optional)
-                google.accounts.id.prompt();
-            } catch (e) {
-                console.error('handleGoogleLogin error', e);
-                alert('Failed to load Google sign-in: ' + e.message);
-            }
-        }
-
-        // ----------------------
-        // Profile UI helpers
-        // ----------------------
-        function showLoggedInUser(user) {
-            if (!user) return;
-            // create or update a small badge in the top-right
-            let badge = document.getElementById('user-profile-badge');
-            if (!badge) {
-                badge = document.createElement('div');
-                badge.id = 'user-profile-badge';
-                badge.style.cssText = 'position:fixed; top:12px; right:12px; z-index:20001; display:flex; gap:8px; align-items:center; background:#111; color:#fff; padding:6px 10px; border-radius:18px; box-shadow:0 6px 18px rgba(0,0,0,0.6); cursor:pointer;';
-                document.body.appendChild(badge);
-                badge.addEventListener('click', (e) => { e.stopPropagation(); showAccountModal(); });
-            }
-            badge.innerHTML = '';
-            if (user.picture) {
-                const img = document.createElement('img');
-                img.src = user.picture;
-                img.style.cssText = 'width:28px; height:28px; border-radius:50%; object-fit:cover;';
-                badge.appendChild(img);
-            }
-            const txt = document.createElement('div');
-            txt.style.cssText = 'font-size:13px; color:#fff;';
-            txt.textContent = user.name || user.email || 'Player';
-            badge.appendChild(txt);
-        }
-
-        function removeLoggedInUserUI() {
-            const b = document.getElementById('user-profile-badge');
-            if (b) b.remove();
-        }
-
-        function handleSignOut() {
-            window.currentUser = null;
-            try { localStorage.removeItem('romgon_current_user'); } catch (e) {}
-            removeLoggedInUserUI();
-            // Optionally notify server to revoke session
-            if (window.google && window.google.accounts && window.google.accounts.id) {
-                try { google.accounts.id.disableAutoSelect(); } catch (e) {}
-            }
-            // Refresh parts of the UI that depend on user
-            if (typeof updateBaseDefenceDisplay === 'function') updateBaseDefenceDisplay();
-            if (typeof updateVariantIndicators === 'function') updateVariantIndicators();
-            alert('Signed out');
-            closeAccountModal();
-        }
-
-        // Render account modal state (profile vs sign-in)
-        function renderAccountModalState() {
-            const modal = document.getElementById('account-modal');
-            if (!modal) return;
-            const box = modal.querySelector('div');
-            if (!box) return;
-            // Remove existing profile area if any
-            const existing = box.querySelector('#account-profile-area');
-            if (existing) existing.remove();
-            const user = window.currentUser || (function(){ try { return JSON.parse(localStorage.getItem('romgon_current_user')); } catch(e){return null;} })();
-            if (user) {
-                const area = document.createElement('div');
-                area.id = 'account-profile-area';
-                area.style.cssText = 'margin:10px 0; padding:8px; background:#1b1b1b; border-radius:8px; color:#fff; display:flex; align-items:center; gap:12px;';
-                const img = document.createElement('img');
-                img.src = user.picture || '';
-                img.style.cssText = 'width:48px; height:48px; border-radius:8px; object-fit:cover; background:#222';
-                const info = document.createElement('div');
-                info.innerHTML = `<div style="font-weight:700">${user.name || user.email}</div><div style="font-size:12px; color:#ccc">${user.email || ''}</div>`;
-                const signOutBtn = document.createElement('button');
-                signOutBtn.textContent = 'Sign out';
-                signOutBtn.style.cssText = 'margin-left:auto; background:#e74c3c; color:#fff; border:none; padding:8px 10px; border-radius:8px; cursor:pointer;';
-                signOutBtn.addEventListener('click', (e)=>{ e.stopPropagation(); handleSignOut(); });
-                area.appendChild(img);
-                area.appendChild(info);
-                area.appendChild(signOutBtn);
-                // Insert profile area above the buttons
-                box.insertBefore(area, box.querySelector('div[style*="display:flex; gap:10px;"]'));
-            } else {
-                // Not signed in; ensure Google button is present
-                const gbtn = box.querySelector('#account-google-btn');
-                if (gbtn) {
-                    try { handleGoogleLogin(); } catch (e) {}
-                }
-            }
-        }
-
-        // On load, restore user UI if present
-        try {
-            const saved = localStorage.getItem('romgon_current_user');
-            if (saved) {
-                const u = JSON.parse(saved);
-                if (u) showLoggedInUser(u);
-            }
-        } catch (e) {}
-
-        // Show a centered account modal with guest vs user info and login button
-        function showAccountModal() {
-            // If modal exists, show it
-            if (document.getElementById('account-modal')) {
-                document.getElementById('account-modal').style.display = 'flex';
-                return;
-            }
-
-            const modal = document.createElement('div');
-            modal.id = 'account-modal';
-            modal.style.cssText = `
-                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                display: flex; align-items: center; justify-content: center;
-                background: rgba(0,0,0,0.6); z-index: 20000;
-            `;
-
-            const box = document.createElement('div');
-            box.style.cssText = `
-                width: 420px; max-width: 92%; background: #262421; color: #fff; border-radius: 12px;
-                padding: 22px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); text-align: left;
-                font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
-            `;
-
-            box.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="font-size:18px; font-weight:700;">Account</div>
-                    <button id="account-close-btn" style="background:#333; color:#fff; border:none; padding:6px 10px; border-radius:8px; cursor:pointer;">Close</button>
-                </div>
-                <hr style="border:1px solid #333; margin:12px 0;" />
-                <div style="font-size:14px; margin-bottom:8px;"><strong>Guest</strong> — Limited access</div>
-                <ul style="color:#ddd; margin-top:6px; margin-bottom:12px;">
-                    <li>No cloud saves (local only)</li>
-                    <li>No online ranking / leaderboards</li>
-                    <li>No cross-device sync</li>
-                </ul>
-                <div style="font-size:14px; margin-bottom:8px; margin-top:6px;"><strong>Logged-in User</strong> — Full access</div>
-                <ul style="color:#ddd; margin-top:6px; margin-bottom:16px;">
-                    <li>Cloud saves & cross-device sync</li>
-                    <li>Leaderboards & online matchmaking</li>
-                    <li>Profile, avatar, and community features</li>
-                </ul>
-                <div style="display:flex; gap:10px; justify-content:flex-end;">
-                    <div id="account-google-btn" style="display:inline-block;"></div>
-                    <button id="account-login-btn" style="background:#4ecdc4; color:#10201f; border:none; padding:10px 14px; border-radius:8px; font-weight:700; cursor:pointer;">Go to Login</button>
-                    <button id="account-cancel-btn" style="background:#444; color:#fff; border:none; padding:10px 14px; border-radius:8px; cursor:pointer;">Close</button>
-                </div>
-            `;
-
-            modal.appendChild(box);
-            document.body.appendChild(modal);
-
-            // Wire buttons
-            document.getElementById('account-close-btn').addEventListener('click', closeAccountModal);
-            document.getElementById('account-cancel-btn').addEventListener('click', closeAccountModal);
-            document.getElementById('account-login-btn').addEventListener('click', function() {
-                closeAccountModal();
-                // Direct to login flow (prefer in-development handler, fallback to prompt)
-                preferredLoginHandler();
-            });
-            // Try to render Google button/profile state when modal opens
-            try { renderAccountModalState(); } catch (e) { try { handleGoogleLogin(); } catch(_){} }
-        }
-
-        function closeAccountModal() {
-            const m = document.getElementById('account-modal');
-            if (m) m.remove();
         }
 
         // ============================================

@@ -1337,94 +1337,8 @@
         document.getElementById('opening-book-modal').style.display = 'none';
     }
     
-    // Sign Up Modal Functions
-    function showSignUpModal() {
-        document.getElementById('signup-modal').style.display = 'block';
-        document.getElementById('signup-error').style.display = 'none';
-        document.getElementById('signup-form').reset();
-        
-        // Enable keyboard navigation for the modal
-        if (window.generalNav) {
-            console.log('🎹 Enabling keyboard navigation for signup modal');
-            window.generalNav.setEnabled(true);
-            window.generalNav.updateNavigationElements();
-        }
-    }
-    
-    function hideSignUpModal() {
-        document.getElementById('signup-modal').style.display = 'none';
-        document.getElementById('signup-error').style.display = 'none';
-        
-        // Disable keyboard navigation when modal closes
-        if (window.generalNav) {
-            console.log('🎹 Disabling keyboard navigation (signup modal closed)');
-            window.generalNav.setEnabled(false);
-        }
-    }
-    
-    async function handleSignUp(event) {
-        event.preventDefault();
-        
-        const username = document.getElementById('signup-username').value.trim();
-        const email = document.getElementById('signup-email').value.trim();
-        const password = document.getElementById('signup-password').value;
-        const confirmPassword = document.getElementById('signup-confirm-password').value;
-        const errorDiv = document.getElementById('signup-error');
-        
-        // Basic validation
-        if (username.length < 3) {
-            showSignUpError('Username must be at least 3 characters');
-            return;
-        }
-        
-        if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
-            showSignUpError('Username can only contain letters, numbers, underscores, and dashes');
-            return;
-        }
-        
-        if (password !== confirmPassword) {
-            showSignUpError('Passwords do not match');
-            return;
-        }
-        
-        if (password.length < 6) {
-            showSignUpError('Password must be at least 6 characters');
-            return;
-        }
-        
-        try {
-            showLoadingIndicator('Creating your account...');
-            
-            // Register with backend
-            const response = await romgonAPI.register(username, email, password, confirmPassword);
-            
-            // Save user info locally
-            const user = {
-                username: response.user.username,
-                name: response.user.username,
-                email: response.user.email,
-                id: response.user.id,
-                type: 'registered',
-                token: response.token,
-                wins: 0,
-                losses: 0
-            };
-            
-            window.currentUser = user;
-            localStorage.setItem('romgon-user', JSON.stringify(user));
-            
-            hideLoadingIndicator();
-            hideSignUpModal();
-            showUserHome();
-            
-            console.log('✅ Account created successfully:', user);
-            
-        } catch (error) {
-            hideLoadingIndicator();
-            console.error('❌ Registration failed:', error);
-            showSignUpError(error.message || 'Registration failed. Please try again.');
-        }
-    }
+    // Sign Up Modal Functions (moved to main script block at line ~6250)
+    // Sign In handler (moved to main script block at line ~6340)
     
     function showSignUpError(message) {
         const errorDiv = document.getElementById('signup-error');
@@ -1433,58 +1347,8 @@
     }
     
     // ============================================
-    // SIGN IN MODAL FUNCTIONS
+    // SIGN IN MODAL FUNCTIONS (showSignInModal moved to main script block at line ~6200)
     // ============================================
-    
-    function showSignInModal() {
-        try {
-            console.log('🔐 Opening Sign In modal...');
-            
-            const modal = document.getElementById('signin-modal');
-            const errorDiv = document.getElementById('signin-error');
-            const form = document.getElementById('signin-form');
-            
-            if (!modal) {
-                console.error('❌ signin-modal element not found!');
-                return;
-            }
-            
-            modal.style.display = 'block';
-            console.log('✅ Modal display set to block');
-            
-            if (errorDiv) errorDiv.style.display = 'none';
-            if (form) form.reset();
-            
-            // Try to load active players count
-            try {
-                loadActivePlayersCount();
-            } catch (e) {
-                console.warn('⚠️ Failed to load active players count:', e);
-            }
-            
-            // Enable keyboard navigation
-            if (window.generalNav) {
-                window.generalNav.setEnabled(true);
-                window.generalNav.updateNavigationElements();
-                console.log('✅ Keyboard navigation enabled');
-            }
-            
-            console.log('✅ Sign In modal opened successfully');
-        } catch (error) {
-            console.error('❌ Error opening Sign In modal:', error);
-            alert('Error opening Sign In modal. Check console for details.');
-        }
-    }
-    
-    function hideSignInModal() {
-        document.getElementById('signin-modal').style.display = 'none';
-        document.getElementById('signin-error').style.display = 'none';
-        
-        // Disable keyboard navigation
-        if (window.generalNav) {
-            window.generalNav.setEnabled(false);
-        }
-    }
     
     function toggleSignInPassword() {
         const input = document.getElementById('signin-password');
@@ -1499,57 +1363,7 @@
         }
     }
     
-    async function handleSignIn(event) {
-        event.preventDefault();
-        
-        const username = document.getElementById('signin-username').value.trim();
-        const password = document.getElementById('signin-password').value;
-        const rememberMe = document.getElementById('remember-me').checked;
-        
-        if (!username || !password) {
-            showSignInError('Please enter both username and password');
-            return;
-        }
-        
-        try {
-            showLoadingIndicator('Signing you in...');
-            
-            // Login with backend
-            const response = await romgonAPI.login(username, password);
-            
-            // Save user info locally
-            const user = {
-                username: response.user.username,
-                name: response.user.username,
-                email: response.user.email || '',
-                id: response.user.id,
-                type: 'registered',
-                token: response.token,
-                wins: response.user.wins || 0,
-                losses: response.user.losses || 0,
-                rating: response.user.rating || 1600
-            };
-            
-            window.currentUser = user;
-            localStorage.setItem('romgon-user', JSON.stringify(user));
-            
-            // Remember me functionality
-            if (rememberMe) {
-                localStorage.setItem('romgon-remember', 'true');
-            }
-            
-            hideLoadingIndicator();
-            hideSignInModal();
-            showUserHome();
-            
-            console.log('✅ Signed in successfully:', user);
-            
-        } catch (error) {
-            hideLoadingIndicator();
-            console.error('❌ Sign in failed:', error);
-            showSignInError(error.message || 'Invalid username or password. Please try again.');
-        }
-    }
+    // handleSignIn moved to main script block at line ~6340
     
     function showSignInError(message) {
         const errorDiv = document.getElementById('signin-error');
@@ -6186,6 +6000,237 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     console.log('🟢 ROMGON SCRIPT LOADED - Version 2024-10-20-21:35:27');
     console.log('🟢 Current URL:', window.location.href);
     console.log('🟢 Document ready state:', document.readyState);
+    
+    // ============================================
+    // SIGN IN MODAL FUNCTION (Moved to main script block for global access)
+    // ============================================
+    
+    function showSignInModal() {
+        try {
+            console.log('🔐 Opening Sign In modal...');
+            
+            const modal = document.getElementById('signin-modal');
+            const errorDiv = document.getElementById('signin-error');
+            const form = document.getElementById('signin-form');
+            
+            if (!modal) {
+                console.error('❌ signin-modal element not found!');
+                return;
+            }
+            
+            console.log('✅ Modal element found:', modal);
+            
+            // Reset form
+            if (form) {
+                form.reset();
+                console.log('✅ Form reset');
+            }
+            
+            // Hide error message
+            if (errorDiv) {
+                errorDiv.style.display = 'none';
+                console.log('✅ Error div hidden');
+            }
+            
+            // Show modal
+            modal.style.display = 'block';
+            console.log('✅ Modal display set to block');
+            console.log('✅ Sign In modal opened successfully!');
+            
+        } catch (error) {
+            console.error('❌ Error in showSignInModal:', error);
+            alert('Error opening Sign In modal. Check console for details.');
+        }
+    }
+    
+    // Make it globally accessible
+    window.showSignInModal = showSignInModal;
+    console.log('✅ window.showSignInModal assigned at startup:', typeof window.showSignInModal);
+    
+    // ============================================
+    // SIGN UP MODAL FUNCTIONS
+    // ============================================
+    
+    function showSignUpModal() {
+        console.log('📝 Opening Sign Up modal...');
+        document.getElementById('signup-modal').style.display = 'block';
+        document.getElementById('signup-error').style.display = 'none';
+        document.getElementById('signup-form').reset();
+        
+        // Enable keyboard navigation for the modal
+        if (window.generalNav) {
+            console.log('🎹 Enabling keyboard navigation for signup modal');
+            window.generalNav.setEnabled(true);
+            window.generalNav.updateNavigationElements();
+        }
+    }
+    
+    function hideSignUpModal() {
+        document.getElementById('signup-modal').style.display = 'none';
+        document.getElementById('signup-error').style.display = 'none';
+        
+        // Disable keyboard navigation when modal closes
+        if (window.generalNav) {
+            console.log('🎹 Disabling keyboard navigation (signup modal closed)');
+            window.generalNav.setEnabled(false);
+        }
+    }
+    
+    // Make them globally accessible
+    window.showSignUpModal = showSignUpModal;
+    window.hideSignUpModal = hideSignUpModal;
+    console.log('✅ window.showSignUpModal assigned at startup:', typeof window.showSignUpModal);
+    
+    // ============================================
+    // SIGN UP FORM HANDLER
+    // ============================================
+    
+    async function handleSignUp(event) {
+        event.preventDefault();
+        
+        const username = document.getElementById('signup-username').value.trim();
+        const email = document.getElementById('signup-email').value.trim();
+        const password = document.getElementById('signup-password').value;
+        const confirmPassword = document.getElementById('signup-confirm-password').value;
+        
+        // Basic validation
+        if (username.length < 3) {
+            showSignUpError('Username must be at least 3 characters');
+            return;
+        }
+        
+        if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+            showSignUpError('Username can only contain letters, numbers, underscores, and dashes');
+            return;
+        }
+        
+        if (password !== confirmPassword) {
+            showSignUpError('Passwords do not match');
+            return;
+        }
+        
+        if (password.length < 6) {
+            showSignUpError('Password must be at least 6 characters');
+            return;
+        }
+        
+        try {
+            showLoadingIndicator('Creating your account...');
+            
+            // Register with backend
+            const response = await romgonAPI.register(username, email, password, confirmPassword);
+            
+            // Save user info locally
+            const user = {
+                username: response.user.username,
+                name: response.user.username,
+                email: response.user.email,
+                id: response.user.id,
+                type: 'registered',
+                token: response.token,
+                wins: 0,
+                losses: 0
+            };
+            
+            window.currentUser = user;
+            localStorage.setItem('romgon-user', JSON.stringify(user));
+            
+            hideLoadingIndicator();
+            hideSignUpModal();
+            showUserHome();
+            
+            console.log('✅ Account created successfully:', user);
+            
+        } catch (error) {
+            hideLoadingIndicator();
+            console.error('❌ Registration failed:', error);
+            showSignUpError(error.message || 'Registration failed. Please try again.');
+        }
+    }
+    
+    function showSignUpError(message) {
+        const errorDiv = document.getElementById('signup-error');
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+    }
+    
+    // ============================================
+    // SIGN IN FORM HANDLER
+    // ============================================
+    
+    async function handleSignIn(event) {
+        event.preventDefault();
+        
+        const username = document.getElementById('signin-username').value.trim();
+        const password = document.getElementById('signin-password').value;
+        const rememberMe = document.getElementById('remember-me').checked;
+        
+        if (!username || !password) {
+            showSignInError('Please enter both username and password');
+            return;
+        }
+        
+        try {
+            showLoadingIndicator('Signing you in...');
+            
+            // Login with backend
+            const response = await romgonAPI.login(username, password);
+            
+            // Save user info locally
+            const user = {
+                username: response.user.username,
+                name: response.user.username,
+                email: response.user.email || '',
+                id: response.user.id,
+                type: 'registered',
+                token: response.token,
+                wins: response.user.wins || 0,
+                losses: response.user.losses || 0,
+                rating: response.user.rating || 1600
+            };
+            
+            window.currentUser = user;
+            localStorage.setItem('romgon-user', JSON.stringify(user));
+            
+            // Remember me functionality
+            if (rememberMe) {
+                localStorage.setItem('romgon-remember', 'true');
+            }
+            
+            hideLoadingIndicator();
+            hideSignInModal();
+            showUserHome();
+            
+            console.log('✅ Signed in successfully:', user);
+            
+        } catch (error) {
+            hideLoadingIndicator();
+            console.error('❌ Sign in failed:', error);
+            showSignInError(error.message || 'Invalid username or password. Please try again.');
+        }
+    }
+    
+    function showSignInError(message) {
+        const errorDiv = document.getElementById('signin-error');
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+    }
+    
+    function hideSignInModal() {
+        document.getElementById('signin-modal').style.display = 'none';
+        document.getElementById('signin-error').style.display = 'none';
+        
+        // Disable keyboard navigation
+        if (window.generalNav) {
+            window.generalNav.setEnabled(false);
+        }
+    }
+    
+    // Make them globally accessible
+    window.handleSignUp = handleSignUp;
+    window.handleSignIn = handleSignIn;
+    window.hideSignInModal = hideSignInModal;
+    console.log('✅ Authentication handlers assigned at startup');
     
     // --- Opening Recognition Logic ---
     // List of all named openings from openings.md
@@ -18685,7 +18730,7 @@ ${moveHistory || '(No moves played yet - starting position)'}
             }
 
             if (signinBtn) {
-                signinBtn.addEventListener('click', showSignInModal);
+                signinBtn.addEventListener('click', window.showSignInModal);
                 console.log('✅ Sign In button event listener attached');
             }
 
@@ -19267,22 +19312,55 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 google: !!googleBtn
             });
             
-            if (signinBtn && !signinBtn._listenerAttached) {
-                signinBtn.addEventListener('click', showSignInModal);
-                signinBtn._listenerAttached = true;
-                console.log('🚨 Emergency: Sign In listener attached');
+            try {
+                if (signinBtn) {
+                    console.log('🚨 Attempting to attach Sign In listener...');
+                    if (!signinBtn._listenerAttached) {
+                        signinBtn.addEventListener('click', window.showSignInModal);
+                        signinBtn._listenerAttached = true;
+                        console.log('🚨 Emergency: Sign In listener attached ✅');
+                    } else {
+                        console.log('🚨 Sign In listener already attached (skipped)');
+                    }
+                } else {
+                    console.log('❌ signinBtn is null!');
+                }
+            } catch (err) {
+                console.error('❌ Error attaching Sign In listener:', err);
             }
             
-            if (guestBtn && !guestBtn._listenerAttached) {
-                guestBtn.addEventListener('click', handleGuestLoginWithBackend);
-                guestBtn._listenerAttached = true;
-                console.log('🚨 Emergency: Guest listener attached');
+            try {
+                if (guestBtn) {
+                    console.log('🚨 Attempting to attach Guest listener...');
+                    if (!guestBtn._listenerAttached) {
+                        guestBtn.addEventListener('click', handleGuestLoginWithBackend);
+                        guestBtn._listenerAttached = true;
+                        console.log('🚨 Emergency: Guest listener attached ✅');
+                    } else {
+                        console.log('🚨 Guest listener already attached (skipped)');
+                    }
+                } else {
+                    console.log('❌ guestBtn is null!');
+                }
+            } catch (err) {
+                console.error('❌ Error attaching Guest listener:', err);
             }
             
-            if (googleBtn && !googleBtn._listenerAttached) {
-                googleBtn.addEventListener('click', handleGoogleLogin);
-                googleBtn._listenerAttached = true;
-                console.log('🚨 Emergency: Google listener attached');
+            try {
+                if (googleBtn) {
+                    console.log('🚨 Attempting to attach Google listener...');
+                    if (!googleBtn._listenerAttached) {
+                        googleBtn.addEventListener('click', handleGoogleLogin);
+                        googleBtn._listenerAttached = true;
+                        console.log('🚨 Emergency: Google listener attached ✅');
+                    } else {
+                        console.log('🚨 Google listener already attached (skipped)');
+                    }
+                } else {
+                    console.log('❌ googleBtn is null!');
+                }
+            } catch (err) {
+                console.error('❌ Error attaching Google listener:', err);
             }
         }, 500);
 

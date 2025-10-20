@@ -47,6 +47,19 @@ class KeyboardNavigationSystemV2 {
   }
 
   handleKeyPress(event) {
+    // 🔥 CRITICAL: Ignore keyboard navigation if user is typing in an input field
+    const activeElement = document.activeElement;
+    const isTyping = activeElement && (
+      activeElement.tagName === 'INPUT' ||
+      activeElement.tagName === 'TEXTAREA' ||
+      activeElement.isContentEditable
+    );
+    
+    if (isTyping) {
+      this.logDebug('⌨️ User is typing in input field, ignoring navigation keys');
+      return;
+    }
+    
     const key = event.key.toLowerCase();
     
     // Keep keyboard player in sync with game's current turn

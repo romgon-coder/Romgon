@@ -74,6 +74,19 @@ class GeneralNavigationSystem {
     
     if (!this.enabled) return;
     
+    // 🔥 CRITICAL: Ignore keyboard navigation if user is typing in an input field
+    const activeElement = document.activeElement;
+    const isTyping = activeElement && (
+      activeElement.tagName === 'INPUT' ||
+      activeElement.tagName === 'TEXTAREA' ||
+      activeElement.isContentEditable
+    );
+    
+    if (isTyping) {
+      this.logDebug('⌨️ User is typing in input field, ignoring navigation keys');
+      return;
+    }
+    
     const key = event.key.toLowerCase();
     
     // Only handle WASD, E, and Escape
@@ -185,11 +198,16 @@ class GeneralNavigationSystem {
     console.log('🎯 [KeyboardNav] Element onclick:', this.focusedElement.onclick);
     console.log('🎯 [KeyboardNav] Element getAttribute(onclick):', this.focusedElement.getAttribute('onclick'));
 
-    // Simulate click/activation
+    // Simulate click/activation with a proper MouseEvent
     if (this.focusedElement.tagName === 'BUTTON' || this.focusedElement.getAttribute('role') === 'button') {
-      console.log('🎯 [KeyboardNav] Clicking button...');
-      this.focusedElement.click();
-      console.log('🎯 [KeyboardNav] Button clicked!');
+      console.log('🎯 [KeyboardNav] Dispatching click event...');
+      const clickEvent = new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      });
+      this.focusedElement.dispatchEvent(clickEvent);
+      console.log('🎯 [KeyboardNav] Click event dispatched!');
     } else if (this.focusedElement.tagName === 'A') {
       this.focusedElement.click();
     } else if (this.focusedElement.tagName === 'INPUT') {
