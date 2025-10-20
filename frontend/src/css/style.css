@@ -1003,3 +1003,224 @@ input.invalid:focus {
         font-size: 3rem;
     }
 }
+
+/* ============================================
+   GUEST PAGE STYLES
+   ============================================ */
+
+.guest-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    z-index: -1;
+}
+
+.guest-header {
+    text-align: center;
+    margin-bottom: var(--spacing-2xl);
+    background: rgba(255, 255, 255, 0.95);
+    padding: var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+}
+
+.guest-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.guest-subtitle {
+    font-size: 1.2rem;
+    color: var(--gray);
+    margin-bottom: var(--spacing-lg);
+}
+
+.guest-subtitle .highlight {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.guest-notice {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+}
+
+.notice-icon {
+    font-size: 1.5rem;
+    margin-right: var(--spacing-sm);
+}
+
+.guest-notice p {
+    margin: 0;
+    color: var(--dark);
+}
+
+.guest-section {
+    background: rgba(255, 255, 255, 0.95);
+    padding: var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--spacing-xl);
+    box-shadow: var(--shadow-md);
+}
+
+.guest-section h2 {
+    color: var(--dark);
+    margin-bottom: var(--spacing-lg);
+    font-size: 1.8rem;
+}
+
+/* Quick Play Cards */
+.quick-play-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.play-card {
+    background: white;
+    border: 2px solid var(--light);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-xl);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.play-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.card-icon {
+    font-size: 3rem;
+    margin-bottom: var(--spacing-md);
+}
+
+.play-card h3 {
+    color: var(--dark);
+    margin-bottom: var(--spacing-sm);
+}
+
+.play-card p {
+    color: var(--gray);
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Convert Account Card */
+.convert-account-card {
+    display: flex;
+    gap: var(--spacing-xl);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    color: white;
+    align-items: center;
+}
+
+.convert-content {
+    flex: 1;
+}
+
+.convert-content h3 {
+    font-size: 1.8rem;
+    margin-bottom: var(--spacing-lg);
+}
+
+.features-list {
+    margin-bottom: var(--spacing-xl);
+}
+
+.feature-item {
+    padding: var(--spacing-sm) 0;
+    font-size: 1.1rem;
+}
+
+.convert-illustration {
+    flex-shrink: 0;
+}
+
+.trophy-icon {
+    font-size: 8rem;
+    animation: bounce 2s ease-in-out infinite;
+}
+
+/* Rules Grid */
+.rules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.rule-card {
+    background: white;
+    border: 2px solid var(--light);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    text-align: center;
+}
+
+.rule-number {
+    width: 40px;
+    height: 40px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 auto var(--spacing-md);
+}
+
+.rule-card h4 {
+    color: var(--dark);
+    margin-bottom: var(--spacing-sm);
+}
+
+.rule-card p {
+    color: var(--gray);
+    font-size: 0.95rem;
+}
+
+/* Guest Footer Actions */
+.guest-footer-actions {
+    text-align: center;
+    margin-top: var(--spacing-2xl);
+    padding-bottom: var(--spacing-2xl);
+}
+
+/* Responsive Guest Page */
+@media (max-width: 768px) {
+    .guest-title {
+        font-size: 2rem;
+    }
+
+    .quick-play-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .convert-account-card {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .trophy-icon {
+        font-size: 4rem;
+    }
+
+    .rules-grid {
+        grid-template-columns: 1fr;
+    }
+}

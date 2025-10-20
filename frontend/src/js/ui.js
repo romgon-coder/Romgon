@@ -478,8 +478,8 @@ class AuthPage {
 
             gameState.setUser(guestUser);
             uiManager.showSuccess('👤 Playing as guest! Have fun!');
-            gameState.navigateTo('lobby');
-            await uiManager.showPage('lobby');
+            gameState.navigateTo('guest');
+            await uiManager.showPage('guest');
         } catch (error) {
             console.error('❌ Error creating guest account:', error);
             uiManager.showError('Failed to create guest account: ' + error.message);
@@ -577,6 +577,141 @@ class LobbyPage {
             await apiClient.logout();
             gameState.clearUser();
             gameState.navigateTo('login');
+            await uiManager.showPage('auth');
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
+    }
+}
+
+/**
+ * Guest Page - For Guest Players
+ */
+class GuestPage {
+    constructor() {
+        this.element = null;
+    }
+
+    async show() {
+        this.element = document.getElementById('guest-page');
+        if (!this.element) {
+            console.error('❌ Guest page element not found');
+            return;
+        }
+
+        this.element.style.display = 'block';
+        this.setupEventListeners();
+        this.updateGuestInfo();
+    }
+
+    hide() {
+        if (this.element) {
+            this.element.style.display = 'none';
+        }
+    }
+
+    setupEventListeners() {
+        // Play vs AI
+        const playAIBtn = document.getElementById('guest-play-ai-btn');
+        if (playAIBtn) {
+            playAIBtn.addEventListener('click', () => this.playVsAI());
+        }
+
+        // Random Match
+        const randomMatchBtn = document.getElementById('guest-random-match-btn');
+        if (randomMatchBtn) {
+            randomMatchBtn.addEventListener('click', () => this.findRandomMatch());
+        }
+
+        // Local Game
+        const localGameBtn = document.getElementById('guest-local-game-btn');
+        if (localGameBtn) {
+            localGameBtn.addEventListener('click', () => this.startLocalGame());
+        }
+
+        // Convert to full account
+        const convertBtn = document.getElementById('convert-account-btn');
+        if (convertBtn) {
+            convertBtn.addEventListener('click', () => this.convertToFullAccount());
+        }
+
+        // Logout
+        const logoutBtn = document.getElementById('guest-logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => this.logout());
+        }
+    }
+
+    updateGuestInfo() {
+        const guestUsername = document.getElementById('guest-username');
+        if (guestUsername && gameState.user) {
+            guestUsername.textContent = gameState.user.username;
+        }
+    }
+
+    async playVsAI() {
+        uiManager.showNotification('🤖 AI opponent coming soon!', 'info');
+        // TODO: Implement AI game
+    }
+
+    async findRandomMatch() {
+        try {
+            gameState.setLoading(true);
+            const game = await apiClient.createGame(null, 'random');
+            gameState.setCurrentGame(game);
+            uiManager.showSuccess('🎲 Searching for opponent...');
+            gameState.navigateTo('waiting');
+            await uiManager.showPage('waiting');
+        } catch (error) {
+            uiManager.showError('❌ ' + error.message);
+        } finally {
+            gameState.setLoading(false);
+        }
+    }
+
+    async startLocalGame() {
+        try {
+            gameState.setLoading(true);
+            // Create a local game
+            const game = await apiClient.createGame(null, 'random');
+            gameState.setCurrentGame(game);
+            uiManager.showSuccess('📱 Starting local 2-player game...');
+            gameState.navigateTo('game');
+            await uiManager.showPage('game');
+        } catch (error) {
+            uiManager.showError('❌ ' + error.message);
+        } finally {
+            gameState.setLoading(false);
+        }
+    }
+
+    convertToFullAccount() {
+        // Show register form with guest username pre-filled
+        uiManager.showNotification('✨ Create your account to save your progress!', 'info');
+        gameState.navigateTo('auth');
+        uiManager.showPage('auth');
+        
+        // Pre-fill username if possible
+        setTimeout(() => {
+            const registerUsername = document.getElementById('register-username');
+            if (registerUsername && gameState.user) {
+                registerUsername.value = gameState.user.username.replace('Guest_', '');
+            }
+            
+            // Switch to register form
+            const toggleBtn = document.getElementById('toggle-auth');
+            if (toggleBtn) {
+                toggleBtn.click();
+            }
+        }, 300);
+    }
+
+    async logout() {
+        try {
+            await apiClient.logout();
+            gameState.clearUser();
+            uiManager.showSuccess('👋 Thanks for playing!');
+            gameState.navigateTo('auth');
             await uiManager.showPage('auth');
         } catch (error) {
             console.error('Logout error:', error);

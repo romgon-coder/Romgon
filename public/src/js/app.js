@@ -57,6 +57,7 @@ class ROMGONApp {
      */
     setupPages() {
         this.uiManager.registerPage('auth', new AuthPage());
+        this.uiManager.registerPage('guest', new GuestPage());
         this.uiManager.registerPage('lobby', new LobbyPage());
         this.uiManager.registerPage('game', new GamePage());
         this.uiManager.registerPage('waiting', new WaitingPage());
