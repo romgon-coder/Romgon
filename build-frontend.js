@@ -44,7 +44,20 @@ function copyFiles(src, dest) {
 }
 
 try {
+  // Copy frontend files
   copyFiles(frontendDir, publicDir);
+  
+  // Copy ASSETS folder from root if it exists
+  const assetsDir = path.join(__dirname, 'ASSETS');
+  const assetsDestDir = path.join(publicDir, 'ASSETS');
+  if (fs.existsSync(assetsDir)) {
+    console.log('Copying ASSETS folder...');
+    if (!fs.existsSync(assetsDestDir)) {
+      fs.mkdirSync(assetsDestDir, { recursive: true });
+    }
+    copyFiles(assetsDir, assetsDestDir);
+  }
+  
   console.log('✅ Frontend files copied to public directory successfully');
   process.exit(0);
 } catch (err) {
