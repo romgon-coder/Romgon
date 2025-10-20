@@ -3,6 +3,7 @@ node_modules
 *.log
 .git
 .env
+frontend
 deploy
 /index.html
 /board.HTML
@@ -15,4 +16,3 @@ ROMGON RULES*.html
 /test-deploy.txt
 /redeploy.txt
 *.md
-!frontend/**
