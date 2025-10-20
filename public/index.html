@@ -1165,15 +1165,6 @@
             showSignUpError(error.message || 'Registration failed. Please try again.');
         }
     }
-        
-        // Close modal and show home
-        hideSignUpModal();
-        hideLoginOptions();
-        showUserHome();
-        
-        // Show success message
-        console.log('✅ Account created successfully!');
-    }
     
     function showSignUpError(message) {
         const errorDiv = document.getElementById('signup-error');
