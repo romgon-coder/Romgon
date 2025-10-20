@@ -47,7 +47,25 @@ try {
   // Copy deploy files
   copyFiles(deployDir, publicDir);
   
+  const buildTime = new Date().toISOString();
   console.log('✅ Deploy files copied to public directory successfully');
+  console.log(`📦 Build completed at: ${buildTime}`);
+  console.log(`📁 Source: ${deployDir}`);
+  console.log(`📁 Destination: ${publicDir}`);
+  
+  // Write build info file
+  const buildInfo = {
+    buildTime,
+    version: '2024-10-20-22:00:00',
+    sourceDir: deployDir,
+    outputDir: publicDir
+  };
+  fs.writeFileSync(
+    path.join(publicDir, 'build-info.json'),
+    JSON.stringify(buildInfo, null, 2)
+  );
+  console.log('📝 Build info written to build-info.json');
+  
   process.exit(0);
 } catch (err) {
   console.error('❌ Error copying files:', err);
