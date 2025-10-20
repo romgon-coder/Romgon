@@ -1,6 +1,6 @@
 {
   "version": 2,
   "buildCommand": "node build-frontend.js",
-  "installCommand": "echo 'skip install'",
-  "outputDirectory": "public"
+  "outputDirectory": "public",
+  "installCommand": "echo 'No dependencies needed'"
 }
