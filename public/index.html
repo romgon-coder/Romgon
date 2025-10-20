@@ -1102,7 +1102,7 @@
         }
     }
     
-    function handleSignUp(event) {
+    async function handleSignUp(event) {
         event.preventDefault();
         
         const username = document.getElementById('signup-username').value.trim();
@@ -1111,7 +1111,7 @@
         const confirmPassword = document.getElementById('signup-confirm-password').value;
         const errorDiv = document.getElementById('signup-error');
         
-        // Validation
+        // Basic validation
         if (username.length < 3) {
             showSignUpError('Username must be at least 3 characters');
             return;
@@ -1132,53 +1132,39 @@
             return;
         }
         
-        // Check if username or email already exists
-        const users = JSON.parse(localStorage.getItem('romgon-users') || '{}');
-        
-        if (users[username]) {
-            showSignUpError('Username already taken');
-            return;
+        try {
+            showLoadingIndicator('Creating your account...');
+            
+            // Register with backend
+            const response = await romgonAPI.register(username, email, password, confirmPassword);
+            
+            // Save user info locally
+            const user = {
+                username: response.user.username,
+                name: response.user.username,
+                email: response.user.email,
+                id: response.user.id,
+                type: 'registered',
+                token: response.token,
+                wins: 0,
+                losses: 0
+            };
+            
+            window.currentUser = user;
+            localStorage.setItem('romgon-user', JSON.stringify(user));
+            
+            hideLoadingIndicator();
+            hideSignUpModal();
+            showUserHome();
+            
+            console.log('✅ Account created successfully:', user);
+            
+        } catch (error) {
+            hideLoadingIndicator();
+            console.error('❌ Registration failed:', error);
+            showSignUpError(error.message || 'Registration failed. Please try again.');
         }
-        
-        for (let user in users) {
-            if (users[user].email.toLowerCase() === email.toLowerCase()) {
-                showSignUpError('Email already registered');
-                return;
-            }
-        }
-        
-        // Create new user account
-        const newUser = {
-            username: username,
-            email: email,
-            password: btoa(password), // Simple base64 encoding (not secure - for demo only)
-            registeredDate: new Date().toISOString(),
-            stats: {
-                gamesPlayed: 0,
-                gamesWon: 0,
-                gamesLost: 0
-            },
-            settings: {
-                audioEnabled: true,
-                boardZoom: 1,
-                theme: 'dark'
-            }
-        };
-        
-        // Save user
-        users[username] = newUser;
-        localStorage.setItem('romgon-users', JSON.stringify(users));
-        
-        // Log in the new user
-        localStorage.setItem('romgon-user', JSON.stringify({
-            username: username,
-            email: email,
-            isGuest: false,
-            loginTime: new Date().toISOString()
-        }));
-        
-        // Record login timestamp
-        recordLastLogin(username);
+    }
         
         // Close modal and show home
         hideSignUpModal();
@@ -18173,7 +18159,8 @@ ${moveHistory || '(No moves played yet - starting position)'}
             }
 
             if (guestBtn) {
-                guestBtn.addEventListener('click', handleGuestLogin);
+                // Use backend-integrated guest login
+                guestBtn.addEventListener('click', handleGuestLoginWithBackend);
             }
         }
 
@@ -18193,6 +18180,190 @@ ${moveHistory || '(No moves played yet - starting position)'}
 
             if (splashPage) splashPage.style.display = 'none';
             if (startMenu) startMenu.style.display = 'flex';
+        }
+
+        // ============================================
+        // BACKEND API INTEGRATION
+        // ============================================
+        
+        class RomgonAPI {
+            constructor() {
+                this.baseURL = this.getBaseURL();
+                this.token = localStorage.getItem('romgon_token');
+            }
+
+            getBaseURL() {
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    return 'http://localhost:3000/api';
+                }
+                return 'https://api.romgon.net/api';
+            }
+
+            getHeaders(includeAuth = true) {
+                const headers = { 'Content-Type': 'application/json' };
+                if (includeAuth && this.token) {
+                    headers['Authorization'] = `Bearer ${this.token}`;
+                }
+                return headers;
+            }
+
+            async request(endpoint, options = {}) {
+                const url = `${this.baseURL}${endpoint}`;
+                const config = {
+                    method: options.method || 'GET',
+                    headers: this.getHeaders(options.includeAuth !== false),
+                };
+
+                if (options.body) {
+                    config.body = JSON.stringify(options.body);
+                }
+
+                try {
+                    const response = await fetch(url, config);
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Request failed');
+                    }
+
+                    return data;
+                } catch (error) {
+                    console.error('API Request Error:', error);
+                    throw error;
+                }
+            }
+
+            // Authentication
+            async register(username, email, password, confirmPassword) {
+                const data = await this.request('/auth/register', {
+                    method: 'POST',
+                    body: { username, email, password, confirmPassword },
+                    includeAuth: false
+                });
+
+                if (data.token) {
+                    this.token = data.token;
+                    localStorage.setItem('romgon_token', data.token);
+                }
+
+                return data;
+            }
+
+            async login(username, password) {
+                const data = await this.request('/auth/login', {
+                    method: 'POST',
+                    body: { username, password },
+                    includeAuth: false
+                });
+
+                if (data.token) {
+                    this.token = data.token;
+                    localStorage.setItem('romgon_token', data.token);
+                }
+
+                return data;
+            }
+
+            async createGuest() {
+                const data = await this.request('/auth/guest', {
+                    method: 'POST',
+                    includeAuth: false
+                });
+
+                if (data.token) {
+                    this.token = data.token;
+                    localStorage.setItem('romgon_token', data.token);
+                }
+
+                return data;
+            }
+
+            async logout() {
+                await this.request('/auth/logout', { method: 'POST' });
+                this.token = null;
+                localStorage.removeItem('romgon_token');
+            }
+
+            // User Stats
+            async getPlayerStats(userId) {
+                return this.request(`/stats/player/${userId}`);
+            }
+
+            async updateGameResult(gameData) {
+                return this.request('/games/end', {
+                    method: 'POST',
+                    body: gameData
+                });
+            }
+        }
+
+        // Initialize API client
+        const romgonAPI = new RomgonAPI();
+
+        // Enhanced handleGuestLogin with backend integration
+        async function handleGuestLoginWithBackend() {
+            try {
+                showLoadingIndicator('Creating guest session...');
+                
+                // Create guest account in backend
+                const guestData = await romgonAPI.createGuest();
+                
+                // Store user info locally
+                const guest = {
+                    type: 'guest',
+                    name: guestData.user.username || 'Guest Player',
+                    email: 'Guest Session',
+                    id: guestData.user.id,
+                    token: guestData.token,
+                    wins: 0,
+                    losses: 0
+                };
+                
+                window.currentUser = guest;
+                localStorage.setItem('romgon-user', JSON.stringify(guest));
+                
+                hideLoadingIndicator();
+                showUserHome();
+                
+                console.log('✅ Guest account created:', guest);
+            } catch (error) {
+                hideLoadingIndicator();
+                console.error('❌ Guest login failed:', error);
+                alert('Guest login failed. Using offline mode.');
+                // Fallback to offline guest
+                handleGuestLogin();
+            }
+        }
+
+        // Loading indicator helpers
+        function showLoadingIndicator(message = 'Loading...') {
+            let loader = document.getElementById('loading-indicator');
+            if (!loader) {
+                loader = document.createElement('div');
+                loader.id = 'loading-indicator';
+                loader.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: rgba(0, 0, 0, 0.9);
+                    color: #4ecdc4;
+                    padding: 30px 50px;
+                    border-radius: 15px;
+                    z-index: 999999;
+                    font-size: 18px;
+                    font-weight: 600;
+                    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+                `;
+                document.body.appendChild(loader);
+            }
+            loader.textContent = message;
+            loader.style.display = 'block';
+        }
+
+        function hideLoadingIndicator() {
+            const loader = document.getElementById('loading-indicator');
+            if (loader) loader.style.display = 'none';
         }
 
         // ----------------------
