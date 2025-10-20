@@ -18635,10 +18635,17 @@ ${moveHistory || '(No moves played yet - starting position)'}
         // SPLASH PAGE INITIALIZATION
         // ============================================
 
+        console.log('📄 Splash page script loaded. readyState:', document.readyState);
+
         // Initialize splash page on page load
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => setTimeout(initializeSplashPage, 200));
+            console.log('⏳ Waiting for DOMContentLoaded...');
+            document.addEventListener('DOMContentLoaded', () => {
+                console.log('✅ DOMContentLoaded fired, calling initializeSplashPage in 200ms...');
+                setTimeout(initializeSplashPage, 200);
+            });
         } else {
+            console.log('✅ Document already loaded, calling initializeSplashPage in 200ms...');
             setTimeout(initializeSplashPage, 200);
         }
 
