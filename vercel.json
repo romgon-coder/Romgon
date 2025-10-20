@@ -1,24 +1,4 @@
 {
   "buildCommand": "node build-frontend.js",
-  "outputDirectory": "public",
-  "headers": [
-    {
-      "source": "/index.html",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate"
-        }
-      ]
-    },
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=300"
-        }
-      ]
-    }
-  ]
+  "outputDirectory": "public"
 }
