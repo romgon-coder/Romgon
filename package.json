@@ -9,7 +9,8 @@
   "scripts": {
     "start": "cd backend && npm install && npm start",
     "dev": "cd backend && npm run dev",
-    "build:vercel": "mkdir -p public && cp -r frontend/* public/ && echo 'Frontend copied to public'"
+    "build": "node build-frontend.js",
+    "build:vercel": "node build-frontend.js"
   },
   "keywords": [
     "romgon",

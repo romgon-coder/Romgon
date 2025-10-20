@@ -1,7 +1,10 @@
 {
+  "framework": null,
+  "installCommand": "npm install",
   "buildCommand": "node build-frontend.js",
   "outputDirectory": "public",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  ],
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./"
 }
