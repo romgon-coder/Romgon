@@ -3693,117 +3693,219 @@
             <div style="font-size: 2em; cursor: pointer;" onclick="handleSignOut();">×</div>
         </div>
 
-        <!-- Welcome Card -->
+        <!-- Enhanced Lobby Card -->
         <div style="
-            background: rgba(38, 36, 33, 0.8);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 50px 40px;
-            max-width: 500px;
-            text-align: center;
+            background: linear-gradient(135deg, #23272e 0%, #2c313a 100%);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 900px;
+            width: 90%;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 204, 156, 0.2);
+            border: 1px solid rgba(78, 205, 196, 0.2);
         ">
-            <!-- Avatar -->
-            <div id="user-home-avatar" style="
-                width: 100px;
-                height: 100px;
-                border-radius: 50%;
-                background: linear-gradient(135deg, #4ecdc4, #a55eea);
-                margin: 0 auto 20px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 48px;
-                font-weight: bold;
-                color: #fff;
-                box-shadow: 0 10px 30px rgba(78, 205, 196, 0.3);
-            ">G</div>
+            <!-- Header Section -->
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; flex-wrap: wrap; gap: 20px;">
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <!-- Avatar -->
+                    <div id="user-home-avatar" style="
+                        width: 80px;
+                        height: 80px;
+                        border-radius: 50%;
+                        background: linear-gradient(135deg, #4ecdc4, #a55eea);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 36px;
+                        font-weight: bold;
+                        color: #fff;
+                        box-shadow: 0 10px 30px rgba(78, 205, 196, 0.3);
+                        flex-shrink: 0;
+                    ">G</div>
 
-            <!-- Player Name -->
-            <h2 id="user-home-name" style="
-                margin: 0 0 10px 0;
-                font-size: 28px;
-                font-weight: 700;
-                color: #fff;
-            ">Welcome Player</h2>
+                    <!-- Player Info -->
+                    <div style="text-align: left;">
+                        <h2 id="user-home-name" style="
+                            margin: 0 0 5px 0;
+                            font-size: 26px;
+                            font-weight: 700;
+                            color: #fff;
+                        ">Welcome Player</h2>
+                        <p id="user-home-email" style="
+                            margin: 0;
+                            color: #aaa;
+                            font-size: 14px;
+                        ">guest@example.com</p>
+                    </div>
+                </div>
 
-            <!-- Email / Status -->
-            <p id="user-home-email" style="
-                margin: 0 0 30px 0;
-                color: #aaa;
-                font-size: 14px;
-            ">guest@example.com</p>
+                <!-- Sign Out Button (Top Right) -->
+                <button onclick="handleSignOut();" style="
+                    background: transparent;
+                    color: #ff6b6b;
+                    border: 2px solid #ff6b6b;
+                    padding: 10px 24px;
+                    border-radius: 50px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    font-size: 0.9em;
+                    transition: all 0.3s ease;
+                    flex-shrink: 0;
+                " onmouseover="this.style.background='rgba(255, 107, 107, 0.1)'" onmouseout="this.style.background='transparent'">
+                    ← Sign Out
+                </button>
+            </div>
 
-            <!-- Stats Section -->
+            <!-- Stats Grid -->
             <div id="user-home-stats" style="
-                display: none;
-                grid-template-columns: 1fr 1fr 1fr;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
                 gap: 15px;
-                width: 100%;
-                margin: 30px 0;
-                padding: 20px;
-                background: rgba(78, 205, 196, 0.1);
-                border-radius: 12px;
+                margin-bottom: 30px;
             ">
-                <div style="text-align: center;">
-                    <div style="font-size: 24px; font-weight: bold; color: #26de81;" id="user-home-wins">0</div>
-                    <div style="font-size: 12px; color: #aaa;">Wins</div>
+                <div style="
+                    background: linear-gradient(135deg, rgba(38, 222, 129, 0.1), rgba(38, 222, 129, 0.05));
+                    padding: 20px;
+                    border-radius: 12px;
+                    border: 1px solid rgba(38, 222, 129, 0.3);
+                    text-align: center;
+                ">
+                    <div style="font-size: 32px; font-weight: bold; color: #26de81;" id="user-home-wins">0</div>
+                    <div style="font-size: 13px; color: #aaa; margin-top: 5px;">Wins</div>
                 </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 24px; font-weight: bold; color: #ff6b6b;" id="user-home-losses">0</div>
-                    <div style="font-size: 12px; color: #aaa;">Losses</div>
+                <div style="
+                    background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(255, 107, 107, 0.05));
+                    padding: 20px;
+                    border-radius: 12px;
+                    border: 1px solid rgba(255, 107, 107, 0.3);
+                    text-align: center;
+                ">
+                    <div style="font-size: 32px; font-weight: bold; color: #ff6b6b;" id="user-home-losses">0</div>
+                    <div style="font-size: 13px; color: #aaa; margin-top: 5px;">Losses</div>
                 </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 24px; font-weight: bold; color: #ffd700;" id="user-home-games">0</div>
-                    <div style="font-size: 12px; color: #aaa;">Total</div>
+                <div style="
+                    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
+                    padding: 20px;
+                    border-radius: 12px;
+                    border: 1px solid rgba(255, 215, 0, 0.3);
+                    text-align: center;
+                ">
+                    <div style="font-size: 32px; font-weight: bold; color: #ffd700;" id="user-home-winrate">0%</div>
+                    <div style="font-size: 13px; color: #aaa; margin-top: 5px;">Win Rate</div>
+                </div>
+                <div style="
+                    background: linear-gradient(135deg, rgba(78, 205, 196, 0.1), rgba(78, 205, 196, 0.05));
+                    padding: 20px;
+                    border-radius: 12px;
+                    border: 1px solid rgba(78, 205, 196, 0.3);
+                    text-align: center;
+                ">
+                    <div style="font-size: 32px; font-weight: bold; color: #4ecdc4;" id="user-home-games">0</div>
+                    <div style="font-size: 13px; color: #aaa; margin-top: 5px;">Total Games</div>
                 </div>
             </div>
 
-            <!-- Start Game Button -->
-            <button onclick="hideSplashPage(); document.getElementById('user-home').style.display='none';" style="
-                background: linear-gradient(135deg, #4ecdc4 0%, #45b7aa 100%);
-                color: #fff;
-                border: none;
-                padding: 16px 40px;
-                border-radius: 50px;
-                cursor: pointer;
-                font-weight: 700;
-                font-size: 0.95em;
-                box-shadow: 0 6px 20px rgba(78, 205, 196, 0.4);
-                transition: all 0.3s ease;
-                margin-bottom: 12px;
-            " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 30px rgba(78, 205, 196, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 20px rgba(78, 205, 196, 0.4)'">
-                🎮 Start Game
-            </button>
+            <!-- Quick Play Options -->
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: #4ecdc4; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">🚀 Quick Play</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <!-- Start Game -->
+                    <button onclick="hideSplashPage(); document.getElementById('user-home').style.display='none';" style="
+                        background: linear-gradient(135deg, #4ecdc4 0%, #45b7aa 100%);
+                        color: #fff;
+                        border: none;
+                        padding: 18px 24px;
+                        border-radius: 12px;
+                        cursor: pointer;
+                        font-weight: 700;
+                        font-size: 0.95em;
+                        box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+                        transition: all 0.3s ease;
+                        text-align: left;
+                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(78, 205, 196, 0.5)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(78, 205, 196, 0.3)'">
+                        <div style="font-size: 24px; margin-bottom: 5px;">🎮</div>
+                        <div>Start Game</div>
+                        <div style="font-size: 11px; opacity: 0.8; margin-top: 3px;">Begin your strategy</div>
+                    </button>
 
-            <!-- Sign Out Button -->
-            <button onclick="handleSignOut();" style="
-                background: transparent;
-                color: #ff6b6b;
-                border: 2px solid #ff6b6b;
-                padding: 12px 30px;
-                border-radius: 50px;
-                cursor: pointer;
-                font-weight: 600;
-                font-size: 1em;
-                transition: all 0.3s ease;
-            " onmouseover="this.style.background='rgba(255, 107, 107, 0.1)'" onmouseout="this.style.background='transparent'">
-                Sign Out
-            </button>
-        </div>
+                    <!-- Practice Mode -->
+                    <button onclick="alert('Practice mode coming soon!');" style="
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: #fff;
+                        border: none;
+                        padding: 18px 24px;
+                        border-radius: 12px;
+                        cursor: pointer;
+                        font-weight: 700;
+                        font-size: 0.95em;
+                        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+                        transition: all 0.3s ease;
+                        text-align: left;
+                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.5)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.3)'">
+                        <div style="font-size: 24px; margin-bottom: 5px;">🤖</div>
+                        <div>Practice Mode</div>
+                        <div style="font-size: 11px; opacity: 0.8; margin-top: 3px;">Play vs AI</div>
+                    </button>
 
-        <!-- Stats Footer (optional) -->
-        <div style="
-            position: absolute;
-            bottom: 30px;
-            left: 0;
-            right: 0;
-            text-align: center;
-            color: #888;
-            font-size: 0.9em;
-        ">
-            <p style="margin: 0;">Ready to strategize? Your game awaits!</p>
+                    <!-- Tutorial -->
+                    <button onclick="alert('Tutorial coming soon!');" style="
+                        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+                        color: #fff;
+                        border: none;
+                        padding: 18px 24px;
+                        border-radius: 12px;
+                        cursor: pointer;
+                        font-weight: 700;
+                        font-size: 0.95em;
+                        box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+                        transition: all 0.3s ease;
+                        text-align: left;
+                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(240, 147, 251, 0.5)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(240, 147, 251, 0.3)'">
+                        <div style="font-size: 24px; margin-bottom: 5px;">📖</div>
+                        <div>Learn to Play</div>
+                        <div style="font-size: 11px; opacity: 0.8; margin-top: 3px;">Interactive tutorial</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Guest Notice (if guest) -->
+            <div id="guest-upgrade-notice" style="
+                background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 165, 0, 0.1));
+                border: 2px solid rgba(255, 215, 0, 0.3);
+                border-radius: 12px;
+                padding: 20px;
+                display: none;
+                text-align: center;
+            ">
+                <div style="font-size: 28px; margin-bottom: 10px;">💎</div>
+                <h4 style="margin: 0 0 8px 0; color: #ffd700; font-size: 16px;">Unlock Full Features</h4>
+                <p style="margin: 0 0 15px 0; color: #aaa; font-size: 13px;">Create an account to save your progress, track stats, and compete on leaderboards!</p>
+                <button onclick="hideUserHome(); showSignUpModal();" style="
+                    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+                    color: #1a1e26;
+                    border: none;
+                    padding: 12px 30px;
+                    border-radius: 50px;
+                    cursor: pointer;
+                    font-weight: 700;
+                    font-size: 0.9em;
+                    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+                    transition: all 0.3s ease;
+                " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(255, 215, 0, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(255, 215, 0, 0.4)'">
+                    ✨ Create Free Account
+                </button>
+            </div>
+
+            <!-- Footer Message -->
+            <div style="
+                text-align: center;
+                color: #888;
+                font-size: 0.9em;
+                margin-top: 25px;
+                padding-top: 20px;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+            ">
+                <p style="margin: 0;">Ready to strategize? Your game awaits!</p>
+            </div>
         </div>
     </div>
 
@@ -18271,22 +18373,51 @@ ${moveHistory || '(No moves played yet - starting position)'}
             const avatar = document.getElementById('user-home-avatar');
             const nameEl = document.getElementById('user-home-name');
             const emailEl = document.getElementById('user-home-email');
+            const statsDiv = document.getElementById('user-home-stats');
+            const guestNotice = document.getElementById('guest-upgrade-notice');
+            
             if (u) {
+                // Update avatar
                 if (avatar) {
                     avatar.style.display = 'flex';
                     avatar.style.alignItems = 'center';
                     avatar.style.justifyContent = 'center';
                     if (u.picture) {
                         avatar.style.background = 'transparent';
-                        avatar.innerHTML = `<img src="${u.picture}" style="width:100px;height:100px;border-radius:50%;object-fit:cover;"/>`;
+                        avatar.innerHTML = `<img src="${u.picture}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;"/>`;
                     } else {
                         avatar.style.background = 'linear-gradient(135deg, #4ecdc4, #a55eea)';
                         avatar.innerHTML = '';
                         avatar.textContent = (u.name || 'G').charAt(0).toUpperCase();
                     }
                 }
+                
+                // Update name and email
                 if (nameEl) nameEl.textContent = u.name || u.email || 'Welcome Player';
                 if (emailEl) emailEl.textContent = u.email || (u.type === 'guest' ? 'Guest Session' : 'Not signed in');
+                
+                // Show/hide guest upgrade notice
+                if (guestNotice) {
+                    guestNotice.style.display = (u.type === 'guest') ? 'block' : 'none';
+                }
+                
+                // Update stats (always show, not hidden)
+                if (statsDiv) {
+                    const wins = u.wins || 0;
+                    const losses = u.losses || 0;
+                    const total = wins + losses;
+                    const winrate = total > 0 ? Math.round((wins / total) * 100) : 0;
+                    
+                    const winsEl = document.getElementById('user-home-wins');
+                    const lossesEl = document.getElementById('user-home-losses');
+                    const winrateEl = document.getElementById('user-home-winrate');
+                    const gamesEl = document.getElementById('user-home-games');
+                    
+                    if (winsEl) winsEl.textContent = wins;
+                    if (lossesEl) lossesEl.textContent = losses;
+                    if (winrateEl) winrateEl.textContent = winrate + '%';
+                    if (gamesEl) gamesEl.textContent = total;
+                }
             }
             uh.style.display = 'flex';
         }
