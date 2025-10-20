@@ -8,6 +8,140 @@ const { param, query, validationResult } = require('express-validator');
 const { getRatingTier } = require('../utils/rating');
 const db = require('../config/database');
 
+// In-memory store for active sessions (for production, use Redis)
+const activeSessions = new Map(); // userId -> lastActivity timestamp
+const ACTIVE_THRESHOLD = 5 * 60 * 1000; // 5 minutes
+
+// WebSocket online players tracking
+let onlinePlayersCount = 0;
+
+/**
+ * Update active session
+ */
+function updateActiveSession(userId) {
+    activeSessions.set(userId, Date.now());
+}
+
+/**
+ * Clean up old sessions
+ */
+function cleanupSessions() {
+    const now = Date.now();
+    for (const [userId, lastActivity] of activeSessions.entries()) {
+        if (now - lastActivity > ACTIVE_THRESHOLD) {
+            activeSessions.delete(userId);
+        }
+    }
+}
+
+// Clean up every minute
+setInterval(cleanupSessions, 60 * 1000);
+
+/**
+ * Get total registered users count
+ * GET /api/stats/total-users
+ */
+router.get('/total-users', async (req, res) => {
+    try {
+        const result = await db.get('SELECT COUNT(*) as count FROM users WHERE is_guest = 0');
+        
+        res.json({
+            totalUsers: result.count,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Error getting total users:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * Get active players count (sessions within last 5 minutes)
+ * GET /api/stats/active-players
+ */
+router.get('/active-players', async (req, res) => {
+    try {
+        cleanupSessions(); // Clean up before counting
+        
+        const activePlayers = activeSessions.size;
+        
+        res.json({
+            activePlayers,
+            threshold: ACTIVE_THRESHOLD / 60000, // in minutes
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Error getting active players:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * Get online players count (WebSocket connections)
+ * GET /api/stats/online-players
+ */
+router.get('/online-players', (req, res) => {
+    try {
+        res.json({
+            onlinePlayers: onlinePlayersCount,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Error getting online players:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * Record activity (for tracking active players)
+ * POST /api/stats/activity
+ */
+router.post('/activity', async (req, res) => {
+    try {
+        const userId = req.user?.id; // From JWT auth middleware
+        
+        if (userId) {
+            updateActiveSession(userId);
+        }
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error recording activity:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * Get combined player counts
+ * GET /api/stats/player-counts
+ */
+router.get('/player-counts', async (req, res) => {
+    try {
+        cleanupSessions();
+        
+        const totalUsers = await db.get('SELECT COUNT(*) as count FROM users WHERE is_guest = 0');
+        const totalGuests = await db.get('SELECT COUNT(*) as count FROM users WHERE is_guest = 1');
+        
+        res.json({
+            totalRegistered: totalUsers.count,
+            totalGuests: totalGuests.count,
+            activePlayers: activeSessions.size,
+            onlinePlayers: onlinePlayersCount,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Error getting player counts:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Export for WebSocket usage
+module.exports.setOnlineCount = (count) => {
+    onlinePlayersCount = count;
+};
+
+module.exports.updateActiveSession = updateActiveSession;
+
 /**
  * Get global statistics
  * GET /api/stats/global

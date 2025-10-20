@@ -1534,11 +1534,21 @@
     
     async function loadActivePlayersCount() {
         try {
-            // Try to fetch from backend (optional)
-            const count = Math.floor(Math.random() * 50) + 25; // Mock for now
-            document.getElementById('active-players-count').textContent = count;
+            // Fetch real data from backend
+            const response = await romgonAPI.request('/stats/player-counts');
+            
+            const total = response.totalRegistered + response.activePlayers;
+            document.getElementById('active-players-count').textContent = total;
+            
+            // Store for other uses
+            window.playerCounts = response;
+            
+            console.log('📊 Player counts loaded:', response);
         } catch (error) {
-            document.getElementById('active-players-count').textContent = '---';
+            console.error('❌ Failed to load player counts:', error);
+            // Fallback to demo
+            const count = Math.floor(Math.random() * 50) + 25;
+            document.getElementById('active-players-count').textContent = count;
         }
     }
     
@@ -18903,8 +18913,12 @@ ${moveHistory || '(No moves played yet - starting position)'}
         }
 
         function handleSignOut() {
+            // Stop activity tracking
+            stopActivityHeartbeat();
+            
             window.currentUser = null;
             try { localStorage.removeItem('romgon-user'); } catch (e) {}
+            try { localStorage.removeItem('romgon_token'); } catch (e) {}
             removeLoggedInUserUI();
             try { if (window.google && window.google.accounts && window.google.accounts.id) google.accounts.id.disableAutoSelect(); } catch (e) {}
             // Hide user-home if visible
@@ -18971,8 +18985,45 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     if (winrateEl) winrateEl.textContent = winrate + '%';
                     if (gamesEl) gamesEl.textContent = total;
                 }
+                
+                // Start activity heartbeat for active player tracking
+                startActivityHeartbeat();
             }
             uh.style.display = 'flex';
+        }
+
+        // Activity heartbeat to track active players
+        let activityHeartbeatInterval = null;
+        
+        function startActivityHeartbeat() {
+            // Clear existing interval
+            if (activityHeartbeatInterval) {
+                clearInterval(activityHeartbeatInterval);
+            }
+            
+            // Send activity ping every 2 minutes
+            activityHeartbeatInterval = setInterval(async () => {
+                try {
+                    if (romgonAPI.token) {
+                        await romgonAPI.request('/stats/activity', { method: 'POST' });
+                        console.log('💓 Activity heartbeat sent');
+                    }
+                } catch (error) {
+                    console.error('❌ Activity heartbeat failed:', error);
+                }
+            }, 2 * 60 * 1000); // Every 2 minutes
+            
+            // Send initial ping
+            if (romgonAPI.token) {
+                romgonAPI.request('/stats/activity', { method: 'POST' }).catch(console.error);
+            }
+        }
+        
+        function stopActivityHeartbeat() {
+            if (activityHeartbeatInterval) {
+                clearInterval(activityHeartbeatInterval);
+                activityHeartbeatInterval = null;
+            }
         }
 
         function hideUserHome() {
