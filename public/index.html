@@ -2393,8 +2393,10 @@
     <script src="keyboard-navigation-v2.js"></script>
     <script src="keyboard-general-navigation.js"></script>
     <script src="keyboard-system-router.js"></script>
-    <!-- Socket.IO Client for Multiplayer -->
+    <!-- Socket.IO Client for Multiplayer & Chat -->
     <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+    <!-- Chat Client -->
+    <script src="romgon-chat-client.js"></script>
     <style>
         :root { /* CSS variables - LIGHT MODE (Default) */
             --hex-size: 48px;
@@ -2892,6 +2894,11 @@
         @keyframes pulse-red {
             0%, 100% { box-shadow: inset 0 0 10px rgba(0,0,0,0.6), 0 0 20px rgba(255, 68, 68, 0.9); }
             50% { box-shadow: inset 0 0 10px rgba(0,0,0,0.6), 0 0 30px rgba(255, 68, 68, 1); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
         
         /* Highlight for danger zone (where piece would be vulnerable) */
@@ -3469,6 +3476,91 @@
             #board-container {
                 transform: scale(0.9) !important;
                 transform-origin: center center !important;
+            }
+            
+            /* Sandbox Tools Panel - Mobile Friendly */
+            #sandbox-tools-panel {
+                top: 10px !important;
+                left: 10px !important;
+                right: 10px !important;
+                min-width: auto !important;
+                max-width: calc(100vw - 20px) !important;
+                padding: 15px !important;
+                font-size: 0.9em !important;
+            }
+            
+            #sandbox-tools-panel h3 {
+                font-size: 1em !important;
+            }
+            
+            #sandbox-tools-panel button {
+                font-size: 0.85em !important;
+                padding: 8px !important;
+            }
+            
+            /* Hybrid Lobby Mobile Styles */
+            #user-home {
+                padding: 0 !important;
+            }
+            
+            /* Lobby Header - Mobile */
+            #user-home > div:first-child {
+                padding: 12px 15px !important;
+                flex-wrap: wrap !important;
+            }
+            
+            #user-home h1 {
+                font-size: 1.5em !important;
+            }
+            
+            /* Lobby Content Container - Mobile Padding */
+            #user-home > div:nth-child(2) {
+                padding: 20px 15px !important;
+            }
+            
+            /* Quick Play - Stack Buttons */
+            #user-home h2 {
+                font-size: 1.3em !important;
+            }
+            
+            /* Two Column Grid - Stack on Mobile */
+            #user-home > div:nth-child(2) > div:nth-child(2) {
+                grid-template-columns: 1fr !important;
+            }
+            
+            /* Features Grid - 2 Columns on Mobile */
+            #user-home > div:nth-child(2) > div:nth-child(3) > div:last-child {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+            
+            /* Feature Tiles - Compact */
+            #user-home > div:nth-child(2) > div:nth-child(3) button {
+                padding: 15px 10px !important;
+                font-size: 0.85em !important;
+            }
+            
+            /* Match History - Touch Friendly */
+            #user-home > div:nth-child(2) > div:nth-child(4) button {
+                font-size: 0.9em !important;
+                padding: 10px !important;
+            }
+            
+            /* Chat Section - Mobile */
+            #global-chat-messages,
+            #friends-list {
+                height: 250px !important;
+            }
+            
+            #global-chat-input,
+            #add-friend-input {
+                font-size: 0.85em !important;
+                padding: 10px 12px !important;
+            }
+            
+            #global-chat-tab,
+            #friends-chat-tab {
+                font-size: 0.85em !important;
+                padding: 8px 12px !important;
             }
         }
 
@@ -4064,230 +4156,779 @@
         background: linear-gradient(135deg, #0f1923 0%, #1a2332 50%, #0f1923 100%);
         display: none;
         flex-direction: column;
-        justify-content: center;
-        align-items: center;
         z-index: 3000;
         color: white;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        padding: 40px 20px;
+        overflow-y: auto;
         box-sizing: border-box;
     ">
-        <!-- Header with profile badge -->
+        <!-- Top Navigation Bar -->
         <div style="
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            right: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 2px solid rgba(245, 125, 45, 0.3);
         ">
-            <h1 style="
-                margin: 0;
-                font-size: 2.5em;
-                background: linear-gradient(135deg, #f57d2d 0%, #fcc49c 100%);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-                letter-spacing: 3px;
-            ">ROMGON</h1>
-            <div style="font-size: 2em; cursor: pointer;" onclick="handleSignOut();">×</div>
-        </div>
-
-        <!-- Enhanced Lobby Card -->
-        <div style="
-            background: linear-gradient(135deg, #23272e 0%, #2c313a 100%);
-            border-radius: 24px;
-            padding: 40px;
-            max-width: 900px;
-            width: 90%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(78, 205, 196, 0.2);
-        ">
-            <!-- Header Section -->
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; flex-wrap: wrap; gap: 20px;">
-                <div style="display: flex; align-items: center; gap: 20px;">
-                    <!-- Avatar -->
-                    <div id="user-home-avatar" style="
-                        width: 80px;
-                        height: 80px;
+            <div style="display: flex; align-items: center; gap: 25px;">
+                <button onclick="document.getElementById('user-home').style.display='none'; document.getElementById('start-menu').style.display='flex';" style="
+                    background: transparent;
+                    border: none;
+                    color: #4ecdc4;
+                    font-size: 1.5em;
+                    cursor: pointer;
+                    padding: 5px 10px;
+                    transition: all 0.3s;
+                " onmouseover="this.style.color='#5eddd4'" onmouseout="this.style.color='#4ecdc4'">☰</button>
+                <h1 style="
+                    margin: 0;
+                    font-size: 2em;
+                    background: linear-gradient(135deg, #f57d2d 0%, #fcc49c 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    background-clip: text;
+                    letter-spacing: 3px;
+                ">ROMGON</h1>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <!-- User Profile -->
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div id="user-home-avatar-small" style="
+                        width: 40px;
+                        height: 40px;
                         border-radius: 50%;
                         background: linear-gradient(135deg, #4ecdc4, #a55eea);
                         display: flex;
                         align-items: center;
                         justify-content: center;
-                        font-size: 36px;
+                        font-size: 18px;
                         font-weight: bold;
                         color: #fff;
-                        box-shadow: 0 10px 30px rgba(78, 205, 196, 0.3);
-                        flex-shrink: 0;
                     ">G</div>
+                    <span id="user-home-name-small" style="font-weight: 600; color: #fff;">Player</span>
+                </div>
+                
+                <!-- Quick Icons -->
+                <button onclick="alert('Notifications coming soon!');" style="
+                    background: transparent;
+                    border: none;
+                    color: #aaa;
+                    font-size: 1.3em;
+                    cursor: pointer;
+                    position: relative;
+                " title="Notifications">
+                    🔔
+                </button>
+                
+                <button onclick="showSettingsModal();" style="
+                    background: transparent;
+                    border: none;
+                    color: #aaa;
+                    font-size: 1.3em;
+                    cursor: pointer;
+                " title="Settings">
+                    ⚙️
+                </button>
+                
+                <button onclick="quitAndLogout();" style="
+                    background: transparent;
+                    border: none;
+                    color: #ff6b6b;
+                    font-size: 1.3em;
+                    cursor: pointer;
+                " title="Log Out">
+                    🚪
+                </button>
+            </div>
+        </div>
 
-                    <!-- Player Info -->
-                    <div style="text-align: left;">
-                        <h2 id="user-home-name" style="
-                            margin: 0 0 5px 0;
-                            font-size: 26px;
-                            font-weight: 700;
-                            color: #fff;
-                        ">Welcome Player</h2>
-                        <p id="user-home-email" style="
-                            margin: 0;
-                            color: #aaa;
-                            font-size: 14px;
-                        ">guest@example.com</p>
+        <!-- Main Content Area -->
+        <div style="
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        ">
+            <!-- Online Players Section -->
+            <div style="
+                background: rgba(78, 205, 196, 0.1);
+                border: 1px solid rgba(78, 205, 196, 0.3);
+                border-radius: 12px;
+                padding: 15px 20px;
+                margin-bottom: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 15px;
+            ">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="
+                            width: 10px;
+                            height: 10px;
+                            border-radius: 50%;
+                            background: #4ecdc4;
+                            box-shadow: 0 0 10px rgba(78, 205, 196, 0.6);
+                            animation: pulse 2s infinite;
+                        "></div>
+                        <span style="color: #4ecdc4; font-weight: 600; font-size: 1.1em;">
+                            <span id="online-players-count">0</span> Players Online
+                        </span>
+                    </div>
+                </div>
+                
+                <div id="online-players-list" style="
+                    display: flex;
+                    gap: 10px;
+                    flex-wrap: wrap;
+                    align-items: center;
+                ">
+                    <!-- Players will be added dynamically -->
+                    <span style="color: #888; font-size: 0.9em;">Connecting...</span>
+                </div>
+            </div>
+            
+            <!-- Quick Play Bar (Highlighted) -->
+            <div style="
+                background: linear-gradient(135deg, #f57d2d 0%, #ff9a4d 100%);
+                border-radius: 16px;
+                padding: 30px;
+                margin-bottom: 30px;
+                box-shadow: 0 8px 30px rgba(245, 125, 45, 0.4);
+            ">
+                <h2 style="
+                    margin: 0 0 20px 0;
+                    font-size: 1.8em;
+                    color: #fff;
+                    font-weight: 700;
+                ">⚡ QUICK PLAY</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
+                    <button onclick="openGameVariantsModal('ai')" style="
+                        background: rgba(255, 255, 255, 0.95);
+                        color: #1a1e26;
+                        border: none;
+                        padding: 18px;
+                        border-radius: 12px;
+                        cursor: pointer;
+                        font-weight: 700;
+                        font-size: 1em;
+                        transition: all 0.3s;
+                        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+                    " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(0, 0, 0, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0, 0, 0, 0.2)'">
+                        🤖 vs AI
+                    </button>
+                    
+                    <button onclick="startGameWithTime(10)" style="
+                        background: rgba(255, 255, 255, 0.95);
+                        color: #1a1e26;
+                        border: none;
+                        padding: 18px;
+                        border-radius: 12px;
+                        cursor: pointer;
+                        font-weight: 700;
+                        font-size: 1em;
+                        transition: all 0.3s;
+                        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+                    " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(0, 0, 0, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0, 0, 0, 0.2)'">
+                        👥 vs Human
+                    </button>
+                    
+                    <button onclick="alert('Online matchmaking coming soon!');" style="
+                        background: rgba(255, 255, 255, 0.95);
+                        color: #1a1e26;
+                        border: none;
+                        padding: 18px;
+                        border-radius: 12px;
+                        cursor: pointer;
+                        font-weight: 700;
+                        font-size: 1em;
+                        transition: all 0.3s;
+                        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+                    " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(0, 0, 0, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0, 0, 0, 0.2)'">
+                        🌐 Online
+                    </button>
+                    
+                    <button onclick="startSandboxMode();" style="
+                        background: rgba(255, 255, 255, 0.95);
+                        color: #1a1e26;
+                        border: none;
+                        padding: 18px;
+                        border-radius: 12px;
+                        cursor: pointer;
+                        font-weight: 700;
+                        font-size: 1em;
+                        transition: all 0.3s;
+                        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+                    " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(0, 0, 0, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0, 0, 0, 0.2)'">
+                        🛠️ Practice
+                    </button>
+                </div>
+            </div>
+
+            <!-- Two Column Layout -->
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-bottom: 30px;">
+                <!-- Left Column: Active Games -->
+                <div style="
+                    background: rgba(35, 39, 46, 0.8);
+                    border-radius: 16px;
+                    padding: 25px;
+                    border: 1px solid rgba(78, 205, 196, 0.2);
+                ">
+                    <h3 style="margin: 0 0 20px 0; color: #4ecdc4; font-size: 1.3em;">🎮 ACTIVE GAMES</h3>
+                    <div id="active-games-list" style="display: flex; flex-direction: column; gap: 12px;">
+                        <!-- Placeholder for active games -->
+                        <div style="
+                            background: rgba(78, 205, 196, 0.1);
+                            border: 1px solid rgba(78, 205, 196, 0.3);
+                            border-radius: 10px;
+                            padding: 15px;
+                            text-align: center;
+                            color: #888;
+                        ">
+                            No active games. Start a new game to get started!
+                        </div>
                     </div>
                 </div>
 
-                <!-- Sign Out Button (Top Right) -->
-                <button onclick="handleSignOut();" style="
+                <!-- Right Column: Your Stats -->
+                <div style="
+                    background: rgba(35, 39, 46, 0.8);
+                    border-radius: 16px;
+                    padding: 25px;
+                    border: 1px solid rgba(78, 205, 196, 0.2);
+                ">
+                    <h3 style="margin: 0 0 20px 0; color: #ffd700; font-size: 1.3em;">📊 YOUR STATS</h3>
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: #aaa;">Rating</span>
+                            <span style="font-size: 1.5em; font-weight: 700; color: #ffd700;" id="user-rating">1420</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: #aaa;">Win / Loss</span>
+                            <span style="font-weight: 600;"><span style="color: #26de81;" id="user-home-wins">0</span> - <span style="color: #ff6b6b;" id="user-home-losses">0</span></span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: #aaa;">Win Rate</span>
+                            <span style="font-weight: 600; color: #4ecdc4;" id="user-home-winrate">0%</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: #aaa;">Games Played</span>
+                            <span style="font-weight: 600; color: #fff;" id="user-home-games">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Grid -->
+            <div style="
+                background: rgba(35, 39, 46, 0.8);
+                border-radius: 16px;
+                padding: 25px;
+                border: 1px solid rgba(78, 205, 196, 0.2);
+                margin-bottom: 30px;
+            ">
+                <h3 style="margin: 0 0 20px 0; color: #a55eea; font-size: 1.3em;">✨ FEATURES</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                    <button onclick="alert('Daily puzzles coming soon!');" style="
+                        background: rgba(165, 94, 234, 0.1);
+                        border: 1px solid rgba(165, 94, 234, 0.3);
+                        color: #a55eea;
+                        padding: 20px 15px;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        transition: all 0.3s;
+                        text-align: center;
+                    " onmouseover="this.style.background='rgba(165, 94, 234, 0.2)'" onmouseout="this.style.background='rgba(165, 94, 234, 0.1)'">
+                        <div style="font-size: 2em; margin-bottom: 5px;">🧩</div>
+                        <div>Daily Puzzle</div>
+                    </button>
+                    
+                    <button onclick="showOpeningBook()" style="
+                        background: rgba(78, 205, 196, 0.1);
+                        border: 1px solid rgba(78, 205, 196, 0.3);
+                        color: #4ecdc4;
+                        padding: 20px 15px;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        transition: all 0.3s;
+                        text-align: center;
+                    " onmouseover="this.style.background='rgba(78, 205, 196, 0.2)'" onmouseout="this.style.background='rgba(78, 205, 196, 0.1)'">
+                        <div style="font-size: 2em; margin-bottom: 5px;">📖</div>
+                        <div>Learn</div>
+                    </button>
+                    
+                    <button onclick="alert('Achievements coming soon!');" style="
+                        background: rgba(255, 215, 0, 0.1);
+                        border: 1px solid rgba(255, 215, 0, 0.3);
+                        color: #ffd700;
+                        padding: 20px 15px;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        transition: all 0.3s;
+                        text-align: center;
+                    " onmouseover="this.style.background='rgba(255, 215, 0, 0.2)'" onmouseout="this.style.background='rgba(255, 215, 0, 0.1)'">
+                        <div style="font-size: 2em; margin-bottom: 5px;">🏆</div>
+                        <div>Achievements</div>
+                    </button>
+                    
+                    <button onclick="openAnalysisModal()" style="
+                        background: rgba(78, 205, 196, 0.1);
+                        border: 1px solid rgba(78, 205, 196, 0.3);
+                        color: #4ecdc4;
+                        padding: 20px 15px;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        transition: all 0.3s;
+                        text-align: center;
+                    " onmouseover="this.style.background='rgba(78, 205, 196, 0.2)'" onmouseout="this.style.background='rgba(78, 205, 196, 0.1)'">
+                        <div style="font-size: 2em; margin-bottom: 5px;">📊</div>
+                        <div>Analysis</div>
+                    </button>
+                    
+                    <button onclick="alert('Friends coming soon!');" style="
+                        background: rgba(255, 107, 107, 0.1);
+                        border: 1px solid rgba(255, 107, 107, 0.3);
+                        color: #ff6b6b;
+                        padding: 20px 15px;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        transition: all 0.3s;
+                        text-align: center;
+                    " onmouseover="this.style.background='rgba(255, 107, 107, 0.2)'" onmouseout="this.style.background='rgba(255, 107, 107, 0.1)'">
+                        <div style="font-size: 2em; margin-bottom: 5px;">👥</div>
+                        <div>Friends</div>
+                    </button>
+                    
+                    <button onclick="alert('Spectate coming soon!');" style="
+                        background: rgba(165, 94, 234, 0.1);
+                        border: 1px solid rgba(165, 94, 234, 0.3);
+                        color: #a55eea;
+                        padding: 20px 15px;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        transition: all 0.3s;
+                        text-align: center;
+                    " onmouseover="this.style.background='rgba(165, 94, 234, 0.2)'" onmouseout="this.style.background='rgba(165, 94, 234, 0.1)'">
+                        <div style="font-size: 2em; margin-bottom: 5px;">🎮</div>
+                        <div>Spectate</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Match History -->
+            <div style="
+                background: rgba(35, 39, 46, 0.8);
+                border-radius: 16px;
+                padding: 25px;
+                border: 1px solid rgba(78, 205, 196, 0.2);
+            ">
+                <h3 style="margin: 0 0 20px 0; color: #00d2ff; font-size: 1.3em;">📜 MATCH HISTORY</h3>
+                <div id="match-history-list" style="display: flex; flex-direction: column; gap: 10px;">
+                    <!-- Placeholder for match history -->
+                    <div style="
+                        background: rgba(78, 205, 196, 0.05);
+                        border-left: 3px solid #4ecdc4;
+                        padding: 12px 15px;
+                        border-radius: 6px;
+                        color: #888;
+                        text-align: center;
+                    ">
+                        No games played yet. Your match history will appear here.
+                    </div>
+                </div>
+                <button onclick="alert('Full history coming soon!');" style="
+                    width: 100%;
+                    margin-top: 15px;
                     background: transparent;
-                    color: #ff6b6b;
-                    border: 2px solid #ff6b6b;
-                    padding: 10px 24px;
-                    border-radius: 50px;
+                    border: 2px solid rgba(78, 205, 196, 0.3);
+                    color: #4ecdc4;
+                    padding: 12px;
+                    border-radius: 8px;
                     cursor: pointer;
                     font-weight: 600;
-                    font-size: 0.9em;
-                    transition: all 0.3s ease;
-                    flex-shrink: 0;
-                " onmouseover="this.style.background='rgba(255, 107, 107, 0.1)'" onmouseout="this.style.background='transparent'">
-                    ← Sign Out
+                    transition: all 0.3s;
+                " onmouseover="this.style.background='rgba(78, 205, 196, 0.1)'" onmouseout="this.style.background='transparent'">
+                    View All Games →
                 </button>
             </div>
 
-            <!-- Stats Grid -->
-            <div id="user-home-stats" style="
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-                gap: 15px;
-                margin-bottom: 30px;
+            <!-- Chat/Messaging Section -->
+            <div style="
+                background: rgba(35, 39, 46, 0.8);
+                border-radius: 16px;
+                padding: 25px;
+                border: 1px solid rgba(78, 205, 196, 0.2);
+                margin-top: 30px;
             ">
-                <div style="
-                    background: linear-gradient(135deg, rgba(38, 222, 129, 0.1), rgba(38, 222, 129, 0.05));
-                    padding: 20px;
-                    border-radius: 12px;
-                    border: 1px solid rgba(38, 222, 129, 0.3);
-                    text-align: center;
-                ">
-                    <div style="font-size: 32px; font-weight: bold; color: #26de81;" id="user-home-wins">0</div>
-                    <div style="font-size: 13px; color: #aaa; margin-top: 5px;">Wins</div>
+                <h3 style="margin: 0 0 20px 0; color: #ff79c6; font-size: 1.3em;">💬 CHAT & MESSAGES</h3>
+                
+                <!-- Chat Tabs -->
+                <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid rgba(78, 205, 196, 0.2); padding-bottom: 10px;">
+                    <button id="global-chat-tab" onclick="switchChatTab('global')" style="
+                        background: linear-gradient(135deg, #ff79c6, #bd93f9);
+                        color: white;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        font-size: 0.9em;
+                        transition: all 0.3s;
+                        flex: 1;
+                    ">
+                        🌐 Global Chat
+                    </button>
+                    <button id="friends-chat-tab" onclick="switchChatTab('friends')" style="
+                        background: rgba(78, 205, 196, 0.2);
+                        color: #4ecdc4;
+                        border: 1px solid rgba(78, 205, 196, 0.3);
+                        padding: 10px 20px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        font-size: 0.9em;
+                        transition: all 0.3s;
+                        flex: 1;
+                    ">
+                        👥 Friends
+                    </button>
                 </div>
-                <div style="
-                    background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(255, 107, 107, 0.05));
-                    padding: 20px;
-                    border-radius: 12px;
-                    border: 1px solid rgba(255, 107, 107, 0.3);
-                    text-align: center;
-                ">
-                    <div style="font-size: 32px; font-weight: bold; color: #ff6b6b;" id="user-home-losses">0</div>
-                    <div style="font-size: 13px; color: #aaa; margin-top: 5px;">Losses</div>
+
+                <!-- Global Chat Panel -->
+                <div id="global-chat-panel" style="display: block;">
+                    <!-- Chat Messages -->
+                    <div id="global-chat-messages" style="
+                        background: rgba(0, 0, 0, 0.3);
+                        border-radius: 10px;
+                        padding: 15px;
+                        height: 300px;
+                        overflow-y: auto;
+                        margin-bottom: 15px;
+                        border: 1px solid rgba(255, 121, 198, 0.2);
+                    ">
+                        <!-- Sample Messages -->
+                        <div style="margin-bottom: 12px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                <div style="
+                                    width: 24px;
+                                    height: 24px;
+                                    border-radius: 50%;
+                                    background: linear-gradient(135deg, #4ecdc4, #a55eea);
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    font-size: 12px;
+                                    font-weight: bold;
+                                    color: #fff;
+                                ">S</div>
+                                <span style="color: #4ecdc4; font-weight: 600; font-size: 0.9em;">StrategicMind</span>
+                                <span style="color: #666; font-size: 0.75em;">2m ago</span>
+                            </div>
+                            <div style="color: #ccc; font-size: 0.9em; padding-left: 32px;">
+                                Looking for a quick game! Anyone online?
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 12px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                <div style="
+                                    width: 24px;
+                                    height: 24px;
+                                    border-radius: 50%;
+                                    background: linear-gradient(135deg, #ff6b6b, #ffd700);
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    font-size: 12px;
+                                    font-weight: bold;
+                                    color: #fff;
+                                ">H</div>
+                                <span style="color: #ff6b6b; font-weight: 600; font-size: 0.9em;">HexMaster</span>
+                                <span style="color: #666; font-size: 0.75em;">5m ago</span>
+                            </div>
+                            <div style="color: #ccc; font-size: 0.9em; padding-left: 32px;">
+                                Just finished an amazing game! This fortress strategy is OP 🔥
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 12px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                <div style="
+                                    width: 24px;
+                                    height: 24px;
+                                    border-radius: 50%;
+                                    background: linear-gradient(135deg, #a55eea, #5f27cd);
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    font-size: 12px;
+                                    font-weight: bold;
+                                    color: #fff;
+                                ">R</div>
+                                <span style="color: #a55eea; font-weight: 600; font-size: 0.9em;">RomgonPro</span>
+                                <span style="color: #666; font-size: 0.75em;">8m ago</span>
+                            </div>
+                            <div style="color: #ccc; font-size: 0.9em; padding-left: 32px;">
+                                Welcome to all new players! Check out the tutorial if you're just starting 📖
+                            </div>
+                        </div>
+
+                        <div style="
+                            text-align: center;
+                            color: #666;
+                            font-size: 0.85em;
+                            padding: 10px;
+                            font-style: italic;
+                        ">
+                            Real-time chat coming soon! Connect with players worldwide.
+                        </div>
+                    </div>
+
+                    <!-- Message Input -->
+                    <div style="display: flex; gap: 10px;">
+                        <input id="global-chat-input" type="text" placeholder="Type a message..." style="
+                            flex: 1;
+                            background: rgba(0, 0, 0, 0.3);
+                            border: 1px solid rgba(255, 121, 198, 0.3);
+                            border-radius: 8px;
+                            padding: 12px 15px;
+                            color: white;
+                            font-size: 0.9em;
+                            outline: none;
+                            transition: all 0.3s;
+                        " onfocus="this.style.borderColor='rgba(255, 121, 198, 0.6)'" onblur="this.style.borderColor='rgba(255, 121, 198, 0.3)'" oninput="handleGlobalChatTyping()" onkeypress="if(event.key==='Enter') sendGlobalMessage()">
+                        <button onclick="sendGlobalMessage()" style="
+                            background: linear-gradient(135deg, #ff79c6, #bd93f9);
+                            color: white;
+                            border: none;
+                            padding: 12px 24px;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            transition: all 0.3s;
+                        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            Send 📤
+                        </button>
+                    </div>
+
+                    <!-- Online Users Count -->
+                    <div style="
+                        margin-top: 15px;
+                        padding: 10px 15px;
+                        background: rgba(78, 205, 196, 0.1);
+                        border-radius: 8px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        border: 1px solid rgba(78, 205, 196, 0.2);
+                    ">
+                        <span style="color: #4ecdc4; font-size: 0.9em; font-weight: 600;">
+                            🟢 <span id="online-users-count">42</span> players online
+                        </span>
+                        <button onclick="alert('User list coming soon!');" style="
+                            background: transparent;
+                            border: 1px solid rgba(78, 205, 196, 0.3);
+                            color: #4ecdc4;
+                            padding: 6px 12px;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-size: 0.85em;
+                            transition: all 0.3s;
+                        " onmouseover="this.style.background='rgba(78, 205, 196, 0.1)'" onmouseout="this.style.background='transparent'">
+                            View All
+                        </button>
+                    </div>
                 </div>
-                <div style="
-                    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
-                    padding: 20px;
-                    border-radius: 12px;
-                    border: 1px solid rgba(255, 215, 0, 0.3);
-                    text-align: center;
-                ">
-                    <div style="font-size: 32px; font-weight: bold; color: #ffd700;" id="user-home-winrate">0%</div>
-                    <div style="font-size: 13px; color: #aaa; margin-top: 5px;">Win Rate</div>
-                </div>
-                <div style="
-                    background: linear-gradient(135deg, rgba(78, 205, 196, 0.1), rgba(78, 205, 196, 0.05));
-                    padding: 20px;
-                    border-radius: 12px;
-                    border: 1px solid rgba(78, 205, 196, 0.3);
-                    text-align: center;
-                ">
-                    <div style="font-size: 32px; font-weight: bold; color: #4ecdc4;" id="user-home-games">0</div>
-                    <div style="font-size: 13px; color: #aaa; margin-top: 5px;">Total Games</div>
+
+                <!-- Friends Chat Panel -->
+                <div id="friends-chat-panel" style="display: none;">
+                    <!-- Friends List -->
+                    <div id="friends-list" style="
+                        background: rgba(0, 0, 0, 0.3);
+                        border-radius: 10px;
+                        padding: 15px;
+                        height: 300px;
+                        overflow-y: auto;
+                        margin-bottom: 15px;
+                        border: 1px solid rgba(78, 205, 196, 0.2);
+                    ">
+                        <!-- Sample Friend Messages -->
+                        <div style="
+                            background: rgba(78, 205, 196, 0.1);
+                            border-left: 3px solid #4ecdc4;
+                            padding: 12px;
+                            border-radius: 8px;
+                            margin-bottom: 10px;
+                            cursor: pointer;
+                            transition: all 0.3s;
+                        " onmouseover="this.style.background='rgba(78, 205, 196, 0.2)'" onmouseout="this.style.background='rgba(78, 205, 196, 0.1)'" onclick="openFriendChat('StrategicMind')">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                <div style="
+                                    width: 32px;
+                                    height: 32px;
+                                    border-radius: 50%;
+                                    background: linear-gradient(135deg, #4ecdc4, #a55eea);
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    font-size: 14px;
+                                    font-weight: bold;
+                                    color: #fff;
+                                    position: relative;
+                                ">
+                                    S
+                                    <div style="
+                                        position: absolute;
+                                        bottom: 0;
+                                        right: 0;
+                                        width: 10px;
+                                        height: 10px;
+                                        background: #26de81;
+                                        border-radius: 50%;
+                                        border: 2px solid #23272e;
+                                    "></div>
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="color: #4ecdc4; font-weight: 600; font-size: 0.95em;">StrategicMind</div>
+                                    <div style="color: #888; font-size: 0.8em;">Online • Last seen now</div>
+                                </div>
+                                <div style="
+                                    background: #ff79c6;
+                                    color: white;
+                                    font-size: 0.75em;
+                                    padding: 3px 8px;
+                                    border-radius: 12px;
+                                    font-weight: 600;
+                                ">2</div>
+                            </div>
+                            <div style="color: #aaa; font-size: 0.85em; padding-left: 42px;">
+                                "Want to play a rematch? 😊"
+                            </div>
+                        </div>
+
+                        <div style="
+                            background: rgba(78, 205, 196, 0.05);
+                            border-left: 3px solid rgba(78, 205, 196, 0.3);
+                            padding: 12px;
+                            border-radius: 8px;
+                            margin-bottom: 10px;
+                            cursor: pointer;
+                            transition: all 0.3s;
+                        " onmouseover="this.style.background='rgba(78, 205, 196, 0.1)'" onmouseout="this.style.background='rgba(78, 205, 196, 0.05)'" onclick="openFriendChat('HexMaster')">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                <div style="
+                                    width: 32px;
+                                    height: 32px;
+                                    border-radius: 50%;
+                                    background: linear-gradient(135deg, #ff6b6b, #ffd700);
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    font-size: 14px;
+                                    font-weight: bold;
+                                    color: #fff;
+                                    position: relative;
+                                ">
+                                    H
+                                    <div style="
+                                        position: absolute;
+                                        bottom: 0;
+                                        right: 0;
+                                        width: 10px;
+                                        height: 10px;
+                                        background: #888;
+                                        border-radius: 50%;
+                                        border: 2px solid #23272e;
+                                    "></div>
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="color: #ff6b6b; font-weight: 600; font-size: 0.95em;">HexMaster</div>
+                                    <div style="color: #888; font-size: 0.8em;">Offline • Last seen 2h ago</div>
+                                </div>
+                            </div>
+                            <div style="color: #aaa; font-size: 0.85em; padding-left: 42px;">
+                                "GG! That was intense 🔥"
+                            </div>
+                        </div>
+
+                        <div style="
+                            text-align: center;
+                            color: #666;
+                            font-size: 0.85em;
+                            padding: 20px;
+                            font-style: italic;
+                        ">
+                            Add friends to chat privately and challenge them to games!
+                        </div>
+                    </div>
+
+                    <!-- Add Friend -->
+                    <div style="display: flex; gap: 10px;">
+                        <input id="add-friend-input" type="text" placeholder="Enter friend's username..." style="
+                            flex: 1;
+                            background: rgba(0, 0, 0, 0.3);
+                            border: 1px solid rgba(78, 205, 196, 0.3);
+                            border-radius: 8px;
+                            padding: 12px 15px;
+                            color: white;
+                            font-size: 0.9em;
+                            outline: none;
+                            transition: all 0.3s;
+                        " onfocus="this.style.borderColor='rgba(78, 205, 196, 0.6)'" onblur="this.style.borderColor='rgba(78, 205, 196, 0.3)'" onkeypress="if(event.key==='Enter') addFriend()">
+                        <button onclick="addFriend()" style="
+                            background: linear-gradient(135deg, #4ecdc4, #45b7aa);
+                            color: white;
+                            border: none;
+                            padding: 12px 24px;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            transition: all 0.3s;
+                        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            Add Friend 👥
+                        </button>
+                    </div>
+
+                    <!-- Friend Stats -->
+                    <div style="
+                        margin-top: 15px;
+                        padding: 10px 15px;
+                        background: rgba(165, 94, 234, 0.1);
+                        border-radius: 8px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        border: 1px solid rgba(165, 94, 234, 0.2);
+                    ">
+                        <span style="color: #a55eea; font-size: 0.9em; font-weight: 600;">
+                            👥 <span id="friends-count">2</span> friends
+                        </span>
+                        <button onclick="alert('Friend management coming soon!');" style="
+                            background: transparent;
+                            border: 1px solid rgba(165, 94, 234, 0.3);
+                            color: #a55eea;
+                            padding: 6px 12px;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-size: 0.85em;
+                            transition: all 0.3s;
+                        " onmouseover="this.style.background='rgba(165, 94, 234, 0.1)'" onmouseout="this.style.background='transparent'">
+                            Manage
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Quick Play Options -->
-            <div style="margin-bottom: 25px;">
-                <h3 style="color: #4ecdc4; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">🚀 Quick Play</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                    <!-- Start Game -->
-                    <button onclick="hideSplashPage(); document.getElementById('user-home').style.display='none';" style="
-                        background: linear-gradient(135deg, #4ecdc4 0%, #45b7aa 100%);
-                        color: #fff;
-                        border: none;
-                        padding: 18px 24px;
-                        border-radius: 12px;
-                        cursor: pointer;
-                        font-weight: 700;
-                        font-size: 0.95em;
-                        box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
-                        transition: all 0.3s ease;
-                        text-align: left;
-                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(78, 205, 196, 0.5)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(78, 205, 196, 0.3)'">
-                        <div style="font-size: 24px; margin-bottom: 5px;">🎮</div>
-                        <div>Start Game</div>
-                        <div style="font-size: 11px; opacity: 0.8; margin-top: 3px;">Begin your strategy</div>
-                    </button>
-
-                    <!-- Practice Mode -->
-                    <button onclick="alert('Practice mode coming soon!');" style="
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                        color: #fff;
-                        border: none;
-                        padding: 18px 24px;
-                        border-radius: 12px;
-                        cursor: pointer;
-                        font-weight: 700;
-                        font-size: 0.95em;
-                        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-                        transition: all 0.3s ease;
-                        text-align: left;
-                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.5)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.3)'">
-                        <div style="font-size: 24px; margin-bottom: 5px;">🤖</div>
-                        <div>Practice Mode</div>
-                        <div style="font-size: 11px; opacity: 0.8; margin-top: 3px;">Play vs AI</div>
-                    </button>
-
-                    <!-- Tutorial -->
-                    <button onclick="alert('Tutorial coming soon!');" style="
-                        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-                        color: #fff;
-                        border: none;
-                        padding: 18px 24px;
-                        border-radius: 12px;
-                        cursor: pointer;
-                        font-weight: 700;
-                        font-size: 0.95em;
-                        box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
-                        transition: all 0.3s ease;
-                        text-align: left;
-                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(240, 147, 251, 0.5)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(240, 147, 251, 0.3)'">
-                        <div style="font-size: 24px; margin-bottom: 5px;">📖</div>
-                        <div>Learn to Play</div>
-                        <div style="font-size: 11px; opacity: 0.8; margin-top: 3px;">Interactive tutorial</div>
-                    </button>
-                    
-                    <!-- ChatGPT Mode -->
-                    <button onclick="showChatGPTModal();" style="
-                        background: linear-gradient(135deg, #10a37f 0%, #1a7f64 100%);
-                        color: #fff;
-                        border: none;
-                        padding: 18px 24px;
-                        border-radius: 12px;
-                        cursor: pointer;
-                        font-weight: 700;
-                        font-size: 0.95em;
-                        box-shadow: 0 4px 15px rgba(16, 163, 127, 0.3);
-                        transition: all 0.3s ease;
-                        text-align: left;
-                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(16, 163, 127, 0.5)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(16, 163, 127, 0.3)'">
-                        <div style="font-size: 24px; margin-bottom: 5px;">🤖💬</div>
-                        <div>ChatGPT Mode</div>
-                        <div style="font-size: 11px; opacity: 0.8; margin-top: 3px;">AI-assisted gameplay</div>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Guest Notice (if guest) -->
+            <!-- Guest Upgrade Notice -->
             <div id="guest-upgrade-notice" style="
                 background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 165, 0, 0.1));
                 border: 2px solid rgba(255, 215, 0, 0.3);
@@ -4295,6 +4936,7 @@
                 padding: 20px;
                 display: none;
                 text-align: center;
+                margin-top: 30px;
             ">
                 <div style="font-size: 28px; margin-bottom: 10px;">💎</div>
                 <h4 style="margin: 0 0 8px 0; color: #ffd700; font-size: 16px;">Unlock Full Features</h4>
@@ -4313,18 +4955,6 @@
                 " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(255, 215, 0, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(255, 215, 0, 0.4)'">
                     ✨ Create Free Account
                 </button>
-            </div>
-
-            <!-- Footer Message -->
-            <div style="
-                text-align: center;
-                color: #888;
-                font-size: 0.9em;
-                margin-top: 25px;
-                padding-top: 20px;
-                border-top: 1px solid rgba(255, 255, 255, 0.1);
-            ">
-                <p style="margin: 0;">Ready to strategize? Your game awaits!</p>
             </div>
         </div>
     </div>
@@ -4708,6 +5338,38 @@
                             white-space: nowrap;
                         " onmouseover="this.style.color='#b075ff'; this.style.textShadow='0 0 15px rgba(165, 94, 234, 0.5)'" onmouseout="this.style.color='#a55eea'; this.style.textShadow='none'">PREFERENCES</a>
                         <span style="color: #666; font-size: 0.75em; margin-left: auto;">Audio • Display • Theme</span>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <span style="color: #4ecdc4; font-size: 1.6em;">🏠</span>
+                        <a onclick="document.getElementById('start-menu').style.display='none'; showUserHome();" style="
+                            color: #4ecdc4;
+                            font-size: 0.95em;
+                            font-weight: 600;
+                            cursor: pointer;
+                            text-decoration: none;
+                            letter-spacing: 1px;
+                            transition: all 0.3s ease;
+                            display: inline-block;
+                            white-space: nowrap;
+                        " onmouseover="this.style.color='#5eddd4'; this.style.textShadow='0 0 15px rgba(78, 205, 196, 0.5)'" onmouseout="this.style.color='#4ecdc4'; this.style.textShadow='none'">LOBBY</a>
+                        <span style="color: #666; font-size: 0.75em; margin-left: auto;">User home • Quick play</span>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <span style="color: #ff6b6b; font-size: 1.6em;">🚪</span>
+                        <a onclick="quitAndLogout()" style="
+                            color: #ff6b6b;
+                            font-size: 0.95em;
+                            font-weight: 600;
+                            cursor: pointer;
+                            text-decoration: none;
+                            letter-spacing: 1px;
+                            transition: all 0.3s ease;
+                            display: inline-block;
+                            white-space: nowrap;
+                        " onmouseover="this.style.color='#ff8a8a'; this.style.textShadow='0 0 15px rgba(255, 107, 107, 0.5)'" onmouseout="this.style.color='#ff6b6b'; this.style.textShadow='none'">LOG OUT</a>
+                        <span style="color: #666; font-size: 0.75em; margin-left: auto;">Sign out • Exit</span>
                     </div>
                 </div>
             </div>
@@ -6353,6 +7015,78 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     <h3>Black Moves</h3>
                     <ul id="black-moves" class="movement-list"></ul>
                 </div>
+    
+    <!-- Sandbox Mode Tools Panel -->
+    <div id="sandbox-tools-panel" style="display: none; position: fixed; top: 80px; left: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 20px; box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4); z-index: 1000; min-width: 280px; color: #fff;">
+        <div style="text-align: center; margin-bottom: 15px;">
+            <div style="font-size: 2em;">🛠️</div>
+            <h3 style="margin: 8px 0 4px 0; font-size: 1.2em;">Sandbox Mode</h3>
+            <p style="margin: 0; font-size: 0.85em; opacity: 0.9;">Position Editor</p>
+        </div>
+        
+        <!-- Edit Mode Toggle -->
+        <div style="background: rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600;">
+                <input type="checkbox" id="sandbox-edit-mode" onchange="toggleSandboxEditMode()" style="width: 20px; height: 20px; cursor: pointer;">
+                <span>✏️ Edit Mode (Place/Remove Pieces)</span>
+            </label>
+        </div>
+        
+        <!-- Piece Selection -->
+        <div id="sandbox-piece-selector" style="display: none; background: rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Select Piece to Place:</label>
+            <select id="sandbox-piece-type" style="width: 100%; padding: 8px; background: rgba(255, 255, 255, 0.9); border: none; border-radius: 6px; font-size: 0.95em; margin-bottom: 8px;">
+                <option value="">-- Click to Remove --</option>
+                <optgroup label="White Pieces">
+                    <option value="white-triangle">△ White Triangle</option>
+                    <option value="white-square">□ White Square</option>
+                    <option value="white-circle">○ White Circle</option>
+                    <option value="white-hexagon">⬡ White Hexagon</option>
+                    <option value="white-rhombus">◇ White Rhombus</option>
+                </optgroup>
+                <optgroup label="Black Pieces">
+                    <option value="black-triangle">▲ Black Triangle</option>
+                    <option value="black-square">■ Black Square</option>
+                    <option value="black-circle">● Black Circle</option>
+                    <option value="black-hexagon">⬢ Black Hexagon</option>
+                    <option value="black-rhombus">◆ Black Rhombus</option>
+                </optgroup>
+            </select>
+            <div style="font-size: 0.85em; opacity: 0.9; font-style: italic;">Click any hex to place/remove</div>
+        </div>
+        
+        <!-- Control Buttons -->
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button onclick="switchSandboxTurn()" style="background: rgba(255, 255, 255, 0.2); color: #fff; border: 2px solid rgba(255, 255, 255, 0.4); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; font-size: 0.9em;" onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
+                    🔄 Turn
+                </button>
+                <button onclick="toggleSandboxSidePanels()" style="background: rgba(78, 205, 196, 0.3); color: #fff; border: 2px solid rgba(78, 205, 196, 0.5); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; font-size: 0.9em;" onmouseover="this.style.background='rgba(78, 205, 196, 0.4)'" onmouseout="this.style.background='rgba(78, 205, 196, 0.3)'">
+                    👁️ Panels
+                </button>
+            </div>
+            <button onclick="resetSandboxBoard()" style="background: rgba(255, 255, 255, 0.2); color: #fff; border: 2px solid rgba(255, 255, 255, 0.4); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
+                ♻️ Reset to Start
+            </button>
+            <button onclick="clearSandboxBoard()" style="background: rgba(255, 107, 107, 0.3); color: #fff; border: 2px solid rgba(255, 107, 107, 0.5); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.background='rgba(255, 107, 107, 0.4)'" onmouseout="this.style.background='rgba(255, 107, 107, 0.3)'">
+                🗑️ Clear Board
+            </button>
+            <button onclick="saveSandboxPosition()" style="background: rgba(78, 205, 196, 0.3); color: #fff; border: 2px solid rgba(78, 205, 196, 0.5); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.background='rgba(78, 205, 196, 0.4)'" onmouseout="this.style.background='rgba(78, 205, 196, 0.3)'">
+                💾 Save Position
+            </button>
+            <button onclick="loadSandboxPosition()" style="background: rgba(78, 205, 196, 0.3); color: #fff; border: 2px solid rgba(78, 205, 196, 0.5); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.background='rgba(78, 205, 196, 0.4)'" onmouseout="this.style.background='rgba(78, 205, 196, 0.3)'">
+                📂 Load Position
+            </button>
+            <button onclick="exitSandboxMode()" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%); color: #fff; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 700; box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(255, 107, 107, 0.5)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(255, 107, 107, 0.3)'">
+                ❌ Exit Sandbox
+            </button>
+        </div>
+        
+        <!-- Current Turn Indicator -->
+        <div id="sandbox-turn-display" style="margin-top: 15px; text-align: center; padding: 10px; background: rgba(0, 0, 0, 0.2); border-radius: 6px; font-weight: 600;">
+            Current Turn: <span id="sandbox-current-turn">Black</span>
+        </div>
+    </div>
     
     <!-- ChatGPT Assistant Modal -->
     <div id="chatgpt-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.95); z-index: 100001; overflow-y: auto;">
@@ -11526,6 +12260,1236 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             // Note: AI will trigger automatically when it becomes White's turn
         }
+        
+        // ============================================
+        // SANDBOX MODE FUNCTIONS
+        // ============================================
+        
+        let sandboxMode = false;
+        let sandboxEditMode = false;
+        
+        function startSandboxMode() {
+            console.log('🛠️ Starting Sandbox Mode...');
+            
+            // Hide user home
+            hideUserHome();
+            
+            // Hide splash page and start menu
+            const splashPage = document.getElementById('splash-page');
+            if (splashPage) splashPage.style.display = 'none';
+            document.getElementById('start-menu').style.display = 'none';
+            
+            // Show game board
+            document.getElementById('board-display-container').style.display = 'block';
+            
+            // Show sandbox tools panel
+            document.getElementById('sandbox-tools-panel').style.display = 'block';
+            
+            // Initialize board with standard starting position
+            initializeBoard('full');
+            
+            // Disable AI
+            aiEnabled = false;
+            llmMode = false;
+            
+            // Disable timers
+            timerEnabled = false;
+            document.getElementById('player-timers').style.display = 'none';
+            
+            // Mark sandbox mode as active
+            sandboxMode = true;
+            gameInProgress = true;
+            
+            // Reset game state
+            currentTurnPiece = null;
+            clearMovementHistory();
+            clearMoveRepetitions();
+            clearCoordinateLabels();
+            
+            // Update turn display
+            updateTurnDisplay();
+            updateSandboxTurnDisplay();
+            
+            console.log('✅ Sandbox Mode started');
+        }
+        
+        function toggleSandboxEditMode() {
+            const checkbox = document.getElementById('sandbox-edit-mode');
+            const pieceSelectorDiv = document.getElementById('sandbox-piece-selector');
+            
+            sandboxEditMode = checkbox.checked;
+            
+            if (sandboxEditMode) {
+                console.log('✏️ Sandbox Edit Mode ENABLED');
+                pieceSelectorDiv.style.display = 'block';
+                
+                // Add click listeners to all hexagons
+                document.querySelectorAll('.hex-cell').forEach(hex => {
+                    if (!hex.hasAttribute('data-sandbox-listener')) {
+                        hex.addEventListener('click', handleSandboxHexClick);
+                        hex.setAttribute('data-sandbox-listener', 'true');
+                        hex.style.cursor = 'pointer';
+                    }
+                });
+            } else {
+                console.log('✏️ Sandbox Edit Mode DISABLED');
+                pieceSelectorDiv.style.display = 'none';
+            }
+        }
+        
+        function handleSandboxHexClick(event) {
+            if (!sandboxEditMode) return;
+            
+            const hex = event.currentTarget;
+            const row = parseInt(hex.getAttribute('data-row'));
+            const col = parseInt(hex.getAttribute('data-col'));
+            const selectedPieceType = document.getElementById('sandbox-piece-type').value;
+            
+            console.log(`🖱️ Sandbox hex clicked: [${row}, ${col}], piece: ${selectedPieceType}`);
+            
+            // Remove existing piece at this location (if any)
+            const existingPiece = state.pieces.find(p => p.row === row && p.col === col);
+            if (existingPiece) {
+                state.pieces = state.pieces.filter(p => !(p.row === row && p.col === col));
+                console.log(`🗑️ Removed ${existingPiece.color} ${existingPiece.shape} from [${row}, ${col}]`);
+            }
+            
+            // Place new piece if one was selected
+            if (selectedPieceType && selectedPieceType !== '') {
+                const [color, shape] = selectedPieceType.split('-');
+                
+                const newPiece = {
+                    shape: shape,
+                    color: color,
+                    row: row,
+                    col: col,
+                    zone: getZoneForPosition(row, col)
+                };
+                
+                state.pieces.push(newPiece);
+                console.log(`➕ Placed ${color} ${shape} at [${row}, ${col}]`);
+            }
+            
+            // Refresh the board display
+            renderBoard();
+            highlightThreatenedPieces();
+        }
+        
+        function switchSandboxTurn() {
+            currentPlayer = currentPlayer === 'black' ? 'white' : 'black';
+            console.log(`🔄 Switched turn to: ${currentPlayer}`);
+            updateTurnDisplay();
+            updateSandboxTurnDisplay();
+        }
+        
+        function updateSandboxTurnDisplay() {
+            const display = document.getElementById('sandbox-current-turn');
+            if (display) {
+                display.textContent = currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1);
+                display.style.color = currentPlayer === 'white' ? '#fff' : '#333';
+                display.style.background = currentPlayer === 'white' ? '#333' : '#fff';
+                display.style.padding = '4px 12px';
+                display.style.borderRadius = '6px';
+                display.style.fontWeight = '700';
+            }
+        }
+        
+        function resetSandboxBoard() {
+            if (confirm('Reset board to starting position?')) {
+                console.log('♻️ Resetting Sandbox board...');
+                initializeBoard('full');
+                currentPlayer = 'black';
+                clearMovementHistory();
+                clearMoveRepetitions();
+                renderBoard();
+                updateTurnDisplay();
+                updateSandboxTurnDisplay();
+                console.log('✅ Board reset');
+            }
+        }
+        
+        function clearSandboxBoard() {
+            if (confirm('Clear all pieces from the board?')) {
+                console.log('🗑️ Clearing Sandbox board...');
+                state.pieces = [];
+                renderBoard();
+                console.log('✅ Board cleared');
+            }
+        }
+        
+        function saveSandboxPosition() {
+            const position = {
+                pieces: JSON.parse(JSON.stringify(state.pieces)),
+                currentPlayer: currentPlayer,
+                timestamp: new Date().toISOString()
+            };
+            
+            localStorage.setItem('romgon-sandbox-position', JSON.stringify(position));
+            
+            alert('✅ Position saved to browser storage!');
+            console.log('💾 Position saved:', position);
+        }
+        
+        function loadSandboxPosition() {
+            const savedPosition = localStorage.getItem('romgon-sandbox-position');
+            
+            if (!savedPosition) {
+                alert('❌ No saved position found!');
+                return;
+            }
+            
+            if (!confirm('Load saved position? (Current position will be lost)')) {
+                return;
+            }
+            
+            try {
+                const position = JSON.parse(savedPosition);
+                state.pieces = position.pieces;
+                currentPlayer = position.currentPlayer;
+                
+                clearMovementHistory();
+                clearMoveRepetitions();
+                renderBoard();
+                updateTurnDisplay();
+                updateSandboxTurnDisplay();
+                highlightThreatenedPieces();
+                
+                alert(`✅ Position loaded!\n\nSaved: ${new Date(position.timestamp).toLocaleString()}`);
+                console.log('📂 Position loaded:', position);
+            } catch (error) {
+                console.error('❌ Error loading position:', error);
+                alert('❌ Error loading position!');
+            }
+        }
+        
+        function exitSandboxMode() {
+            if (!confirm('Exit Sandbox Mode?')) {
+                return;
+            }
+            
+            console.log('❌ Exiting Sandbox Mode...');
+            
+            // Hide sandbox tools panel
+            document.getElementById('sandbox-tools-panel').style.display = 'none';
+            
+            // Hide board
+            document.getElementById('board-display-container').style.display = 'none';
+            
+            // Reset flags
+            sandboxMode = false;
+            sandboxEditMode = false;
+            gameInProgress = false;
+            
+            // Uncheck edit mode
+            document.getElementById('sandbox-edit-mode').checked = false;
+            document.getElementById('sandbox-piece-selector').style.display = 'none';
+            
+            // Remove sandbox click listeners
+            document.querySelectorAll('.hex-cell').forEach(hex => {
+                if (hex.hasAttribute('data-sandbox-listener')) {
+                    hex.removeEventListener('click', handleSandboxHexClick);
+                    hex.removeAttribute('data-sandbox-listener');
+                    hex.style.cursor = '';
+                }
+            });
+            
+            // Show user home
+            showUserHome();
+            
+            console.log('✅ Exited Sandbox Mode');
+        }
+        
+        function toggleSandboxSidePanels() {
+            const container = document.getElementById('eliminated-pieces-container');
+            
+            if (!container) {
+                console.error('❌ eliminated-pieces-container not found');
+                return;
+            }
+            
+            if (container.style.display === 'none') {
+                container.style.display = 'flex';
+                console.log('👁️ Side panels SHOWN');
+            } else {
+                container.style.display = 'none';
+                console.log('👁️ Side panels HIDDEN');
+            }
+        }
+
+        // ============================================
+        // CHAT & MESSAGING FUNCTIONS (Backend Integrated)
+        // ============================================
+
+        let chatConnected = false;
+        let typingTimeout = null;
+
+        // Initialize chat when user logs in
+        function initializeChat() {
+            const user = JSON.parse(localStorage.getItem('romgon-user') || '{}');
+            
+            if (!user.userId && !user.uid) {
+                console.warn('💬 No user found, cannot connect to chat');
+                return;
+            }
+
+            const userId = user.userId || user.uid;
+            const displayName = user.displayName || user.email?.split('@')[0] || 'Guest';
+            const avatar = displayName.charAt(0).toUpperCase();
+
+            console.log('💬 Initializing chat for', displayName);
+
+            // Connect to chat server
+            romgonChat.connect(userId, displayName, avatar);
+
+            // Setup event handlers
+            setupChatEventHandlers();
+
+            // Load initial data
+            romgonChat.loadGlobalHistory();
+
+            chatConnected = true;
+        }
+
+        function setupChatEventHandlers() {
+            // Online count updates
+            romgonChat.on('onlineCount', (data) => {
+                const countElement = document.getElementById('online-users-count');
+                if (countElement) {
+                    countElement.textContent = data.count;
+                }
+            });
+
+            // Global chat messages
+            romgonChat.on('globalMessage', (data) => {
+                addGlobalMessageToUI(data);
+            });
+
+            romgonChat.on('globalHistory', (data) => {
+                const chatContainer = document.getElementById('global-chat-messages');
+                if (!chatContainer) return;
+
+                // Clear existing messages
+                chatContainer.innerHTML = '';
+
+                // Add history messages
+                data.messages.forEach(msg => {
+                    addGlobalMessageToUI(msg, false);
+                });
+
+                // Scroll to bottom
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            });
+
+            // Direct messages
+            romgonChat.on('directMessage', (data) => {
+                addDirectMessageToUI(data);
+                playMessageSound();
+            });
+
+            romgonChat.on('directMessagesHistory', (data) => {
+                renderDirectMessagesHistory(data);
+            });
+
+            // Friend management
+            romgonChat.on('friendsList', (data) => {
+                updateFriendsList(data.friends);
+            });
+
+            romgonChat.on('friendRequestReceived', (data) => {
+                showFriendRequestNotification(data);
+            });
+
+            romgonChat.on('friendRequestSent', (data) => {
+                showNotification('Friend request sent! 👥', 'success');
+            });
+
+            romgonChat.on('friendAdded', (data) => {
+                showNotification('Friend added! 🎉', 'success');
+                romgonChat.loadGlobalHistory(); // Refresh to update friend list
+            });
+
+            romgonChat.on('friendRemoved', (data) => {
+                showNotification('Friend removed', 'info');
+            });
+
+            // User status changes
+            romgonChat.on('userOnline', (data) => {
+                updateUserOnlineStatus(data.userId, true);
+            });
+
+            romgonChat.on('userOffline', (data) => {
+                updateUserOnlineStatus(data.userId, false);
+            });
+
+            // Typing indicators
+            romgonChat.on('userTyping', (data) => {
+                showTypingIndicator(data);
+            });
+
+            romgonChat.on('userStoppedTyping', (data) => {
+                hideTypingIndicator(data.userId);
+            });
+
+            // Errors
+            romgonChat.on('error', (data) => {
+                showNotification(data.error, 'error');
+            });
+        }
+
+        function switchChatTab(tab) {
+            const globalTab = document.getElementById('global-chat-tab');
+            const friendsTab = document.getElementById('friends-chat-tab');
+            const globalPanel = document.getElementById('global-chat-panel');
+            const friendsPanel = document.getElementById('friends-chat-panel');
+
+            if (tab === 'global') {
+                globalTab.style.background = 'linear-gradient(135deg, #ff79c6, #bd93f9)';
+                globalTab.style.color = 'white';
+                globalTab.style.border = 'none';
+                
+                friendsTab.style.background = 'rgba(78, 205, 196, 0.2)';
+                friendsTab.style.color = '#4ecdc4';
+                friendsTab.style.border = '1px solid rgba(78, 205, 196, 0.3)';
+                
+                globalPanel.style.display = 'block';
+                friendsPanel.style.display = 'none';
+                
+                romgonChat.stopTyping('direct', romgonChat.currentChatWith);
+                
+                console.log('💬 Switched to Global Chat');
+            } else if (tab === 'friends') {
+                friendsTab.style.background = 'linear-gradient(135deg, #4ecdc4, #45b7aa)';
+                friendsTab.style.color = 'white';
+                friendsTab.style.border = 'none';
+                
+                globalTab.style.background = 'rgba(255, 121, 198, 0.2)';
+                globalTab.style.color = '#ff79c6';
+                globalTab.style.border = '1px solid rgba(255, 121, 198, 0.3)';
+                
+                globalPanel.style.display = 'none';
+                friendsPanel.style.display = 'block';
+                
+                console.log('👥 Switched to Friends Chat');
+            }
+        }
+
+        function sendGlobalMessage() {
+            const input = document.getElementById('global-chat-input');
+            const message = input.value.trim();
+            
+            if (!message) {
+                return;
+            }
+
+            // Send via backend
+            if (chatConnected && romgonChat.isConnected) {
+                romgonChat.sendGlobalMessage(message);
+                input.value = '';
+                romgonChat.stopTyping('global');
+            } else {
+                // Fallback to local-only
+                const user = JSON.parse(localStorage.getItem('romgon-user') || '{}');
+                const userName = user.displayName || user.email?.split('@')[0] || 'Guest';
+                const userInitial = userName.charAt(0).toUpperCase();
+                
+                addGlobalMessageToUI({
+                    userId: user.userId || 'local',
+                    displayName: userName,
+                    avatar: userInitial,
+                    message: message,
+                    timestamp: new Date().toISOString()
+                });
+                
+                input.value = '';
+                showNotification('💬 Offline mode - message not sent to server', 'warning');
+            }
+        }
+
+        function addGlobalMessageToUI(data, scrollToBottom = true) {
+            const chatContainer = document.getElementById('global-chat-messages');
+            if (!chatContainer) return;
+
+            // Remove "coming soon" message if exists
+            const comingSoonMsg = chatContainer.querySelector('[style*="Real-time chat coming soon"]');
+            if (comingSoonMsg && comingSoonMsg.parentElement) {
+                comingSoonMsg.parentElement.remove();
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.style.marginBottom = '12px';
+            messageDiv.setAttribute('data-message-id', data.id);
+            
+            const timeAgo = getTimeAgo(new Date(data.timestamp));
+            
+            messageDiv.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    <div style="
+                        width: 24px;
+                        height: 24px;
+                        border-radius: 50%;
+                        background: linear-gradient(135deg, #f57d2d, #fcc49c);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 12px;
+                        font-weight: bold;
+                        color: #fff;
+                    ">${data.avatar || data.displayName.charAt(0)}</div>
+                    <span style="color: #f57d2d; font-weight: 600; font-size: 0.9em;">${escapeHtml(data.displayName)}</span>
+                    <span style="color: #666; font-size: 0.75em;">${timeAgo}</span>
+                </div>
+                <div style="color: #ccc; font-size: 0.9em; padding-left: 32px;">
+                    ${escapeHtml(data.message)}
+                </div>
+            `;
+            
+            chatContainer.appendChild(messageDiv);
+            
+            if (scrollToBottom) {
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        }
+
+        function addFriend() {
+            const input = document.getElementById('add-friend-input');
+            const username = input.value.trim();
+            
+            if (!username) {
+                showNotification('Please enter a username', 'warning');
+                return;
+            }
+
+            if (chatConnected && romgonChat.isConnected) {
+                romgonChat.sendFriendRequest(username);
+                input.value = '';
+            } else {
+                showNotification('💬 Chat offline - cannot send friend request', 'warning');
+            }
+        }
+
+        function openFriendChat(friendId) {
+            if (!chatConnected || !romgonChat.isConnected) {
+                showNotification('💬 Chat offline - cannot open conversation', 'warning');
+                return;
+            }
+
+            // Load DM history
+            romgonChat.loadDirectMessages(friendId);
+            
+            // Mark as read
+            romgonChat.markMessagesRead(friendId);
+            
+            // TODO: Open DM modal/panel
+            showNotification(`Opening chat with ${friendId}... 💬`, 'info');
+        }
+
+        function updateFriendsList(friends) {
+            const friendsList = document.getElementById('friends-list');
+            if (!friendsList) return;
+
+            // Clear current list
+            friendsList.innerHTML = '';
+
+            if (friends.length === 0) {
+                friendsList.innerHTML = `
+                    <div style="text-align: center; color: #666; font-size: 0.85em; padding: 20px; font-style: italic;">
+                        Add friends to chat privately and challenge them to games!
+                    </div>
+                `;
+                return;
+            }
+
+            // Render each friend
+            friends.forEach(friend => {
+                const unreadCount = romgonChat.getUnreadCount(friend.userId);
+                const isOnline = friend.isOnline || romgonChat.isUserOnline(friend.userId);
+                
+                const friendDiv = document.createElement('div');
+                friendDiv.style.cssText = `
+                    background: rgba(78, 205, 196, ${isOnline ? '0.1' : '0.05'});
+                    border-left: 3px solid ${isOnline ? '#4ecdc4' : 'rgba(78, 205, 196, 0.3)'};
+                    padding: 12px;
+                    border-radius: 8px;
+                    margin-bottom: 10px;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                `;
+                friendDiv.onmouseover = () => friendDiv.style.background = 'rgba(78, 205, 196, 0.2)';
+                friendDiv.onmouseout = () => friendDiv.style.background = `rgba(78, 205, 196, ${isOnline ? '0.1' : '0.05'})`;
+                friendDiv.onclick = () => openFriendChat(friend.userId);
+                
+                friendDiv.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="
+                            width: 32px;
+                            height: 32px;
+                            border-radius: 50%;
+                            background: linear-gradient(135deg, #4ecdc4, #a55eea);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 14px;
+                            font-weight: bold;
+                            color: #fff;
+                            position: relative;
+                        ">
+                            ${friend.userId.charAt(0).toUpperCase()}
+                            <div style="
+                                position: absolute;
+                                bottom: 0;
+                                right: 0;
+                                width: 10px;
+                                height: 10px;
+                                background: ${isOnline ? '#26de81' : '#888'};
+                                border-radius: 50%;
+                                border: 2px solid #23272e;
+                            "></div>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="color: ${isOnline ? '#4ecdc4' : '#888'}; font-weight: 600; font-size: 0.95em;">${friend.userId}</div>
+                            <div style="color: #888; font-size: 0.8em;">${isOnline ? 'Online • Last seen now' : 'Offline'}</div>
+                        </div>
+                        ${unreadCount > 0 ? `<div style="background: #ff79c6; color: white; font-size: 0.75em; padding: 3px 8px; border-radius: 12px; font-weight: 600;">${unreadCount}</div>` : ''}
+                    </div>
+                `;
+                
+                friendsList.appendChild(friendDiv);
+            });
+
+            // Update friend count
+            const friendCountElement = document.getElementById('friends-count');
+            if (friendCountElement) {
+                friendCountElement.textContent = friends.length;
+            }
+        }
+
+        function handleGlobalChatTyping() {
+            if (!chatConnected || !romgonChat.isConnected) return;
+
+            romgonChat.startTyping('global');
+            
+            // Clear previous timeout
+            if (typingTimeout) {
+                clearTimeout(typingTimeout);
+            }
+            
+            // Stop typing after 2 seconds of inactivity
+            typingTimeout = setTimeout(() => {
+                romgonChat.stopTyping('global');
+            }, 2000);
+        }
+
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            if (seconds < 60) return 'Just now';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+            return `${Math.floor(seconds / 86400)}d ago`;
+        }
+
+        function playMessageSound() {
+            // Optional: play notification sound
+            try {
+                const audio = new Audio('captured.mp3'); // Reuse existing sound
+                audio.volume = 0.3;
+                audio.play().catch(() => {});
+            } catch (e) {}
+        }
+
+        function showNotification(message, type = 'info') {
+            // Simple notification (can be enhanced with a toast library)
+            console.log(`[${type.toUpperCase()}] ${message}`);
+            
+            // Optional: use browser notification if available
+            if (type === 'info' || type === 'success') {
+                // You could implement a toast notification here
+            }
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+        
+        // ============================================
+        // ACTIVE GAMES INTEGRATION
+        // ============================================
+        
+        let gameSocket = null;
+        const BACKEND_API_URL = 'https://romgon-backend.railway.app'; // Production backend URL
+        
+        /**
+         * Initialize lobby - load active games, stats, and match history
+         */
+        function initializeLobby() {
+            console.log('🏠 Initializing lobby...');
+            
+            // Initialize game WebSocket for real-time updates
+            initializeGameSocket();
+            
+            // Initialize online players tracking
+            initializeOnlinePlayers();
+            
+            // Load initial data
+            loadActiveGames();
+            loadMatchHistory();
+            loadUserStats();
+            
+            console.log('✅ Lobby initialized');
+        }
+        
+        /**
+         * Initialize game WebSocket connection
+         */
+        function initializeGameSocket() {
+            if (gameSocket && gameSocket.connected) {
+                console.log('✅ Game socket already connected');
+                return;
+            }
+            
+            try {
+                // Get user info for WebSocket authentication
+                const userId = localStorage.getItem('userId');
+                const userStr = localStorage.getItem('romgon-user');
+                let username = 'Guest';
+                let rating = 1600;
+                
+                if (userStr) {
+                    try {
+                        const user = JSON.parse(userStr);
+                        username = user.username || user.name || 'Guest';
+                        rating = user.rating || 1600;
+                    } catch (e) {}
+                }
+                
+                gameSocket = io(`${BACKEND_API_URL}/game`, {
+                    auth: {
+                        token: localStorage.getItem('token'),
+                        userId: userId,
+                        username: username,
+                        rating: rating
+                    },
+                    transports: ['websocket', 'polling']
+                });
+                
+                gameSocket.on('connect', () => {
+                    console.log('✅ Game WebSocket connected');
+                    console.log('🔌 Socket ID:', gameSocket.id);
+                    console.log('🔑 Auth data:', gameSocket.auth);
+                    
+                    // Initialize online players tracking AFTER connection
+                    initializeOnlinePlayersListeners();
+                });
+                
+                gameSocket.on('disconnect', () => {
+                    console.log('❌ Game WebSocket disconnected');
+                });
+                
+                // Listen for move updates
+                gameSocket.on('game:moveUpdate', (data) => {
+                    console.log('🎯 Move update received:', data);
+                    loadActiveGames(); // Refresh active games list
+                    playMessageSound(); // Notify user
+                });
+                
+                // Listen for lobby updates
+                gameSocket.on('lobby:gameUpdate', (data) => {
+                    console.log('🔄 Lobby game update:', data);
+                    loadActiveGames(); // Refresh active games list
+                });
+                
+                // Listen for game ended
+                gameSocket.on('game:ended', (data) => {
+                    console.log('🏁 Game ended:', data);
+                    loadActiveGames(); // Remove from active games
+                    loadMatchHistory(); // Add to history
+                    loadUserStats(); // Update rating
+                });
+                
+                console.log('✅ Game socket initialized');
+            } catch (error) {
+                console.error('❌ Failed to initialize game socket:', error);
+            }
+        }
+        
+        /**
+         * Initialize online players tracking
+         */
+        let onlinePlayers = new Map(); // Store online players: userId -> {username, rating, status}
+        
+        function initializeOnlinePlayers() {
+            console.log('👥 Initializing online players tracking...');
+            
+            if (!gameSocket) {
+                console.error('❌ Game socket not initialized');
+                return;
+            }
+            
+            // Setup listeners first
+            initializeOnlinePlayersListeners();
+        }
+        
+        function initializeOnlinePlayersListeners() {
+            console.log('🎧 Setting up online players listeners...');
+            
+            // Listen for online players list
+            gameSocket.on('lobby:onlinePlayers', (players) => {
+                console.log('📋 Online players list received:', players);
+                console.log('📋 Players count:', players.length);
+                updateOnlinePlayersList(players);
+            });
+            
+            // Listen for player joined
+            gameSocket.on('lobby:playerJoined', (player) => {
+                console.log('✅ Player joined:', player);
+                onlinePlayers.set(player.userId, player);
+                renderOnlinePlayers();
+            });
+            
+            // Listen for player left
+            gameSocket.on('lobby:playerLeft', (userId) => {
+                console.log('👋 Player left:', userId);
+                onlinePlayers.delete(userId);
+                renderOnlinePlayers();
+            });
+            
+            // Request initial online players list (wait for connection)
+            setTimeout(() => {
+                console.log('📡 Requesting online players list...');
+                gameSocket.emit('lobby:getOnlinePlayers');
+            }, 500);
+        }
+        
+        function updateOnlinePlayersList(players) {
+            onlinePlayers.clear();
+            players.forEach(player => {
+                onlinePlayers.set(player.userId, player);
+            });
+            renderOnlinePlayers();
+        }
+        
+        function renderOnlinePlayers() {
+            const countEl = document.getElementById('online-players-count');
+            const listEl = document.getElementById('online-players-list');
+            
+            if (!countEl || !listEl) return;
+            
+            const count = onlinePlayers.size;
+            countEl.textContent = count;
+            
+            if (count === 0) {
+                listEl.innerHTML = '<span style="color: #888; font-size: 0.9em;">No other players online</span>';
+                return;
+            }
+            
+            // Get current user ID to exclude from list
+            const currentUserId = localStorage.getItem('userId');
+            
+            // Convert to array and filter out current user
+            const playersArray = Array.from(onlinePlayers.values())
+                .filter(p => p.userId !== currentUserId)
+                .slice(0, 10); // Show max 10 players
+            
+            if (playersArray.length === 0) {
+                listEl.innerHTML = '<span style="color: #888; font-size: 0.9em;">You\'re the only one online</span>';
+                return;
+            }
+            
+            listEl.innerHTML = playersArray.map(player => `
+                <div onclick="challengePlayer('${player.userId}')" title="${escapeHtml(player.username)} - Rating: ${player.rating || 'Unrated'}" style="
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    background: rgba(78, 205, 196, 0.15);
+                    border: 1px solid rgba(78, 205, 196, 0.3);
+                    border-radius: 20px;
+                    padding: 6px 12px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                " onmouseover="this.style.background='rgba(78, 205, 196, 0.25)'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='rgba(78, 205, 196, 0.15)'; this.style.transform='scale(1)'">
+                    <div style="
+                        width: 8px;
+                        height: 8px;
+                        border-radius: 50%;
+                        background: ${player.status === 'in-game' ? '#ffd700' : '#4ecdc4'};
+                    "></div>
+                    <span style="color: white; font-size: 0.9em; font-weight: 500;">${escapeHtml(player.username)}</span>
+                    <span style="color: #888; font-size: 0.8em;">(${player.rating || '?'})</span>
+                </div>
+            `).join('');
+            
+            // If there are more players, show count
+            if (onlinePlayers.size - 1 > playersArray.length) {
+                listEl.innerHTML += `
+                    <span style="color: #888; font-size: 0.85em;">
+                        +${onlinePlayers.size - 1 - playersArray.length} more
+                    </span>
+                `;
+            }
+        }
+        
+        function challengePlayer(userId) {
+            alert(`Challenge player feature coming soon! Player ID: ${userId}`);
+            // TODO: Implement challenge system
+            // gameSocket.emit('challenge:send', { opponentId: userId });
+        }
+        
+        /**
+         * Load active games from backend
+         */
+        async function loadActiveGames() {
+            const userId = localStorage.getItem('userId');
+            const token = localStorage.getItem('token');
+            
+            if (!userId) {
+                console.log('⚠️ No userId, skipping active games load');
+                renderActiveGames([]); // Show empty state
+                return;
+            }
+            
+            // Check if offline guest
+            if (userId.startsWith('guest_') && token === 'guest-offline-mode') {
+                console.log('👤 Guest in offline mode - no backend games');
+                renderActiveGames([]); // Show empty state for offline guests
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${BACKEND_API_URL}/api/games/active/${userId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Active games loaded:', data.games.length);
+                    renderActiveGames(data.games || []);
+                } else {
+                    console.error('Failed to load active games:', response.status);
+                    renderActiveGames([]); // Show empty state
+                }
+            } catch (error) {
+                console.error('Error loading active games:', error);
+                renderActiveGames([]); // Show empty state
+            }
+        }
+        
+        /**
+         * Render active games list
+         */
+        function renderActiveGames(games) {
+            const container = document.getElementById('active-games-list');
+            if (!container) return;
+            
+            if (games.length === 0) {
+                container.innerHTML = `
+                    <div style="
+                        background: rgba(78, 205, 196, 0.1);
+                        border: 1px solid rgba(78, 205, 196, 0.3);
+                        border-radius: 10px;
+                        padding: 15px;
+                        text-align: center;
+                        color: #888;
+                    ">
+                        No active games. Start a new game to get started!
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = games.map(game => `
+                <div onclick="resumeGame('${game.gameId}')" style="
+                    background: linear-gradient(135deg, rgba(78, 205, 196, 0.15), rgba(108, 92, 231, 0.15));
+                    border: 1px solid ${game.turn === 'yourTurn' ? '#4ecdc4' : 'rgba(78, 205, 196, 0.3)'};
+                    border-radius: 12px;
+                    padding: 15px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    ${game.turn === 'yourTurn' ? 'box-shadow: 0 0 15px rgba(78, 205, 196, 0.3);' : ''}
+                " onmouseover="this.style.transform='translateX(5px)'; this.style.boxShadow='0 4px 20px rgba(78, 205, 196, 0.2)'" onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='${game.turn === 'yourTurn' ? '0 0 15px rgba(78, 205, 196, 0.3)' : 'none'}'">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="
+                                width: 40px;
+                                height: 40px;
+                                border-radius: 50%;
+                                background: linear-gradient(135deg, #667eea, #764ba2);
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                font-size: 1.2em;
+                            ">${game.opponent.avatar || '👤'}</div>
+                            <div>
+                                <div style="color: white; font-weight: 600; font-size: 1.05em;">${escapeHtml(game.opponent.name)}</div>
+                                <div style="color: #888; font-size: 0.85em;">Rating: ${game.opponent.rating || 'Unrated'}</div>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="
+                                color: ${game.turn === 'yourTurn' ? '#4ecdc4' : '#888'};
+                                font-weight: ${game.turn === 'yourTurn' ? '700' : '600'};
+                                font-size: 0.95em;
+                                margin-bottom: 4px;
+                            ">
+                                ${game.turn === 'yourTurn' ? '🟢 YOUR TURN' : '⏳ Waiting...'}
+                            </div>
+                            <div style="color: #888; font-size: 0.8em;">${game.lastMove}</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <div style="color: #aaa; font-size: 0.85em;">
+                            Playing as ${game.yourColor === 'white' ? '⚪ White' : '⚫ Black'}
+                        </div>
+                        <div style="color: #aaa; font-size: 0.85em;">
+                            Move ${game.moveCount}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        /**
+         * Resume a game
+         */
+        function resumeGame(gameId) {
+            console.log('🎮 Resuming game:', gameId);
+            
+            // TODO: Implement game resume logic
+            // 1. Fetch game state from backend
+            // 2. Load game board
+            // 3. Join game WebSocket room
+            // 4. Hide lobby, show game board
+            
+            alert(`Resuming game ${gameId}...\n\nGame resume functionality coming soon!`);
+        }
+        
+        /**
+         * Load match history from backend
+         */
+        async function loadMatchHistory(limit = 10, offset = 0) {
+            const userId = localStorage.getItem('userId');
+            const token = localStorage.getItem('token');
+            
+            if (!userId) {
+                console.log('⚠️ No userId, skipping match history load');
+                renderMatchHistory([], false);
+                return;
+            }
+            
+            // Check if offline guest
+            if (userId.startsWith('guest_') && token === 'guest-offline-mode') {
+                console.log('👤 Guest in offline mode - no backend history');
+                renderMatchHistory([], false);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${BACKEND_API_URL}/api/games/history/${userId}?limit=${limit}&offset=${offset}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Match history loaded:', data.games.length);
+                    renderMatchHistory(data.games || [], data.hasMore);
+                } else {
+                    console.error('Failed to load match history:', response.status);
+                    renderMatchHistory([], false);
+                }
+            } catch (error) {
+                console.error('Error loading match history:', error);
+                renderMatchHistory([], false);
+            }
+        }
+        
+        /**
+         * Render match history
+         */
+        function renderMatchHistory(games, hasMore) {
+            const container = document.getElementById('match-history-list');
+            if (!container) return;
+            
+            if (games.length === 0) {
+                container.innerHTML = `
+                    <div style="padding: 20px; text-align: center; color: #888;">
+                        No match history yet. Play some games!
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = games.map(game => {
+                const isWin = game.result === 'win';
+                const resultColor = isWin ? '#26de81' : '#ff6b6b';
+                const resultIcon = isWin ? '🏆' : '❌';
+                const resultText = isWin ? 'Victory' : 'Defeat';
+                
+                return `
+                    <div style="
+                        background: rgba(35, 39, 46, 0.5);
+                        border: 1px solid rgba(255,255,255,0.1);
+                        border-radius: 10px;
+                        padding: 15px;
+                        margin-bottom: 10px;
+                    ">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="font-size: 1.5em;">${resultIcon}</div>
+                                <div>
+                                    <div style="color: white; font-weight: 600;">vs ${escapeHtml(game.opponent.name)}</div>
+                                    <div style="color: #888; font-size: 0.85em;">${game.duration} • ${game.moveCount} moves</div>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="color: ${resultColor}; font-weight: 700; font-size: 1.1em;">${resultText}</div>
+                                <div style="color: ${game.ratingChange > 0 ? '#26de81' : '#ff6b6b'}; font-size: 0.9em; font-weight: 600;">
+                                    ${game.ratingChange > 0 ? '+' : ''}${game.ratingChange}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            if (hasMore) {
+                container.innerHTML += `
+                    <button onclick="loadMoreHistory()" style="
+                        width: 100%;
+                        padding: 12px;
+                        background: rgba(78, 205, 196, 0.2);
+                        border: 1px solid rgba(78, 205, 196, 0.5);
+                        border-radius: 10px;
+                        color: #4ecdc4;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                    " onmouseover="this.style.background='rgba(78, 205, 196, 0.3)'" onmouseout="this.style.background='rgba(78, 205, 196, 0.2)'">
+                        Load More
+                    </button>
+                `;
+            }
+        }
+        
+        let historyOffset = 0;
+        function loadMoreHistory() {
+            historyOffset += 10;
+            loadMatchHistory(10, historyOffset);
+        }
+        
+        /**
+         * Load user stats from backend
+         */
+        async function loadUserStats() {
+            const userId = localStorage.getItem('userId');
+            const token = localStorage.getItem('token');
+            
+            if (!userId) {
+                console.log('⚠️ No userId, skipping stats load');
+                return;
+            }
+            
+            // Check if offline guest - use localStorage stats
+            if (userId.startsWith('guest_') && token === 'guest-offline-mode') {
+                console.log('👤 Guest in offline mode - using localStorage stats');
+                const localWins = parseInt(localStorage.getItem('wins') || '0');
+                const localLosses = parseInt(localStorage.getItem('losses') || '0');
+                const localRating = parseInt(localStorage.getItem('rating') || '1420');
+                const total = localWins + localLosses;
+                const winRate = total > 0 ? Math.round((localWins / total) * 100) : 0;
+                
+                updateStatsDisplay({
+                    rating: localRating,
+                    wins: localWins,
+                    losses: localLosses,
+                    winRate: winRate
+                });
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${BACKEND_API_URL}/api/stats/player/${userId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const stats = await response.json();
+                    console.log('✅ Stats loaded from backend:', stats);
+                    updateStatsDisplay(stats);
+                } else {
+                    console.error('Failed to load user stats:', response.status);
+                    // Fallback to localStorage
+                    const localWins = parseInt(localStorage.getItem('wins') || '0');
+                    const localLosses = parseInt(localStorage.getItem('losses') || '0');
+                    updateStatsDisplay({
+                        rating: 1420,
+                        wins: localWins,
+                        losses: localLosses,
+                        winRate: localWins + localLosses > 0 ? Math.round((localWins / (localWins + localLosses)) * 100) : 0
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading user stats:', error);
+            }
+        }
+        
+        /**
+         * Update stats display on lobby
+         */
+        function updateStatsDisplay(stats) {
+            const ratingEl = document.getElementById('user-rating');
+            const winsEl = document.getElementById('user-home-wins');
+            const lossesEl = document.getElementById('user-home-losses');
+            const winrateEl = document.getElementById('user-home-winrate');
+            
+            if (ratingEl && stats.rating !== undefined) {
+                ratingEl.textContent = Math.round(stats.rating);
+            }
+            
+            if (winsEl && stats.wins !== undefined) {
+                winsEl.textContent = stats.wins;
+            }
+            
+            if (lossesEl && stats.losses !== undefined) {
+                lossesEl.textContent = stats.losses;
+            }
+            
+            if (winrateEl && stats.winRate !== undefined) {
+                winrateEl.textContent = Math.round(stats.winRate) + '%';
+            }
+        }
+        
+        // ============================================
+        // END ACTIVE GAMES INTEGRATION
+        // ============================================
+        
+        // Make Sandbox functions globally accessible
+        window.startSandboxMode = startSandboxMode;
+        window.toggleSandboxEditMode = toggleSandboxEditMode;
+        window.switchSandboxTurn = switchSandboxTurn;
+        window.resetSandboxBoard = resetSandboxBoard;
+        window.clearSandboxBoard = clearSandboxBoard;
+        window.saveSandboxPosition = saveSandboxPosition;
+        window.loadSandboxPosition = loadSandboxPosition;
+        window.exitSandboxMode = exitSandboxMode;
+        window.toggleSandboxSidePanels = toggleSandboxSidePanels;
+        
+        console.log('✅ Sandbox Mode functions registered');
+        
+        // ============================================
+        // END SANDBOX MODE
+        // ============================================
         
         function startTimer() {
             if (timerInterval) {
@@ -20734,9 +22698,17 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 window.history.replaceState({}, '', window.location.pathname);
             }
             
+            // Check for ?menu URL parameter to force showing Start Menu instead of User Home
+            const forceMenu = urlParams.has('menu');
+            if (forceMenu) {
+                console.log('📋 Menu requested via URL parameter');
+                // Clean URL
+                window.history.replaceState({}, '', window.location.pathname);
+            }
+            
             // Check for existing session and auto-login
             const savedUser = localStorage.getItem('romgon-user');
-            if (savedUser) {
+            if (savedUser && !forceMenu) {
                 try {
                     const user = JSON.parse(savedUser);
                     console.log('🔄 Found saved session:', user);
@@ -20746,6 +22718,27 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     console.log('✅ Auto-login successful as:', user.name || user.type);
                     hideSplashPage();
                     return; // Exit early, don't show splash page
+                } catch (e) {
+                    console.error('❌ Error loading saved session:', e);
+                    localStorage.removeItem('romgon-user');
+                }
+            }
+            
+            // If ?menu parameter is present with saved session, show Start Menu
+            if (savedUser && forceMenu) {
+                try {
+                    const user = JSON.parse(savedUser);
+                    console.log('🔄 Found saved session, showing Start Menu as requested:', user);
+                    window.currentUser = user;
+                    
+                    // Show splash page first to ensure proper state
+                    const splashPage = document.getElementById('splash-page');
+                    if (splashPage) splashPage.style.display = 'none';
+                    
+                    // Show Start Menu directly
+                    hideSplashPage();
+                    console.log('✅ Start Menu shown with active session');
+                    return;
                 } catch (e) {
                     console.error('❌ Error loading saved session:', e);
                     localStorage.removeItem('romgon-user');
@@ -20944,10 +22937,17 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 window.currentUser = guest;
                 localStorage.setItem('romgon-user', JSON.stringify(guest));
                 
+                // IMPORTANT: Store userId and token for active games feature
+                localStorage.setItem('userId', guestData.user.id.toString());
+                localStorage.setItem('token', guestData.token);
+                
+                console.log('✅ Guest account created:', guest);
+                console.log('✅ userId:', guestData.user.id);
+                console.log('✅ token stored for active games');
+                
                 hideLoadingIndicator();
                 showUserHome();
                 
-                console.log('✅ Guest account created:', guest);
             } catch (error) {
                 hideLoadingIndicator();
                 console.error('❌ Guest login failed:', error);
@@ -21218,6 +23218,14 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 
                 // Start activity heartbeat for active player tracking
                 startActivityHeartbeat();
+                
+                // Initialize chat connection
+                if (!chatConnected) {
+                    initializeChat();
+                }
+                
+                // Initialize lobby features
+                initializeLobby();
             }
             uh.style.display = 'flex';
         }
@@ -21264,10 +23272,31 @@ ${moveHistory || '(No moves played yet - starting position)'}
 
         // Handle guest login
         function handleGuestLogin() {
-            // Create guest user and persist via common helper (will show user-home)
-            const guest = { type: 'guest', name: 'Guest Player', id: 'guest_' + Date.now() };
-            try { persistCurrentUser(guest); } catch (e) { window.currentUser = guest; localStorage.setItem('romgon-user', JSON.stringify(guest)); hideSplashPage(); }
-            console.log('👤 Logged in as Guest:', guest);
+            // Create guest user with unique ID
+            const guestId = 'guest_' + Date.now();
+            const guest = { 
+                type: 'guest', 
+                name: 'Guest Player', 
+                id: guestId,
+                wins: 0,
+                losses: 0
+            };
+            
+            // Store guest info
+            try { 
+                persistCurrentUser(guest); 
+            } catch (e) { 
+                window.currentUser = guest; 
+                localStorage.setItem('romgon-user', JSON.stringify(guest)); 
+                hideSplashPage(); 
+            }
+            
+            // IMPORTANT: Store guestId for active games (offline mode - no backend)
+            localStorage.setItem('userId', guestId);
+            localStorage.setItem('token', 'guest-offline-mode');
+            
+            console.log('👤 Logged in as Guest (offline):', guest);
+            console.log('💾 Guest ID stored:', guestId);
         }
 
         // Get current user info

@@ -343,4 +343,191 @@ router.get('/player/:playerId',
     }
 );
 
+/**
+ * Get player's active games (for lobby display)
+ * GET /api/games/active/:playerId
+ */
+router.get('/active/:playerId',
+    [param('playerId').isString()],
+    async (req, res) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+
+            const { playerId } = req.params;
+
+            // Get active games where player is involved
+            const games = await db.all(
+                `SELECT 
+                    g.*,
+                    w.username as white_username,
+                    w.rating as white_rating,
+                    b.username as black_username,
+                    b.rating as black_rating
+                 FROM games g
+                 LEFT JOIN users w ON g.white_player_id = w.id
+                 LEFT JOIN users b ON g.black_player_id = b.id
+                 WHERE (g.white_player_id = ? OR g.black_player_id = ?)
+                 AND g.status = 'active'
+                 ORDER BY g.updated_at DESC
+                 LIMIT 10`,
+                [playerId, playerId]
+            );
+
+            const activeGames = games.map(game => {
+                const moves = JSON.parse(game.moves || '[]');
+                const isWhiteTurn = moves.length % 2 === 0;
+                const playerIsWhite = game.white_player_id === playerId;
+                const isPlayerTurn = isWhiteTurn === playerIsWhite;
+
+                const opponentId = playerIsWhite ? game.black_player_id : game.white_player_id;
+                const opponentName = playerIsWhite ? game.black_username : game.white_username;
+                const opponentRating = playerIsWhite ? game.black_rating : game.white_rating;
+
+                // Calculate time since last move
+                const lastMoveTime = moves.length > 0 ? new Date(moves[moves.length - 1].timestamp) : new Date(game.created_at);
+                const timeSinceLastMove = Date.now() - lastMoveTime.getTime();
+                const minutes = Math.floor(timeSinceLastMove / 60000);
+                const hours = Math.floor(minutes / 60);
+                const days = Math.floor(hours / 24);
+
+                let lastMoveAgo;
+                if (days > 0) lastMoveAgo = `${days}d ago`;
+                else if (hours > 0) lastMoveAgo = `${hours}h ago`;
+                else if (minutes > 0) lastMoveAgo = `${minutes}m ago`;
+                else lastMoveAgo = 'Just now';
+
+                return {
+                    gameId: game.id,
+                    opponent: {
+                        id: opponentId,
+                        name: opponentName || 'Waiting...',
+                        avatar: opponentName ? opponentName.charAt(0).toUpperCase() : '?',
+                        rating: opponentRating || 1600
+                    },
+                    yourColor: playerIsWhite ? 'white' : 'black',
+                    turn: isPlayerTurn ? 'your' : 'opponent',
+                    moveCount: game.total_moves,
+                    lastMove: lastMoveAgo,
+                    createdAt: game.created_at,
+                    updatedAt: game.updated_at
+                };
+            });
+
+            res.json({ games: activeGames });
+        } catch (error) {
+            console.error('Error getting active games:', error);
+            res.status(500).json({ error: error.message });
+        }
+    }
+);
+
+/**
+ * Get player's game history (for match history display)
+ * GET /api/games/history/:playerId
+ */
+router.get('/history/:playerId',
+    [
+        param('playerId').isString(),
+        body('limit').optional().isInt({ min: 1, max: 100 }),
+        body('offset').optional().isInt({ min: 0 })
+    ],
+    async (req, res) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+
+            const { playerId } = req.params;
+            const limit = parseInt(req.query.limit) || 10;
+            const offset = parseInt(req.query.offset) || 0;
+
+            // Get finished games
+            const games = await db.all(
+                `SELECT 
+                    g.*,
+                    w.username as white_username,
+                    w.rating as white_rating,
+                    b.username as black_username,
+                    b.rating as black_rating
+                 FROM games g
+                 LEFT JOIN users w ON g.white_player_id = w.id
+                 LEFT JOIN users b ON g.black_player_id = b.id
+                 WHERE (g.white_player_id = ? OR g.black_player_id = ?)
+                 AND g.status = 'finished'
+                 ORDER BY g.updated_at DESC
+                 LIMIT ? OFFSET ?`,
+                [playerId, playerId, limit, offset]
+            );
+
+            // Get total count
+            const countResult = await db.get(
+                `SELECT COUNT(*) as total FROM games 
+                 WHERE (white_player_id = ? OR black_player_id = ?) 
+                 AND status = 'finished'`,
+                [playerId, playerId]
+            );
+
+            const history = games.map(game => {
+                const playerIsWhite = game.white_player_id === playerId;
+                const opponentName = playerIsWhite ? game.black_username : game.white_username;
+                const opponentRating = playerIsWhite ? game.black_rating : game.white_rating;
+
+                // Determine result (Romgon has no draws - every game has a winner)
+                const result = game.winner_id === playerId ? 'win' : 'loss';
+
+                // Get rating change (would need to query rating_changes table)
+                // For now, estimate based on result
+                let ratingChange = 0;
+                // This should come from rating_changes table in production
+
+                return {
+                    gameId: game.id,
+                    date: game.updated_at,
+                    opponent: {
+                        name: opponentName || 'Unknown',
+                        rating: opponentRating || 1600
+                    },
+                    yourColor: playerIsWhite ? 'white' : 'black',
+                    result,
+                    reason: game.reason,
+                    moves: game.total_moves,
+                    ratingChange,
+                    duration: calculateGameDuration(game.created_at, game.updated_at)
+                };
+            });
+
+            res.json({
+                games: history,
+                total: countResult.total,
+                hasMore: (offset + limit) < countResult.total
+            });
+        } catch (error) {
+            console.error('Error getting game history:', error);
+            res.status(500).json({ error: error.message });
+        }
+    }
+);
+
+/**
+ * Helper function to calculate game duration
+ */
+function calculateGameDuration(startTime, endTime) {
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    const durationMs = end - start;
+    
+    const minutes = Math.floor(durationMs / 60000);
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    
+    if (hours > 0) {
+        return `${hours}:${remainingMinutes.toString().padStart(2, '0')}`;
+    }
+    return `${minutes}:00`;
+}
+
 module.exports = router;
