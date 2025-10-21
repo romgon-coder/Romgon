@@ -20580,6 +20580,16 @@ ${moveHistory || '(No moves played yet - starting position)'}
         function initializeSplashPage() {
             console.log('🚀 Initializing splash page...');
             
+            // Check for ?logout or ?splash URL parameter to force logout
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('logout') || urlParams.has('splash')) {
+                console.log('🔓 Logout requested via URL parameter');
+                localStorage.removeItem('romgon-user');
+                window.currentUser = null;
+                // Clean URL
+                window.history.replaceState({}, '', window.location.pathname);
+            }
+            
             // Check for existing session and auto-login
             const savedUser = localStorage.getItem('romgon-user');
             if (savedUser) {
