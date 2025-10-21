@@ -12527,16 +12527,16 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         function initializeChat() {
             const user = JSON.parse(localStorage.getItem('romgon-user') || '{}');
             
-            if (!user.userId && !user.uid) {
+            if (!user.userId && !user.uid && !user.id) {
                 console.warn('💬 No user found, cannot connect to chat');
                 return;
             }
 
-            const userId = user.userId || user.uid;
-            const displayName = user.displayName || user.email?.split('@')[0] || 'Guest';
+            const userId = user.userId || user.uid || user.id;
+            const displayName = user.displayName || user.name || user.email?.split('@')[0] || 'Guest';
             const avatar = displayName.charAt(0).toUpperCase();
 
-            console.log('💬 Initializing chat for', displayName);
+            console.log('💬 Initializing chat for', displayName, 'ID:', userId);
 
             // Connect to chat server
             romgonChat.connect(userId, displayName, avatar);
