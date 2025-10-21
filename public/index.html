@@ -22923,6 +22923,14 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 // Create guest account in backend
                 const guestData = await romgonAPI.createGuest();
                 
+                console.log('🔍 Guest data received:', guestData);
+                
+                // Check if we got valid data
+                if (!guestData || !guestData.user || !guestData.user.id) {
+                    console.error('❌ Invalid guest data:', guestData);
+                    throw new Error('Backend returned invalid guest data');
+                }
+                
                 // Store user info locally
                 const guest = {
                     type: 'guest',
@@ -22930,6 +22938,7 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     email: 'Guest Session',
                     id: guestData.user.id,
                     token: guestData.token,
+                    rating: guestData.user.rating || 1600,
                     wins: 0,
                     losses: 0
                 };
@@ -22951,7 +22960,8 @@ ${moveHistory || '(No moves played yet - starting position)'}
             } catch (error) {
                 hideLoadingIndicator();
                 console.error('❌ Guest login failed:', error);
-                alert('Guest login failed. Using offline mode.');
+                console.error('❌ Error details:', error.message);
+                console.log('⚠️ Falling back to offline guest mode');
                 // Fallback to offline guest
                 handleGuestLogin();
             }
