@@ -22924,11 +22924,19 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 const guestData = await romgonAPI.createGuest();
                 
                 console.log('🔍 Guest data received:', guestData);
+                console.log('🔍 User object:', guestData.user);
+                console.log('🔍 User ID:', guestData.user?.id);
                 
                 // Check if we got valid data
-                if (!guestData || !guestData.user || !guestData.user.id) {
-                    console.error('❌ Invalid guest data:', guestData);
-                    throw new Error('Backend returned invalid guest data');
+                if (!guestData || !guestData.user) {
+                    console.error('❌ Invalid guest data (no user):', guestData);
+                    throw new Error('Backend returned invalid guest data (no user object)');
+                }
+                
+                if (!guestData.user.id) {
+                    console.error('❌ Invalid guest data (no user.id):', guestData.user);
+                    console.log('📋 Available user properties:', Object.keys(guestData.user));
+                    throw new Error('Backend returned invalid guest data (no user ID)');
                 }
                 
                 // Store user info locally
