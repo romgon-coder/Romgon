@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Romgon Game Engine API</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #4ecdc4;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #95a5a6;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .panel h2 {
+            color: #4ecdc4;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #4ecdc4;
+            padding-bottom: 10px;
+        }
+        
+        .panel h3 {
+            color: #f39c12;
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .code-block {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .code-block pre {
+            margin: 0;
+            color: #a8e6cf;
+        }
+        
+        .endpoint {
+            background: rgba(46, 204, 113, 0.1);
+            border-left: 4px solid #2ecc71;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        
+        .endpoint .method {
+            color: #2ecc71;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .endpoint .path {
+            color: #3498db;
+            font-family: monospace;
+        }
+        
+        .rules-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .rules-list li {
+            padding: 8px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .rules-list li:before {
+            content: "▹";
+            position: absolute;
+            left: 0;
+            color: #4ecdc4;
+        }
+        
+        .example {
+            background: rgba(52, 152, 219, 0.1);
+            border-left: 4px solid #3498db;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        
+        .warning {
+            background: rgba(231, 76, 60, 0.1);
+            border-left: 4px solid #e74c3c;
+            padding: 10px;
+            margin: 10px 0;
+            color: #e74c3c;
+        }
+        
+        .success {
+            background: rgba(46, 204, 113, 0.1);
+            border-left: 4px solid #2ecc71;
+            padding: 10px;
+            margin: 10px 0;
+            color: #2ecc71;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        
+        th, td {
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            padding: 10px;
+            text-align: left;
+        }
+        
+        th {
+            background: rgba(78, 205, 196, 0.2);
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+        
+        .btn {
+            background: #4ecdc4;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: #45b8b0;
+            transform: translateY(-2px);
+        }
+        
+        .interactive-panel {
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid #4ecdc4;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        textarea {
+            width: 100%;
+            background: #0a0a0a;
+            color: #a8e6cf;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .response-area {
+            background: #0a0a0a;
+            border: 1px solid #2ecc71;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 10px;
+            min-height: 100px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            color: #2ecc71;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Romgon Game Engine API</h1>
+        <p class="subtitle">Universal Game Engine Interface for AI, LLMs, and External Applications</p>
+        
+        <div class="grid">
+            <!-- Overview Panel -->
+            <div class="panel">
+                <h2>📋 Overview</h2>
+                <p>This Game Engine API provides a standardized interface for AI systems, LLMs (like ChatGPT, Claude), and external applications to understand, play, and analyze Romgon games.</p>
+                
+                <h3>Key Features:</h3>
+                <ul class="rules-list">
+                    <li><strong>RPN Move Notation:</strong> Compact move representation</li>
+                    <li><strong>Game State Export:</strong> Full board serialization</li>
+                    <li><strong>Legal Move Generation:</strong> Query all valid moves</li>
+                    <li><strong>Move Validation:</strong> Check if moves are legal</li>
+                    <li><strong>Game Analysis:</strong> Evaluate positions</li>
+                    <li><strong>Import/Export:</strong> Load and save games</li>
+                </ul>
+                
+                <div class="success">
+                    <strong>✓ Integration Ready:</strong> Works with GPTs, Claude Projects, API endpoints, and custom integrations.
+                </div>
+            </div>
+            
+            <!-- Quick Start Panel -->
+            <div class="panel">
+                <h2>🚀 Quick Start</h2>
+                
+                <h3>For AI/LLM Systems:</h3>
+                <div class="code-block">
+                    <pre>// 1. Get current game state
+window.RomgonEngine.getGameState()
+
+// 2. Get legal moves for current player
+window.RomgonEngine.getLegalMoves()
+
+// 3. Make a move
+window.RomgonEngine.makeMove("3-0→3-1")
+
+// 4. Export game in RPN format
+window.RomgonEngine.exportGameRPN()</pre>
+                </div>
+                
+                <h3>For External APIs:</h3>
+                <div class="code-block">
+                    <pre>// Access via message passing
+window.postMessage({
+    type: 'ROMGON_GET_STATE'
+}, '*');
+
+// Listen for response
+window.addEventListener('message', (e) => {
+    if (e.data.type === 'ROMGON_STATE') {
+        console.log(e.data.payload);
+    }
+});</pre>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Game Rules Panel -->
+        <div class="panel full-width">
+            <h2>📖 Game Rules (Simplified for AI)</h2>
+            <div class="grid">
+                <div>
+                    <h3>🎯 Objective:</h3>
+                    <ul class="rules-list">
+                        <li>Move your rhombus (◆) to opponent's base (Black: 3-0, White: 3-8)</li>
+                        <li>Alternative wins: Checkmate opponent's rhombus, draglock, repetition</li>
+                    </ul>
+                    
+                    <h3>🎲 Piece Types & Movement:</h3>
+                    <table>
+                        <tr>
+                            <th>Piece</th>
+                            <th>Symbol</th>
+                            <th>Movement</th>
+                        </tr>
+                        <tr>
+                            <td>Square</td>
+                            <td>■</td>
+                            <td>Adjacent hexes (6 directions)</td>
+                        </tr>
+                        <tr>
+                            <td>Triangle</td>
+                            <td>▲</td>
+                            <td>3 forward directions (orientation-dependent)</td>
+                        </tr>
+                        <tr>
+                            <td>Rhombus</td>
+                            <td>◆</td>
+                            <td>2 forward directions + diagonal (special)</td>
+                        </tr>
+                        <tr>
+                            <td>Circle</td>
+                            <td>●</td>
+                            <td>Perimetric (zone edges) + gateway transitions</td>
+                        </tr>
+                        <tr>
+                            <td>Hexagon</td>
+                            <td>⬡</td>
+                            <td>Adjacent + rotation (orientation-dependent)</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div>
+                    <h3>⚔️ Combat Rules:</h3>
+                    <ul class="rules-list">
+                        <li>Pieces capture by moving to occupied hex</li>
+                        <li><strong>Exception:</strong> Rhombus cannot capture rhombus</li>
+                        <li>Captured pieces are eliminated</li>
+                    </ul>
+                    
+                    <h3>🚫 Special Rules:</h3>
+                    <ul class="rules-list">
+                        <li><strong>Base Defense:</strong> Rhombus at base blocks opponent's win</li>
+                        <li><strong>Dead Zone (3-3, 3-4, 3-5):</strong> Circles cannot move from here</li>
+                        <li><strong>Threefold Repetition:</strong> Same position 3x = loss</li>
+                        <li><strong>Fivefold Shuttle:</strong> Same shuttle pattern 5x = loss</li>
+                        <li><strong>Draglock:</strong> No legal moves = loss</li>
+                        <li><strong>Escape Race:</strong> When only rhombuses remain, base defense disabled</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- RPN Notation Panel -->
+        <div class="panel full-width">
+            <h2>📝 RPN Move Notation System</h2>
+            <div class="grid">
+                <div>
+                    <h3>Standard Move Format:</h3>
+                    <div class="code-block">
+                        <pre>FROM→TO [CAPTURE] [ROTATION]
+
+Examples:
+"3-0→3-1"          // Rhombus moves from 3-0 to 3-1
+"2-2→3-3 C"        // Triangle captures at 3-3
+"4-4 R+"           // Hexagon rotates clockwise
+"2-3→3-4 C R+"     // Capture + rotate</pre>
+                    </div>
+                    
+                    <h3>Coordinate System:</h3>
+                    <p>Hexagonal grid with row-column notation: <code>row-column</code></p>
+                    <ul class="rules-list">
+                        <li>Black starts at top (row 0)</li>
+                        <li>White starts at bottom (row 6)</li>
+                        <li>Black goal: 3-0</li>
+                        <li>White goal: 3-8</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3>Piece Notation:</h3>
+                    <table>
+                        <tr>
+                            <th>Code</th>
+                            <th>Piece</th>
+                            <th>Color</th>
+                        </tr>
+                        <tr>
+                            <td>SQ-W</td>
+                            <td>Square</td>
+                            <td>White</td>
+                        </tr>
+                        <tr>
+                            <td>TRI-B</td>
+                            <td>Triangle</td>
+                            <td>Black</td>
+                        </tr>
+                        <tr>
+                            <td>RHO-W</td>
+                            <td>Rhombus</td>
+                            <td>White</td>
+                        </tr>
+                        <tr>
+                            <td>CIR-B</td>
+                            <td>Circle</td>
+                            <td>Black</td>
+                        </tr>
+                        <tr>
+                            <td>HEX-W</td>
+                            <td>Hexagon</td>
+                            <td>White</td>
+                        </tr>
+                    </table>
+                    
+                    <h3>Modifiers:</h3>
+                    <ul class="rules-list">
+                        <li><code>C</code> - Capture</li>
+                        <li><code>R+</code> - Rotate clockwise</li>
+                        <li><code>R-</code> - Rotate counter-clockwise</li>
+                        <li><code>!</code> - Check (rhombus threatened)</li>
+                        <li><code>#</code> - Checkmate</li>
+                        <li><code>WIN</code> - Winning move</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- API Endpoints Panel -->
+        <div class="panel full-width">
+            <h2>🔌 API Methods</h2>
+            <div class="grid">
+                <div>
+                    <div class="endpoint">
+                        <span class="method">GET</span>
+                        <span class="path">RomgonEngine.getGameState()</span>
+                    </div>
+                    <p><strong>Returns:</strong> Complete game state object</p>
+                    <div class="code-block">
+                        <pre>{
+  "turn": "black",
+  "moveNumber": 15,
+  "pieces": {
+    "3-0": {"type": "rhombus", "color": "black"},
+    "3-1": {"type": "square", "color": "white"},
+    ...
+  },
+  "gameOver": false,
+  "winner": null,
+  "baseDefense": {"black": true, "white": true}
+}</pre>
+                    </div>
+                    
+                    <div class="endpoint">
+                        <span class="method">GET</span>
+                        <span class="path">RomgonEngine.getLegalMoves([position])</span>
+                    </div>
+                    <p><strong>Parameters:</strong> Optional position (e.g., "3-0")</p>
+                    <p><strong>Returns:</strong> Array of legal moves</p>
+                    <div class="code-block">
+                        <pre>// All legal moves for current player
+RomgonEngine.getLegalMoves()
+// Returns: ["3-0→3-1", "3-0→4-1", "2-2→3-3 C", ...]
+
+// Legal moves for specific piece
+RomgonEngine.getLegalMoves("3-0")
+// Returns: ["3-0→3-1", "3-0→4-1"]</pre>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="endpoint">
+                        <span class="method">POST</span>
+                        <span class="path">RomgonEngine.makeMove(moveNotation)</span>
+                    </div>
+                    <p><strong>Parameters:</strong> Move in RPN format</p>
+                    <p><strong>Returns:</strong> Result object</p>
+                    <div class="code-block">
+                        <pre>RomgonEngine.makeMove("3-0→3-1")
+// Returns: {
+//   "success": true,
+//   "move": "3-0→3-1",
+//   "captured": null,
+//   "check": false,
+//   "gameOver": false
+// }</pre>
+                    </div>
+                    
+                    <div class="endpoint">
+                        <span class="method">GET</span>
+                        <span class="path">RomgonEngine.validateMove(moveNotation)</span>
+                    </div>
+                    <p><strong>Returns:</strong> Boolean + reason if invalid</p>
+                    <div class="code-block">
+                        <pre>RomgonEngine.validateMove("3-0→3-1")
+// Returns: {
+//   "valid": true,
+//   "reason": null
+// }</pre>
+                    </div>
+                    
+                    <div class="endpoint">
+                        <span class="method">GET</span>
+                        <span class="path">RomgonEngine.exportGameRPN()</span>
+                    </div>
+                    <p><strong>Returns:</strong> Complete game in RPN format</p>
+                    <div class="code-block">
+                        <pre>// Returns string:
+"3-0→3-1|2-7→2-6|3-1→3-2|2-6→3-6 C|..."</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Interactive Testing Panel -->
+        <div class="interactive-panel full-width">
+            <h2>🧪 Interactive API Tester</h2>
+            <p>Test the Game Engine API in real-time (requires game running in background)</p>
+            
+            <div class="grid">
+                <div>
+                    <h3>Test Commands:</h3>
+                    <button class="btn" onclick="testGetGameState()">Get Game State</button>
+                    <button class="btn" onclick="testGetLegalMoves()">Get Legal Moves</button>
+                    <button class="btn" onclick="testExportRPN()">Export RPN</button>
+                    <button class="btn" onclick="clearResponse()">Clear</button>
+                    
+                    <h3>Custom Command:</h3>
+                    <textarea id="customCommand" placeholder="window.RomgonEngine.getGameState()"></textarea>
+                    <button class="btn" onclick="executeCustomCommand()">Execute</button>
+                </div>
+                
+                <div>
+                    <h3>Response:</h3>
+                    <div id="responseArea" class="response-area">
+                        Waiting for commands...
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Integration Examples Panel -->
+        <div class="panel full-width">
+            <h2>🔗 Integration Examples</h2>
+            
+            <h3>Example 1: ChatGPT Custom GPT</h3>
+            <div class="example">
+                <p><strong>Instructions for GPT:</strong></p>
+                <div class="code-block">
+                    <pre>You are a Romgon game assistant. Use the following API to interact with the game:
+
+1. To see the board state: window.RomgonEngine.getGameState()
+2. To get legal moves: window.RomgonEngine.getLegalMoves()
+3. To make a move: window.RomgonEngine.makeMove("FROM→TO")
+4. To analyze position: window.RomgonEngine.analyzePosition()
+
+Always check legal moves before suggesting a move.
+Use RPN notation for all moves.
+Consider piece values: Triangle(highest) > Hexagon > Circle > Square > Rhombus(strategic)</pre>
+                </div>
+            </div>
+            
+            <h3>Example 2: External AI Integration</h3>
+            <div class="example">
+                <div class="code-block">
+                    <pre>// Python example using Selenium
+from selenium import webdriver
+
+driver = webdriver.Chrome()
+driver.get("http://localhost:5500/public/index.html")
+
+# Get game state
+state = driver.execute_script("return window.RomgonEngine.getGameState()")
+
+# Get legal moves
+moves = driver.execute_script("return window.RomgonEngine.getLegalMoves()")
+
+# Make move
+result = driver.execute_script('return window.RomgonEngine.makeMove("3-0→3-1")')</pre>
+                </div>
+            </div>
+            
+            <h3>Example 3: REST API Wrapper</h3>
+            <div class="example">
+                <div class="code-block">
+                    <pre>// Node.js Express server wrapping the engine
+app.get('/api/game/state', (req, res) => {
+    // Use puppeteer to scrape game state
+    const state = await getGameStateFromBrowser();
+    res.json(state);
+});
+
+app.post('/api/game/move', (req, res) => {
+    const result = await makeMoveInBrowser(req.body.move);
+    res.json(result);
+});</pre>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Best Practices Panel -->
+        <div class="panel full-width">
+            <h2>💡 Best Practices for AI/LLM Players</h2>
+            <div class="grid">
+                <div>
+                    <h3>Strategic Guidelines:</h3>
+                    <ul class="rules-list">
+                        <li><strong>Early Game:</strong> Develop pieces, control center</li>
+                        <li><strong>Mid Game:</strong> Create threats, capture valuable pieces</li>
+                        <li><strong>Late Game:</strong> Push rhombus, support with tactics</li>
+                        <li><strong>Piece Values:</strong> Triangle (180) > Hexagon (170) > Circle (160) > Square (150)</li>
+                        <li><strong>Rhombus:</strong> Keep safe, advance only when supported</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3>Common Pitfalls to Avoid:</h3>
+                    <ul class="rules-list">
+                        <li>❌ Don't move rhombus too early without support</li>
+                        <li>❌ Don't ignore threats to your pieces</li>
+                        <li>❌ Don't create repetition patterns (3x = loss)</li>
+                        <li>❌ Don't shuttle pieces back and forth (5x = loss)</li>
+                        <li>❌ Don't forget base defense (keep rhombus at base early)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Interactive testing functions
+        function testGetGameState() {
+            try {
+                if (window.opener && window.opener.RomgonEngine) {
+                    const state = window.opener.RomgonEngine.getGameState();
+                    displayResponse(JSON.stringify(state, null, 2));
+                } else {
+                    displayResponse("Error: Game not running or RomgonEngine not available.\n\nPlease open this page from the main game menu.");
+                }
+            } catch (e) {
+                displayResponse("Error: " + e.message);
+            }
+        }
+        
+        function testGetLegalMoves() {
+            try {
+                if (window.opener && window.opener.RomgonEngine) {
+                    const moves = window.opener.RomgonEngine.getLegalMoves();
+                    displayResponse("Legal moves for current player:\n\n" + JSON.stringify(moves, null, 2));
+                } else {
+                    displayResponse("Error: Game not running or RomgonEngine not available.");
+                }
+            } catch (e) {
+                displayResponse("Error: " + e.message);
+            }
+        }
+        
+        function testExportRPN() {
+            try {
+                if (window.opener && window.opener.RomgonEngine) {
+                    const rpn = window.opener.RomgonEngine.exportGameRPN();
+                    displayResponse("Game in RPN format:\n\n" + rpn);
+                } else {
+                    displayResponse("Error: Game not running or RomgonEngine not available.");
+                }
+            } catch (e) {
+                displayResponse("Error: " + e.message);
+            }
+        }
+        
+        function executeCustomCommand() {
+            try {
+                const command = document.getElementById('customCommand').value;
+                if (window.opener) {
+                    const result = window.opener.eval(command);
+                    displayResponse(JSON.stringify(result, null, 2));
+                } else {
+                    displayResponse("Error: Game not running.");
+                }
+            } catch (e) {
+                displayResponse("Error: " + e.message);
+            }
+        }
+        
+        function displayResponse(text) {
+            document.getElementById('responseArea').textContent = text;
+        }
+        
+        function clearResponse() {
+            document.getElementById('responseArea').textContent = "Waiting for commands...";
+        }
+    </script>
+</body>
+</html>
