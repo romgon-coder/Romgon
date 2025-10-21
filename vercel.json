@@ -5,6 +5,5 @@
   "outputDirectory": "public",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./"
+  ]
 }
