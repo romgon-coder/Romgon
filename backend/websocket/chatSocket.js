@@ -3,16 +3,17 @@
 // Real-time messaging and friend management
 // ============================================
 
+const { dbPromise } = require('../config/database');
+
 const chatRooms = new Map(); // Map<roomId, Set<socketId>>
 const userSockets = new Map(); // Map<userId, socketId>
 const onlineUsers = new Set(); // Set<userId>
-const chatHistory = new Map(); // Map<roomId, Array<message>>
 const friendRequests = new Map(); // Map<userId, Array<friendRequest>>
 const userFriends = new Map(); // Map<userId, Array<friendId>>
 const typingUsers = new Map(); // Map<roomId, Set<userId>>
 const directMessages = new Map(); // Map<userId_userId, Array<message>>
 
-// Maximum messages to keep in memory per room
+// Maximum messages to keep in database
 const MAX_HISTORY_SIZE = 100;
 
 module.exports = (io) => {
@@ -74,7 +75,7 @@ module.exports = (io) => {
         // GLOBAL CHAT
         // ============================================
 
-        socket.on('chat:sendGlobalMessage', (data) => {
+        socket.on('chat:sendGlobalMessage', async (data) => {
             const { message } = data;
             const userId = socket.userId;
             const displayName = socket.displayName;
@@ -84,39 +85,57 @@ module.exports = (io) => {
                 return socket.emit('chat:error', { error: 'Message cannot be empty' });
             }
             
-            const messageData = {
-                id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                userId,
-                displayName,
-                avatar,
-                message: message.trim(),
-                timestamp: new Date().toISOString(),
-                type: 'global'
-            };
-            
-            // Store in history
-            if (!chatHistory.has('global-chat')) {
-                chatHistory.set('global-chat', []);
+            try {
+                // Save to database
+                const result = await dbPromise.run(
+                    'INSERT INTO global_messages (user_id, display_name, avatar, message, created_at) VALUES (?, ?, ?, ?, ?)',
+                    [userId, displayName, avatar, message.trim(), new Date().toISOString()]
+                );
+                
+                const messageData = {
+                    id: result.id,
+                    userId,
+                    displayName,
+                    avatar,
+                    message: message.trim(),
+                    timestamp: new Date().toISOString(),
+                    type: 'global'
+                };
+                
+                console.log(`💬 Global message from ${displayName}: ${message.substring(0, 50)}...`);
+                
+                // Broadcast to all users in global chat
+                chatNamespace.to('global-chat').emit('chat:globalMessage', messageData);
+                
+                // Clean up old messages (keep last 100)
+                await dbPromise.run(
+                    'DELETE FROM global_messages WHERE id NOT IN (SELECT id FROM global_messages ORDER BY created_at DESC LIMIT ?)',
+                    [MAX_HISTORY_SIZE]
+                );
+            } catch (error) {
+                console.error('❌ Error saving global message:', error);
+                socket.emit('chat:error', { error: 'Failed to send message' });
             }
-            const history = chatHistory.get('global-chat');
-            history.push(messageData);
-            
-            // Limit history size
-            if (history.length > MAX_HISTORY_SIZE) {
-                history.shift();
-            }
-            
-            console.log(`💬 Global message from ${displayName}: ${message.substring(0, 50)}...`);
-            
-            // Broadcast to all users in global chat
-            chatNamespace.to('global-chat').emit('chat:globalMessage', messageData);
         });
 
-        socket.on('chat:loadGlobalHistory', () => {
-            const history = chatHistory.get('global-chat') || [];
-            socket.emit('chat:globalHistory', {
-                messages: history.slice(-50) // Send last 50 messages
-            });
+        socket.on('chat:loadGlobalHistory', async () => {
+            try {
+                // Load last 100 messages from database
+                const messages = await dbPromise.all(
+                    'SELECT id, user_id as userId, display_name as displayName, avatar, message, created_at as timestamp FROM global_messages ORDER BY created_at DESC LIMIT ?',
+                    [MAX_HISTORY_SIZE]
+                );
+                
+                // Reverse to show oldest first
+                socket.emit('chat:globalHistory', {
+                    messages: messages.reverse()
+                });
+                
+                console.log(`📋 Loaded ${messages.length} messages for ${socket.displayName}`);
+            } catch (error) {
+                console.error('❌ Error loading global history:', error);
+                socket.emit('chat:globalHistory', { messages: [] });
+            }
         });
 
         // ============================================

@@ -12961,15 +12961,31 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 let username = 'Guest';
                 let rating = 1600;
                 
+                console.log('🔍 Initializing game socket...');
+                console.log('🔍 userId from localStorage:', userId);
+                console.log('🔍 romgon-user from localStorage:', userStr);
+                
                 if (userStr) {
                     try {
                         const user = JSON.parse(userStr);
                         username = user.username || user.name || 'Guest';
                         rating = user.rating || 1600;
-                    } catch (e) {}
+                        console.log('🔍 Parsed user:', { username, rating });
+                    } catch (e) {
+                        console.error('❌ Failed to parse user:', e);
+                    }
                 }
                 
-                gameSocket = io(`${BACKEND_API_URL}/game`, {
+                if (!userId) {
+                    console.error('❌ No userId found - cannot connect to game socket');
+                    return;
+                }
+                
+                const socketUrl = `${BACKEND_API_URL}/game`;
+                console.log('🔌 Connecting to:', socketUrl);
+                console.log('🔑 Auth data:', { userId, username, rating });
+                
+                gameSocket = io(socketUrl, {
                     auth: {
                         token: localStorage.getItem('token'),
                         userId: userId,
@@ -12982,10 +12998,14 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 gameSocket.on('connect', () => {
                     console.log('✅ Game WebSocket connected');
                     console.log('🔌 Socket ID:', gameSocket.id);
-                    console.log('🔑 Auth data:', gameSocket.auth);
+                    console.log('🔑 Auth data sent:', gameSocket.auth);
                     
                     // Initialize online players tracking AFTER connection
                     initializeOnlinePlayersListeners();
+                });
+                
+                gameSocket.on('connect_error', (error) => {
+                    console.error('❌ Game socket connection error:', error);
                 });
                 
                 gameSocket.on('disconnect', () => {

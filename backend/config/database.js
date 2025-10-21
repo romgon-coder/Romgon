@@ -111,7 +111,7 @@ function initializeTables() {
         else console.log('✅ Friends table ready');
     });
 
-    // Chat messages table
+    // Chat messages table (direct messages)
     db.run(`
         CREATE TABLE IF NOT EXISTS messages (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -128,6 +128,21 @@ function initializeTables() {
     `, (err) => {
         if (err) console.error('❌ Error creating messages table:', err);
         else console.log('✅ Messages table ready');
+    });
+
+    // Global chat messages table
+    db.run(`
+        CREATE TABLE IF NOT EXISTS global_messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT NOT NULL,
+            display_name TEXT NOT NULL,
+            avatar TEXT,
+            message TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `, (err) => {
+        if (err) console.error('❌ Error creating global_messages table:', err);
+        else console.log('✅ Global messages table ready');
     });
 
     // Achievements table
