@@ -20580,7 +20580,25 @@ ${moveHistory || '(No moves played yet - starting position)'}
         function initializeSplashPage() {
             console.log('🚀 Initializing splash page...');
             
-            // Show splash page on load
+            // Check for existing session and auto-login
+            const savedUser = localStorage.getItem('romgon-user');
+            if (savedUser) {
+                try {
+                    const user = JSON.parse(savedUser);
+                    console.log('🔄 Found saved session:', user);
+                    window.currentUser = user;
+                    
+                    // Auto-login: Skip splash page and go straight to user home
+                    console.log('✅ Auto-login successful as:', user.name || user.type);
+                    hideSplashPage();
+                    return; // Exit early, don't show splash page
+                } catch (e) {
+                    console.error('❌ Error loading saved session:', e);
+                    localStorage.removeItem('romgon-user');
+                }
+            }
+            
+            // No saved session, show splash page on load
             showSplashPage();
 
             // Add event listeners
