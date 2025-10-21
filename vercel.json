@@ -4,6 +4,6 @@
   "buildCommand": "node build-frontend.js",
   "outputDirectory": "public",
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/", "destination": "/index.html" }
   ]
 }
