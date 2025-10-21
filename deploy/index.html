@@ -13102,28 +13102,38 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 return;
             }
             
-            listEl.innerHTML = playersArray.map(player => `
-                <div onclick="challengePlayer('${player.userId}')" title="${escapeHtml(player.username)} - Rating: ${player.rating || 'Unrated'}" style="
+            listEl.innerHTML = playersArray.map(player => {
+                const isGuest = player.username.toLowerCase().startsWith('guest');
+                const guestBadge = isGuest ? '<span style="font-size: 0.7em; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 10px; margin-left: 4px;">👤 Guest</span>' : '';
+                const borderColor = isGuest ? 'rgba(156, 136, 255, 0.3)' : 'rgba(78, 205, 196, 0.3)';
+                const bgColor = isGuest ? 'rgba(156, 136, 255, 0.15)' : 'rgba(78, 205, 196, 0.15)';
+                const bgColorHover = isGuest ? 'rgba(156, 136, 255, 0.25)' : 'rgba(78, 205, 196, 0.25)';
+                const statusColor = player.status === 'in-game' ? '#ffd700' : (isGuest ? '#9c88ff' : '#4ecdc4');
+                
+                return `
+                <div onclick="challengePlayer('${player.userId}')" title="${escapeHtml(player.username)} - Rating: ${player.rating || 'Unrated'}${isGuest ? ' (Guest)' : ''}" style="
                     display: flex;
                     align-items: center;
                     gap: 6px;
-                    background: rgba(78, 205, 196, 0.15);
-                    border: 1px solid rgba(78, 205, 196, 0.3);
+                    background: ${bgColor};
+                    border: 1px solid ${borderColor};
                     border-radius: 20px;
                     padding: 6px 12px;
                     cursor: pointer;
                     transition: all 0.2s;
-                " onmouseover="this.style.background='rgba(78, 205, 196, 0.25)'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='rgba(78, 205, 196, 0.15)'; this.style.transform='scale(1)'">
+                " onmouseover="this.style.background='${bgColorHover}'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='${bgColor}'; this.style.transform='scale(1)'">
                     <div style="
                         width: 8px;
                         height: 8px;
                         border-radius: 50%;
-                        background: ${player.status === 'in-game' ? '#ffd700' : '#4ecdc4'};
+                        background: ${statusColor};
                     "></div>
                     <span style="color: white; font-size: 0.9em; font-weight: 500;">${escapeHtml(player.username)}</span>
                     <span style="color: #888; font-size: 0.8em;">(${player.rating || '?'})</span>
+                    ${guestBadge}
                 </div>
-            `).join('');
+            `;
+            }).join('');
             
             // If there are more players, show count
             if (onlinePlayers.size - 1 > playersArray.length) {
