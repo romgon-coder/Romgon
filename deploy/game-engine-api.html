@@ -33,6 +33,7 @@
             text-decoration: none;
             padding: 12px 25px;
             border-radius: 50px;
+            border: none;
             font-weight: bold;
             font-size: 1em;
             box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
@@ -41,6 +42,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            cursor: pointer;
         }
         
         .back-button:hover {
@@ -240,9 +242,9 @@
     </style>
 </head>
 <body>
-    <a href="https://romgon.net" class="back-button">
+    <button onclick="window.location.href='https://romgon.net'" class="back-button">
         ← Back to Romgon
-    </a>
+    </button>
     
     <div class="container">
         <h1>🎮 Romgon Game Engine API</h1>
