@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ChatGPT Modal Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <h1>ChatGPT Modal Test</h1>
+    <button onclick="showModal()" style="padding: 15px 30px; font-size: 18px; cursor: pointer; background: #10a37f; color: white; border: none; border-radius: 8px;">
+        🤖 Open ChatGPT Modal
+    </button>
+    
+    <p>Click the button above. If you see the modal, the HTML/CSS works. If not, there's a structural issue.</p>
+
+    <!-- ChatGPT Assistant Modal -->
+    <div id="chatgpt-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.95); z-index: 100001; overflow-y: auto;">
+        <div style="max-width: 900px; margin: 40px auto; background: linear-gradient(135deg, #1a1e26 0%, #23272e 100%); border-radius: 18px; box-shadow: 0 8px 40px rgba(16, 163, 127, 0.5), 0 0 0 2px rgba(16, 163, 127, 0.3); padding: 40px; color: #fff; position: relative;">
+            <button onclick="hideModal()" style="position: absolute; top: 18px; right: 18px; background: #ff6b6b; color: #fff; border: none; border-radius: 8px; font-size: 1.2em; font-weight: bold; padding: 6px 16px; cursor: pointer; transition: all 0.3s ease;">✖️</button>
+            <div style="text-align: center; margin-bottom: 30px;">
+                <div style="font-size: 3em; margin-bottom: 10px;">🤖💬</div>
+                <h2 style="color: #10a37f; margin: 0; font-size: 2em;">ChatGPT Assistant Mode</h2>
+                <p style="color: #888; margin: 10px 0 0 0;">Get AI-powered move suggestions while you play</p>
+            </div>
+            <div id="chatgpt-setup" style="background: rgba(16, 163, 127, 0.1); border: 2px solid rgba(16, 163, 127, 0.3); border-radius: 12px; padding: 25px; margin-bottom: 25px;">
+                <h3 style="color: #10a37f; margin: 0 0 15px 0; font-size: 1.2em;">🔑 Setup</h3>
+                <p style="color: #ccc; margin: 0 0 15px 0; font-size: 0.95em;">To use ChatGPT assistance, you need an OpenAI API key.</p>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; color: #10a37f; font-weight: bold; margin-bottom: 8px;">OpenAI API Key:</label>
+                    <input type="password" id="chatgpt-api-key" placeholder="sk-proj-..." style="width: 100%; padding: 12px; background: #23272e; border: 2px solid #10a37f; border-radius: 8px; color: #fff; font-size: 0.95em; box-sizing: border-box; font-family: 'Courier New', monospace;" />
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <label style="color: #ccc; font-size: 0.9em; cursor: pointer;">
+                        <input type="checkbox" id="chatgpt-save-key" style="margin-right: 5px;" />
+                        Save key in browser
+                    </label>
+                </div>
+                <div id="chatgpt-key-status" style="margin-top: 15px; padding: 12px; border-radius: 8px; display: none; background: rgba(16, 163, 127, 0.2); color: #10a37f; border: 2px solid #10a37f;">
+                    Status messages appear here
+                </div>
+            </div>
+            <div style="background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 20px; margin-bottom: 25px;">
+                <h3 style="color: #4ecdc4; margin: 0 0 15px 0; font-size: 1.2em;">💡 How It Works</h3>
+                <ol style="color: #ccc; margin: 0; padding-left: 20px; line-height: 1.8;">
+                    <li>Start a game (Practice Mode recommended)</li>
+                    <li>Click <strong>ASK CHATGPT</strong> button during your turn</li>
+                    <li>ChatGPT analyzes the position and suggests the best move</li>
+                    <li>You can accept the suggestion or make your own move</li>
+                </ol>
+            </div>
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button style="background: linear-gradient(135deg, #10a37f 0%, #1a7f64 100%); color: #fff; border: none; padding: 15px 40px; border-radius: 50px; cursor: pointer; font-weight: 700; font-size: 1.1em; box-shadow: 0 4px 15px rgba(16, 163, 127, 0.4);">🚀 Enable ChatGPT Mode</button>
+                <button style="background: rgba(78, 205, 196, 0.2); color: #4ecdc4; border: 2px solid #4ecdc4; padding: 15px 40px; border-radius: 50px; cursor: pointer; font-weight: 700; font-size: 1.1em;">🧪 Test Connection</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showModal() {
+            console.log('Opening modal...');
+            const modal = document.getElementById('chatgpt-modal');
+            modal.style.display = 'block';
+            console.log('Modal should be visible now');
+            
+            // Debug info
+            setTimeout(() => {
+                const computed = window.getComputedStyle(modal);
+                console.log('Computed display:', computed.display);
+                console.log('Computed z-index:', computed.zIndex);
+                console.log('Modal dimensions:', modal.offsetWidth, 'x', modal.offsetHeight);
+            }, 100);
+        }
+
+        function hideModal() {
+            document.getElementById('chatgpt-modal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

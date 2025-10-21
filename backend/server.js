@@ -22,6 +22,7 @@ const statsRoutes = require('./routes/stats');
 
 // Import WebSocket handlers
 const setupSocketHandlers = require('./websocket/gameSocket');
+const setupChatHandlers = require('./websocket/chatSocket');
 
 // Initialize Express app
 const app = express();
@@ -91,6 +92,7 @@ app.use('/api/stats', statsRoutes);
 
 // Setup WebSocket event handlers
 setupSocketHandlers(io);
+setupChatHandlers(io); // Chat namespace
 
 // Store active connections
 const activeUsers = new Map();

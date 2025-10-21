@@ -1,0 +1,177 @@
+<!-- ChatGPT Assistant Modal -->
+<div id="chatgpt-modal" style="
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(16, 20, 28, 0.98);
+    z-index: 10001;
+    overflow-y: auto;
+    backdrop-filter: blur(4px);
+">
+    <div style="
+        max-width: 900px;
+        margin: 40px auto;
+        background: #1a1e26;
+        border-radius: 18px;
+        box-shadow: 0 8px 40px rgba(16, 163, 127, 0.3);
+        padding: 40px;
+        color: #fff;
+        position: relative;
+    ">
+        <!-- Close Button -->
+        <button onclick="hideChatGPTModal()" style="
+            position: absolute; top: 18px; right: 18px;
+            background: #ff6b6b; color: #fff;
+            border: none; border-radius: 8px;
+            font-size: 1.2em; font-weight: bold;
+            padding: 6px 16px; cursor: pointer;
+            transition: all 0.3s ease;
+        " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">✖️</button>
+        
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 30px;">
+            <div style="font-size: 3em; margin-bottom: 10px;">🤖💬</div>
+            <h2 style="color: #10a37f; margin: 0; font-size: 2em;">ChatGPT Assistant Mode</h2>
+            <p style="color: #888; margin: 10px 0 0 0;">Get AI-powered move suggestions while you play</p>
+        </div>
+        
+        <!-- API Key Input Section -->
+        <div id="chatgpt-setup" style="
+            background: rgba(16, 163, 127, 0.1);
+            border: 2px solid rgba(16, 163, 127, 0.3);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+        ">
+            <h3 style="color: #10a37f; margin: 0 0 15px 0; font-size: 1.2em;">🔑 Setup</h3>
+            <p style="color: #ccc; margin: 0 0 15px 0; font-size: 0.95em;">
+                To use ChatGPT assistance, you need an OpenAI API key. Get one from 
+                <a href="https://platform.openai.com/api-keys" target="_blank" style="color: #10a37f;">platform.openai.com/api-keys</a>
+            </p>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; color: #10a37f; font-weight: bold; margin-bottom: 8px;">OpenAI API Key:</label>
+                <input type="password" id="chatgpt-api-key" placeholder="sk-proj-..." style="
+                    width: 100%;
+                    padding: 12px;
+                    background: #23272e;
+                    border: 2px solid #10a37f;
+                    border-radius: 8px;
+                    color: #fff;
+                    font-size: 0.95em;
+                    box-sizing: border-box;
+                    font-family: 'Courier New', monospace;
+                " />
+            </div>
+            
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <label style="color: #ccc; font-size: 0.9em; cursor: pointer;">
+                    <input type="checkbox" id="chatgpt-save-key" style="margin-right: 5px;" />
+                    Save key in browser (local storage only)
+                </label>
+            </div>
+            
+            <div id="chatgpt-key-status" style="
+                margin-top: 15px;
+                padding: 12px;
+                border-radius: 8px;
+                display: none;
+            "></div>
+        </div>
+        
+        <!-- How It Works -->
+        <div style="
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        ">
+            <h3 style="color: #4ecdc4; margin: 0 0 15px 0; font-size: 1.2em;">💡 How It Works</h3>
+            <ol style="color: #ccc; margin: 0; padding-left: 20px; line-height: 1.8;">
+                <li>Start a game (Practice Mode recommended)</li>
+                <li>Click <strong>ASK CHATGPT</strong> button during your turn</li>
+                <li>ChatGPT analyzes the position and suggests the best move</li>
+                <li>You can accept the suggestion or make your own move</li>
+            </ol>
+        </div>
+        
+        <!-- Features -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
+            <div style="background: rgba(16, 163, 127, 0.1); padding: 15px; border-radius: 8px;">
+                <div style="font-size: 1.5em; margin-bottom: 8px;">🎯</div>
+                <strong style="color: #10a37f;">Strategic Analysis</strong>
+                <p style="color: #999; margin: 8px 0 0 0; font-size: 0.9em;">
+                    Get explanations for each suggested move
+                </p>
+            </div>
+            <div style="background: rgba(78, 205, 196, 0.1); padding: 15px; border-radius: 8px;">
+                <div style="font-size: 1.5em; margin-bottom: 8px;">📊</div>
+                <strong style="color: #4ecdc4;">Position Evaluation</strong>
+                <p style="color: #999; margin: 8px 0 0 0; font-size: 0.9em;">
+                    Understand who's winning and why
+                </p>
+            </div>
+            <div style="background: rgba(165, 94, 234, 0.1); padding: 15px; border-radius: 8px;">
+                <div style="font-size: 1.5em; margin-bottom: 8px;">🎓</div>
+                <strong style="color: #a55eea;">Learning Mode</strong>
+                <p style="color: #999; margin: 8px 0 0 0; font-size: 0.9em;">
+                    Improve your skills with AI guidance
+                </p>
+            </div>
+            <div style="background: rgba(255, 107, 107, 0.1); padding: 15px; border-radius: 8px;">
+                <div style="font-size: 1.5em; margin-bottom: 8px;">⚡</div>
+                <strong style="color: #ff6b6b;">Fast Responses</strong>
+                <p style="color: #999; margin: 8px 0 0 0; font-size: 0.9em;">
+                    Get suggestions in 2-3 seconds
+                </p>
+            </div>
+        </div>
+        
+        <!-- Cost Info -->
+        <div style="
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 25px;
+        ">
+            <strong style="color: #ffd700;">💰 Cost: ~$0.001 per move</strong>
+            <p style="color: #999; margin: 8px 0 0 0; font-size: 0.9em;">
+                Using GPT-4o-mini model. A full 40-move game costs about $0.04.
+            </p>
+        </div>
+        
+        <!-- Actions -->
+        <div style="display: flex; gap: 15px; justify-content: center;">
+            <button onclick="enableChatGPTMode()" style="
+                background: linear-gradient(135deg, #10a37f 0%, #1a7f64 100%);
+                color: #fff;
+                border: none;
+                padding: 15px 40px;
+                border-radius: 50px;
+                cursor: pointer;
+                font-weight: 700;
+                font-size: 1.1em;
+                box-shadow: 0 4px 15px rgba(16, 163, 127, 0.4);
+                transition: all 0.3s ease;
+            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(16, 163, 127, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(16, 163, 127, 0.4)'">
+                🚀 Enable ChatGPT Mode
+            </button>
+            
+            <button onclick="testChatGPTConnection()" style="
+                background: rgba(78, 205, 196, 0.2);
+                color: #4ecdc4;
+                border: 2px solid #4ecdc4;
+                padding: 15px 40px;
+                border-radius: 50px;
+                cursor: pointer;
+                font-weight: 700;
+                font-size: 1.1em;
+                transition: all 0.3s ease;
+            " onmouseover="this.style.background='rgba(78, 205, 196, 0.3)'" onmouseout="this.style.background='rgba(78, 205, 196, 0.2)'">
+                🧪 Test Connection
+            </button>
+        </div>
+    </div>
+</div>
