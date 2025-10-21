@@ -3374,6 +3374,102 @@
             #start-menu p {
                 font-size: 0.8em !important;
             }
+            
+            /* Mobile-friendly AI Provider Modal */
+            #chatgpt-setup-modal > div {
+                width: 95vw !important;
+                max-width: 95vw !important;
+                padding: 20px !important;
+                max-height: 90vh !important;
+                overflow-y: auto !important;
+            }
+            
+            #chatgpt-setup-modal h2 {
+                font-size: 1.3em !important;
+            }
+            
+            #chatgpt-setup-modal p {
+                font-size: 0.85em !important;
+            }
+            
+            /* AI Provider Buttons - Stack Vertically on Mobile */
+            #ai-provider-buttons {
+                flex-direction: column !important;
+                gap: 10px !important;
+            }
+            
+            #ai-provider-buttons button {
+                width: 100% !important;
+                min-height: 50px !important;
+                font-size: 14px !important;
+                padding: 12px !important;
+            }
+            
+            /* Cost Comparison Grid - Single Column on Mobile */
+            #chatgpt-setup-modal .cost-comparison-grid {
+                grid-template-columns: 1fr !important;
+                gap: 8px !important;
+                font-size: 0.75em !important;
+            }
+            
+            /* API Key Input - Full Width */
+            #chatgpt-api-key-input {
+                width: 100% !important;
+                font-size: 14px !important;
+                padding: 12px !important;
+            }
+            
+            /* Modal Buttons - Touch Friendly */
+            #chatgpt-setup-modal button {
+                min-height: 48px !important;
+                font-size: 15px !important;
+                padding: 12px 20px !important;
+            }
+            
+            /* ChatGPT Suggestion Modal - Full Screen on Mobile */
+            #chatgpt-suggestion-modal > div {
+                width: 95vw !important;
+                max-width: 95vw !important;
+                max-height: 85vh !important;
+                padding: 15px !important;
+            }
+            
+            #chatgpt-suggestion-modal h3 {
+                font-size: 1.1em !important;
+            }
+            
+            #chatgpt-suggestion-modal .suggestion-content {
+                font-size: 0.9em !important;
+                max-height: 60vh !important;
+            }
+            
+            /* Floating ChatGPT Button - Reposition for Mobile */
+            #floating-chatgpt-btn {
+                bottom: 15px !important;
+                right: 15px !important;
+                width: 55px !important;
+                height: 55px !important;
+                font-size: 20px !important;
+            }
+            
+            /* Turn Indicator - Compact Layout */
+            #turn-indicator {
+                font-size: 0.8em !important;
+                padding: 8px 15px !important;
+            }
+            
+            /* User Home Menu - Touch Friendly Buttons */
+            #user-home button {
+                min-height: 48px !important;
+                font-size: 15px !important;
+                padding: 12px 20px !important;
+            }
+            
+            /* Game Board - Center and Scale */
+            #board-container {
+                transform: scale(0.9) !important;
+                transform-origin: center center !important;
+            }
         }
 
         /* Multiplayer Modal Styles */
@@ -4256,6 +4352,54 @@
 
             #user-home {
                 padding: 20px !important;
+            }
+            
+            /* Multiplayer Modal - Mobile Friendly */
+            .multiplayer-container {
+                padding: 25px 20px !important;
+                max-width: 90vw !important;
+            }
+            
+            .multiplayer-container h2 {
+                font-size: 22px !important;
+            }
+            
+            .mp-button {
+                font-size: 14px !important;
+                padding: 12px 20px !important;
+                min-height: 48px !important;
+            }
+            
+            /* Game Room Modal - Mobile Friendly */
+            .game-room-container {
+                padding: 25px 20px !important;
+                max-width: 90vw !important;
+            }
+            
+            /* Touch-Friendly Buttons Throughout */
+            button, .btn, input[type="button"], input[type="submit"] {
+                min-height: 44px !important;
+                font-size: 14px !important;
+            }
+            
+            /* Prevent Text Selection on Touch */
+            .hex-cell, #board-container, .piece-icon {
+                -webkit-user-select: none !important;
+                -moz-user-select: none !important;
+                -ms-user-select: none !important;
+                user-select: none !important;
+                -webkit-tap-highlight-color: transparent !important;
+            }
+            
+            /* Improve Touch Target Sizes */
+            .hex-cell {
+                cursor: pointer;
+                -webkit-tap-highlight-color: rgba(255, 255, 255, 0.2) !important;
+            }
+            
+            /* Better Modal Scrolling on Mobile */
+            .modal-content, .multiplayer-container, .game-room-container {
+                -webkit-overflow-scrolling: touch !important;
             }
         }
     </style>

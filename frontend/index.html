@@ -5001,9 +5001,61 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 </div>
             </div>
             
-    <!-- Game Variants Modal -->
-    <div id="game-variants-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.9); z-index: 10000; justify-content: center; align-items: center;">
+    <!-- AI Game Variants Modal -->
+    <div id="game-variants-ai-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.9); z-index: 10000; justify-content: center; align-items: center;">
         <div style="background: #262421; border: 3px solid #4ecdc4; border-radius: 20px; padding: 40px; max-width: 500px; width: 90%; box-shadow: 0 10px 50px rgba(78, 205, 196, 0.3); position:relative;">
+            <h2 style="color: #4ecdc4; text-align: center; margin-bottom: 30px; font-size: 28px;">🤖 AI Game Variants</h2>
+            
+            <!-- AI Difficulty Selector -->
+            <div style="display:flex;justify-content:center;align-items:center;margin-bottom:25px;gap:12px;flex-direction:column;">
+                <label style="color:#ffd700;font-size:1.2em;margin-bottom:10px;">🎯 AI Difficulty:</label>
+                <div style="display:flex;gap:10px;width:100%;justify-content:center;">
+                    <button id="ai-diff-easy" onclick="selectAIDifficulty('easy')" style="
+                        background: linear-gradient(45deg, #4ecdc4, #44a08d);
+                        color: white;
+                        border: 3px solid transparent;
+                        padding: 12px 20px;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        font-size: 16px;
+                        flex: 1;
+                        transition: all 0.3s ease;
+                    " onmouseover="if(!this.classList.contains('selected')) this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        😊 Easy
+                    </button>
+                    <button id="ai-diff-medium" onclick="selectAIDifficulty('medium')" style="
+                        background: linear-gradient(45deg, #ffd700, #f0ad4e);
+                        color: white;
+                        border: 3px solid transparent;
+                        padding: 12px 20px;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        font-size: 16px;
+                        flex: 1;
+                        transition: all 0.3s ease;
+                    " onmouseover="if(!this.classList.contains('selected')) this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        🤔 Medium
+                    </button>
+                    <button id="ai-diff-hard" onclick="selectAIDifficulty('hard')" style="
+                        background: linear-gradient(45deg, #ff6b6b, #c92a2a);
+                        color: white;
+                        border: 3px solid #ffd700;
+                        padding: 12px 20px;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        font-size: 16px;
+                        flex: 1;
+                        transition: all 0.3s ease;
+                    " onmouseover="if(!this.classList.contains('selected')) this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" class="selected">
+                        😈 Hard
+                    </button>
+                </div>
+                <span id="ai-difficulty-desc" style="color:#aaa;font-size:0.95em;text-align:center;margin-top:8px;">Hard: AI plays optimally with full strategy.</span>
+            </div>
+            
             <h2 style="color: #4ecdc4; text-align: center; margin-bottom: 30px; font-size: 28px;">🎲 Game Variants</h2>
             <div style="display:flex;justify-content:center;align-items:center;margin-bottom:18px;gap:12px;">
                 <label for="base-defense-variant-tc" style="color:#ffd700;font-size:1.08em;">Base Defense:</label>
@@ -5112,7 +5164,133 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 </button>
             </div>
             
-            <button onclick="closeGameVariantsModal()" style="
+            <button onclick="closeAIVariantsModal()" style="
+                background-color: #555;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 8px;
+                cursor: pointer;
+                width: 100%;
+                font-weight: 600;
+                transition: all 0.3s ease;
+            " onmouseover="this.style.background='#666'" onmouseout="this.style.background='#555'">
+                ← Back
+            </button>
+        </div>
+    </div>
+
+    <!-- PVP Game Variants Modal -->
+    <div id="game-variants-pvp-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.9); z-index: 10000; justify-content: center; align-items: center;">
+        <div style="background: #262421; border: 3px solid #4ecdc4; border-radius: 20px; padding: 40px; max-width: 500px; width: 90%; box-shadow: 0 10px 50px rgba(78, 205, 196, 0.3); position:relative;">
+            <h2 style="color: #4ecdc4; text-align: center; margin-bottom: 30px; font-size: 28px;">🎲 Game Variants</h2>
+            <div style="display:flex;justify-content:center;align-items:center;margin-bottom:18px;gap:12px;">
+                <label for="base-defense-variant-tc-pvp" style="color:#ffd700;font-size:1.08em;">Base Defense:</label>
+                <select id="base-defense-variant-tc-pvp" style="font-size:1em;padding:4px 10px;border-radius:6px;">
+                    <option value="original">Original (Only Rhombus)</option>
+                    <option value="shape-defense">Shape Defence</option>
+                </select>
+                <span id="base-defense-variant-tc-desc-pvp" style="color:#aaa;font-size:0.95em;margin-left:10px;"></span>
+            </div>
+            <div style="display:flex;justify-content:center;align-items:center;margin-bottom:18px;gap:12px;">
+                <label for="fog-of-war-variant-tc-pvp" style="color:#4ecdc4;font-size:1.08em;">Fog of War:</label>
+                <input type="checkbox" id="fog-of-war-variant-tc-pvp" style="transform:scale(1.3);margin-left:8px;" />
+                <span id="fog-of-war-variant-tc-desc-pvp" style="color:#aaa;font-size:0.95em;margin-left:10px;">Hide enemy pieces outside vision range.</span>
+            </div>
+            <script>
+            // Set dropdown and fog of war to current value and update desc (PVP modal)
+            setTimeout(() => {
+                const sel = document.getElementById('base-defense-variant-tc-pvp');
+                const desc = document.getElementById('base-defense-variant-tc-desc-pvp');
+                const fogCheckbox = document.getElementById('fog-of-war-variant-tc-pvp');
+                if (sel) {
+                    sel.value = (window.gameSettings && window.gameSettings.baseDefenseVariant) || window.baseDefenseVariant || 'original';
+                    function updateDesc() {
+                        if (sel.value === 'original') desc.textContent = 'Original rules: only the rhombus defends the base (casual mode).';
+                        else if (sel.value === 'shape-defense') desc.textContent = "Shape Defence: rhombus can only escape if the opponent's base is not under attack.";
+                    }
+                    sel.addEventListener('change', function() {
+                        if (!window.gameSettings) window.gameSettings = {};
+                        window.gameSettings.baseDefenseVariant = sel.value;
+                        window.baseDefenseVariant = sel.value;
+                        updateBaseDefenceDisplay();
+                        updateDesc();
+                        saveSettings();
+                    });
+                    updateDesc();
+                }
+                if (fogCheckbox) {
+                    if (!window.gameSettings) window.gameSettings = {};
+                    fogCheckbox.checked = !!(window.gameSettings && window.gameSettings.fogOfWar);
+                    fogCheckbox.addEventListener('change', function() {
+                        if (!window.gameSettings) window.gameSettings = {};
+                        window.gameSettings.fogOfWar = fogCheckbox.checked;
+                        fogOfWarEnabled = fogCheckbox.checked;
+                        saveSettings();
+                    });
+                }
+            }, 0);
+            </script>
+            <p style="color: #ccc; text-align: center; margin-bottom: 25px;">Select your preferred game variants:</p>
+            <div style="display: grid; gap: 15px; margin-bottom: 20px;">
+                <button onclick="startGameWithTime(10)" style="
+                    background: linear-gradient(45deg, #4ecdc4, #44a08d);
+                    color: white;
+                    border: none;
+                    padding: 18px;
+                    border-radius: 12px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    font-size: 18px;
+                    transition: all 0.3s ease;
+                " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    ⚡ 10 Minutes
+                </button>
+                
+                <button onclick="startGameWithTime(20)" style="
+                    background: linear-gradient(45deg, #ffd700, #f0ad4e);
+                    color: white;
+                    border: none;
+                    padding: 18px;
+                    border-radius: 12px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    font-size: 18px;
+                    transition: all 0.3s ease;
+                " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    🕐 20 Minutes
+                </button>
+                
+                <button onclick="startGameWithTime(30)" style="
+                    background: linear-gradient(45deg, #a55eea, #8e44ad);
+                    color: white;
+                    border: none;
+                    padding: 18px;
+                    border-radius: 12px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    font-size: 18px;
+                    transition: all 0.3s ease;
+                " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    ⏳ 30 Minutes
+                </button>
+                
+                <button onclick="startGameWithTime(0)" style="
+                    background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+                    color: white;
+                    border: none;
+                    padding: 18px;
+                    border-radius: 12px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    font-size: 18px;
+                    transition: all 0.3s ease;
+                " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    ∞ No Time Limit
+                </button>
+            </div>
+            
+            <button onclick="closePVPVariantsModal()" style="
                 background-color: #555;
                 color: white;
                 border: none;
@@ -6368,10 +6546,289 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         renderOpeningBook();
     }
     
+    function hideAccountModal() {
+        document.getElementById('account-modal').style.display = 'none';
+    }
+    
+    function hideSettingsModal() {
+        document.getElementById('settings-modal').style.display = 'none';
+    }
+    
+    function hideOpeningBook() {
+        document.getElementById('opening-book-modal').style.display = 'none';
+    }
+    
+    function switchAccountTab(tabName) {
+        // Hide all tabs
+        const tabs = document.querySelectorAll('.account-tab-content');
+        tabs.forEach(tab => tab.style.display = 'none');
+        
+        // Show selected tab
+        const selectedTab = document.getElementById('account-tab-' + tabName);
+        if (selectedTab) {
+            selectedTab.style.display = 'block';
+            populateTabContent(tabName);
+        }
+        
+        // Update active button
+        const buttons = document.querySelectorAll('.account-tab-btn');
+        buttons.forEach(btn => {
+            if (btn.dataset.tab === tabName) {
+                btn.classList.add('active');
+                btn.style.borderBottomColor = '#667eea';
+                btn.style.color = '#fff';
+            } else {
+                btn.classList.remove('active');
+                btn.style.borderBottomColor = 'transparent';
+                btn.style.color = '#999';
+            }
+        });
+    }
+    
+    function populateTabContent(tabName) {
+        const currentUser = JSON.parse(localStorage.getItem('romgon-user') || '{}');
+        const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+        
+        if (tabName === 'analytics' && currentUser.username && allUsers[currentUser.username]) {
+            populateAnalyticsTab(currentUser.username);
+        }
+    }
+    
+    function populateAnalyticsTab(username) {
+        const stats = getUserStats(username);
+        if (!stats) return;
+        
+        // Win rate calculation
+        const winRate = stats.gamesPlayed > 0 ? Math.round((stats.gamesWon / stats.gamesPlayed) * 100) : 0;
+        const avgMoves = stats.gamesPlayed > 0 ? Math.round(stats.totalMoves / stats.gamesPlayed) : 0;
+        
+        // Update elements
+        const avgMovesEl = document.getElementById('account-avg-moves');
+        const fastestWinEl = document.getElementById('account-fastest-win');
+        const winStreakEl = document.getElementById('account-win-streak');
+        const capturesEl = document.getElementById('account-captures');
+        
+        if (avgMovesEl) avgMovesEl.textContent = avgMoves;
+        if (fastestWinEl) fastestWinEl.textContent = stats.fastestWin ? stats.fastestWin + ' moves' : '—';
+        if (winStreakEl) winStreakEl.textContent = stats.longestWinStreak || 0;
+        if (capturesEl) capturesEl.textContent = stats.totalCaptures || 0;
+        
+        // Piece stats (with null checks)
+        const pieceSquareCaptures = document.getElementById('piece-square-captures');
+        const pieceSquareSurvived = document.getElementById('piece-square-survived');
+        const pieceSquareLost = document.getElementById('piece-square-lost');
+        if (pieceSquareCaptures) pieceSquareCaptures.textContent = stats.pieceStats.square.captures || 0;
+        if (pieceSquareSurvived) pieceSquareSurvived.textContent = stats.pieceStats.square.survived || 0;
+        if (pieceSquareLost) pieceSquareLost.textContent = stats.pieceStats.square.lost || 0;
+        
+        const pieceTriangleCaptures = document.getElementById('piece-triangle-captures');
+        const pieceTriangleSurvived = document.getElementById('piece-triangle-survived');
+        const pieceTriangleLost = document.getElementById('piece-triangle-lost');
+        if (pieceTriangleCaptures) pieceTriangleCaptures.textContent = stats.pieceStats.triangle.captures || 0;
+        if (pieceTriangleSurvived) pieceTriangleSurvived.textContent = stats.pieceStats.triangle.survived || 0;
+        if (pieceTriangleLost) pieceTriangleLost.textContent = stats.pieceStats.triangle.lost || 0;
+        
+        const pieceRhombusCaptures = document.getElementById('piece-rhombus-captures');
+        const pieceRhombusSurvived = document.getElementById('piece-rhombus-survived');
+        const pieceRhombusLost = document.getElementById('piece-rhombus-lost');
+        if (pieceRhombusCaptures) pieceRhombusCaptures.textContent = stats.pieceStats.rhombus.captures || 0;
+        if (pieceRhombusSurvived) pieceRhombusSurvived.textContent = stats.pieceStats.rhombus.survived || 0;
+        if (pieceRhombusLost) pieceRhombusLost.textContent = stats.pieceStats.rhombus.lost || 0;
+        
+        const pieceCircleCaptures = document.getElementById('piece-circle-captures');
+        const pieceCircleSurvived = document.getElementById('piece-circle-survived');
+        const pieceCircleLost = document.getElementById('piece-circle-lost');
+        if (pieceCircleCaptures) pieceCircleCaptures.textContent = stats.pieceStats.circle.captures || 0;
+        if (pieceCircleSurvived) pieceCircleSurvived.textContent = stats.pieceStats.circle.survived || 0;
+        if (pieceCircleLost) pieceCircleLost.textContent = stats.pieceStats.circle.lost || 0;
+        
+        const pieceHexagonCaptures = document.getElementById('piece-hexagon-captures');
+        const pieceHexagonSurvived = document.getElementById('piece-hexagon-survived');
+        const pieceHexagonLost = document.getElementById('piece-hexagon-lost');
+        if (pieceHexagonCaptures) pieceHexagonCaptures.textContent = stats.pieceStats.hexagon.captures || 0;
+        if (pieceHexagonSurvived) pieceHexagonSurvived.textContent = stats.pieceStats.hexagon.survived || 0;
+        if (pieceHexagonLost) pieceHexagonLost.textContent = stats.pieceStats.hexagon.lost || 0;
+    }
+    
+    function getUserStats(username) {
+        const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+        if (!allUsers[username]) return null;
+        
+        // Ensure stats object exists and has proper structure
+        const user = allUsers[username];
+        if (!user.stats) {
+            user.stats = {
+                gamesPlayed: 0,
+                gamesWon: 0,
+                gamesLost: 0,
+                gamesDrawn: 0
+            };
+            // Save the updated user back to localStorage
+            localStorage.setItem('romgon-users', JSON.stringify(allUsers));
+        }
+        
+        return {
+            gamesPlayed: user.stats.gamesPlayed || 0,
+            gamesWon: user.stats.gamesWon || 0,
+            gamesLost: user.stats.gamesLost || 0,
+            gamesDrawn: user.stats.gamesDrawn || 0,
+            lastLogin: user.lastLogin || null,
+            savedGames: user.savedGames || [],
+            pieceStats: user.pieceStats || {
+                square: { captures: 0, survived: 0, lost: 0 },
+                triangle: { captures: 0, survived: 0, lost: 0 },
+                rhombus: { captures: 0, survived: 0, lost: 0 },
+                circle: { captures: 0, survived: 0, lost: 0 },
+                hexagon: { captures: 0, survived: 0, lost: 0 }
+            },
+            longestWinStreak: user.longestWinStreak || 0,
+            fastestWin: user.fastestWin || null,
+            totalCaptures: user.totalCaptures || 0,
+            totalMoves: user.totalMoves || 0,
+            registeredDate: user.registeredDate
+        };
+    }
+    
+    function updateZoomDisplay() {
+        const zoomValue = parseFloat(document.getElementById('settings-zoom').value);
+        document.getElementById('zoom-value').textContent = Math.round(zoomValue * 100) + '%';
+    }
+    
+    // Opening Book data
+    const OPENING_BOOK = [
+        {
+            name: 'Triangle Coop (Black)',
+            moves: ['t5-6>5-5', 't1-6>2-6'],
+            description: 'Both black triangles advance cooperatively.'
+        },
+        {
+            name: 'Triangle Coop (White)',
+            moves: ['T1-0>1-1', 'T5-0>4-1'],
+            description: 'Both white triangles advance cooperatively.'
+        },
+        {
+            name: '2 Square Advance (Black)',
+            moves: ['s6-5>5-5', 's0-5>1-5'],
+            description: 'Both black squares advance aggressively.'
+        },
+        {
+            name: '2 Square Advance (White)',
+            moves: ['S0-0>1-1', 'S6-0>5-1'],
+            description: 'Both white squares advance aggressively.'
+        },
+        {
+            name: 'Rhombus Roster (Black)',
+            moves: ['r3-8>3-6', 'c4-7>4-6'],
+            description: 'Black rhombus and circle both advance.'
+        },
+        {
+            name: 'Rhombus Roster (White)',
+            moves: ['R3-0>3-2', 'C2-0>2-1'],
+            description: 'White rhombus and circle both advance.'
+        },
+        {
+            name: 'Hexagon Push (Black)',
+            moves: ['s6-5>5-5', 'h2-7>3-6'],
+            description: 'Black square and hexagon push forward.'
+        },
+        {
+            name: 'Hexagon Push (White)',
+            moves: ['S0-0>1-1', 'H4-0>3-2'],
+            description: 'White square and hexagon push forward.'
+        },
+        {
+            name: 'Rhombus Straw (Black)',
+            moves: ['r3-8>3-6', 'r3-6>3-4'],
+            description: 'Black rhombus advances twice down the center.'
+        },
+        {
+            name: 'Rhombus Straw (White)',
+            moves: ['R3-0>3-2', 'R3-2>3-4'],
+            description: 'White rhombus advances twice up the center.'
+        },
+        {
+            name: 'Triangle Gateway Attack',
+            moves: ['T2-1>3-2', 's5-0>5-1'],
+            description: 'Triangle advances through the gateway.'
+        },
+        {
+            name: 'Central Hexagon Push',
+            moves: ['H3-2>3-3', 't4-1>4-2'],
+            description: 'Hexagon pushes to the center.'
+        }
+    ];
+    
+    function renderOpeningBook() {
+        const content = document.getElementById('opening-book-content');
+        if (!content) {
+            console.error('Opening book content element not found');
+            return;
+        }
+        
+        // Helper: get side from name
+        function getSide(name) {
+            if (name.toLowerCase().includes('white')) return 'White';
+            if (name.toLowerCase().includes('black')) return 'Black';
+            return 'Both';
+        }
+        
+        // Helper: piece icon
+        function pieceIcon(move) {
+            const p = move[0].toLowerCase();
+            if (p === 's') return '■';
+            if (p === 't') return '▲';
+            if (p === 'r') return '◆';
+            if (p === 'c') return '●';
+            if (p === 'h') return '⬡';
+            return '';
+        }
+        
+        // Helper: color for side
+        function sideColor(side) {
+            if (side === 'White') return '#4ecdc4';
+            if (side === 'Black') return '#ffd700';
+            return '#aaa';
+        }
+        
+        let html = `<table style='width:100%; border-collapse:collapse; margin-top:10px;'>
+            <thead>
+                <tr style='background:#23272e; color:#4ecdc4;'>
+                    <th style='padding:8px 4px; text-align:left;'>Opening Name</th>
+                    <th style='padding:8px 4px; text-align:left;'>Side</th>
+                    <th style='padding:8px 4px; text-align:left;'>Moves</th>
+                    <th style='padding:8px 4px; text-align:left;'>Description</th>
+                </tr>
+            </thead>
+            <tbody>`;
+        
+        for (const opening of OPENING_BOOK) {
+            const side = getSide(opening.name);
+            html += `<tr style='border-bottom:1px solid #333;'>
+                <td style='padding:8px 4px; font-weight:bold; color:#fff;'>${opening.name.replace(/ \((White|Black)\)/,'')}</td>
+                <td style='padding:8px 4px; color:${sideColor(side)}; font-weight:bold;'>${side}</td>
+                <td style='padding:8px 4px; color:#fff;'>
+                    ${opening.moves.map(m => `<span style='font-family:monospace; margin-right:8px;'>${pieceIcon(m)} <span style='color:#4ecdc4;'>${m}</span></span>`).join('<br>')}
+                </td>
+                <td style='padding:8px 4px; color:#aaa;'>${opening.description}</td>
+            </tr>`;
+        }
+        html += '</tbody></table>';
+        content.innerHTML = html;
+    }
+    
     // Make modal functions globally accessible
     window.showAccountModal = showAccountModal;
     window.showSettingsModal = showSettingsModal;
     window.showOpeningBook = showOpeningBook;
+    window.hideAccountModal = hideAccountModal;
+    window.hideSettingsModal = hideSettingsModal;
+    window.hideOpeningBook = hideOpeningBook;
+    window.switchAccountTab = switchAccountTab;
+    window.populateTabContent = populateTabContent;
+    window.populateAnalyticsTab = populateAnalyticsTab;
+    window.getUserStats = getUserStats;
+    window.updateZoomDisplay = updateZoomDisplay;
+    window.renderOpeningBook = renderOpeningBook;
     console.log('✅ User home modal functions assigned at startup');
     
     // --- Opening Recognition Logic ---
@@ -8873,7 +9330,8 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         let gameMode = 'full'; // 'full', 'square-attack', or 'ai'
         let aiEnabled = false; // AI opponent enabled
         let boardFlipped = false; // Track if board is flipped for white player perspective
-        let aiDifficulty = 'medium'; // 'easy', 'medium', or 'hard'
+        let aiDifficulty = 'hard'; // 'easy', 'medium', or 'hard'
+        window.aiDifficulty = aiDifficulty; // Make it globally accessible
         let aiThinking = false; // Lock player input while AI is thinking
         let llmMode = false; // LLM AI mode (mockup)
         let currentAIModel = 'claude-sonnet'; // 'claude-sonnet', 'gpt4', 'grok', 'gemini'
@@ -9873,12 +10331,61 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         // Renamed for Game Variants Modal
         window.openGameVariantsModal = function(gameMode) {
             selectedGameMode = gameMode;
-            document.getElementById('game-variants-modal').style.display = 'flex';
+            // Show appropriate modal based on game mode
+            if (gameMode === 'ai' || gameMode === 'llm') {
+                document.getElementById('game-variants-ai-modal').style.display = 'flex';
+            } else {
+                document.getElementById('game-variants-pvp-modal').style.display = 'flex';
+            }
         }
 
-        function closeGameVariantsModal() {
-            document.getElementById('game-variants-modal').style.display = 'none';
+        function closeAIVariantsModal() {
+            document.getElementById('game-variants-ai-modal').style.display = 'none';
             // Don't reset selectedGameMode here - it's needed for startGameWithTime()
+        }
+
+        function closePVPVariantsModal() {
+            document.getElementById('game-variants-pvp-modal').style.display = 'none';
+            // Don't reset selectedGameMode here - it's needed for startGameWithTime()
+        }
+        
+        // Legacy support - keep old function name working
+        function closeGameVariantsModal() {
+            closeAIVariantsModal();
+            closePVPVariantsModal();
+        }
+        
+        // AI Difficulty Selection
+        window.selectAIDifficulty = function(difficulty) {
+            window.aiDifficulty = difficulty;
+            
+            // Update visual selection
+            const buttons = ['ai-diff-easy', 'ai-diff-medium', 'ai-diff-hard'];
+            buttons.forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                if (btn) {
+                    btn.classList.remove('selected');
+                    btn.style.border = '3px solid transparent';
+                }
+            });
+            
+            const selectedBtn = document.getElementById('ai-diff-' + difficulty);
+            if (selectedBtn) {
+                selectedBtn.classList.add('selected');
+                selectedBtn.style.border = '3px solid #ffd700';
+            }
+            
+            // Update description
+            const desc = document.getElementById('ai-difficulty-desc');
+            if (desc) {
+                if (difficulty === 'easy') {
+                    desc.textContent = 'Easy: AI makes random moves from weaker options.';
+                } else if (difficulty === 'medium') {
+                    desc.textContent = 'Medium: AI considers good moves but not perfect.';
+                } else if (difficulty === 'hard') {
+                    desc.textContent = 'Hard: AI plays optimally with full strategy.';
+                }
+            }
         }
         
         function startGameWithTime(minutes) {
@@ -9942,12 +10449,25 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             }
             
             // Debug: Log AI state after initialization
+            const buildTime = '2025-10-21 11:15:00';
+            console.log('🏗️ Build time:', buildTime);
             console.log('🎮 Game initialized:', {
                 mode: selectedGameMode,
                 aiEnabled,
                 currentPlayer,
                 gameOver
             });
+            
+            console.log('🎮 Initial board state check:');
+            console.log('  White rhombuses:', document.querySelectorAll('.rhombus-piece.white-rhombus').length);
+            console.log('  Black rhombuses:', document.querySelectorAll('.rhombus-piece:not(.white-rhombus)').length);
+            
+            // Check if AI should move immediately (which would be wrong!)
+            if (aiEnabled && currentPlayer === 'white') {
+                console.error('⚠️⚠️⚠️ BUG DETECTED: currentPlayer is WHITE at game start! AI will move immediately!');
+            } else if (aiEnabled && currentPlayer === 'black') {
+                console.log('✅ Correct: currentPlayer is BLACK at start. Player should move first.');
+            }
             
             // Notify keyboard systems that game has started
             const gameStartEvent = new CustomEvent('gameStarted', {
@@ -12472,7 +12992,8 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     
                     // Multi-move lookahead evaluation (only for hard difficulty)
                     let lookaheadScore = 0;
-                    if (aiDifficulty === 'hard') {
+                    const difficulty = window.aiDifficulty || aiDifficulty || 'hard';
+                    if (difficulty === 'hard') {
                         lookaheadScore = evaluateMultiMoveLookahead(
                             parseInt(fromRow), parseInt(fromCol),
                             move.row, move.col,
@@ -12567,8 +13088,11 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             // Sort all actions by total score (includes lookahead for hard mode)
             allActions.sort((a, b) => b.totalScore - a.totalScore);
             
+            // Get difficulty setting (use window.aiDifficulty if set via modal)
+            const difficulty = window.aiDifficulty || aiDifficulty || 'hard';
+            
             // Log top 3 moves for debugging
-            if (aiDifficulty === 'hard') {
+            if (difficulty === 'hard') {
                 console.log('🤖 Top 3 moves with lookahead:');
                 allActions.slice(0, 3).forEach((action, i) => {
                     if (action.isRotation) {
@@ -12581,11 +13105,11 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             
             // Select action based on difficulty
             let selectedAction;
-            if (aiDifficulty === 'easy') {
+            if (difficulty === 'easy') {
                 // Easy: Random action from bottom 50%
                 const bottomHalf = allActions.slice(Math.floor(allActions.length / 2));
                 selectedAction = bottomHalf[Math.floor(Math.random() * bottomHalf.length)];
-            } else if (aiDifficulty === 'medium') {
+            } else if (difficulty === 'medium') {
                 // Medium: Random action from top 50%
                 const topHalf = allActions.slice(0, Math.ceil(allActions.length / 2));
                 selectedAction = topHalf[Math.floor(Math.random() * topHalf.length)];
@@ -12872,12 +13396,13 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         function cleanupSimulation(simulatedState) {
             if (!simulatedState) return;
             
-            // Move piece back to original position
-            const currentHex = simulatedState.piece.closest('.hexagon');
-            if (currentHex) {
-                simulatedState.piece.remove();
+            // Find the real piece that was moved to toHex during simulation
+            const movedPiece = simulatedState.toHex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
+            
+            // Move the REAL piece back to original position (don't use the clone)
+            if (movedPiece) {
+                simulatedState.fromHex.appendChild(movedPiece);
             }
-            simulatedState.fromHex.appendChild(simulatedState.piece);
             
             // Restore captured piece if any
             if (simulatedState.capturedPiece) {
@@ -13184,6 +13709,12 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             const coord = `${row}-${col}`;
             let zoneOrder = null;
             
+            // Check if in dead zone first (cannot move from dead zone)
+            if (circleDeadZone.has(coord)) {
+                console.log(`AI Circle at ${coord} is in DEAD ZONE - cannot move`);
+                return [];
+            }
+            
             // Determine which zone and get the ORDER array (not the Set!)
             if (circleInnerZone.has(coord)) {
                 zoneOrder = circleInnerOrder;
@@ -13193,9 +13724,9 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 zoneOrder = circleOuterOrder;
             }
             
-            // If not in any zone (dead zone), return empty
+            // If not in any zone (shouldn't happen), return empty
             if (!zoneOrder || !Array.isArray(zoneOrder)) {
-                console.log(`Circle at ${coord} not in any valid zone!`);
+                console.log(`AI Circle at ${coord} not in any valid zone!`);
                 return [];
             }
             
@@ -13203,9 +13734,11 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             const startIdx = zoneOrder.indexOf(coord);
             
             if (startIdx === -1) {
-                console.log(`Coord ${coord} not found in zone order!`);
+                console.log(`AI Circle coord ${coord} not found in zone order!`);
                 return [];
             }
+            
+            // PART 1: Perimetric movement within current zone
             
             // Check clockwise direction for reachable hexes
             for (let i = (startIdx + 1) % zoneOrder.length; i !== startIdx; i = (i + 1) % zoneOrder.length) {
@@ -13243,6 +13776,31 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                         targets.push([r, c]);
                     }
                 }
+            }
+            
+            // PART 2: Gateway transitions to adjacent zones
+            // Use the hardcoded circleZoneTransitions map (working implementation)
+            const validTransitions = circleZoneTransitions.get(coord);
+            
+            if (validTransitions && validTransitions.length > 0) {
+                validTransitions.forEach(targetPos => {
+                    const [targetRow, targetCol] = targetPos.split('-').map(Number);
+                    const targetHex = document.getElementById(`hex-${targetRow}-${targetCol}`);
+                    
+                    if (targetHex) {
+                        // Check if target is already in our targets list (avoid duplicates from perimetric sweep)
+                        const alreadyAdded = targets.some(([r, c]) => r === targetRow && c === targetCol);
+                        
+                        if (!alreadyAdded) {
+                            const piece = targetHex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
+                            if (!piece) {
+                                // Empty gateway - can transition
+                                targets.push([targetRow, targetCol]);
+                            }
+                            // NOTE: Cannot capture through zone gateways (only empty hexes allow transition)
+                        }
+                    }
+                });
             }
             
             return targets;
@@ -13947,27 +14505,60 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             
             // === CAPTURES ===
             if (isCapture) {
-                // Prioritize capturing valuable pieces
+                // Prioritize capturing valuable pieces (INCREASED values to compete with rhombus advancement)
                 const targetHex = document.getElementById(`hex-${toRow}-${toCol}`);
                 if (targetHex) {
                     const targetPiece = targetHex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
                     if (targetPiece) {
-                        if (targetPiece.classList.contains('triangle-piece')) score += 150;
-                        else if (targetPiece.classList.contains('hexgon-piece')) score += 140;
-                        else if (targetPiece.classList.contains('circle-piece')) score += 130;
-                        else if (targetPiece.classList.contains('square-piece')) score += 120;
+                        if (targetPiece.classList.contains('triangle-piece')) score += 200; // Increased from 150
+                        else if (targetPiece.classList.contains('hexgon-piece')) score += 190; // Increased from 140
+                        else if (targetPiece.classList.contains('circle-piece')) score += 180; // Increased from 130
+                        else if (targetPiece.classList.contains('square-piece')) score += 170; // Increased from 120
                     }
                 }
             }
             
             // === RHOMBUS STRATEGY ===
             if (pieceType === 'rhombus') {
-                // Progressive advancement toward 3-8
+                // Check if this is a diagonal move (dead zone ↔ inner perimeter)
+                const isDiagonalMove = isRhombusDiagonalMove(fromRow, fromCol, toRow, toCol);
+                
+                if (isDiagonalMove) {
+                    score += 180; // Bonus for using special diagonal ability
+                    console.log(`🔷 Rhombus diagonal move detected: ${fromRow}-${fromCol} → ${toRow}-${toCol}`);
+                    
+                    // Extra bonus if diagonal move is ESCAPING a trap
+                    const currentMobility = getRhombusMoves(fromRow, fromCol).length;
+                    const futureMobility = getRhombusMoves(toRow, toCol).length;
+                    
+                    if (currentMobility <= 2 && futureMobility > currentMobility) {
+                        score += 1000; // CRITICAL ESCAPE using diagonal!
+                        console.log(`✅ Rhombus diagonal ESCAPE: ${fromRow}-${fromCol} → ${toRow}-${toCol} (mobility: ${currentMobility} → ${futureMobility})`);
+                    }
+                    
+                    // Bonus if diagonal move brings us closer to goal
+                    const currentDistToGoal = Math.abs(fromRow - 3) + Math.abs(fromCol - 8);
+                    const futureDistToGoal = Math.abs(toRow - 3) + Math.abs(toCol - 8);
+                    
+                    if (futureDistToGoal < currentDistToGoal) {
+                        score += 250; // Diagonal shortcut to goal!
+                        console.log(`✅ Rhombus diagonal advancement: closer to goal by ${currentDistToGoal - futureDistToGoal}`);
+                    }
+                    
+                    // Bonus if diagonal move creates threats
+                    const threatsFromNewPos = countThreatenedOpponentPieces(toRow, toCol, 'rhombus');
+                    if (threatsFromNewPos > 0) {
+                        score += threatsFromNewPos * 60;
+                        console.log(`✅ Rhombus diagonal creates ${threatsFromNewPos} threats`);
+                    }
+                }
+                
+                // Progressive advancement toward 3-8 (REDUCED to balance with other piece moves)
                 const distanceToGoal = Math.abs(toRow - 3) + Math.abs(toCol - 8);
-                score += (20 - distanceToGoal) * 15;
+                score += (20 - distanceToGoal) * 8; // Reduced from 15 to 8
                 
                 // Prefer row 3 (direct path to goal)
-                if (toRow === 3) score += 50;
+                if (toRow === 3) score += 25; // Reduced from 50 to 25
                 
                 // Don't leave base until we have support
                 if (fromRow === 3 && fromCol === 0) {
@@ -13981,6 +14572,12 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 // Avoid getting trapped
                 const rhombusMoves = getRhombusMoves(toRow, toCol);
                 score += rhombusMoves.length * 20; // More escape options = better
+                
+                // Extra penalty if moving INTO a position with fewer options
+                const currentRhombusMoves = getRhombusMoves(fromRow, fromCol);
+                if (rhombusMoves.length < currentRhombusMoves.length - 1) {
+                    score -= 80; // Losing mobility is risky for rhombus
+                }
             }
             
             // === DEFENSIVE PLAY ===
@@ -14038,9 +14635,9 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             
             // === TACTICAL THREATS ===
             
-            // Check if this move threatens opponent's pieces
+            // Check if this move threatens opponent's pieces (INCREASED to make tactical play more attractive)
             const threatenedPieces = countThreatenedOpponentPieces(toRow, toCol, pieceType);
-            score += threatenedPieces * 40; // Increased from 25
+            score += threatenedPieces * 60; // Increased from 40
             
             // MAJOR BONUS: Threaten opponent's rhombus!
             if (blackRhombus) {
@@ -14062,6 +14659,19 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             score += Math.random() * 3;
             
             return score;
+        }
+        
+        // Check if a rhombus move is a diagonal move (dead zone ↔ inner perimeter)
+        function isRhombusDiagonalMove(fromRow, fromCol, toRow, toCol) {
+            const deadZone = new Set(["3-3", "3-4", "3-5"]);
+            const innerPerimeter = new Set(["2-2", "2-3", "2-4", "2-5", "3-2", "3-6", "4-2", "4-3", "4-4", "4-5"]);
+            
+            const from = `${fromRow}-${fromCol}`;
+            const to = `${toRow}-${toCol}`;
+            
+            // Diagonal move if: (from in dead zone AND to in inner perimeter) OR (from in inner perimeter AND to in dead zone)
+            return (deadZone.has(from) && innerPerimeter.has(to)) ||
+                   (innerPerimeter.has(from) && deadZone.has(to));
         }
         
         // Check if a piece at toRow,toCol would threaten targetRow,targetCol
@@ -14169,13 +14779,25 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         }
         
         function executeAIMove(move) {
+            console.log('🤖 executeAIMove called:', move);
             const fromHex = document.getElementById(`hex-${move.fromRow}-${move.fromCol}`);
             const toHex = document.getElementById(`hex-${move.toRow}-${move.toCol}`);
             
-            if (!fromHex || !toHex) return;
+            if (!fromHex || !toHex) {
+                console.log('❌ Invalid hex IDs:', `hex-${move.fromRow}-${move.fromCol}`, `hex-${move.toRow}-${move.toCol}`);
+                return;
+            }
+            
+            console.log('✅ From hex:', fromHex.id, 'To hex:', toHex.id);
             
             const piece = move.piece;
+            console.log('🎯 Moving piece classes:', piece.className);
+            
             const existingPiece = toHex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
+            
+            if (existingPiece) {
+                console.log('⚔️ Capture detected! Existing piece at target:', existingPiece.className);
+            }
             
             // Handle capture
             if (existingPiece) {
@@ -14187,8 +14809,10 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             }
             
             // Move piece
+            console.log('📦 Removing piece from:', fromHex.id);
             piece.remove();
             const newPiece = piece.cloneNode(true);
+            console.log('📦 Adding cloned piece to:', toHex.id);
             toHex.appendChild(newPiece);
             
             // Re-setup drag and drop
@@ -14246,13 +14870,26 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             
             // AI Move: If AI is enabled and it's White's turn
             console.log('🔄 Turn switch - AI enabled:', aiEnabled, 'Current player:', currentPlayer, 'Game over:', gameOver);
-            if (aiEnabled && currentPlayer === 'white' && !gameOver) {
+            console.log('🔄 selectedGameMode:', selectedGameMode, 'aiThinking:', aiThinking);
+            
+            if (aiEnabled && currentPlayer === 'white' && !gameOver && !aiThinking) {
                 console.log('🤖 Triggering AI move in 800ms...');
                 // Small delay for better UX (let player see board state)
                 setTimeout(() => {
-                    makeAIMove();
+                    if (!gameOver) {
+                        console.log('🤖 About to call makeAIMove()');
+                        makeAIMove();
+                    } else {
+                        console.log('⚠️ Game ended before AI could move!');
+                    }
                 }, 800);
+            } else {
+                if (!aiEnabled) console.log('❌ AI not enabled');
+                if (currentPlayer !== 'white') console.log('ℹ️ Not white\'s turn (current:', currentPlayer, ')');
+                if (gameOver) console.log('❌ Game is over, cannot trigger AI');
+                if (aiThinking) console.log('⚠️ AI is already thinking');
             }
+            
             // Highlight threatened pieces after each turn
             highlightAllPiecesUnderAttack();
             
@@ -15342,14 +15979,17 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             if (piece.classList.contains('rhombus-piece')) {
                 const isWhite = piece.classList.contains('white-rhombus');
                 console.log('✅ Rhombus piece detected - IsWhite:', isWhite);
+                console.log('🎯 Checking position: row=' + row + ', col=' + col);
+                console.log('🎯 Black goal is at row=3, col=0 (3-0) - Black reaches White\'s starting position');
+                console.log('🎯 White goal is at row=3, col=8 (3-8) - White reaches Black\'s starting position');
                 
                 // Check if we're in "Escape Race" mode (only rhombuses remain)
                 const isEscapeRaceMode = checkEscapeRaceMode();
                 console.log('🏃 Escape Race Mode:', isEscapeRaceMode);
                 
-                // Black rhombus reaches 3-0 (row 3, col 0) - Black wins
+                // Black rhombus reaches 3-0 (WHITE's starting position) - Black wins
                 if (!isWhite && row == 3 && col == 0) {
-                    console.log('🏴 BLACK RHOMBUS REACHED GOAL!');
+                    console.log('🏴 BLACK RHOMBUS REACHED GOAL at 3-0!');
                     if (isEscapeRaceMode) {
                         // Escape Race mode - Base Defence disabled, instant win!
                         console.log('🎉 Calling showGameOver - Black Escape Race Win');
@@ -15359,6 +15999,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     
                     // Normal mode - Check if white base defence is active
                     const activeDefences = isBaseDefenceActive();
+                    console.log('🛡️ Active defences:', activeDefences);
                     if (activeDefences.includes('white')) {
                         // White base defence is active, black cannot win
                         console.log('🛡️ White base defence active, blocking black win');
@@ -15367,9 +16008,9 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     console.log('🎉 Calling showGameOver - Black Normal Win');
                     showGameOver('Black', 'Black rhombus reached the goal!');
                 }
-                // White rhombus reaches 3-8 (row 3, col 8) - White wins
+                // White rhombus reaches 3-8 (BLACK's starting position) - White wins
                 else if (isWhite && row == 3 && col == 8) {
-                    console.log('⚪ WHITE RHOMBUS REACHED GOAL!');
+                    console.log('⚪ WHITE RHOMBUS REACHED GOAL at 3-8!');
                     if (isEscapeRaceMode) {
                         // Escape Race mode - Base Defence disabled, instant win!
                         console.log('🎉 Calling showGameOver - White Escape Race Win');
@@ -15379,6 +16020,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     
                     // Normal mode - Check if black base defence is active
                     const activeDefences = isBaseDefenceActive();
+                    console.log('🛡️ Active defences:', activeDefences);
                     if (activeDefences.includes('black')) {
                         // Black base defence is active, white cannot win
                         console.log('🛡️ Black base defence active, blocking white win');
@@ -15386,6 +16028,8 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     }
                     console.log('🎉 Calling showGameOver - White Normal Win');
                     showGameOver('White', 'White rhombus reached the goal!');
+                } else {
+                    console.log('✅ Rhombus moved but did not reach goal - continuing game');
                 }
             }
         }
@@ -16802,6 +17446,16 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                         ">💾 Save Game</button>
                     </div>
                     <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                        <button onclick="observeGameFromGameOver()" style="
+                            background-color: #3498db;
+                            color: white;
+                            border: none;
+                            padding: 15px 30px;
+                            font-size: 1.2em;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-weight: bold;
+                        ">👁️ Observe Game</button>
                         <button onclick="location.reload()" style="
                             background-color: #4ecdc4;
                             color: white;
@@ -17246,6 +17900,93 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             loadCurrentGame();
         }
 
+        // Function to observe game from game over screen
+        function observeGameFromGameOver() {
+            console.log('👁️ Entering observe mode from game over screen...');
+            // Close the game over overlay
+            const gameOverOverlay = document.getElementById('game-over-overlay');
+            if (gameOverOverlay) {
+                gameOverOverlay.remove();
+            } else {
+                // Fallback: remove by style selector
+                const overlay = document.querySelector('div[style*="position: fixed"]');
+                if (overlay) {
+                    overlay.remove();
+                }
+            }
+            
+            // Disable all piece dragging
+            const pieces = document.querySelectorAll('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
+            pieces.forEach(piece => {
+                piece.draggable = false;
+                piece.style.cursor = 'default';
+            });
+            
+            // Hide rotation controls if visible
+            const rotationControls = document.getElementById('rotation-controls');
+            if (rotationControls) {
+                rotationControls.style.display = 'none';
+            }
+            
+            // Add a banner to indicate observe mode
+            const observeBanner = document.createElement('div');
+            observeBanner.id = 'observe-mode-banner';
+            observeBanner.style.cssText = `
+                position: fixed;
+                top: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: linear-gradient(135deg, #3498db, #2980b9);
+                color: white;
+                padding: 15px 30px;
+                border-radius: 10px;
+                border: 2px solid #fff;
+                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+                z-index: 9999;
+                font-weight: bold;
+                font-size: 1.1em;
+                text-align: center;
+            `;
+            observeBanner.innerHTML = `
+                👁️ OBSERVE MODE - Game Review
+                <button onclick="exitObserveMode()" style="
+                    background-color: #e74c3c;
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    margin-left: 20px;
+                    font-size: 0.9em;
+                ">Exit</button>
+            `;
+            
+            // Remove any existing observe banner
+            const existingBanner = document.getElementById('observe-mode-banner');
+            if (existingBanner) {
+                existingBanner.remove();
+            }
+            
+            document.body.appendChild(observeBanner);
+            
+            console.log('✅ Observe mode activated - pieces disabled, banner shown');
+        }
+
+        // Function to exit observe mode
+        window.exitObserveMode = function() {
+            console.log('🚪 Exiting observe mode...');
+            
+            // Remove observe banner
+            const observeBanner = document.getElementById('observe-mode-banner');
+            if (observeBanner) {
+                observeBanner.remove();
+            }
+            
+            // Return to start menu
+            showStartMenu();
+        }
+
         // Function to save game from game over screen
         function saveGameFromGameOver() {
             console.log('💾 Saving game from game over screen...');
@@ -17549,10 +18290,13 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 
                 draggedPiece.remove();
                     
-                    const newPiece = document.createElement('div');
-                    newPiece.className = pieceClasses;
+                const newPiece = document.createElement('div');
+                newPiece.className = pieceClasses;
                 newPiece.draggable = true;
                 targetHex.appendChild(newPiece);
+                
+                console.log('🎯 Player piece created at:', targetHex.id, 'Classes:', newPiece.className);
+                console.log('🎯 Immediately after player move - white rhombuses:', document.querySelectorAll('.rhombus-piece.white-rhombus').length);
                 
                 // Restore triangle or hexgon orientation if it was preserved
                 if (preservedOrientation !== null) {
@@ -17672,13 +18416,43 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 
                 // End turn rules
                 if (!gameOver) {
+                    // Log board state before ANY turn switch
+                    console.log('📋 PLAYER MOVE COMPLETE - Checking board state');
+                    console.log('📋 White rhombuses on board:', document.querySelectorAll('.rhombus-piece.white-rhombus').length);
+                    console.log('📋 Black rhombuses on board:', document.querySelectorAll('.rhombus-piece:not(.white-rhombus)').length);
+                    
+                    // Log all white rhombus locations
+                    const whiteRhombuses = document.querySelectorAll('.rhombus-piece.white-rhombus');
+                    whiteRhombuses.forEach((r, i) => {
+                        const parent = r.parentElement;
+                        if (parent) {
+                            console.log(`📋 White rhombus #${i+1} at:`, parent.id);
+                        } else {
+                            console.log(`📋 White rhombus #${i+1} has NO PARENT (orphaned piece!)`);
+                        }
+                    });
+                    
+                    const blackRhombuses = document.querySelectorAll('.rhombus-piece:not(.white-rhombus)');
+                    blackRhombuses.forEach((r, i) => {
+                        const parent = r.parentElement;
+                        if (parent) {
+                            console.log(`📋 Black rhombus #${i+1} at:`, parent.id);
+                        } else {
+                            console.log(`📋 Black rhombus #${i+1} has NO PARENT (orphaned piece!)`);
+                        }
+                    });
+                    
                     if (isCapture) {
+                        console.log('📋 Turn ending due to CAPTURE');
                         switchTurn();
                         updateBaseDefenceDisplay();
                     } else if (!newPiece.classList.contains('triangle-piece') && !newPiece.classList.contains('hexgon-piece')) {
                         // Non-rotatable pieces end the turn automatically
+                        console.log('📋 Turn ending - non-rotatable piece moved');
                         switchTurn();
                         updateBaseDefenceDisplay();
+                    } else {
+                        console.log('📋 Turn NOT ending yet - rotatable piece (triangle/hexagon) can still rotate');
                     } // triangles and hexagons end turn via rotation/KEEP flow
                 }
 
