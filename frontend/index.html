@@ -6232,6 +6232,148 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     window.hideSignInModal = hideSignInModal;
     console.log('✅ Authentication handlers assigned at startup');
     
+    // ============================================
+    // USER HOME MODAL FUNCTIONS (moved from non-executing script block)
+    // ============================================
+    
+    function showAccountModal() {
+        const currentUser = JSON.parse(localStorage.getItem('romgon-user') || '{}');
+        const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+        
+        // Check if guest user
+        if (!currentUser.username || currentUser.type === 'guest') {
+            // Guest user - show limited profile
+            document.getElementById('account-sidebar-name').textContent = 'Guest Player';
+            document.getElementById('account-sidebar-email').textContent = 'Session: ' + (currentUser.id || 'Anonymous');
+            document.getElementById('account-sidebar-date').textContent = 'Not registered';
+            
+            // Set guest avatar to emoji
+            document.getElementById('account-avatar').textContent = '👤';
+            document.getElementById('account-avatar').style.background = 'rgba(255, 255, 255, 0.2)';
+            
+            // Main content
+            document.getElementById('account-username').textContent = 'Guest Player';
+            document.getElementById('account-email').textContent = 'Session: ' + (currentUser.id || 'Anonymous');
+            
+            // Show guest stats from localStorage
+            const guestStats = JSON.parse(localStorage.getItem('romgon-guest-settings') || '{}');
+            document.getElementById('account-wins').textContent = guestStats.gamesWon || 0;
+            document.getElementById('account-losses').textContent = guestStats.gamesLost || 0;
+            document.getElementById('account-games').textContent = (guestStats.gamesWon || 0) + (guestStats.gamesLost || 0);
+            
+            // Hide last login and saved games for guests
+            const lastLoginEl = document.getElementById('account-last-login');
+            const savedGamesEl = document.getElementById('account-saved-games');
+            if (lastLoginEl) lastLoginEl.textContent = 'Session only';
+            if (savedGamesEl) savedGamesEl.textContent = '0 (session)';
+            
+            // Hide delete account button for guests
+            const deleteBtn = document.querySelector('button[onclick="deleteAccount()"]');
+            if (deleteBtn) deleteBtn.style.display = 'none';
+            
+            document.getElementById('account-modal').style.display = 'block';
+            return;
+        }
+        
+        // Registered user
+        if (!allUsers[currentUser.username]) {
+            // User account not found
+            alert('📝 Create an account to access your profile, stats, and settings!\n\nClick "Create Account" on the login screen to get started.');
+            return;
+        }
+        
+        const userAccount = allUsers[currentUser.username];
+        const regDate = new Date(userAccount.registeredDate);
+        
+        // Update sidebar with user info
+        document.getElementById('account-sidebar-name').textContent = userAccount.username;
+        document.getElementById('account-sidebar-email').textContent = userAccount.email;
+        document.getElementById('account-sidebar-date').textContent = regDate.toLocaleDateString();
+        
+        // Set avatar - use Google profile picture if available, or initials
+        const avatarEl = document.getElementById('account-avatar');
+        if (userAccount.picture) {
+            avatarEl.innerHTML = `<img src="${userAccount.picture}" style="width: 100%; height: 100%; object-fit: cover;" />`;
+        } else {
+            const initials = (userAccount.username || 'U').charAt(0).toUpperCase();
+            avatarEl.textContent = initials;
+        }
+        
+        // Populate main content account info
+        document.getElementById('account-username').textContent = userAccount.username;
+        document.getElementById('account-email').textContent = userAccount.email;
+        
+        // Populate real stats from getUserStats
+        const stats = getUserStats(userAccount.username);
+        if (stats) {
+            document.getElementById('account-wins').textContent = stats.gamesWon || 0;
+            document.getElementById('account-losses').textContent = stats.gamesLost || 0;
+            document.getElementById('account-games').textContent = stats.gamesPlayed || 0;
+            
+            // Add last login
+            const lastLoginEl = document.getElementById('account-last-login');
+            if (lastLoginEl && stats.lastLogin) {
+                const lastLoginDate = new Date(stats.lastLogin);
+                lastLoginEl.textContent = lastLoginDate.toLocaleString();
+            }
+            
+            // Add saved games count
+            const savedGamesEl = document.getElementById('account-saved-games');
+            if (savedGamesEl) {
+                savedGamesEl.textContent = (stats.savedGames || []).length;
+            }
+        } else {
+            document.getElementById('account-wins').textContent = 0;
+            document.getElementById('account-losses').textContent = 0;
+            document.getElementById('account-games').textContent = 0;
+        }
+        
+        // Show delete account button for registered users
+        const deleteBtn = document.querySelector('button[onclick="deleteAccount()"]');
+        if (deleteBtn) deleteBtn.style.display = 'block';
+        
+        document.getElementById('account-modal').style.display = 'block';
+    }
+    
+    function showSettingsModal() {
+        const currentUser = JSON.parse(localStorage.getItem('romgon-user'));
+        const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+        
+        // Allow both registered and guest users to access settings
+        let userSettings = {};
+        
+        if (currentUser && currentUser.username && allUsers[currentUser.username]) {
+            // Registered user - load their settings
+            userSettings = allUsers[currentUser.username].settings;
+        } else {
+            // Guest user - use default settings
+            userSettings = {
+                audioEnabled: true,
+                theme: 'dark',
+                boardZoom: 1
+            };
+        }
+        
+        // Load current settings
+        document.getElementById('settings-audio').checked = userSettings.audioEnabled !== false;
+        document.getElementById('settings-theme').value = userSettings.theme || 'dark';
+        document.getElementById('settings-zoom').value = userSettings.boardZoom || 1;
+        updateZoomDisplay();
+        
+        document.getElementById('settings-modal').style.display = 'block';
+    }
+    
+    function showOpeningBook() {
+        document.getElementById('opening-book-modal').style.display = 'block';
+        renderOpeningBook();
+    }
+    
+    // Make modal functions globally accessible
+    window.showAccountModal = showAccountModal;
+    window.showSettingsModal = showSettingsModal;
+    window.showOpeningBook = showOpeningBook;
+    console.log('✅ User home modal functions assigned at startup');
+    
     // --- Opening Recognition Logic ---
     // List of all named openings from openings.md
     const ROMGON_OPENINGS = [
