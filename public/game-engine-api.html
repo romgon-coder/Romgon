@@ -24,6 +24,31 @@
             margin: 0 auto;
         }
         
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a3a3 100%);
+            color: #fff;
+            text-decoration: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1em;
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(78, 205, 196, 0.6);
+            background: linear-gradient(135deg, #5eddcd 0%, #4ecdc4 100%);
+        }
+        
         h1 {
             text-align: center;
             color: #4ecdc4;
@@ -215,6 +240,10 @@
     </style>
 </head>
 <body>
+    <a href="https://romgon.net" class="back-button">
+        ← Back to Romgon
+    </a>
+    
     <div class="container">
         <h1>🎮 Romgon Game Engine API</h1>
         <p class="subtitle">Universal Game Engine Interface for AI, LLMs, and External Applications</p>
