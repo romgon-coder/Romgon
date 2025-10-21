@@ -19,7 +19,7 @@ class RomgonChatClient {
         // Backend URL (adjust based on environment)
         this.backendUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? 'http://localhost:3000'
-            : 'https://romgon-backend.up.railway.app'; // Adjust to your backend URL
+            : 'https://api.romgon.net'; // Production backend URL
     }
 
     // ============================================
