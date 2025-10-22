@@ -8793,61 +8793,6 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             padding: 8px;
             z-index: 2000;
         ">
-            <!-- Rotation Controls (shown when triangle/hexagon selected) -->
-            <div id="mobile-rotation-controls" style="display: none; margin-bottom: 6px;">
-                <div style="display: flex; justify-content: center; gap: 4px; margin-bottom: 4px;">
-                    <button onclick="rotatePieceLeft()" style="
-                        background: rgba(78, 205, 196, 0.3);
-                        border: 2px solid #4ecdc4;
-                        border-radius: 6px;
-                        padding: 6px 8px;
-                        color: white;
-                        font-size: 0.85em;
-                        font-weight: bold;
-                        cursor: pointer;
-                        flex: 1;
-                        max-width: 80px;
-                    ">↺ Left</button>
-                    
-                    <button onclick="keepPieceOrientation()" style="
-                        background: rgba(255, 121, 198, 0.3);
-                        border: 2px solid #ff79c6;
-                        border-radius: 6px;
-                        padding: 6px 8px;
-                        color: white;
-                        font-size: 0.85em;
-                        font-weight: bold;
-                        cursor: pointer;
-                        flex: 1;
-                        max-width: 80px;
-                    ">⊙ Keep</button>
-                    
-                    <button onclick="rotatePieceRight()" style="
-                        background: rgba(78, 205, 196, 0.3);
-                        border: 2px solid #4ecdc4;
-                        border-radius: 6px;
-                        padding: 6px 8px;
-                        color: white;
-                        font-size: 0.85em;
-                        font-weight: bold;
-                        cursor: pointer;
-                        flex: 1;
-                        max-width: 80px;
-                    ">↻ Right</button>
-                </div>
-                <button onclick="releasePiece()" style="
-                    background: rgba(102, 126, 234, 0.3);
-                    border: 2px solid #667eea;
-                    border-radius: 6px;
-                    padding: 6px 10px;
-                    color: white;
-                    font-size: 0.85em;
-                    font-weight: bold;
-                    cursor: pointer;
-                    width: 100%;
-                ">✓ Release</button>
-            </div>
-            
             <!-- Main Controls -->
             <div style="display: flex; justify-content: space-around; align-items: center; max-width: 600px; margin: 0 auto; gap: 6px;">
                 <button onclick="undoMove()" style="
@@ -8923,65 +8868,6 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         blackElim.style.zIndex = '3000';
                     }
                 }
-            }
-            
-            // Show/hide mobile rotation controls based on selected piece
-            function showMobileRotationControls() {
-                const controls = document.getElementById('mobile-rotation-controls');
-                if (controls && window.innerWidth <= 768) {
-                    controls.style.display = 'block';
-                }
-            }
-            
-            function hideMobileRotationControls() {
-                const controls = document.getElementById('mobile-rotation-controls');
-                if (controls) {
-                    controls.style.display = 'none';
-                }
-            }
-            
-            // Hook into piece selection - watch for draggedPiece
-            (function() {
-                const originalDragStart = window.ondragstart;
-                document.addEventListener('dragstart', function(e) {
-                    if (e.target.classList.contains('triangle-piece') || e.target.classList.contains('hexgon-piece')) {
-                        setTimeout(showMobileRotationControls, 100);
-                    }
-                });
-                
-                document.addEventListener('dragend', function() {
-                    setTimeout(hideMobileRotationControls, 100);
-                });
-                
-                document.addEventListener('drop', function() {
-                    setTimeout(hideMobileRotationControls, 100);
-                });
-            })();
-            
-            // Rotation button functions
-            function rotatePieceLeft() {
-                if (window.handleRotationButton) {
-                    window.handleRotationButton('left');
-                }
-            }
-            
-            function rotatePieceRight() {
-                if (window.handleRotationButton) {
-                    window.handleRotationButton('right');
-                }
-            }
-            
-            function keepPieceOrientation() {
-                if (window.handleRotationButton) {
-                    window.handleRotationButton('keep');
-                }
-            }
-            
-            function releasePiece() {
-                if (window.handleRotationButton) {
-                    window.handleRotationButton('release');
-                }
-                hideMobileRotationControls();
             }
         </script>
         
