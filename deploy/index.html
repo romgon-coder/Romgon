@@ -8714,6 +8714,95 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         
         <!-- Movement tracking display removed (moves lists are embedded into each side panel) -->
         
+        <!-- 3D Camera Controls -->
+        <div class="camera-controls-panel" style="
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(78, 205, 196, 0.5);
+            border-radius: 15px;
+            padding: 15px;
+            z-index: 1000;
+            display: none;
+        " id="camera-panel">
+            <div style="color: #4ecdc4; font-weight: bold; margin-bottom: 10px; text-align: center;">🎥 3D Camera</div>
+            
+            <!-- Preset Views -->
+            <div style="display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;">
+                <button onclick="setCamera3DView('default')" style="flex: 1; min-width: 80px; padding: 8px; background: rgba(78, 205, 196, 0.2); border: 1px solid #4ecdc4; border-radius: 8px; color: white; cursor: pointer; font-size: 12px;">🦅 Top</button>
+                <button onclick="setCamera3DView('tilt')" style="flex: 1; min-width: 80px; padding: 8px; background: rgba(78, 205, 196, 0.2); border: 1px solid #4ecdc4; border-radius: 8px; color: white; cursor: pointer; font-size: 12px;">📐 Tilt</button>
+            </div>
+            
+            <!-- Rotation Control -->
+            <div style="margin-bottom: 10px;">
+                <label style="color: #4ecdc4; font-size: 11px; display: block; margin-bottom: 5px;">Rotate: <span id="rotate-value">0</span>°</label>
+                <input type="range" id="rotate-slider" min="0" max="360" value="0" step="1" 
+                       oninput="rotateCamera3D(this.value)" 
+                       style="width: 100%; cursor: pointer;">
+            </div>
+            
+            <!-- Tilt Control -->
+            <div style="margin-bottom: 10px;">
+                <label style="color: #4ecdc4; font-size: 11px; display: block; margin-bottom: 5px;">Tilt: <span id="tilt-value">0</span>°</label>
+                <input type="range" id="tilt-slider" min="0" max="75" value="0" step="1"
+                       oninput="tiltCamera3D(this.value)"
+                       style="width: 100%; cursor: pointer;">
+            </div>
+            
+            <!-- Zoom Control -->
+            <div style="margin-bottom: 10px;">
+                <label style="color: #4ecdc4; font-size: 11px; display: block; margin-bottom: 5px;">Zoom: <span id="zoom-value">1.0</span>x</label>
+                <input type="range" id="zoom-slider" min="0.6" max="1.5" value="1" step="0.05"
+                       oninput="zoomCamera3D(this.value)"
+                       style="width: 100%; cursor: pointer;">
+            </div>
+            
+            <!-- Reset Button -->
+            <button onclick="resetCamera3D()" style="width: 100%; padding: 10px; background: rgba(255, 121, 198, 0.3); border: 1px solid #ff79c6; border-radius: 8px; color: white; cursor: pointer; font-weight: bold;">↻ Reset View</button>
+        </div>
+        
+        <!-- 3D Camera Toggle Button -->
+        <button onclick="toggleCamera3D()" id="camera-toggle-btn" style="
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: rgba(78, 205, 196, 0.9);
+            border: 2px solid #4ecdc4;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 999;
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
+            transition: all 0.3s ease;
+        " title="Toggle 3D Camera">
+            🎥
+        </button>
+        
+        <!-- 3D Camera Wrapper -->
+        <div id="board-3d-container" style="
+            perspective: 1200px;
+            perspective-origin: center center;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        ">
+            <div id="board-3d-wrapper" style="
+                transform-style: preserve-3d;
+                transition: transform 0.5s ease;
+                transform: rotateX(0deg) rotateZ(0deg) scale(1);
+                pointer-events: all;
+            ">
+        
         <div class="board" id="game-board">
              <!-- Board Rows 0-6 with coordinates and classes -->
              <div class="row" id="row-0">
@@ -8826,7 +8915,148 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                  </div>
             </div>
         </div>
+        
+            </div> <!-- Close board-3d-wrapper -->
+        </div> <!-- Close board-3d-container -->
     </div>
+
+    <script>
+        // ============================================
+        // 3D CAMERA SYSTEM
+        // ============================================
+        
+        let camera3DEnabled = false;
+        let currentRotation = 0;
+        let currentTilt = 0;
+        let currentZoom = 1;
+        
+        function toggleCamera3D() {
+            camera3DEnabled = !camera3DEnabled;
+            const panel = document.getElementById('camera-panel');
+            const toggleBtn = document.getElementById('camera-toggle-btn');
+            const container = document.getElementById('board-3d-container');
+            
+            if (camera3DEnabled) {
+                panel.style.display = 'block';
+                toggleBtn.style.background = 'rgba(255, 121, 198, 0.9)';
+                toggleBtn.style.borderColor = '#ff79c6';
+                // Move board into 3D container
+                container.style.pointerEvents = 'all';
+            } else {
+                panel.style.display = 'none';
+                toggleBtn.style.background = 'rgba(78, 205, 196, 0.9)';
+                toggleBtn.style.borderColor = '#4ecdc4';
+                resetCamera3D();
+                container.style.pointerEvents = 'none';
+            }
+        }
+        
+        function rotateCamera3D(angle) {
+            currentRotation = angle;
+            document.getElementById('rotate-value').textContent = angle;
+            updateCamera3DTransform();
+        }
+        
+        function tiltCamera3D(angle) {
+            currentTilt = angle;
+            document.getElementById('tilt-value').textContent = angle;
+            updateCamera3DTransform();
+        }
+        
+        function zoomCamera3D(scale) {
+            currentZoom = scale;
+            document.getElementById('zoom-value').textContent = parseFloat(scale).toFixed(2);
+            updateCamera3DTransform();
+        }
+        
+        function updateCamera3DTransform() {
+            const wrapper = document.getElementById('board-3d-wrapper');
+            wrapper.style.transform = `rotateX(${currentTilt}deg) rotateZ(${currentRotation}deg) scale(${currentZoom})`;
+        }
+        
+        function setCamera3DView(viewType) {
+            switch(viewType) {
+                case 'default':
+                    currentRotation = 0;
+                    currentTilt = 0;
+                    currentZoom = 1;
+                    break;
+                case 'tilt':
+                    currentRotation = 0;
+                    currentTilt = 45;
+                    currentZoom = 0.9;
+                    break;
+            }
+            
+            // Update sliders
+            document.getElementById('rotate-slider').value = currentRotation;
+            document.getElementById('tilt-slider').value = currentTilt;
+            document.getElementById('zoom-slider').value = currentZoom;
+            document.getElementById('rotate-value').textContent = currentRotation;
+            document.getElementById('tilt-value').textContent = currentTilt;
+            document.getElementById('zoom-value').textContent = currentZoom.toFixed(2);
+            
+            updateCamera3DTransform();
+        }
+        
+        function resetCamera3D() {
+            setCamera3DView('default');
+        }
+        
+        // Keyboard shortcuts for camera
+        document.addEventListener('keydown', (e) => {
+            if (!camera3DEnabled) return;
+            
+            switch(e.key) {
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    currentRotation = Math.max(0, currentRotation - 5);
+                    document.getElementById('rotate-slider').value = currentRotation;
+                    rotateCamera3D(currentRotation);
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    currentRotation = Math.min(360, parseInt(currentRotation) + 5);
+                    document.getElementById('rotate-slider').value = currentRotation;
+                    rotateCamera3D(currentRotation);
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    currentTilt = Math.max(0, currentTilt - 5);
+                    document.getElementById('tilt-slider').value = currentTilt;
+                    tiltCamera3D(currentTilt);
+                    break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    currentTilt = Math.min(75, parseInt(currentTilt) + 5);
+                    document.getElementById('tilt-slider').value = currentTilt;
+                    tiltCamera3D(currentTilt);
+                    break;
+                case '=':
+                case '+':
+                    e.preventDefault();
+                    currentZoom = Math.min(1.5, currentZoom + 0.05);
+                    document.getElementById('zoom-slider').value = currentZoom;
+                    zoomCamera3D(currentZoom);
+                    break;
+                case '-':
+                    e.preventDefault();
+                    currentZoom = Math.max(0.6, currentZoom - 0.05);
+                    document.getElementById('zoom-slider').value = currentZoom;
+                    zoomCamera3D(currentZoom);
+                    break;
+                case ' ':
+                    e.preventDefault();
+                    resetCamera3D();
+                    break;
+            }
+        });
+        
+        // ============================================
+        // END 3D CAMERA SYSTEM
+        // ============================================
+    
+    </script>
 
     <script>
         // Audio setup
