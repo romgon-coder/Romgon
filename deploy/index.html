@@ -8727,7 +8727,24 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             display: none;
             min-width: 200px;
         " id="camera-panel">
-            <div style="color: #4ecdc4; font-weight: bold; margin-bottom: 10px; text-align: center;">🎥 3D Camera</div>
+            <!-- Header with close button -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div style="color: #4ecdc4; font-weight: bold;">🎥 3D Camera</div>
+                <button onclick="closeCameraPanel()" style="
+                    background: rgba(255, 121, 198, 0.2);
+                    border: 1px solid #ff79c6;
+                    border-radius: 50%;
+                    width: 24px;
+                    height: 24px;
+                    color: #ff79c6;
+                    cursor: pointer;
+                    font-size: 14px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 0;
+                " title="Close panel (camera stays on)">✕</button>
+            </div>
             <div style="color: #888; font-size: 10px; text-align: center; margin-bottom: 10px;">Right-click + drag to rotate</div>
             
             <!-- Preset Views -->
@@ -8760,8 +8777,11 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                        style="width: 100%; cursor: pointer;">
             </div>
             
-            <!-- Reset Button -->
-            <button onclick="resetCamera3D()" style="width: 100%; padding: 10px; background: rgba(255, 121, 198, 0.3); border: 1px solid #ff79c6; border-radius: 8px; color: white; cursor: pointer; font-weight: bold;">↻ Reset View</button>
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                <button onclick="resetCamera3D()" style="flex: 1; padding: 10px; background: rgba(255, 121, 198, 0.3); border: 1px solid #ff79c6; border-radius: 8px; color: white; cursor: pointer; font-weight: bold; font-size: 12px;">↻ Reset</button>
+                <button onclick="disableCamera3D()" style="flex: 1; padding: 10px; background: rgba(255, 79, 79, 0.3); border: 1px solid #ff4f4f; border-radius: 8px; color: white; cursor: pointer; font-weight: bold; font-size: 12px;">⏻ OFF</button>
+            </div>
         </div>
         
         <!-- 3D Camera Toggle Button -->
@@ -8928,29 +8948,54 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         // ============================================
         
         let camera3DEnabled = false;
+        let cameraPanelVisible = false;
         let currentRotation = 0;
         let currentTilt = 0;
         let currentZoom = 1;
         
         function toggleCamera3D() {
-            camera3DEnabled = !camera3DEnabled;
             const panel = document.getElementById('camera-panel');
             const toggleBtn = document.getElementById('camera-toggle-btn');
             const container = document.getElementById('board-3d-container');
             
             if (camera3DEnabled) {
+                // Camera is ON, clicking button toggles panel visibility
+                cameraPanelVisible = !cameraPanelVisible;
+                panel.style.display = cameraPanelVisible ? 'block' : 'none';
+            } else {
+                // Camera is OFF, turn it ON and show panel
+                camera3DEnabled = true;
+                cameraPanelVisible = true;
                 panel.style.display = 'block';
                 toggleBtn.style.background = 'rgba(255, 121, 198, 0.9)';
                 toggleBtn.style.borderColor = '#ff79c6';
-                // Move board into 3D container
+                toggleBtn.title = 'Camera ON - Click to toggle panel';
                 container.style.pointerEvents = 'all';
-            } else {
-                panel.style.display = 'none';
-                toggleBtn.style.background = 'rgba(78, 205, 196, 0.9)';
-                toggleBtn.style.borderColor = '#4ecdc4';
-                resetCamera3D();
-                container.style.pointerEvents = 'none';
             }
+        }
+        
+        function closeCameraPanel() {
+            // Close panel but keep camera active
+            const panel = document.getElementById('camera-panel');
+            cameraPanelVisible = false;
+            panel.style.display = 'none';
+            // Camera stays enabled, view persists
+        }
+        
+        function disableCamera3D() {
+            // Completely turn off camera (resets to 2D)
+            camera3DEnabled = false;
+            cameraPanelVisible = false;
+            const panel = document.getElementById('camera-panel');
+            const toggleBtn = document.getElementById('camera-toggle-btn');
+            const container = document.getElementById('board-3d-container');
+            
+            panel.style.display = 'none';
+            toggleBtn.style.background = 'rgba(78, 205, 196, 0.9)';
+            toggleBtn.style.borderColor = '#4ecdc4';
+            toggleBtn.title = 'Toggle 3D Camera';
+            resetCamera3D();
+            container.style.pointerEvents = 'none';
         }
         
         function rotateCamera3D(angle) {
