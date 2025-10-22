@@ -23124,26 +23124,39 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     alert('Google Identity library failed to load.');
                     return;
                 }
+                
                 // Initialize the Google Identity Services client
                 google.accounts.id.initialize({
                     client_id: GOOGLE_CLIENT_ID,
                     callback: handleGoogleCredentialResponse,
                     auto_select: false,
+                    ux_mode: 'popup', // Use popup mode for better desktop compatibility
+                    cancel_on_tap_outside: false
                 });
 
                 // If there's a placeholder button in the modal, render Google's button into it
                 const holder = document.getElementById('account-google-btn');
                 if (holder) {
                     holder.innerHTML = '';
-                    google.accounts.id.renderButton(holder, { theme: 'outline', size: 'large' });
+                    google.accounts.id.renderButton(holder, { 
+                        theme: 'outline', 
+                        size: 'large',
+                        width: 300
+                    });
                 }
 
-                // Trigger the one-tap prompt (optional).
+                // Try one-tap prompt with fallback
                 // Wrap in try/catch to avoid FedCM/One-tap network/CORS errors causing uncaught exceptions.
                 try {
-                    google.accounts.id.prompt();
+                    google.accounts.id.prompt((notification) => {
+                        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                            console.log('One-tap not shown, reason:', notification.getNotDisplayedReason());
+                            // One-tap failed, user can still click the button
+                        }
+                    });
                 } catch (promptErr) {
                     console.warn('google.accounts.id.prompt() failed (FedCM/OneTap may be blocked):', promptErr);
+                    // Not critical - user can still click the Google button
                 }
             } catch (e) {
                 console.error('handleGoogleLogin error', e);

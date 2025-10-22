@@ -12961,15 +12961,31 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 let username = 'Guest';
                 let rating = 1600;
                 
+                console.log('🔍 Initializing game socket...');
+                console.log('🔍 userId from localStorage:', userId);
+                console.log('🔍 romgon-user from localStorage:', userStr);
+                
                 if (userStr) {
                     try {
                         const user = JSON.parse(userStr);
                         username = user.username || user.name || 'Guest';
                         rating = user.rating || 1600;
-                    } catch (e) {}
+                        console.log('🔍 Parsed user:', { username, rating });
+                    } catch (e) {
+                        console.error('❌ Failed to parse user:', e);
+                    }
                 }
                 
-                gameSocket = io(`${BACKEND_API_URL}/game`, {
+                if (!userId) {
+                    console.error('❌ No userId found - cannot connect to game socket');
+                    return;
+                }
+                
+                const socketUrl = `${BACKEND_API_URL}/game`;
+                console.log('🔌 Connecting to:', socketUrl);
+                console.log('🔑 Auth data:', { userId, username, rating });
+                
+                gameSocket = io(socketUrl, {
                     auth: {
                         token: localStorage.getItem('token'),
                         userId: userId,
@@ -12982,10 +12998,14 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 gameSocket.on('connect', () => {
                     console.log('✅ Game WebSocket connected');
                     console.log('🔌 Socket ID:', gameSocket.id);
-                    console.log('🔑 Auth data:', gameSocket.auth);
+                    console.log('🔑 Auth data sent:', gameSocket.auth);
                     
                     // Initialize online players tracking AFTER connection
                     initializeOnlinePlayersListeners();
+                });
+                
+                gameSocket.on('connect_error', (error) => {
+                    console.error('❌ Game socket connection error:', error);
                 });
                 
                 gameSocket.on('disconnect', () => {
@@ -23104,26 +23124,39 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     alert('Google Identity library failed to load.');
                     return;
                 }
+                
                 // Initialize the Google Identity Services client
                 google.accounts.id.initialize({
                     client_id: GOOGLE_CLIENT_ID,
                     callback: handleGoogleCredentialResponse,
                     auto_select: false,
+                    ux_mode: 'popup', // Use popup mode for better desktop compatibility
+                    cancel_on_tap_outside: false
                 });
 
                 // If there's a placeholder button in the modal, render Google's button into it
                 const holder = document.getElementById('account-google-btn');
                 if (holder) {
                     holder.innerHTML = '';
-                    google.accounts.id.renderButton(holder, { theme: 'outline', size: 'large' });
+                    google.accounts.id.renderButton(holder, { 
+                        theme: 'outline', 
+                        size: 'large',
+                        width: 300
+                    });
                 }
 
-                // Trigger the one-tap prompt (optional).
+                // Try one-tap prompt with fallback
                 // Wrap in try/catch to avoid FedCM/One-tap network/CORS errors causing uncaught exceptions.
                 try {
-                    google.accounts.id.prompt();
+                    google.accounts.id.prompt((notification) => {
+                        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                            console.log('One-tap not shown, reason:', notification.getNotDisplayedReason());
+                            // One-tap failed, user can still click the button
+                        }
+                    });
                 } catch (promptErr) {
                     console.warn('google.accounts.id.prompt() failed (FedCM/OneTap may be blocked):', promptErr);
+                    // Not critical - user can still click the Google button
                 }
             } catch (e) {
                 console.error('handleGoogleLogin error', e);

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Romgon Win Conditions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px;
+        }
+        
+        .board {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 3px solid rgba(78, 205, 196, 0.3);
+            border-radius: 20px;
+            padding: 60px 80px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            max-width: 800px;
+        }
+        
+        h1 {
+            color: #4ecdc4;
+            font-size: 48px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
+        }
+        
+        .subtitle {
+            color: #ff79c6;
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 50px;
+            font-weight: 500;
+        }
+        
+        .conditions {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .condition {
+            background: rgba(78, 205, 196, 0.1);
+            border-left: 5px solid #4ecdc4;
+            padding: 25px 35px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .condition:hover {
+            background: rgba(78, 205, 196, 0.15);
+            transform: translateX(10px);
+            box-shadow: 0 10px 30px rgba(78, 205, 196, 0.2);
+        }
+        
+        .condition-title {
+            color: #4ecdc4;
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .icon {
+            font-size: 36px;
+        }
+        
+        .condition-text {
+            color: #e0e0e0;
+            font-size: 22px;
+            line-height: 1.6;
+            font-weight: 400;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            color: #888;
+            font-size: 18px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="board">
+        <h1>🎯 ROMGON</h1>
+        <div class="subtitle">Win Conditions</div>
+        
+        <div class="conditions">
+            <div class="condition">
+                <div class="condition-title">
+                    <span class="icon">🔺</span>
+                    Capture Triangle
+                </div>
+                <div class="condition-text">
+                    Capture opponent's Triangle to win instantly
+                </div>
+            </div>
+            
+            <div class="condition">
+                <div class="condition-title">
+                    <span class="icon">🏰</span>
+                    Fortress Lock
+                </div>
+                <div class="condition-text">
+                    Lock 3 pieces in opponent's fortress zone
+                </div>
+            </div>
+            
+            <div class="condition">
+                <div class="condition-title">
+                    <span class="icon">👑</span>
+                    Domination
+                </div>
+                <div class="condition-text">
+                    Capture all 4 opponent pieces
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            First to achieve any condition wins
+        </div>
+    </div>
+</body>
+</html>
