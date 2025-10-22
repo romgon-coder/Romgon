@@ -9018,8 +9018,19 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         
         function updateCamera3DTransform() {
             const wrapper = document.getElementById('board-3d-wrapper');
-            wrapper.style.transform = `rotateX(${currentTilt}deg) rotateZ(${currentRotation}deg) scale(${currentZoom})`;
+            if (wrapper && camera3DEnabled) {
+                wrapper.style.transform = `rotateX(${currentTilt}deg) rotateZ(${currentRotation}deg) scale(${currentZoom})`;
+                wrapper.style.transformStyle = 'preserve-3d';
+                wrapper.style.transition = 'transform 0.5s ease';
+            }
         }
+        
+        // Ensure camera persists through DOM changes
+        setInterval(() => {
+            if (camera3DEnabled) {
+                updateCamera3DTransform();
+            }
+        }, 100);
         
         function setCamera3DView(viewType) {
             switch(viewType) {
