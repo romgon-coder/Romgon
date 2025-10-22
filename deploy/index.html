@@ -8769,7 +8769,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 user-select: none;
             ">
                 <div style="color: #4ecdc4; font-weight: bold; margin-bottom: 5px;">🖱️ DRAG HERE</div>
-                <div style="color: #888; font-size: 10px;">Left-click + drag to rotate/tilt</div>
+                <div style="color: #888; font-size: 10px;">Drag ⬅️ ➡️ ⬆️ ⬇️ to pan camera view</div>
             </div>
             
             <!-- Preset Views -->
@@ -8977,6 +8977,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         let currentRotation = 0;
         let currentTilt = 0;
         let currentZoom = 1;
+        let currentPanX = 0; // Camera horizontal position
+        let currentPanY = 0; // Camera vertical position
         
         function toggleCamera3D() {
             const panel = document.getElementById('camera-panel');
@@ -9044,7 +9046,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         function updateCamera3DTransform() {
             const wrapper = document.getElementById('board-3d-wrapper');
             if (wrapper && camera3DEnabled) {
-                wrapper.style.transform = `rotateX(${currentTilt}deg) rotateZ(${currentRotation}deg) scale(${currentZoom})`;
+                wrapper.style.transform = `translate(${currentPanX}px, ${currentPanY}px) rotateX(${currentTilt}deg) rotateZ(${currentRotation}deg) scale(${currentZoom})`;
                 wrapper.style.transformStyle = 'preserve-3d';
                 wrapper.style.transition = 'transform 0.5s ease';
             }
@@ -9063,11 +9065,15 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     currentRotation = 0;
                     currentTilt = 0;
                     currentZoom = 1;
+                    currentPanX = 0;
+                    currentPanY = 0;
                     break;
                 case 'tilt':
                     currentRotation = 0;
                     currentTilt = 45;
                     currentZoom = 0.9;
+                    currentPanX = 0;
+                    currentPanY = 0;
                     break;
             }
             
@@ -9142,8 +9148,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         let isDragging = false;
         let dragStartX = 0;
         let dragStartY = 0;
-        let dragStartRotation = 0;
-        let dragStartTilt = 0;
+        let dragStartPanX = 0;
+        let dragStartPanY = 0;
         
         // Get drag area element (wait for DOM to load)
         window.addEventListener('DOMContentLoaded', () => {
@@ -9158,8 +9164,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     isDragging = true;
                     dragStartX = e.clientX;
                     dragStartY = e.clientY;
-                    dragStartRotation = parseFloat(currentRotation);
-                    dragStartTilt = parseFloat(currentTilt);
+                    dragStartPanX = currentPanX;
+                    dragStartPanY = currentPanY;
                     dragArea.style.cursor = 'grabbing';
                     dragArea.style.background = 'rgba(78, 205, 196, 0.2)';
                 }
@@ -9175,25 +9181,11 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 const deltaX = e.clientX - dragStartX;
                 const deltaY = e.clientY - dragStartY;
                 
-                // Rotation based on horizontal drag (left/right) - 1 pixel = 1 degree
-                let newRotation = dragStartRotation + deltaX;
-                // Normalize to 0-360
-                while (newRotation < 0) newRotation += 360;
-                while (newRotation > 360) newRotation -= 360;
-                
-                // Tilt based on vertical drag (up/down) - 1 pixel = 0.5 degrees
-                let newTilt = dragStartTilt - (deltaY * 0.5);
-                newTilt = Math.max(0, Math.min(75, newTilt));
-                
-                // Update values
-                currentRotation = Math.round(newRotation);
-                currentTilt = Math.round(newTilt);
-                
-                // Update sliders and display
-                document.getElementById('rotate-slider').value = currentRotation;
-                document.getElementById('tilt-slider').value = currentTilt;
-                document.getElementById('rotate-value').textContent = currentRotation;
-                document.getElementById('tilt-value').textContent = currentTilt;
+                // Pan camera view (move what the player sees)
+                // Left/Right drag = move camera horizontally
+                // Up/Down drag = move camera vertically
+                currentPanX = dragStartPanX + deltaX;
+                currentPanY = dragStartPanY + deltaY;
                 
                 updateCamera3DTransform();
             });
