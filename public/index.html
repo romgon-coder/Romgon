@@ -3370,9 +3370,9 @@
                 --hex-size: 35px; /* Larger for touch targets */
             }
             
-            /* Scale board for mobile */
+            /* Scale and rotate board 90° for mobile */
             .board {
-                transform: scale(0.85);
+                transform: scale(0.85) rotate(90deg);
                 transform-origin: center center;
             }
             
@@ -3383,10 +3383,17 @@
                 min-width: 100px !important;
             }
             
-            /* Turn indicator - larger and more visible */
+            /* Turn indicator - smaller and compact for mobile */
             #turn-display {
-                font-size: 1.1em !important;
-                padding: 10px 20px !important;
+                font-size: 0.7em !important;
+                padding: 4px 8px !important;
+                max-width: 120px !important;
+            }
+            
+            /* Make turn badge more compact */
+            #turn-display .turn-badge {
+                font-size: 0.75em !important;
+                padding: 3px 6px !important;
             }
             
             /* Mobile player timers */
