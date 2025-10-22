@@ -3372,7 +3372,7 @@
             
             /* Scale and rotate board 90° for mobile */
             .board {
-                transform: scale(0.85) rotate(90deg);
+                transform: scale(0.65) rotate(90deg);
                 transform-origin: center center;
             }
             
@@ -3386,19 +3386,19 @@
             /* Turn indicator - move to top right on mobile */
             #turn-display {
                 position: fixed !important;
-                top: 15px !important;
-                right: 15px !important;
+                top: 10px !important;
+                right: 10px !important;
                 left: auto !important;
-                font-size: 0.8em !important;
-                padding: 6px 10px !important;
-                max-width: 150px !important;
+                font-size: 0.6em !important;
+                padding: 4px 8px !important;
+                max-width: 100px !important;
                 z-index: 1500 !important;
             }
             
             /* Make turn badge more compact */
             #turn-display .turn-badge {
-                font-size: 0.75em !important;
-                padding: 3px 6px !important;
+                font-size: 0.6em !important;
+                padding: 2px 4px !important;
             }
             
             /* Hide floating rotation overlay on mobile - use bottom bar instead */
@@ -8794,69 +8794,69 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             z-index: 2000;
         ">
             <!-- Rotation Controls (shown when triangle/hexagon selected) -->
-            <div id="mobile-rotation-controls" style="display: none; margin-bottom: 8px;">
-                <div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 4px;">
+            <div id="mobile-rotation-controls" style="display: none; margin-bottom: 6px;">
+                <div style="display: flex; justify-content: center; gap: 4px; margin-bottom: 4px;">
                     <button onclick="rotatePieceLeft()" style="
                         background: rgba(78, 205, 196, 0.3);
                         border: 2px solid #4ecdc4;
-                        border-radius: 8px;
-                        padding: 10px 15px;
+                        border-radius: 6px;
+                        padding: 6px 8px;
                         color: white;
-                        font-size: 1.1em;
+                        font-size: 0.85em;
                         font-weight: bold;
                         cursor: pointer;
                         flex: 1;
-                        max-width: 120px;
+                        max-width: 80px;
                     ">↺ Left</button>
                     
                     <button onclick="keepPieceOrientation()" style="
                         background: rgba(255, 121, 198, 0.3);
                         border: 2px solid #ff79c6;
-                        border-radius: 8px;
-                        padding: 10px 15px;
+                        border-radius: 6px;
+                        padding: 6px 8px;
                         color: white;
-                        font-size: 1.1em;
+                        font-size: 0.85em;
                         font-weight: bold;
                         cursor: pointer;
                         flex: 1;
-                        max-width: 120px;
+                        max-width: 80px;
                     ">⊙ Keep</button>
                     
                     <button onclick="rotatePieceRight()" style="
                         background: rgba(78, 205, 196, 0.3);
                         border: 2px solid #4ecdc4;
-                        border-radius: 8px;
-                        padding: 10px 15px;
+                        border-radius: 6px;
+                        padding: 6px 8px;
                         color: white;
-                        font-size: 1.1em;
+                        font-size: 0.85em;
                         font-weight: bold;
                         cursor: pointer;
                         flex: 1;
-                        max-width: 120px;
+                        max-width: 80px;
                     ">↻ Right</button>
                 </div>
                 <button onclick="releasePiece()" style="
                     background: rgba(102, 126, 234, 0.3);
                     border: 2px solid #667eea;
-                    border-radius: 8px;
-                    padding: 10px;
+                    border-radius: 6px;
+                    padding: 6px 10px;
                     color: white;
-                    font-size: 1em;
+                    font-size: 0.85em;
                     font-weight: bold;
                     cursor: pointer;
                     width: 100%;
-                ">✓ Release Piece</button>
+                ">✓ Release</button>
             </div>
             
             <!-- Main Controls -->
-            <div style="display: flex; justify-content: space-around; align-items: center; max-width: 600px; margin: 0 auto; gap: 8px;">
+            <div style="display: flex; justify-content: space-around; align-items: center; max-width: 600px; margin: 0 auto; gap: 6px;">
                 <button onclick="undoMove()" style="
                     background: rgba(78, 205, 196, 0.2);
                     border: 2px solid #4ecdc4;
-                    border-radius: 8px;
-                    padding: 10px 16px;
+                    border-radius: 6px;
+                    padding: 8px 12px;
                     color: white;
-                    font-size: 0.9em;
+                    font-size: 0.85em;
                     font-weight: bold;
                     cursor: pointer;
                     flex: 1;
@@ -8865,10 +8865,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 <button onclick="toggleMobileInfo()" style="
                     background: rgba(255, 121, 198, 0.2);
                     border: 2px solid #ff79c6;
-                    border-radius: 8px;
-                    padding: 10px 16px;
+                    border-radius: 6px;
+                    padding: 8px 12px;
                     color: white;
-                    font-size: 0.9em;
+                    font-size: 0.85em;
                     font-weight: bold;
                     cursor: pointer;
                     flex: 1;
@@ -8877,10 +8877,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 <button onclick="quitAndLogout()" style="
                     background: rgba(255, 107, 107, 0.2);
                     border: 2px solid #ff6b6b;
-                    border-radius: 8px;
-                    padding: 10px 16px;
+                    border-radius: 6px;
+                    padding: 8px 12px;
                     color: white;
-                    font-size: 0.9em;
+                    font-size: 0.85em;
                     font-weight: bold;
                     cursor: pointer;
                     flex: 1;
