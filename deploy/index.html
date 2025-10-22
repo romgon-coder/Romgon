@@ -8757,7 +8757,20 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     padding: 0;
                 " title="Close panel (camera stays on)">✕</button>
             </div>
-            <div style="color: #888; font-size: 10px; text-align: center; margin-bottom: 10px;">Right-click + drag to rotate</div>
+            <!-- Drag Area for Camera Control -->
+            <div id="camera-drag-area" style="
+                background: rgba(78, 205, 196, 0.1);
+                border: 2px dashed rgba(78, 205, 196, 0.3);
+                border-radius: 10px;
+                padding: 40px 20px;
+                text-align: center;
+                margin-bottom: 15px;
+                cursor: move;
+                user-select: none;
+            ">
+                <div style="color: #4ecdc4; font-weight: bold; margin-bottom: 5px;">🖱️ DRAG HERE</div>
+                <div style="color: #888; font-size: 10px;">Left-click + drag to rotate/tilt</div>
+            </div>
             
             <!-- Preset Views -->
             <div style="display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;">
@@ -9123,7 +9136,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         });
         
         // ============================================
-        // RIGHT-CLICK DRAG CONTROLS FOR CAMERA
+        // LEFT-CLICK DRAG CONTROLS ON CAMERA PANEL DRAG AREA
         // ============================================
         
         let isDragging = false;
@@ -9132,74 +9145,76 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         let dragStartRotation = 0;
         let dragStartTilt = 0;
         
-        // Prevent context menu when camera is active
-        document.addEventListener('contextmenu', (e) => {
-            if (camera3DEnabled) {
+        // Get drag area element (wait for DOM to load)
+        window.addEventListener('DOMContentLoaded', () => {
+            const dragArea = document.getElementById('camera-drag-area');
+            
+            if (!dragArea) return;
+            
+            // Mouse down (left-click on drag area)
+            dragArea.addEventListener('mousedown', (e) => {
+                if (e.button === 0 && camera3DEnabled) { // Left click (button 0)
+                    e.preventDefault();
+                    isDragging = true;
+                    dragStartX = e.clientX;
+                    dragStartY = e.clientY;
+                    dragStartRotation = parseFloat(currentRotation);
+                    dragStartTilt = parseFloat(currentTilt);
+                    dragArea.style.cursor = 'grabbing';
+                    dragArea.style.background = 'rgba(78, 205, 196, 0.2)';
+                }
+            });
+            
+            // Mouse move (drag) - global to allow dragging outside area
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging || !camera3DEnabled) return;
+                
                 e.preventDefault();
-            }
-        });
-        
-        // Mouse down (right-click)
-        document.addEventListener('mousedown', (e) => {
-            // Only respond to right-click (button 2) when camera is active
-            if (e.button === 2 && camera3DEnabled) {
-                e.preventDefault();
-                isDragging = true;
-                dragStartX = e.clientX;
-                dragStartY = e.clientY;
-                dragStartRotation = parseFloat(currentRotation);
-                dragStartTilt = parseFloat(currentTilt);
-                document.body.style.cursor = 'grabbing';
-            }
-        });
-        
-        // Mouse move (drag)
-        document.addEventListener('mousemove', (e) => {
-            if (!isDragging || !camera3DEnabled) return;
+                
+                // Calculate drag distance
+                const deltaX = e.clientX - dragStartX;
+                const deltaY = e.clientY - dragStartY;
+                
+                // Rotation based on horizontal drag (left/right) - 1 pixel = 1 degree
+                let newRotation = dragStartRotation + deltaX;
+                // Normalize to 0-360
+                while (newRotation < 0) newRotation += 360;
+                while (newRotation > 360) newRotation -= 360;
+                
+                // Tilt based on vertical drag (up/down) - 1 pixel = 0.5 degrees
+                let newTilt = dragStartTilt - (deltaY * 0.5);
+                newTilt = Math.max(0, Math.min(75, newTilt));
+                
+                // Update values
+                currentRotation = Math.round(newRotation);
+                currentTilt = Math.round(newTilt);
+                
+                // Update sliders and display
+                document.getElementById('rotate-slider').value = currentRotation;
+                document.getElementById('tilt-slider').value = currentTilt;
+                document.getElementById('rotate-value').textContent = currentRotation;
+                document.getElementById('tilt-value').textContent = currentTilt;
+                
+                updateCamera3DTransform();
+            });
             
-            e.preventDefault();
+            // Mouse up (release) - global
+            document.addEventListener('mouseup', (e) => {
+                if (isDragging) {
+                    isDragging = false;
+                    dragArea.style.cursor = 'move';
+                    dragArea.style.background = 'rgba(78, 205, 196, 0.1)';
+                }
+            });
             
-            // Calculate drag distance
-            const deltaX = e.clientX - dragStartX;
-            const deltaY = e.clientY - dragStartY;
-            
-            // Rotation based on horizontal drag (1 pixel = 0.5 degrees)
-            let newRotation = dragStartRotation + (deltaX * 0.5);
-            // Normalize to 0-360
-            while (newRotation < 0) newRotation += 360;
-            while (newRotation > 360) newRotation -= 360;
-            
-            // Tilt based on vertical drag (1 pixel = 0.3 degrees)
-            let newTilt = dragStartTilt - (deltaY * 0.3);
-            newTilt = Math.max(0, Math.min(75, newTilt));
-            
-            // Update values
-            currentRotation = Math.round(newRotation);
-            currentTilt = Math.round(newTilt);
-            
-            // Update sliders and display
-            document.getElementById('rotate-slider').value = currentRotation;
-            document.getElementById('tilt-slider').value = currentTilt;
-            document.getElementById('rotate-value').textContent = currentRotation;
-            document.getElementById('tilt-value').textContent = currentTilt;
-            
-            updateCamera3DTransform();
-        });
-        
-        // Mouse up (release)
-        document.addEventListener('mouseup', (e) => {
-            if (isDragging) {
-                isDragging = false;
-                document.body.style.cursor = 'default';
-            }
-        });
-        
-        // Mouse leave window (cancel drag)
-        document.addEventListener('mouseleave', () => {
-            if (isDragging) {
-                isDragging = false;
-                document.body.style.cursor = 'default';
-            }
+            // Mouse leave window (cancel drag)
+            document.addEventListener('mouseleave', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    dragArea.style.cursor = 'move';
+                    dragArea.style.background = 'rgba(78, 205, 196, 0.1)';
+                }
+            });
         });
         
         // Mouse wheel zoom (only when camera active)
@@ -9217,7 +9232,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         }, { passive: false });
         
         // ============================================
-        // END RIGHT-CLICK DRAG CONTROLS
+        // END LEFT-CLICK DRAG CONTROLS
         // ============================================
         
         // ============================================
