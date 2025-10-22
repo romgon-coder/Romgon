@@ -2590,8 +2590,8 @@
              height: 100%;
              padding-top: 16vh;
              padding-bottom: calc(10vh - 200px);
-             padding-left: 2vw;
-             padding-right: 2vw;
+             padding-left: 260px; /* Make room for left panel (220px + 40px gap) */
+             padding-right: 260px; /* Make room for right panel (220px + 40px gap) */
              box-sizing: border-box;
              overflow: visible;
              z-index: 3000;
@@ -3170,15 +3170,15 @@
             max-width: 90vw;
         }
         .variant-indicator {
-            background-color: #2d2d2d;
-            color: #fff;
+            background-color: rgba(255, 121, 198, 0.15);
+            color: #ff79c6;
             padding: 6px 10px;
             border-radius: 8px;
             font-weight: 700;
-            font-size: 12px;
+            font-size: 0.85em;
             text-align: center;
             margin-bottom: 8px;
-            border: 1px solid #444;
+            border: 1px solid rgba(255, 121, 198, 0.4);
         }
 
         /* Guest indicator badge and tooltip */
@@ -3187,50 +3187,63 @@
         .guest-tooltip { pointer-events: none; }
 
         .eliminated-section {
-            width: 200px;
+            position: fixed;
+            width: 220px;
             text-align: center;
-            background-color: #262421; /* Chess.com panel color */
-            border-radius: 8px;
-            border: 1px solid #3d3935;
-            padding: 15px;
+            background: rgba(0, 0, 0, 0.9); /* Dark theme matching camera panel */
+            border-radius: 15px;
+            border: 2px solid rgba(78, 205, 196, 0.5); /* Teal border like camera */
+            padding: 12px;
             pointer-events: auto;
-            /* Let the whole panel size naturally; only the moves list should scroll.
-               This keeps the variant indicator and opening name visible and fixed. */
             max-height: none;
             overflow: visible;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+            z-index: 15;
+            top: 80px;
+            font-size: 0.85em;
+        }
+        
+        /* Position left panel (White Eliminated) */
+        .eliminated-section:first-child {
+            left: 10px;
+        }
+        
+        /* Position right panel (Black Eliminated) */
+        .eliminated-section:last-child {
+            right: 10px;
         }
 
         .eliminated-section h3 {
-            color: #b8b6b3;
-            margin: 0 0 10px 0;
-            font-size: 13px;
+            color: #4ecdc4; /* Teal color matching camera panel */
+            margin: 0 0 8px 0;
+            font-size: 0.95em;
             text-transform: uppercase;
             letter-spacing: 1px;
-            font-weight: 600;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
         }
 
         /* Embedded movement-section inside each eliminated panel */
         .movement-section {
             width: 100%;
             text-align: left;
-            background-color: transparent;
-            border-radius: 6px;
-            padding: 8px 0 0 0;
-            max-height: 220px;
+            background-color: rgba(78, 205, 196, 0.05);
+            border-radius: 8px;
+            padding: 8px;
+            max-height: 200px;
             overflow-y: auto;
             overflow-x: hidden;
             scroll-behavior: smooth;
             pointer-events: auto;
-            box-shadow: none;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
             margin-top: 8px;
-            border-top: 1px solid rgba(255,255,255,0.03);
+            border: 1px solid rgba(78, 205, 196, 0.2);
         }
 
         .movement-section h3 {
-            color: #ddd;
+            color: #4ecdc4;
             margin: 0 0 6px 0;
-            font-size: 11px;
+            font-size: 0.9em;
             text-transform: uppercase;
             letter-spacing: 1px;
             padding: 4px 0;
@@ -3238,9 +3251,9 @@
         }
 
         .movement-list { list-style: none; padding: 0; margin: 0; }
-        .movement-item { color: #ccc; font-size: 11px; margin: 3px 0; padding: 4px 6px; background-color: #1f1f1f; border-radius: 4px; font-family: monospace; word-wrap: break-word; }
-        .movement-item.white-move { color: #fff; background-color: #2b2b2b; }
-        .movement-item.black-move { color: #ddd; background-color: #2f2f2f; }
+        .movement-item { color: #4ecdc4; font-size: 0.85em; margin: 3px 0; padding: 5px 8px; background-color: rgba(0, 0, 0, 0.4); border-radius: 6px; font-family: 'Courier New', monospace; word-wrap: break-word; border-left: 2px solid rgba(78, 205, 196, 0.3); }
+        .movement-item.white-move { color: #fff; background-color: rgba(78, 205, 196, 0.1); border-left-color: rgba(255, 255, 255, 0.5); }
+        .movement-item.black-move { color: #ddd; background-color: rgba(0, 0, 0, 0.3); border-left-color: rgba(255, 121, 198, 0.5); }
 
         /* Eliminated circle sizes */
         .eliminated-piece.circle-piece {
@@ -3257,10 +3270,10 @@
             justify-content: center;
             gap: 5px;
             min-height: 40px;
-            padding: 10px;
-            background-color: #1a1a1a;
-            border-radius: 5px;
-            border: 1px solid #555;
+            padding: 8px;
+            background-color: rgba(78, 205, 196, 0.08);
+            border-radius: 8px;
+            border: 1px solid rgba(78, 205, 196, 0.25);
         }
 
         .eliminated-piece {
@@ -3345,6 +3358,11 @@
         @media (max-width: 768px) {
             #board-display-container {
                 padding: 100px 10px 60px 10px !important;
+            }
+            
+            /* Hide side panels on mobile to avoid overlap */
+            .eliminated-section {
+                display: none !important;
             }
             
             :root {
