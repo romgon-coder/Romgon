@@ -3383,17 +3383,27 @@
                 min-width: 100px !important;
             }
             
-            /* Turn indicator - smaller and compact for mobile */
+            /* Turn indicator - move to top right on mobile */
             #turn-display {
-                font-size: 0.7em !important;
-                padding: 4px 8px !important;
-                max-width: 120px !important;
+                position: fixed !important;
+                top: 15px !important;
+                right: 15px !important;
+                left: auto !important;
+                font-size: 0.8em !important;
+                padding: 6px 10px !important;
+                max-width: 150px !important;
+                z-index: 1500 !important;
             }
             
             /* Make turn badge more compact */
             #turn-display .turn-badge {
                 font-size: 0.75em !important;
                 padding: 3px 6px !important;
+            }
+            
+            /* Hide floating rotation overlay on mobile - use bottom bar instead */
+            #rotation-overlay {
+                display: none !important;
             }
             
             /* Mobile player timers */
@@ -8780,41 +8790,100 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             right: 0;
             background: rgba(0, 0, 0, 0.95);
             border-top: 2px solid rgba(78, 205, 196, 0.5);
-            padding: 12px;
+            padding: 8px;
             z-index: 2000;
         ">
-            <div style="display: flex; justify-content: space-around; align-items: center; max-width: 600px; margin: 0 auto;">
-                <button onclick="undoMove()" style="
-                    background: rgba(78, 205, 196, 0.2);
-                    border: 2px solid #4ecdc4;
-                    border-radius: 10px;
-                    padding: 12px 20px;
+            <!-- Rotation Controls (shown when triangle/hexagon selected) -->
+            <div id="mobile-rotation-controls" style="display: none; margin-bottom: 8px;">
+                <div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 4px;">
+                    <button onclick="rotatePieceLeft()" style="
+                        background: rgba(78, 205, 196, 0.3);
+                        border: 2px solid #4ecdc4;
+                        border-radius: 8px;
+                        padding: 10px 15px;
+                        color: white;
+                        font-size: 1.1em;
+                        font-weight: bold;
+                        cursor: pointer;
+                        flex: 1;
+                        max-width: 120px;
+                    ">↺ Left</button>
+                    
+                    <button onclick="keepPieceOrientation()" style="
+                        background: rgba(255, 121, 198, 0.3);
+                        border: 2px solid #ff79c6;
+                        border-radius: 8px;
+                        padding: 10px 15px;
+                        color: white;
+                        font-size: 1.1em;
+                        font-weight: bold;
+                        cursor: pointer;
+                        flex: 1;
+                        max-width: 120px;
+                    ">⊙ Keep</button>
+                    
+                    <button onclick="rotatePieceRight()" style="
+                        background: rgba(78, 205, 196, 0.3);
+                        border: 2px solid #4ecdc4;
+                        border-radius: 8px;
+                        padding: 10px 15px;
+                        color: white;
+                        font-size: 1.1em;
+                        font-weight: bold;
+                        cursor: pointer;
+                        flex: 1;
+                        max-width: 120px;
+                    ">↻ Right</button>
+                </div>
+                <button onclick="releasePiece()" style="
+                    background: rgba(102, 126, 234, 0.3);
+                    border: 2px solid #667eea;
+                    border-radius: 8px;
+                    padding: 10px;
                     color: white;
                     font-size: 1em;
                     font-weight: bold;
                     cursor: pointer;
+                    width: 100%;
+                ">✓ Release Piece</button>
+            </div>
+            
+            <!-- Main Controls -->
+            <div style="display: flex; justify-content: space-around; align-items: center; max-width: 600px; margin: 0 auto; gap: 8px;">
+                <button onclick="undoMove()" style="
+                    background: rgba(78, 205, 196, 0.2);
+                    border: 2px solid #4ecdc4;
+                    border-radius: 8px;
+                    padding: 10px 16px;
+                    color: white;
+                    font-size: 0.9em;
+                    font-weight: bold;
+                    cursor: pointer;
+                    flex: 1;
                 ">↶ Undo</button>
                 
                 <button onclick="toggleMobileInfo()" style="
                     background: rgba(255, 121, 198, 0.2);
                     border: 2px solid #ff79c6;
-                    border-radius: 10px;
-                    padding: 12px 20px;
+                    border-radius: 8px;
+                    padding: 10px 16px;
                     color: white;
-                    font-size: 1em;
+                    font-size: 0.9em;
                     font-weight: bold;
                     cursor: pointer;
+                    flex: 1;
                 ">ℹ️ Info</button>
                 
                 <button onclick="quitAndLogout()" style="
                     background: rgba(255, 107, 107, 0.2);
                     border: 2px solid #ff6b6b;
-                    border-radius: 10px;
-                    padding: 12px 20px;
+                    border-radius: 8px;
+                    padding: 10px 16px;
                     color: white;
-                    font-size: 1em;
+                    font-size: 0.9em;
                     font-weight: bold;
                     cursor: pointer;
+                    flex: 1;
                 ">✕ Quit</button>
             </div>
         </div>
@@ -8854,6 +8923,65 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         blackElim.style.zIndex = '3000';
                     }
                 }
+            }
+            
+            // Show/hide mobile rotation controls based on selected piece
+            function showMobileRotationControls() {
+                const controls = document.getElementById('mobile-rotation-controls');
+                if (controls && window.innerWidth <= 768) {
+                    controls.style.display = 'block';
+                }
+            }
+            
+            function hideMobileRotationControls() {
+                const controls = document.getElementById('mobile-rotation-controls');
+                if (controls) {
+                    controls.style.display = 'none';
+                }
+            }
+            
+            // Hook into piece selection - watch for draggedPiece
+            (function() {
+                const originalDragStart = window.ondragstart;
+                document.addEventListener('dragstart', function(e) {
+                    if (e.target.classList.contains('triangle-piece') || e.target.classList.contains('hexgon-piece')) {
+                        setTimeout(showMobileRotationControls, 100);
+                    }
+                });
+                
+                document.addEventListener('dragend', function() {
+                    setTimeout(hideMobileRotationControls, 100);
+                });
+                
+                document.addEventListener('drop', function() {
+                    setTimeout(hideMobileRotationControls, 100);
+                });
+            })();
+            
+            // Rotation button functions
+            function rotatePieceLeft() {
+                if (window.handleRotationButton) {
+                    window.handleRotationButton('left');
+                }
+            }
+            
+            function rotatePieceRight() {
+                if (window.handleRotationButton) {
+                    window.handleRotationButton('right');
+                }
+            }
+            
+            function keepPieceOrientation() {
+                if (window.handleRotationButton) {
+                    window.handleRotationButton('keep');
+                }
+            }
+            
+            function releasePiece() {
+                if (window.handleRotationButton) {
+                    window.handleRotationButton('release');
+                }
+                hideMobileRotationControls();
             }
         </script>
         
