@@ -229,25 +229,23 @@
             border-left-color: #ff6b6b;
         }
         
-        /* Desktop redirect message */
+        /* Desktop redirect message - Optional banner instead of blocking */
         .desktop-message {
             display: none;
-            background: rgba(255, 121, 198, 0.2);
-            border: 2px solid #ff79c6;
-            border-radius: 12px;
-            padding: 20px;
-            margin: 20px;
+            background: rgba(255, 121, 198, 0.15);
+            border: 1px solid rgba(255, 121, 198, 0.3);
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin: 10px 20px;
             text-align: center;
+            font-size: 0.9em;
         }
         
         @media (min-width: 768px) {
             .desktop-message {
                 display: block;
             }
-            .welcome-screen {
-                filter: blur(5px);
-                pointer-events: none;
-            }
+            /* Removed blur - allow testing on desktop */
         }
     </style>
 </head>
@@ -261,16 +259,7 @@
         
         <!-- Desktop Redirect Message -->
         <div class="desktop-message">
-            <h2 style="color: #ff79c6; margin-bottom: 15px;">📱 Mobile Version Only</h2>
-            <p style="color: white; font-size: 1.1em; margin-bottom: 15px;">
-                This page is optimized for mobile devices.
-            </p>
-            <p style="color: #ccc;">
-                For the full desktop experience, visit:<br>
-                <a href="/" style="color: #4ecdc4; font-size: 1.2em; text-decoration: none; font-weight: bold;">
-                    romgon.net
-                </a>
-            </p>
+            📱 <strong>Best viewed on mobile</strong> • For full desktop experience, visit <a href="/" style="color: #4ecdc4; text-decoration: none; font-weight: bold;">romgon.net</a>
         </div>
         
         <!-- Notification -->

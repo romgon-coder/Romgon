@@ -3351,7 +3351,7 @@
         /* Responsive design for mobile */
         @media (max-width: 768px) {
             #board-display-container {
-                padding: 100px 10px 60px 10px !important;
+                padding: 80px 5px 120px 5px !important;
             }
             
             /* Hide side panels on mobile to avoid overlap */
@@ -3359,8 +3359,46 @@
                 display: none !important;
             }
             
+            /* Hide camera controls on mobile */
+            #camera-panel,
+            #camera-toggle-btn {
+                display: none !important;
+            }
+            
+            /* Larger hexagons for mobile touch */
             :root {
-                --hex-size: 28px; /* Smaller hexagons on mobile */
+                --hex-size: 35px; /* Larger for touch targets */
+            }
+            
+            /* Scale board for mobile */
+            .board {
+                transform: scale(0.85);
+                transform-origin: center center;
+            }
+            
+            /* Mobile-friendly top controls */
+            #quit-game-btn {
+                font-size: 0.9em !important;
+                padding: 8px 15px !important;
+                min-width: 100px !important;
+            }
+            
+            /* Turn indicator - larger and more visible */
+            #turn-display {
+                font-size: 1.1em !important;
+                padding: 10px 20px !important;
+            }
+            
+            /* Mobile player timers */
+            .player-timers {
+                flex-direction: column !important;
+                gap: 5px !important;
+                top: 60px !important;
+            }
+            
+            .timer-display {
+                font-size: 0.9em !important;
+                padding: 8px 15px !important;
             }
             
             #start-menu > div {
@@ -8725,6 +8763,92 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         </div>
         
         <!-- Movement tracking display removed (moves lists are embedded into each side panel) -->
+        
+        <!-- Mobile Bottom Controls -->
+        <div class="mobile-game-controls" style="
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.95);
+            border-top: 2px solid rgba(78, 205, 196, 0.5);
+            padding: 12px;
+            z-index: 2000;
+        ">
+            <div style="display: flex; justify-content: space-around; align-items: center; max-width: 600px; margin: 0 auto;">
+                <button onclick="undoMove()" style="
+                    background: rgba(78, 205, 196, 0.2);
+                    border: 2px solid #4ecdc4;
+                    border-radius: 10px;
+                    padding: 12px 20px;
+                    color: white;
+                    font-size: 1em;
+                    font-weight: bold;
+                    cursor: pointer;
+                ">↶ Undo</button>
+                
+                <button onclick="toggleMobileInfo()" style="
+                    background: rgba(255, 121, 198, 0.2);
+                    border: 2px solid #ff79c6;
+                    border-radius: 10px;
+                    padding: 12px 20px;
+                    color: white;
+                    font-size: 1em;
+                    font-weight: bold;
+                    cursor: pointer;
+                ">ℹ️ Info</button>
+                
+                <button onclick="quitAndLogout()" style="
+                    background: rgba(255, 107, 107, 0.2);
+                    border: 2px solid #ff6b6b;
+                    border-radius: 10px;
+                    padding: 12px 20px;
+                    color: white;
+                    font-size: 1em;
+                    font-weight: bold;
+                    cursor: pointer;
+                ">✕ Quit</button>
+            </div>
+        </div>
+        
+        <style>
+            @media (max-width: 768px) {
+                .mobile-game-controls {
+                    display: block !important;
+                }
+            }
+        </style>
+        
+        <script>
+            function toggleMobileInfo() {
+                const whiteElim = document.querySelectorAll('.eliminated-section')[0];
+                const blackElim = document.querySelectorAll('.eliminated-section')[1];
+                
+                if (whiteElim && blackElim) {
+                    const isVisible = whiteElim.style.display !== 'none';
+                    whiteElim.style.display = isVisible ? 'none' : 'block';
+                    blackElim.style.display = isVisible ? 'none' : 'block';
+                    
+                    // Position panels for mobile
+                    if (!isVisible) {
+                        whiteElim.style.position = 'fixed';
+                        whiteElim.style.left = '10px';
+                        whiteElim.style.top = '80px';
+                        whiteElim.style.maxHeight = '60vh';
+                        whiteElim.style.overflow = 'auto';
+                        whiteElim.style.zIndex = '3000';
+                        
+                        blackElim.style.position = 'fixed';
+                        blackElim.style.right = '10px';
+                        blackElim.style.top = '80px';
+                        blackElim.style.maxHeight = '60vh';
+                        blackElim.style.overflow = 'auto';
+                        blackElim.style.zIndex = '3000';
+                    }
+                }
+            }
+        </script>
         
         <!-- 3D Camera Controls -->
         <div class="camera-controls-panel" style="
