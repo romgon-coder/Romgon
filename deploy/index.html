@@ -2620,10 +2620,10 @@
             transform-origin: center center;
         }
         
-        /* On mobile, override flipped transform to match base mobile transform */
+        /* On mobile, white's view should be rotated 270deg (90deg base + 180deg flip) */
         @media (max-width: 768px) {
             .board.flipped {
-                transform: scale(0.7) rotate(90deg);
+                transform: scale(0.7) rotate(270deg);
                 transform-origin: center center;
             }
         }
