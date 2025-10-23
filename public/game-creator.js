@@ -197,19 +197,18 @@ function downloadSVG() {
 }
 
 function generateSVGFromGrid() {
-    let svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">\n';
+    const rects = [];
     const color = document.getElementById('pieceColor')?.value || '#4a90e2';
     
     for (let y = 0; y < 10; y++) {
         for (let x = 0; x < 10; x++) {
             if (pixelGrid[y][x]) {
-                svg += `  <rect x="${x}" y="${y}" width="1" height="1" fill="${color}"/>\n`;
+                rects.push(`<rect x="${x}" y="${y}" width="1" height="1" fill="${color}"/>`);
             }
         }
     }
     
-    svg += '</svg>';
-    return svg;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">${rects.join('')}</svg>`;
 }
 
 function savePieceShape() {
