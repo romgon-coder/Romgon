@@ -2619,14 +2619,6 @@
             transform: rotate(270deg) scale(0.85);
             transform-origin: center center;
         }
-        
-        /* On mobile, white's view should be rotated 270deg (90deg base + 180deg flip) */
-        @media (max-width: 768px) {
-            .board.flipped {
-                transform: scale(0.7) rotate(270deg);
-                transform-origin: center center;
-            }
-        }
 
         /* Mini Board for Analysis Modal */
         .mini-board {
@@ -3387,9 +3379,16 @@
                 --hex-size: 35px; /* Larger for touch targets */
             }
             
-            /* Scale and rotate board 90° for mobile - consistent for both players */
+            /* Scale and rotate board 90° for mobile - BLACK'S TURN (default) */
             .board {
-                transform: scale(0.7) rotate(90deg);
+                transform: scale(0.7) rotate(90deg) !important;
+                transform-origin: center center;
+                margin: 0 auto;
+            }
+            
+            /* WHITE'S TURN - flip board 180° from black's view */
+            .board.flipped {
+                transform: scale(0.7) rotate(270deg) !important;
                 transform-origin: center center;
                 margin: 0 auto;
             }
