@@ -2619,6 +2619,14 @@
             transform: rotate(270deg) scale(0.85);
             transform-origin: center center;
         }
+        
+        /* On mobile, override flipped transform to match base mobile transform */
+        @media (max-width: 768px) {
+            .board.flipped {
+                transform: scale(0.7) rotate(90deg);
+                transform-origin: center center;
+            }
+        }
 
         /* Mini Board for Analysis Modal */
         .mini-board {
@@ -9065,21 +9073,36 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 const blackDefense = document.getElementById('black-base-defence-placeholder');
                 
                 if (whiteDefense && blackDefense) {
-                    const isVisible = whiteDefense.style.display !== 'none';
-                    whiteDefense.style.display = isVisible ? 'none' : 'block';
-                    blackDefense.style.display = isVisible ? 'none' : 'block';
+                    // Check if currently visible (not empty)
+                    const isVisible = whiteDefense.innerHTML.trim() !== '' && whiteDefense.style.display !== 'none';
+                    
+                    if (isVisible) {
+                        // Hide defense displays
+                        whiteDefense.style.display = 'none';
+                        blackDefense.style.display = 'none';
+                    } else {
+                        // Show defense displays
+                        whiteDefense.style.display = 'block';
+                        blackDefense.style.display = 'block';
+                        // Make sure they have content
+                        if (typeof updateBaseDefenceDisplay === 'function') {
+                            updateBaseDefenceDisplay();
+                        }
+                    }
                 }
             }
             
             function toggleWoodenBoard() {
-                const board = document.querySelector('.board-display-container');
+                const board = document.getElementById('board-display-container');
                 if (board) {
                     if (board.style.backgroundImage && board.style.backgroundImage.includes('wooden')) {
                         board.style.backgroundImage = '';
+                        board.style.backgroundColor = '';
                     } else {
                         board.style.backgroundImage = "url('ASSETS/backgrounds/wooden background.png')";
                         board.style.backgroundSize = 'cover';
                         board.style.backgroundPosition = 'center';
+                        board.style.backgroundRepeat = 'no-repeat';
                     }
                 }
             }
