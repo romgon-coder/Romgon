@@ -1,0 +1,878 @@
+// Romgon Game Creator - JavaScript Logic
+// Handles all game design functionality
+
+// Global game state
+const gameData = {
+    pieces: [],
+    currentPieceId: null,
+    currentTool: 'move',
+    currentBoardTool: 'view',
+    board: {
+        width: 9,
+        height: 11,
+        shape: 'hexagon',
+        zones: {
+            inner: [],
+            middle: [],
+            outer: [],
+            dead: []
+        },
+        placements: [],
+        deletedHexes: []
+    },
+    rules: {
+        winCondition: 'eliminate_all',
+        maxTurns: 0,
+        turnTimeLimit: 60,
+        maxShapes: 10,
+        maxPerType: 3,
+        enableDraw: false,
+        enableUndo: true,
+        showHistory: true,
+        showPreview: true,
+        enableChat: true,
+        allowGuests: false,
+        enableDragDrop: true,
+        enableClickMove: true,
+        customRules: ''
+    },
+    currentStep: 0
+};
+
+// Canvas references
+let shapeCanvas, shapeCtx;
+let moveCanvas, moveCtx;
+let boardCanvas, boardCtx;
+
+// Hex parameters (honeycomb pattern)
+const hexSize = 25;
+const hexHeight = hexSize * 2;
+const hexWidth = Math.sqrt(3) * hexSize;
+
+// Shape drawing state
+let currentShapeHexes = [];
+let currentMovement = { move: [], attack: [], special: [] };
+
+// Initialize when DOM loads
+window.addEventListener('DOMContentLoaded', function() {
+    initCanvases();
+    loadFromLocalStorage();
+});
+
+function initCanvases() {
+    shapeCanvas = document.getElementById('shapeCanvas');
+    shapeCtx = shapeCanvas.getContext('2d');
+    moveCanvas = document.getElementById('moveCanvas');
+    moveCtx = moveCanvas.getContext('2d');
+    boardCanvas = document.getElementById('boardCanvas');
+    boardCtx = boardCanvas.getContext('2d');
+
+    if (shapeCanvas) {
+        shapeCanvas.addEventListener('click', handleShapeClick);
+        drawHexGrid(shapeCtx, 450, 450, 7, 7);
+    }
+
+    if (moveCanvas) {
+        moveCanvas.addEventListener('click', handleMoveClick);
+        drawHexGrid(moveCtx, 600, 600, 11, 11);
+    }
+
+    if (boardCanvas) {
+        boardCanvas.addEventListener('click', handleBoardClick);
+        redrawBoard();
+    }
+}
+
+// ============================================================================
+// STEP 1: PIECE SHAPE DESIGNER
+// ============================================================================
+
+function drawHexGrid(ctx, width, height, gridW, gridH) {
+    ctx.clearRect(0, 0, width, height);
+    const centerX = width / 2;
+    const centerY = height / 2;
+    
+    const horizontalSpacing = hexWidth * 0.75;
+    const verticalSpacing = hexHeight * 0.75;
+
+    for (let row = 0; row < gridH; row++) {
+        for (let col = 0; col < gridW; col++) {
+            const x = centerX + (col - gridW/2) * horizontalSpacing;
+            const y = centerY + (row - gridH/2) * verticalSpacing + (col % 2) * (verticalSpacing * 0.5);
+            drawHexagon(ctx, x, y, hexSize, '#fff', '#666', 1.5);
+        }
+    }
+}
+
+function drawHexagon(ctx, x, y, size, fill, stroke, lineWidth) {
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+        const angle = Math.PI / 3 * i;
+        const hx = x + size * Math.cos(angle);
+        const hy = y + size * Math.sin(angle);
+        if (i === 0) ctx.moveTo(hx, hy);
+        else ctx.lineTo(hx, hy);
+    }
+    ctx.closePath();
+    ctx.fillStyle = fill;
+    ctx.fill();
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = lineWidth;
+    ctx.stroke();
+}
+
+function handleShapeClick(e) {
+    const rect = shapeCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const hex = pixelToHex(x, y, 450, 450, 7, 7);
+    
+    if (hex) {
+        const idx = currentShapeHexes.findIndex(h => h.row === hex.row && h.col === hex.col);
+        if (idx >= 0) {
+            currentShapeHexes.splice(idx, 1);
+        } else {
+            currentShapeHexes.push(hex);
+        }
+        redrawShapeCanvas();
+    }
+}
+
+function pixelToHex(x, y, canvasW, canvasH, gridW, gridH) {
+    const centerX = canvasW / 2;
+    const centerY = canvasH / 2;
+    
+    const horizontalSpacing = hexWidth * 0.75;
+    const verticalSpacing = hexHeight * 0.75;
+
+    for (let row = 0; row < gridH; row++) {
+        for (let col = 0; col < gridW; col++) {
+            const hx = centerX + (col - gridW/2) * horizontalSpacing;
+            const hy = centerY + (row - gridH/2) * verticalSpacing + (col % 2) * (verticalSpacing * 0.5);
+            const dist = Math.sqrt((x - hx) ** 2 + (y - hy) ** 2);
+            if (dist < hexSize) {
+                return {row, col};
+            }
+        }
+    }
+    return null;
+}
+
+function redrawShapeCanvas() {
+    drawHexGrid(shapeCtx, 450, 450, 7, 7);
+    const color = document.getElementById('pieceColor').value;
+    const centerX = 450 / 2;
+    const centerY = 450 / 2;
+    
+    const horizontalSpacing = hexWidth * 0.75;
+    const verticalSpacing = hexHeight * 0.75;
+
+    currentShapeHexes.forEach(hex => {
+        const x = centerX + (hex.col - 3.5) * horizontalSpacing;
+        const y = centerY + (hex.row - 3.5) * verticalSpacing + (hex.col % 2) * (verticalSpacing * 0.5);
+        drawHexagon(shapeCtx, x, y, hexSize, color, '#333', 2);
+    });
+}
+
+function clearShape() {
+    currentShapeHexes = [];
+    redrawShapeCanvas();
+}
+
+function centerShape() {
+    if (currentShapeHexes.length === 0) return;
+    
+    const avgRow = currentShapeHexes.reduce((s, h) => s + h.row, 0) / currentShapeHexes.length;
+    const avgCol = currentShapeHexes.reduce((s, h) => s + h.col, 0) / currentShapeHexes.length;
+    const offsetRow = Math.round(3.5 - avgRow);
+    const offsetCol = Math.round(3.5 - avgCol);
+    
+    currentShapeHexes = currentShapeHexes.map(h => ({
+        row: h.row + offsetRow,
+        col: h.col + offsetCol
+    }));
+    
+    redrawShapeCanvas();
+}
+
+function savePieceShape() {
+    const name = document.getElementById('pieceName').value.trim();
+    
+    if (!name) {
+        alert('Please enter a piece name!');
+        return;
+    }
+    
+    if (currentShapeHexes.length === 0) {
+        alert('Please draw a shape first!');
+        return;
+    }
+
+    const piece = {
+        id: Date.now(),
+        name: name,
+        color: document.getElementById('pieceColor').value,
+        description: document.getElementById('pieceDesc').value,
+        hexes: [...currentShapeHexes],
+        abilities: {
+            canRotate: document.getElementById('canRotate').checked,
+            canFlip: document.getElementById('canFlip').checked,
+            canMove: document.getElementById('canMove').checked,
+            canAttack: document.getElementById('canAttack').checked,
+            canDefend: document.getElementById('canDefend').checked,
+            canEscape: document.getElementById('canEscape').checked,
+            canCapture: document.getElementById('canCapture').checked
+        },
+        movement: {
+            move: [],
+            attack: [],
+            special: [],
+            type: 'adjacent',
+            range: 1,
+            rules: {}
+        }
+    };
+
+    gameData.pieces.push(piece);
+    updatePieceGallery();
+    updateSelectors();
+    saveToLocalStorage();
+    
+    // Clear form
+    document.getElementById('pieceName').value = '';
+    document.getElementById('pieceDesc').value = '';
+    clearShape();
+    
+    showNotification('✓ Piece added to collection!', 'success');
+}
+
+function updatePieceGallery() {
+    const gallery = document.getElementById('pieceGallery');
+    
+    if (gameData.pieces.length === 0) {
+        gallery.innerHTML = '<div class="alert alert-info">No pieces created yet. Design your first piece above!</div>';
+        return;
+    }
+
+    gallery.innerHTML = gameData.pieces.map(p => `
+        <div class="piece-card" onclick="selectPieceCard(${p.id})" data-piece-id="${p.id}">
+            <button class="delete-btn" onclick="event.stopPropagation(); deletePiece(${p.id})">×</button>
+            <h3>${p.name}</h3>
+            <p style="font-size: 0.9em; color: #666; margin-bottom: 10px;">${p.description || 'No description'}</p>
+            <canvas class="piece-preview" id="preview-${p.id}"></canvas>
+            <div style="font-size: 0.85em; color: #999; margin-top: 10px;">
+                ${p.hexes.length} hex${p.hexes.length !== 1 ? 'es' : ''} • 
+                ${Object.values(p.abilities).filter(Boolean).length} abilities
+            </div>
+        </div>
+    `).join('');
+
+    // Draw previews
+    setTimeout(() => {
+        gameData.pieces.forEach(p => {
+            const canvas = document.getElementById(`preview-${p.id}`);
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                drawPiecePreview(ctx, p, canvas.width, canvas.height);
+            }
+        });
+    }, 50);
+}
+
+function drawPiecePreview(ctx, piece, w, h) {
+    ctx.clearRect(0, 0, w, h);
+    const cx = w / 2;
+    const cy = h / 2;
+    const ps = 12;
+    
+    const pHexWidth = Math.sqrt(3) * ps;
+    const pHexHeight = ps * 2;
+    const horizontalSpacing = pHexWidth * 0.75;
+    const verticalSpacing = pHexHeight * 0.75;
+
+    piece.hexes.forEach(hex => {
+        const x = cx + (hex.col - 3.5) * horizontalSpacing;
+        const y = cy + (hex.row - 3.5) * verticalSpacing + (hex.col % 2) * (verticalSpacing * 0.5);
+        drawHexagon(ctx, x, y, ps, piece.color, '#333', 1);
+    });
+}
+
+function deletePiece(id) {
+    if (confirm('Delete this piece? This action cannot be undone.')) {
+        gameData.pieces = gameData.pieces.filter(p => p.id !== id);
+        updatePieceGallery();
+        updateSelectors();
+        saveToLocalStorage();
+        showNotification('Piece deleted', 'warning');
+    }
+}
+
+function selectPieceCard(id) {
+    document.querySelectorAll('.piece-card').forEach(c => c.classList.remove('selected'));
+    document.querySelector(`[data-piece-id="${id}"]`)?.classList.add('selected');
+}
+
+function updateSelectors() {
+    const selectors = ['movePieceSelector', 'placePieceSelector'];
+    selectors.forEach(selId => {
+        const sel = document.getElementById(selId);
+        if (sel) {
+            sel.innerHTML = '<option value="">-- Select piece --</option>' +
+                gameData.pieces.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        }
+    });
+}
+
+// ============================================================================
+// STEP 2: MOVEMENT PATTERN DESIGNER
+// ============================================================================
+
+function loadPieceForMovement() {
+    const id = parseInt(document.getElementById('movePieceSelector').value);
+    if (!id) return;
+    
+    gameData.currentPieceId = id;
+    const piece = gameData.pieces.find(p => p.id === id);
+    
+    if (!piece) return;
+    
+    currentMovement = {
+        move: [...(piece.movement.move || [])],
+        attack: [...(piece.movement.attack || [])],
+        special: [...(piece.movement.special || [])]
+    };
+    
+    // Load movement settings
+    document.getElementById('moveType').value = piece.movement.type || 'adjacent';
+    document.getElementById('moveRange').value = piece.movement.range || 1;
+    
+    // Load checkboxes
+    const rules = piece.movement.rules || {};
+    document.getElementById('canJump').checked = rules.canJump || false;
+    document.getElementById('pathBlocked').checked = rules.pathBlocked || false;
+    document.getElementById('mustCapture').checked = rules.mustCapture || false;
+    document.getElementById('mustAttack').checked = rules.mustAttack || false;
+    document.getElementById('moveAndAttack').checked = rules.moveAndAttack || false;
+    document.getElementById('moveAndRotate').checked = rules.moveAndRotate || false;
+    document.getElementById('canUseZones').checked = rules.canUseZones || false;
+    document.getElementById('noFriendlyAttack').checked = rules.noFriendlyAttack !== false;
+    document.getElementById('noSameShapeAttack').checked = rules.noSameShapeAttack || false;
+    document.getElementById('specialAbility').value = piece.movement.specialAbility || '';
+    
+    redrawMoveCanvas();
+}
+
+function handleMoveClick(e) {
+    if (!gameData.currentPieceId) {
+        alert('Please select a piece first!');
+        return;
+    }
+    
+    const rect = moveCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const hex = pixelToHex(x, y, 600, 600, 11, 11);
+    
+    if (hex) {
+        const tool = gameData.currentTool;
+        const arr = currentMovement[tool];
+        const idx = arr.findIndex(h => h.row === hex.row && h.col === hex.col);
+        
+        if (idx >= 0) {
+            arr.splice(idx, 1);
+        } else {
+            arr.push(hex);
+        }
+        
+        redrawMoveCanvas();
+    }
+}
+
+function redrawMoveCanvas() {
+    drawHexGrid(moveCtx, 600, 600, 11, 11);
+    const centerX = 600 / 2;
+    const centerY = 600 / 2;
+    
+    const horizontalSpacing = hexWidth * 0.75;
+    const verticalSpacing = hexHeight * 0.75;
+
+    // Draw piece in center
+    if (gameData.currentPieceId) {
+        const piece = gameData.pieces.find(p => p.id === gameData.currentPieceId);
+        if (piece) {
+            piece.hexes.forEach(hex => {
+                const x = centerX + (hex.col - 3.5 + 2) * horizontalSpacing;
+                const y = centerY + (hex.row - 3.5 + 2) * verticalSpacing + (hex.col % 2) * (verticalSpacing * 0.5);
+                drawHexagon(moveCtx, x, y, hexSize, piece.color, '#333', 2);
+            });
+        }
+    }
+
+    // Draw movement patterns
+    currentMovement.move.forEach(hex => {
+        const x = centerX + (hex.col - 5.5) * horizontalSpacing;
+        const y = centerY + (hex.row - 5.5) * verticalSpacing + (hex.col % 2) * (verticalSpacing * 0.5);
+        drawHexagon(moveCtx, x, y, hexSize, '#2ecc71', '#27ae60', 2);
+    });
+
+    currentMovement.attack.forEach(hex => {
+        const x = centerX + (hex.col - 5.5) * horizontalSpacing;
+        const y = centerY + (hex.row - 5.5) * verticalSpacing + (hex.col % 2) * (verticalSpacing * 0.5);
+        drawHexagon(moveCtx, x, y, hexSize, '#e74c3c', '#c0392b', 2);
+    });
+
+    currentMovement.special.forEach(hex => {
+        const x = centerX + (hex.col - 5.5) * horizontalSpacing;
+        const y = centerY + (hex.row - 5.5) * verticalSpacing + (hex.col % 2) * (verticalSpacing * 0.5);
+        drawHexagon(moveCtx, x, y, hexSize, '#f39c12', '#e67e22', 2);
+    });
+}
+
+function setMoveTool(tool) {
+    gameData.currentTool = tool;
+    document.querySelectorAll('[data-tool]').forEach(btn => {
+        if (btn.dataset.tool === tool) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+}
+
+function clearAllMovement() {
+    if (confirm('Clear all movement, attack, and special patterns?')) {
+        currentMovement = { move: [], attack: [], special: [] };
+        redrawMoveCanvas();
+    }
+}
+
+function saveMovementPattern() {
+    if (!gameData.currentPieceId) {
+        alert('Please select a piece!');
+        return;
+    }
+    
+    const piece = gameData.pieces.find(p => p.id === gameData.currentPieceId);
+    
+    piece.movement = {
+        move: [...currentMovement.move],
+        attack: [...currentMovement.attack],
+        special: [...currentMovement.special],
+        type: document.getElementById('moveType').value,
+        range: parseInt(document.getElementById('moveRange').value),
+        rules: {
+            canJump: document.getElementById('canJump').checked,
+            pathBlocked: document.getElementById('pathBlocked').checked,
+            mustCapture: document.getElementById('mustCapture').checked,
+            mustAttack: document.getElementById('mustAttack').checked,
+            moveAndAttack: document.getElementById('moveAndAttack').checked,
+            moveAndRotate: document.getElementById('moveAndRotate').checked,
+            canUseZones: document.getElementById('canUseZones').checked,
+            noFriendlyAttack: document.getElementById('noFriendlyAttack').checked,
+            noSameShapeAttack: document.getElementById('noSameShapeAttack').checked
+        },
+        specialAbility: document.getElementById('specialAbility').value
+    };
+    
+    saveToLocalStorage();
+    showNotification(`Movement pattern saved for ${piece.name}!`, 'success');
+}
+
+// ============================================================================
+// STEP 3: BOARD DESIGNER
+// ============================================================================
+
+function redrawBoard() {
+    const width = parseInt(document.getElementById('boardWidth').value) || 9;
+    const height = parseInt(document.getElementById('boardHeight').value) || 11;
+    
+    gameData.board.width = width;
+    gameData.board.height = height;
+    
+    boardCtx.clearRect(0, 0, 700, 600);
+    const centerX = 350;
+    const centerY = 300;
+    const bHexSize = 20;
+    
+    const bHexWidth = Math.sqrt(3) * bHexSize;
+    const bHexHeight = bHexSize * 2;
+    const horizontalSpacing = bHexWidth * 0.75;
+    const verticalSpacing = bHexHeight * 0.75;
+
+    for (let row = 0; row < height; row++) {
+        for (let col = 0; col < width; col++) {
+            const x = centerX + (col - width/2) * horizontalSpacing;
+            const y = centerY + (row - height/2) * verticalSpacing + (col % 2) * (verticalSpacing * 0.5);
+            
+            const hexKey = `${row}-${col}`;
+            const isDeleted = gameData.board.deletedHexes.includes(hexKey);
+            
+            if (isDeleted) {
+                drawHexagon(boardCtx, x, y, bHexSize, '#333', '#f00', 2);
+            } else {
+                drawHexagon(boardCtx, x, y, bHexSize, '#fcc49c', '#666', 1);
+            }
+        }
+    }
+    
+    saveToLocalStorage();
+}
+
+function handleBoardClick(e) {
+    const rect = boardCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const width = gameData.board.width;
+    const height = gameData.board.height;
+    const centerX = 350;
+    const centerY = 300;
+    const bHexSize = 20;
+    
+    const bHexWidth = Math.sqrt(3) * bHexSize;
+    const bHexHeight = bHexSize * 2;
+    const horizontalSpacing = bHexWidth * 0.75;
+    const verticalSpacing = bHexHeight * 0.75;
+
+    // Find clicked hex
+    for (let row = 0; row < height; row++) {
+        for (let col = 0; col < width; col++) {
+            const hx = centerX + (col - width/2) * horizontalSpacing;
+            const hy = centerY + (row - height/2) * verticalSpacing + (col % 2) * (verticalSpacing * 0.5);
+            const dist = Math.sqrt((x - hx) ** 2 + (y - hy) ** 2);
+            
+            if (dist < bHexSize) {
+                const hexKey = `${row}-${col}`;
+                
+                if (gameData.currentBoardTool === 'delete') {
+                    const idx = gameData.board.deletedHexes.indexOf(hexKey);
+                    if (idx >= 0) {
+                        gameData.board.deletedHexes.splice(idx, 1);
+                    } else {
+                        gameData.board.deletedHexes.push(hexKey);
+                    }
+                    redrawBoard();
+                } else if (gameData.currentBoardTool === 'place') {
+                    // Place piece logic
+                    const pieceId = document.getElementById('placePieceSelector').value;
+                    const player = document.getElementById('placePlayer').value;
+                    
+                    if (!pieceId) {
+                        alert('Please select a piece to place!');
+                        return;
+                    }
+                    
+                    gameData.board.placements.push({
+                        pieceId: parseInt(pieceId),
+                        player: player,
+                        hex: hexKey
+                    });
+                    
+                    redrawBoard();
+                    showNotification('Piece placed', 'success');
+                }
+                return;
+            }
+        }
+    }
+}
+
+function setBoardTool(tool) {
+    gameData.currentBoardTool = tool;
+    document.querySelectorAll('.tool-bar [data-tool]').forEach(btn => {
+        if (btn.dataset.tool === tool) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    
+    // Update cursor
+    if (tool === 'delete') {
+        boardCanvas.style.cursor = 'not-allowed';
+    } else if (tool === 'place') {
+        boardCanvas.style.cursor = 'copy';
+    } else {
+        boardCanvas.style.cursor = 'default';
+    }
+}
+
+function clearBoardPlacements() {
+    if (confirm('Clear all piece placements?')) {
+        gameData.board.placements = [];
+        gameData.board.deletedHexes = [];
+        redrawBoard();
+        showNotification('Board cleared', 'warning');
+    }
+}
+
+// ============================================================================
+// STEP 4: GAME RULES (handled by form inputs)
+// ============================================================================
+
+// ============================================================================
+// STEP 5: TEST & PUBLISH
+// ============================================================================
+
+function generateGameConfig() {
+    const config = {
+        metadata: {
+            name: document.getElementById('gameName')?.value || 'Untitled Game',
+            description: document.getElementById('gameDesc')?.value || '',
+            tags: document.getElementById('gameTags')?.value.split(',').map(t => t.trim()).filter(Boolean) || [],
+            created: new Date().toISOString(),
+            version: '1.0.0',
+            creator: 'Anonymous'
+        },
+        pieces: gameData.pieces,
+        board: gameData.board,
+        rules: {
+            winCondition: document.getElementById('winCondition')?.value || 'eliminate_all',
+            maxTurns: parseInt(document.getElementById('maxTurns')?.value) || 0,
+            turnTimeLimit: parseInt(document.getElementById('turnTimeLimit')?.value) || 60,
+            maxShapes: parseInt(document.getElementById('maxShapes')?.value) || 10,
+            maxPerType: parseInt(document.getElementById('maxPerType')?.value) || 3,
+            enableDraw: document.getElementById('enableDraw')?.checked || false,
+            enableUndo: document.getElementById('enableUndo')?.checked || true,
+            showHistory: document.getElementById('showHistory')?.checked || true,
+            showPreview: document.getElementById('showPreview')?.checked || true,
+            enableChat: document.getElementById('enableChat')?.checked || true,
+            allowGuests: document.getElementById('allowGuests')?.checked || false,
+            enableDragDrop: document.getElementById('enableDragDrop')?.checked || true,
+            enableClickMove: document.getElementById('enableClickMove')?.checked || true,
+            customRules: document.getElementById('customRules')?.value || ''
+        }
+    };
+
+    // Validate
+    if (!config.metadata.name) {
+        alert('Please enter a game name!');
+        return null;
+    }
+
+    if (config.pieces.length === 0) {
+        alert('Please create at least one piece!');
+        return null;
+    }
+
+    const preview = document.getElementById('configPreview');
+    preview.innerHTML = `
+        <div class="alert alert-success">✓ Configuration generated successfully!</div>
+        <div class="json-viewer">${JSON.stringify(config, null, 2)}</div>
+    `;
+
+    return config;
+}
+
+function testGame() {
+    const config = generateGameConfig();
+    if (!config) return;
+    
+    // Save to localStorage for testing
+    localStorage.setItem('romgon_test_game', JSON.stringify(config));
+    
+    // Open in new tab
+    window.open('index.html?test=true', '_blank');
+    showNotification('Opening test game...', 'success');
+}
+
+async function publishGame() {
+    const config = generateGameConfig();
+    if (!config) return;
+    
+    const visibility = document.getElementById('gameVisibility')?.value || 'public';
+    const thumbnail = document.getElementById('gameThumbnail')?.value || '';
+    
+    if (!document.getElementById('agreeTerms')?.checked) {
+        alert('Please agree to the terms to publish your game.');
+        return;
+    }
+
+    try {
+        showNotification('Publishing game...', 'info');
+        
+        const response = await fetch('/api/custom-games/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: config.metadata.name,
+                description: config.metadata.description,
+                config: config,
+                thumbnail: thumbnail,
+                tags: config.metadata.tags.join(','),
+                is_public: visibility === 'public'
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showPublishSuccess(result);
+        } else {
+            throw new Error(result.error || 'Failed to publish game');
+        }
+
+    } catch (error) {
+        console.error('Error publishing game:', error);
+        alert('Failed to publish game: ' + error.message);
+    }
+}
+
+function showPublishSuccess(result) {
+    const modal = document.getElementById('publishModal');
+    const resultDiv = document.getElementById('publishResult');
+    
+    const gameUrl = `${window.location.origin}/play?game=${result.game_id}`;
+    
+    resultDiv.innerHTML = `
+        <p style="margin: 15px 0;">Your game has been published!</p>
+        <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 15px 0;">
+            <strong>Game ID:</strong> ${result.game_id}<br>
+            <strong>URL:</strong> <a href="${gameUrl}" target="_blank">${gameUrl}</a>
+        </div>
+    `;
+    
+    document.getElementById('playGameBtn').onclick = () => {
+        window.location.href = gameUrl;
+    };
+    
+    document.getElementById('shareGameBtn').onclick = () => {
+        navigator.clipboard.writeText(gameUrl);
+        showNotification('Link copied to clipboard!', 'success');
+    };
+    
+    modal.classList.add('active');
+}
+
+function downloadJSON() {
+    const config = generateGameConfig();
+    if (!config) return;
+    
+    const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${config.metadata.name.toLowerCase().replace(/\s+/g, '-')}-config.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showNotification('Configuration downloaded!', 'success');
+}
+
+function startNewGame() {
+    if (confirm('Start a new game? Current progress will be lost if not saved.')) {
+        gameData.pieces = [];
+        gameData.board.placements = [];
+        gameData.board.deletedHexes = [];
+        currentShapeHexes = [];
+        
+        goToStep(0);
+        updatePieceGallery();
+        updateSelectors();
+        
+        // Clear all forms
+        document.querySelectorAll('input[type="text"], textarea').forEach(input => input.value = '');
+        
+        showNotification('Started new game', 'info');
+    }
+}
+
+// ============================================================================
+// WORKFLOW NAVIGATION
+// ============================================================================
+
+function goToStep(step) {
+    document.querySelectorAll('.step').forEach((s, i) => {
+        s.classList.toggle('active', i === step);
+        s.classList.toggle('completed', i < step);
+    });
+    
+    document.querySelectorAll('.content').forEach((c, i) => {
+        c.classList.toggle('active', i === step);
+    });
+    
+    gameData.currentStep = step;
+    document.getElementById('progressFill').style.width = ((step + 1) * 20) + '%';
+    
+    // Reinit canvases if needed
+    if (step === 0 && shapeCanvas) redrawShapeCanvas();
+    if (step === 1 && moveCanvas) redrawMoveCanvas();
+    if (step === 2 && boardCanvas) redrawBoard();
+    
+    saveToLocalStorage();
+}
+
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+
+function showNotification(message, type = 'info') {
+    // Simple notification (you can enhance this)
+    console.log(`[${type.toUpperCase()}] ${message}`);
+    
+    // You could create a toast notification here
+    const notif = document.createElement('div');
+    notif.className = `alert alert-${type}`;
+    notif.textContent = message;
+    notif.style.position = 'fixed';
+    notif.style.top = '20px';
+    notif.style.right = '20px';
+    notif.style.zIndex = '9999';
+    notif.style.minWidth = '250px';
+    notif.style.animation = 'slideIn 0.3s ease';
+    
+    document.body.appendChild(notif);
+    
+    setTimeout(() => {
+        notif.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notif.remove(), 300);
+    }, 3000);
+}
+
+function saveProgress() {
+    saveToLocalStorage();
+    showNotification('Progress saved!', 'success');
+}
+
+function saveToLocalStorage() {
+    try {
+        localStorage.setItem('romgon_game_creator_data', JSON.stringify(gameData));
+    } catch (e) {
+        console.error('Failed to save to localStorage:', e);
+    }
+}
+
+function loadFromLocalStorage() {
+    try {
+        const saved = localStorage.getItem('romgon_game_creator_data');
+        if (saved) {
+            const data = JSON.parse(saved);
+            Object.assign(gameData, data);
+            updatePieceGallery();
+            updateSelectors();
+            if (gameData.currentStep) goToStep(gameData.currentStep);
+        }
+    } catch (e) {
+        console.error('Failed to load from localStorage:', e);
+    }
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+}
+
+// Add CSS animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
