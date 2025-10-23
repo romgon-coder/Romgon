@@ -124,28 +124,37 @@ let currentPieceForMovement = null;
 window.addEventListener('DOMContentLoaded', () => {
     // Shape canvas (10x10 grid)
     shapeCanvas = document.getElementById('shapeCanvas');
-    shapeCtx = shapeCanvas.getContext('2d');
+    if (shapeCanvas) {
+        shapeCtx = shapeCanvas.getContext('2d');
+        // Setup shape designer
+        initShapeDesigner();
+    }
     
     // Movement canvas
     moveCanvas = document.getElementById('moveCanvas');
-    moveCtx = moveCanvas.getContext('2d');
+    if (moveCanvas) {
+        moveCtx = moveCanvas.getContext('2d');
+        moveCanvas.addEventListener('click', handleMoveClick);
+    }
     
     // Board canvas
     boardCanvas = document.getElementById('boardCanvas');
-    boardCtx = boardCanvas.getContext('2d');
-    
-    // Setup shape designer
-    initShapeDesigner();
+    if (boardCanvas) {
+        boardCtx = boardCanvas.getContext('2d');
+        boardCanvas.addEventListener('click', handleBoardClick);
+    }
     
     // Load saved data
     loadFromLocalStorage();
     
     // Draw initial states
-    redrawShapeCanvas();
-    if (currentPieceForMovement) {
+    if (shapeCanvas) {
+        redrawShapeCanvas();
+    }
+    if (currentPieceForMovement && moveCanvas) {
         redrawMoveCanvas();
     }
-    if (boardCtx) {
+    if (boardCanvas) {
         redrawBoard();
     }
 });
@@ -155,19 +164,27 @@ window.addEventListener('DOMContentLoaded', () => {
 // ============================================================================
 
 function initShapeDesigner() {
+    if (!shapeCanvas || !shapeCtx) {
+        console.error('Shape canvas not initialized');
+        return;
+    }
+    
     shapeCanvas.addEventListener('mousedown', (e) => {
+        e.preventDefault();
         isDrawing = true;
         isErasing = e.button === 2; // Right click = erase
         handleShapeDraw(e);
     });
     
     shapeCanvas.addEventListener('mousemove', (e) => {
+        e.preventDefault();
         if (isDrawing) {
             handleShapeDraw(e);
         }
     });
     
-    shapeCanvas.addEventListener('mouseup', () => {
+    shapeCanvas.addEventListener('mouseup', (e) => {
+        e.preventDefault();
         isDrawing = false;
     });
     
@@ -177,12 +194,16 @@ function initShapeDesigner() {
     
     shapeCanvas.addEventListener('contextmenu', (e) => {
         e.preventDefault();
+        return false;
     });
     
+    console.log('Shape designer initialized');
     redrawShapeCanvas();
 }
 
 function handleShapeDraw(e) {
+    if (!shapeCanvas || !shapeCtx) return;
+    
     const rect = shapeCanvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -199,6 +220,8 @@ function handleShapeDraw(e) {
 }
 
 function redrawShapeCanvas() {
+    if (!shapeCanvas || !shapeCtx) return;
+    
     const cellSize = 40; // 400px / 10 cells
     
     // Clear canvas
@@ -221,7 +244,8 @@ function redrawShapeCanvas() {
     }
     
     // Draw filled pixels
-    const color = document.getElementById('pieceColor')?.value || '#4a90e2';
+    const colorInput = document.getElementById('pieceColor');
+    const color = colorInput ? colorInput.value : '#4a90e2';
     shapeCtx.fillStyle = color;
     
     for (let y = 0; y < 10; y++) {
