@@ -564,23 +564,27 @@
             <div class="instructions">
                 <h3>📐 Step 1: Design Your Game Pieces</h3>
                 <ul>
-                    <li>Click hexagons on the grid to create your piece shape</li>
+                    <li>Draw shapes on the 10x10 pixel grid canvas</li>
+                    <li>Click and drag to draw, right-click to erase</li>
                     <li>Give each piece a name and choose its base color</li>
                     <li>Set piece properties: rotation, abilities, behaviors</li>
                     <li>Create multiple piece types for your game</li>
-                    <li>Similar to Romgon's square, triangle, rhombus, circle, and hexagon pieces</li>
+                    <li>Each pixel becomes part of your SVG shape</li>
                 </ul>
             </div>
 
             <div class="section">
-                <h2>Hexagonal Shape Designer</h2>
+                <h2>SVG Shape Designer</h2>
                 <div class="canvas-area">
                     <div class="canvas-panel">
-                        <h3>Click to Draw Piece Shape</h3>
-                        <canvas id="shapeCanvas" width="450" height="450"></canvas>
+                        <h3>Draw on 10x10 Grid</h3>
+                        <canvas id="shapeCanvas" width="400" height="400" style="border: 2px solid #333; background: white; cursor: crosshair;"></canvas>
                         <div class="btn-group">
-                            <button class="btn btn-secondary" onclick="clearShape()">Clear Shape</button>
-                            <button class="btn" onclick="centerShape()">Center Shape</button>
+                            <button class="btn btn-secondary" onclick="clearShape()">Clear Canvas</button>
+                            <button class="btn" onclick="downloadSVG()">Download SVG</button>
+                        </div>
+                        <div style="margin-top: 10px; font-size: 0.9em; color: #888;">
+                            Click and drag to draw • Right-click to erase
                         </div>
                     </div>
                     <div class="canvas-panel">

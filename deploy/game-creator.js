@@ -79,120 +79,190 @@ function initCanvases() {
 
     if (boardCanvas) {
         boardCanvas.addEventListener('click', handleBoardClick);
+// ============================================================================
+// GLOBAL VARIABLES
+// ============================================================================
+
+const gameData = {
+    metadata: {
+        name: '',
+        description: '',
+        version: '1.0.0',
+        creator: 'Anonymous'
+    },
+    pieces: [],
+    board: {
+        width: 11,
+        height: 11,
+        zones: [],
+        initialSetup: []
+    },
+    rules: {
+        winConditions: [],
+        features: {},
+        turnLimit: 100
+    }
+};
+
+// Canvas setup
+let shapeCanvas, shapeCtx;
+let moveCanvas, moveCtx;
+let boardCanvas, boardCtx;
+
+// Shape designer - 10x10 pixel grid
+let pixelGrid = Array(10).fill(null).map(() => Array(10).fill(false));
+let isDrawing = false;
+let isErasing = false;
+
+// Movement pattern
+let currentPieceForMovement = null;
+
+// ============================================================================
+// INITIALIZATION
+// ============================================================================
+
+window.addEventListener('DOMContentLoaded', () => {
+    // Shape canvas (10x10 grid)
+    shapeCanvas = document.getElementById('shapeCanvas');
+    shapeCtx = shapeCanvas.getContext('2d');
+    
+    // Movement canvas
+    moveCanvas = document.getElementById('moveCanvas');
+    moveCtx = moveCanvas.getContext('2d');
+    
+    // Board canvas
+    boardCanvas = document.getElementById('boardCanvas');
+    boardCtx = boardCanvas.getContext('2d');
+    
+    // Setup shape designer
+    initShapeDesigner();
+    
+    // Load saved data
+    loadFromLocalStorage();
+    
+    // Draw initial states
+    redrawShapeCanvas();
+    if (currentPieceForMovement) {
+        redrawMoveCanvas();
+    }
+    if (boardCtx) {
         redrawBoard();
     }
-}
+});
 
 // ============================================================================
-// STEP 1: PIECE SHAPE DESIGNER
+// STEP 1: PIXEL GRID SHAPE DESIGNER (10x10)
 // ============================================================================
 
-function drawHexGrid(ctx, width, height, gridW, gridH) {
-    ctx.clearRect(0, 0, width, height);
-    const centerX = width / 2;
-    const centerY = height / 2;
+function initShapeDesigner() {
+    shapeCanvas.addEventListener('mousedown', (e) => {
+        isDrawing = true;
+        isErasing = e.button === 2; // Right click = erase
+        handleShapeDraw(e);
+    });
     
-    const horizontalSpacing = hexWidth * 0.75;
-    const verticalSpacing = hexHeight * 0.75;
-
-    for (let row = 0; row < gridH; row++) {
-        for (let col = 0; col < gridW; col++) {
-            const x = centerX + (col - gridW/2) * horizontalSpacing;
-            const y = centerY + (row - gridH/2) * verticalSpacing + (col % 2) * (verticalSpacing * 0.5);
-            drawHexagon(ctx, x, y, hexSize, '#fff', '#666', 1.5);
+    shapeCanvas.addEventListener('mousemove', (e) => {
+        if (isDrawing) {
+            handleShapeDraw(e);
         }
-    }
+    });
+    
+    shapeCanvas.addEventListener('mouseup', () => {
+        isDrawing = false;
+    });
+    
+    shapeCanvas.addEventListener('mouseleave', () => {
+        isDrawing = false;
+    });
+    
+    shapeCanvas.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+    });
+    
+    redrawShapeCanvas();
 }
 
-function drawHexagon(ctx, x, y, size, fill, stroke, lineWidth) {
-    ctx.beginPath();
-    for (let i = 0; i < 6; i++) {
-        const angle = Math.PI / 3 * i;
-        const hx = x + size * Math.cos(angle);
-        const hy = y + size * Math.sin(angle);
-        if (i === 0) ctx.moveTo(hx, hy);
-        else ctx.lineTo(hx, hy);
-    }
-    ctx.closePath();
-    ctx.fillStyle = fill;
-    ctx.fill();
-    ctx.strokeStyle = stroke;
-    ctx.lineWidth = lineWidth;
-    ctx.stroke();
-}
-
-function handleShapeClick(e) {
+function handleShapeDraw(e) {
     const rect = shapeCanvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    const hex = pixelToHex(x, y, 450, 450, 7, 7);
     
-    if (hex) {
-        const idx = currentShapeHexes.findIndex(h => h.row === hex.row && h.col === hex.col);
-        if (idx >= 0) {
-            currentShapeHexes.splice(idx, 1);
-        } else {
-            currentShapeHexes.push(hex);
-        }
+    // Convert to grid coordinates (10x10)
+    const cellSize = 40; // 400 / 10
+    const gridX = Math.floor(x / cellSize);
+    const gridY = Math.floor(y / cellSize);
+    
+    if (gridX >= 0 && gridX < 10 && gridY >= 0 && gridY < 10) {
+        pixelGrid[gridY][gridX] = !isErasing;
         redrawShapeCanvas();
     }
 }
 
-function pixelToHex(x, y, canvasW, canvasH, gridW, gridH) {
-    const centerX = canvasW / 2;
-    const centerY = canvasH / 2;
+function redrawShapeCanvas() {
+    const cellSize = 40; // 400px / 10 cells
     
-    const horizontalSpacing = hexWidth * 0.75;
-    const verticalSpacing = hexHeight * 0.75;
-
-    for (let row = 0; row < gridH; row++) {
-        for (let col = 0; col < gridW; col++) {
-            const hx = centerX + (col - gridW/2) * horizontalSpacing;
-            const hy = centerY + (row - gridH/2) * verticalSpacing + (col % 2) * (verticalSpacing * 0.5);
-            const dist = Math.sqrt((x - hx) ** 2 + (y - hy) ** 2);
-            if (dist < hexSize) {
-                return {row, col};
+    // Clear canvas
+    shapeCtx.clearRect(0, 0, 400, 400);
+    
+    // Draw grid lines
+    shapeCtx.strokeStyle = '#ddd';
+    shapeCtx.lineWidth = 1;
+    
+    for (let i = 0; i <= 10; i++) {
+        shapeCtx.beginPath();
+        shapeCtx.moveTo(i * cellSize, 0);
+        shapeCtx.lineTo(i * cellSize, 400);
+        shapeCtx.stroke();
+        
+        shapeCtx.beginPath();
+        shapeCtx.moveTo(0, i * cellSize);
+        shapeCtx.lineTo(400, i * cellSize);
+        shapeCtx.stroke();
+    }
+    
+    // Draw filled pixels
+    const color = document.getElementById('pieceColor')?.value || '#4a90e2';
+    shapeCtx.fillStyle = color;
+    
+    for (let y = 0; y < 10; y++) {
+        for (let x = 0; x < 10; x++) {
+            if (pixelGrid[y][x]) {
+                shapeCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
             }
         }
     }
-    return null;
-}
-
-function redrawShapeCanvas() {
-    drawHexGrid(shapeCtx, 450, 450, 7, 7);
-    const color = document.getElementById('pieceColor').value;
-    const centerX = 450 / 2;
-    const centerY = 450 / 2;
-    
-    const horizontalSpacing = hexWidth * 0.75;
-    const verticalSpacing = hexHeight * 0.75;
-
-    currentShapeHexes.forEach(hex => {
-        const x = centerX + (hex.col - 3.5) * horizontalSpacing;
-        const y = centerY + (hex.row - 3.5) * verticalSpacing + (hex.col % 2) * (verticalSpacing * 0.5);
-        drawHexagon(shapeCtx, x, y, hexSize, color, '#333', 2);
-    });
 }
 
 function clearShape() {
-    currentShapeHexes = [];
+    pixelGrid = Array(10).fill(null).map(() => Array(10).fill(false));
     redrawShapeCanvas();
 }
 
-function centerShape() {
-    if (currentShapeHexes.length === 0) return;
+function downloadSVG() {
+    const svgData = generateSVGFromGrid();
+    const blob = new Blob([svgData], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'piece-shape.svg';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function generateSVGFromGrid() {
+    let svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">\n';
+    const color = document.getElementById('pieceColor')?.value || '#4a90e2';
     
-    const avgRow = currentShapeHexes.reduce((s, h) => s + h.row, 0) / currentShapeHexes.length;
-    const avgCol = currentShapeHexes.reduce((s, h) => s + h.col, 0) / currentShapeHexes.length;
-    const offsetRow = Math.round(3.5 - avgRow);
-    const offsetCol = Math.round(3.5 - avgCol);
+    for (let y = 0; y < 10; y++) {
+        for (let x = 0; x < 10; x++) {
+            if (pixelGrid[y][x]) {
+                svg += `  <rect x="${x}" y="${y}" width="1" height="1" fill="${color}"/>\n`;
+            }
+        }
+    }
     
-    currentShapeHexes = currentShapeHexes.map(h => ({
-        row: h.row + offsetRow,
-        col: h.col + offsetCol
-    }));
-    
-    redrawShapeCanvas();
+    svg += '</svg>';
+    return svg;
 }
 
 function savePieceShape() {
@@ -203,7 +273,9 @@ function savePieceShape() {
         return;
     }
     
-    if (currentShapeHexes.length === 0) {
+    // Check if any pixels are drawn
+    const hasShape = pixelGrid.some(row => row.some(cell => cell));
+    if (!hasShape) {
         alert('Please draw a shape first!');
         return;
     }
@@ -213,7 +285,8 @@ function savePieceShape() {
         name: name,
         color: document.getElementById('pieceColor').value,
         description: document.getElementById('pieceDesc').value,
-        hexes: [...currentShapeHexes],
+        svg: generateSVGFromGrid(),
+        pixelData: pixelGrid.map(row => [...row]), // Deep copy
         abilities: {
             canRotate: document.getElementById('canRotate').checked,
             canFlip: document.getElementById('canFlip').checked,
@@ -246,6 +319,52 @@ function savePieceShape() {
     showNotification('✓ Piece added to collection!', 'success');
 }
 
+// ============================================================================
+// HEXAGON HELPER FUNCTIONS (for movement & board editors)
+// ============================================================================
+
+const hexSize = 25;
+const hexHeight = hexSize * 2;
+const hexWidth = Math.sqrt(3) * hexSize;
+
+function drawHexagon(ctx, x, y, size, fill, stroke, lineWidth) {
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+        const angle = Math.PI / 3 * i;
+        const hx = x + size * Math.cos(angle);
+        const hy = y + size * Math.sin(angle);
+        if (i === 0) ctx.moveTo(hx, hy);
+        else ctx.lineTo(hx, hy);
+    }
+    ctx.closePath();
+    ctx.fillStyle = fill;
+    ctx.fill();
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = lineWidth;
+    ctx.stroke();
+}
+
+function drawHexGrid(ctx, width, height, gridW, gridH) {
+    ctx.clearRect(0, 0, width, height);
+    const centerX = width / 2;
+    const centerY = height / 2;
+    
+    const horizontalSpacing = hexWidth * 0.75;
+    const verticalSpacing = hexHeight * 0.75;
+
+    for (let row = 0; row < gridH; row++) {
+        for (let col = 0; col < gridW; col++) {
+            const x = centerX + (col - gridW/2) * horizontalSpacing;
+            const y = centerY + (row - gridH/2) * verticalSpacing + (col % 2) * (verticalSpacing * 0.5);
+            drawHexagon(ctx, x, y, hexSize, '#fff', '#666', 1.5);
+        }
+    }
+}
+
+// ============================================================================
+// PIECE GALLERY
+// ============================================================================
+
 function updatePieceGallery() {
     const gallery = document.getElementById('pieceGallery');
     
@@ -259,42 +378,14 @@ function updatePieceGallery() {
             <button class="delete-btn" onclick="event.stopPropagation(); deletePiece(${p.id})">×</button>
             <h3>${p.name}</h3>
             <p style="font-size: 0.9em; color: #666; margin-bottom: 10px;">${p.description || 'No description'}</p>
-            <canvas class="piece-preview" id="preview-${p.id}"></canvas>
+            <div class="piece-preview" style="width: 100px; height: 100px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                ${p.svg}
+            </div>
             <div style="font-size: 0.85em; color: #999; margin-top: 10px;">
-                ${p.hexes.length} hex${p.hexes.length !== 1 ? 'es' : ''} • 
-                ${Object.values(p.abilities).filter(Boolean).length} abilities
+                ${Object.values(p.abilities).filter(Boolean).length} abilities enabled
             </div>
         </div>
     `).join('');
-
-    // Draw previews
-    setTimeout(() => {
-        gameData.pieces.forEach(p => {
-            const canvas = document.getElementById(`preview-${p.id}`);
-            if (canvas) {
-                const ctx = canvas.getContext('2d');
-                drawPiecePreview(ctx, p, canvas.width, canvas.height);
-            }
-        });
-    }, 50);
-}
-
-function drawPiecePreview(ctx, piece, w, h) {
-    ctx.clearRect(0, 0, w, h);
-    const cx = w / 2;
-    const cy = h / 2;
-    const ps = 12;
-    
-    const pHexWidth = Math.sqrt(3) * ps;
-    const pHexHeight = ps * 2;
-    const horizontalSpacing = pHexWidth * 0.75;
-    const verticalSpacing = pHexHeight * 0.75;
-
-    piece.hexes.forEach(hex => {
-        const x = cx + (hex.col - 3.5) * horizontalSpacing;
-        const y = cy + (hex.row - 3.5) * verticalSpacing + (hex.col % 2) * (verticalSpacing * 0.5);
-        drawHexagon(ctx, x, y, ps, piece.color, '#333', 1);
-    });
 }
 
 function deletePiece(id) {
