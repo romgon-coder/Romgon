@@ -22071,6 +22071,40 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 e.dataTransfer.dropEffect = 'move';
             });
             
+            // Add click/tap handler for mobile (tap highlighted hex to move)
+            hex.addEventListener('click', function(e) {
+                // Only handle if there's a selected piece and this hex is highlighted
+                if (!selectedPiece) return;
+                
+                const targetHex = this;
+                
+                // Check if this hex is highlighted (valid move)
+                if (!targetHex.classList.contains('highlight-green') && 
+                    !targetHex.classList.contains('highlight-red') && 
+                    !targetHex.classList.contains('highlight-danger') && 
+                    !targetHex.classList.contains('highlight-diagonal')) {
+                    return; // Not a valid move
+                }
+                
+                // Simulate a drag-and-drop by triggering the drop logic
+                const draggedFromHex = selectedPiece;
+                const piece = selectedPiece.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
+                if (!piece) return;
+                
+                // Set draggedPiece and draggedFromHex globals for the drop handler
+                draggedPiece = piece;
+                window.draggedFromHex = draggedFromHex;
+                
+                // Create a fake drop event and dispatch it
+                const dropEvent = new DragEvent('drop', {
+                    bubbles: true,
+                    cancelable: true,
+                    dataTransfer: new DataTransfer()
+                });
+                
+                targetHex.dispatchEvent(dropEvent);
+            });
+            
                 hex.addEventListener('drop', function(e) {
                 e.preventDefault();
                 
