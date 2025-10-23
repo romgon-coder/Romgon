@@ -22086,14 +22086,15 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     return; // Not a valid move
                 }
                 
-                // Simulate a drag-and-drop by triggering the drop logic
-                const draggedFromHex = selectedPiece;
+                // Get the piece from the selected hexagon
                 const piece = selectedPiece.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
                 if (!piece) return;
                 
-                // Set draggedPiece and draggedFromHex globals for the drop handler
+                // Set global variables for the drop handler
                 draggedPiece = piece;
-                window.draggedFromHex = draggedFromHex;
+                draggedFromHex = selectedPiece; // Set the global draggedFromHex
+                
+                console.log('📱 Click-to-move:', draggedFromHex.id, '→', targetHex.id);
                 
                 // Create a fake drop event and dispatch it
                 const dropEvent = new DragEvent('drop', {
