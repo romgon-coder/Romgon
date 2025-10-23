@@ -3359,10 +3359,19 @@
                 display: none !important;
             }
             
-            /* Hide camera controls on mobile */
-            #camera-panel,
+            /* Show camera controls on mobile - position at bottom right */
+            #camera-panel {
+                bottom: 70px !important;
+                right: 5px !important;
+                padding: 8px !important;
+                font-size: 0.75em !important;
+            }
+            
             #camera-toggle-btn {
-                display: none !important;
+                bottom: 70px !important;
+                right: 5px !important;
+                padding: 6px 10px !important;
+                font-size: 0.75em !important;
             }
             
             /* Larger hexagons for mobile touch */
@@ -3370,10 +3379,11 @@
                 --hex-size: 35px; /* Larger for touch targets */
             }
             
-            /* Scale and rotate board 90° for mobile */
+            /* Scale and rotate board 90° for mobile - consistent for both players */
             .board {
-                transform: scale(0.65) rotate(90deg);
+                transform: scale(0.7) rotate(90deg);
                 transform-origin: center center;
+                margin: 0 auto;
             }
             
             /* Mobile-friendly top controls */
@@ -8794,41 +8804,95 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             z-index: 2000;
         ">
             <!-- Main Controls -->
-            <div style="display: flex; justify-content: space-around; align-items: center; max-width: 600px; margin: 0 auto; gap: 6px;">
+            <div style="display: flex; justify-content: center; align-items: center; max-width: 100%; margin: 0 auto; gap: 4px; flex-wrap: nowrap;">
                 <button onclick="undoMove()" style="
                     background: rgba(78, 205, 196, 0.2);
                     border: 2px solid #4ecdc4;
                     border-radius: 6px;
-                    padding: 8px 12px;
+                    padding: 6px 10px;
                     color: white;
-                    font-size: 0.85em;
+                    font-size: 0.75em;
                     font-weight: bold;
                     cursor: pointer;
-                    flex: 1;
+                    flex: 0 1 auto;
+                    white-space: nowrap;
                 ">↶ Undo</button>
                 
                 <button onclick="toggleMobileInfo()" style="
                     background: rgba(255, 121, 198, 0.2);
                     border: 2px solid #ff79c6;
                     border-radius: 6px;
-                    padding: 8px 12px;
+                    padding: 6px 10px;
                     color: white;
-                    font-size: 0.85em;
+                    font-size: 0.75em;
                     font-weight: bold;
                     cursor: pointer;
-                    flex: 1;
+                    flex: 0 1 auto;
+                    white-space: nowrap;
                 ">ℹ️ Info</button>
+                
+                <!-- Rotation controls inline -->
+                <div id="mobile-rotation-controls" style="display: none; gap: 4px; align-items: center;">
+                    <button id="mobile-rotate-left" style="
+                        background: rgba(155, 89, 182, 0.2);
+                        border: 2px solid #9b59b6;
+                        border-radius: 6px;
+                        padding: 6px 10px;
+                        color: white;
+                        font-size: 0.75em;
+                        font-weight: bold;
+                        cursor: pointer;
+                        white-space: nowrap;
+                    ">↻ R</button>
+                    
+                    <button id="mobile-rotate-right" style="
+                        background: rgba(155, 89, 182, 0.2);
+                        border: 2px solid #9b59b6;
+                        border-radius: 6px;
+                        padding: 6px 10px;
+                        color: white;
+                        font-size: 0.75em;
+                        font-weight: bold;
+                        cursor: pointer;
+                        white-space: nowrap;
+                    ">↺ L</button>
+                    
+                    <button id="mobile-keep" style="
+                        background: rgba(39, 174, 96, 0.2);
+                        border: 2px solid #27ae60;
+                        border-radius: 6px;
+                        padding: 6px 10px;
+                        color: white;
+                        font-size: 0.75em;
+                        font-weight: bold;
+                        cursor: pointer;
+                        white-space: nowrap;
+                    ">✓ Keep</button>
+                    
+                    <button id="mobile-release" style="
+                        background: rgba(231, 76, 60, 0.2);
+                        border: 2px solid #e74c3c;
+                        border-radius: 6px;
+                        padding: 6px 10px;
+                        color: white;
+                        font-size: 0.75em;
+                        font-weight: bold;
+                        cursor: pointer;
+                        white-space: nowrap;
+                    ">✕ Release</button>
+                </div>
                 
                 <button onclick="quitAndLogout()" style="
                     background: rgba(255, 107, 107, 0.2);
                     border: 2px solid #ff6b6b;
                     border-radius: 6px;
-                    padding: 8px 12px;
+                    padding: 6px 10px;
                     color: white;
-                    font-size: 0.85em;
+                    font-size: 0.75em;
                     font-weight: bold;
                     cursor: pointer;
-                    flex: 1;
+                    flex: 0 1 auto;
+                    white-space: nowrap;
                 ">✕ Quit</button>
             </div>
         </div>
@@ -8838,10 +8902,102 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 .mobile-game-controls {
                     display: block !important;
                 }
+                
+                /* Hide desktop rotation controls on mobile */
+                #rotation-controls {
+                    display: none !important;
+                }
+                
+                /* Show mobile rotation controls inline when piece selected */
+                #mobile-rotation-controls {
+                    display: none !important; /* Will be shown by JS when piece selected */
+                }
             }
         </style>
         
         <script>
+            // Mobile rotation button handlers
+            document.addEventListener('DOMContentLoaded', function() {
+                const mobileRotateLeft = document.getElementById('mobile-rotate-left');
+                const mobileRotateRight = document.getElementById('mobile-rotate-right');
+                const mobileKeep = document.getElementById('mobile-keep');
+                const mobileRelease = document.getElementById('mobile-release');
+                
+                if (mobileRotateLeft) {
+                    mobileRotateLeft.onclick = function() {
+                        console.log('Mobile rotate left clicked');
+                        if (selectedPiece) {
+                            const [, row, col] = selectedPiece.id.match(/hex-(\d+)-(\d+)/);
+                            const piece = selectedPiece.querySelector('.triangle-piece, .hexgon-piece');
+                            if (piece && piece.classList.contains('triangle-piece')) {
+                                rotateTriangleLeft(`hex-${row}-${col}`);
+                            } else if (piece && piece.classList.contains('hexgon-piece')) {
+                                rotateHexgonLeft(`hex-${row}-${col}`);
+                            }
+                        }
+                    };
+                }
+                
+                if (mobileRotateRight) {
+                    mobileRotateRight.onclick = function() {
+                        console.log('Mobile rotate right clicked');
+                        if (selectedPiece) {
+                            const [, row, col] = selectedPiece.id.match(/hex-(\d+)-(\d+)/);
+                            const piece = selectedPiece.querySelector('.triangle-piece, .hexgon-piece');
+                            if (piece && piece.classList.contains('triangle-piece')) {
+                                rotateTriangleRight(`hex-${row}-${col}`);
+                            } else if (piece && piece.classList.contains('hexgon-piece')) {
+                                rotateHexgonRight(`hex-${row}-${col}`);
+                            }
+                        }
+                    };
+                }
+                
+                if (mobileKeep) {
+                    mobileKeep.onclick = function() {
+                        console.log('Mobile keep clicked');
+                        if (selectedPiece) {
+                            const hexId = selectedPiece.id;
+                            const actions = pieceActions.get(hexId) || {moved: false, attacked: false, rotated: false};
+                            const hasPerformedAction = actions.moved || actions.attacked || actions.rotated;
+                            
+                            if (!hasPerformedAction) {
+                                const confirmed = confirm('⚠️ WARNING: You haven\'t made any move, rotation, or attack!\n\nAre you sure you want to end your turn without doing anything?');
+                                if (!confirmed) {
+                                    return;
+                                }
+                            }
+                            
+                            actions.rotated = true;
+                            pieceActions.set(hexId, actions);
+                            
+                            if (!gameOver) {
+                                switchTurn();
+                                updateBaseDefenceDisplay();
+                                highlightAllPiecesUnderAttack();
+                            }
+                        }
+                    };
+                }
+                
+                if (mobileRelease) {
+                    mobileRelease.onclick = function() {
+                        console.log('Mobile release clicked');
+                        if (selectedPiece) {
+                            clearAllHighlights();
+                            const hexId = selectedPiece.id;
+                            currentTurnPiece = null;
+                            selectedPiece = null;
+                            
+                            const mobileRotationControls = document.getElementById('mobile-rotation-controls');
+                            if (mobileRotationControls) {
+                                mobileRotationControls.style.display = 'none';
+                            }
+                        }
+                    };
+                }
+            });
+            
             function toggleMobileInfo() {
                 const whiteElim = document.querySelectorAll('.eliminated-section')[0];
                 const blackElim = document.querySelectorAll('.eliminated-section')[1];
@@ -12100,6 +12256,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     currentTurnPiece = null;
                     const rotationControls = document.getElementById('rotation-controls');
                     if (rotationControls) rotationControls.style.display = 'none';
+                    
+                    // Also hide mobile rotation controls
+                    const mobileRotationControls = document.getElementById('mobile-rotation-controls');
+                    if (mobileRotationControls) {
+                        mobileRotationControls.style.display = 'none';
+                    }
                 }
                 if (!this.classList.contains('circle-piece')) {
                     setGatewayHighlight(false);
@@ -12116,6 +12278,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             currentTurnPiece = null;
             const rotationControls = document.getElementById('rotation-controls');
             if (rotationControls) rotationControls.style.display = 'none';
+            
+            // Also hide mobile rotation controls
+            const mobileRotationControls = document.getElementById('mobile-rotation-controls');
+            if (mobileRotationControls) {
+                mobileRotationControls.style.display = 'none';
+            }
 
             // Update all pieces under attack after undo
             highlightAllPiecesUnderAttack();
@@ -21706,9 +21874,21 @@ ${moveHistory || '(No moves played yet - starting position)'}
                         if (this.classList.contains('triangle-piece') || this.classList.contains('hexgon-piece')) {
                             console.log('Showing rotation controls for rotatable piece');
                             rotationControls.style.display = 'block';
+                            
+                            // Also show mobile rotation controls on mobile
+                            const mobileRotationControls = document.getElementById('mobile-rotation-controls');
+                            if (mobileRotationControls && window.innerWidth <= 768) {
+                                mobileRotationControls.style.display = 'flex';
+                            }
                         } else {
                             console.log('Hiding rotation controls for non-rotatable piece');
                             rotationControls.style.display = 'none';
+                            
+                            // Also hide mobile rotation controls
+                            const mobileRotationControls = document.getElementById('mobile-rotation-controls');
+                            if (mobileRotationControls) {
+                                mobileRotationControls.style.display = 'none';
+                            }
                         }
                     }
                     
