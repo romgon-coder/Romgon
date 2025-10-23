@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Library - Browse Custom Romgon Games</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+
+        .header-buttons {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .header-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .header-btn:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .create-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #4facfe;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .create-btn:hover {
+            background: #00f2fe;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.5);
+        }
+
+        .search-bar {
+            padding: 30px;
+            background: #f5f5f5;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .search-controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 250px;
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .filter-select {
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
+        }
+
+        .tabs {
+            display: flex;
+            background: #e8e8e8;
+            border-bottom: 3px solid #ddd;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            background: none;
+        }
+
+        .tab:hover {
+            background: #d8d8d8;
+        }
+
+        .tab.active {
+            background: white;
+            border-bottom: 4px solid #667eea;
+            color: #667eea;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .game-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .game-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .game-thumbnail {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3em;
+            font-weight: bold;
+        }
+
+        .game-info {
+            padding: 20px;
+        }
+
+        .game-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .game-description {
+            font-size: 0.95em;
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+            max-height: 60px;
+            overflow: hidden;
+        }
+
+        .game-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9em;
+            color: #999;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .game-stats {
+            display: flex;
+            gap: 15px;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .game-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 15px 0;
+        }
+
+        .tag {
+            background: #f0f4ff;
+            color: #667eea;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            font-size: 1.2em;
+            color: #666;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .empty-state h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 2em;
+        }
+
+        .empty-state p {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 30px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 40px;
+        }
+
+        .page-btn {
+            padding: 10px 20px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2em; }
+            .search-controls { flex-direction: column; width: 100%; }
+            .search-input { width: 100%; }
+            .game-grid { grid-template-columns: 1fr; }
+            .header-buttons { position: static; margin-bottom: 20px; }
+            .create-btn { position: static; margin-top: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-buttons">
+                <a href="index.html" class="header-btn">🏠 Back to Game</a>
+            </div>
+            <a href="game-creator.html" class="create-btn">+ Create New Game</a>
+            <h1>📚 Game Library</h1>
+            <p>Browse and play custom Romgon games created by the community</p>
+        </div>
+
+        <div class="search-bar">
+            <div class="search-controls">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    class="search-input" 
+                    placeholder="Search games by name, description, or tags..."
+                    onkeypress="if(event.key==='Enter') searchGames()"
+                >
+                <select id="sortSelect" class="filter-select" onchange="searchGames()">
+                    <option value="created_at">Newest First</option>
+                    <option value="plays">Most Played</option>
+                    <option value="rating">Highest Rated</option>
+                    <option value="name">Alphabetical</option>
+                </select>
+                <button class="search-btn" onclick="searchGames()">🔍 Search</button>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('all')">All Games</button>
+            <button class="tab" onclick="switchTab('featured')">Featured</button>
+            <button class="tab" onclick="switchTab('popular')">Popular</button>
+            <button class="tab" onclick="switchTab('my-games')">My Games</button>
+        </div>
+
+        <div class="content">
+            <div id="gamesContainer"></div>
+            <div id="pagination" class="pagination"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 'all';
+        let currentPage = 0;
+        let gamesPerPage = 12;
+
+        // Load games on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            loadGames();
+        });
+
+        function switchTab(tab) {
+            currentTab = tab;
+            currentPage = 0;
+            
+            // Update active tab
+            document.querySelectorAll('.tab').forEach((t, i) => {
+                const tabs = ['all', 'featured', 'popular', 'my-games'];
+                t.classList.toggle('active', tabs[i] === tab);
+            });
+            
+            loadGames();
+        }
+
+        async function loadGames() {
+            const container = document.getElementById('gamesContainer');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading games...</p></div>';
+
+            try {
+                let endpoint = '/api/custom-games/list';
+                let params = new URLSearchParams({
+                    limit: gamesPerPage,
+                    offset: currentPage * gamesPerPage,
+                    sort: document.getElementById('sortSelect').value,
+                    order: 'DESC'
+                });
+
+                if (currentTab === 'featured') {
+                    endpoint = '/api/custom-games/featured';
+                    params = new URLSearchParams({ limit: gamesPerPage });
+                } else if (currentTab === 'popular') {
+                    endpoint = '/api/custom-games/popular';
+                    params = new URLSearchParams({ limit: gamesPerPage });
+                } else if (currentTab === 'my-games') {
+                    endpoint = '/api/custom-games/my-games';
+                    params = '';
+                }
+
+                const response = await fetch(`${endpoint}?${params}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    displayGames(data.games || []);
+                    updatePagination(data.total, data.hasMore);
+                } else {
+                    throw new Error(data.error || 'Failed to load games');
+                }
+
+            } catch (error) {
+                console.error('Error loading games:', error);
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h2>⚠️ Error Loading Games</h2>
+                        <p>${error.message}</p>
+                        <p style="color: #999; font-size: 0.9em;">Make sure the backend server is running.</p>
+                        <button class="search-btn" onclick="loadGames()">Try Again</button>
+                    </div>
+                `;
+            }
+        }
+
+        function displayGames(games) {
+            const container = document.getElementById('gamesContainer');
+
+            if (games.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h2>🎮 No Games Found</h2>
+                        <p>${currentTab === 'my-games' ? 'You haven\'t created any games yet.' : 'Be the first to create a game!'}</p>
+                        <a href="game-creator.html" class="search-btn">Create New Game</a>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = `
+                <div class="game-grid">
+                    ${games.map(game => createGameCard(game)).join('')}
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function createGameCard(game) {
+            const tags = game.tags ? game.tags.split(',').slice(0, 3) : [];
+            const firstLetter = game.name.charAt(0).toUpperCase();
+
+            return `
+                <div class="game-card" onclick="playGame('${game.game_id}')">
+                    <div class="game-thumbnail">
+                        ${game.thumbnail ? 
+                            `<img src="${game.thumbnail}" style="width:100%; height:100%; object-fit:cover;">` : 
+                            `<span>${firstLetter}</span>`
+                        }
+                    </div>
+                    <div class="game-info">
+                        <div class="game-title">${escapeHtml(game.name)}</div>
+                        <div class="game-description">${escapeHtml(game.description || 'No description provided')}</div>
+                        ${tags.length > 0 ? `
+                            <div class="game-tags">
+                                ${tags.map(tag => `<span class="tag">${escapeHtml(tag.trim())}</span>`).join('')}
+                            </div>
+                        ` : ''}
+                        <div class="game-meta">
+                            <span style="color: #667eea; font-weight: 600;">by ${escapeHtml(game.creator_name)}</span>
+                            <div class="game-stats">
+                                <span class="stat">▶️ ${game.plays || 0}</span>
+                                <span class="stat">⭐ ${(game.rating || 0).toFixed(1)}</span>
+                                <span class="stat">❤️ ${game.favorites || 0}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updatePagination(total, hasMore) {
+            const pagination = document.getElementById('pagination');
+            
+            if (!total || total <= gamesPerPage) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            const totalPages = Math.ceil(total / gamesPerPage);
+            let html = `
+                <button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 0 ? 'disabled' : ''}>
+                    ← Previous
+                </button>
+            `;
+
+            for (let i = 0; i < totalPages; i++) {
+                if (i < 3 || i > totalPages - 4 || Math.abs(i - currentPage) < 2) {
+                    html += `
+                        <button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">
+                            ${i + 1}
+                        </button>
+                    `;
+                } else if (i === 3 || i === totalPages - 4) {
+                    html += '<span style="padding: 0 10px;">...</span>';
+                }
+            }
+
+            html += `
+                <button class="page-btn" onclick="changePage(${currentPage + 1})" ${!hasMore ? 'disabled' : ''}>
+                    Next →
+                </button>
+            `;
+
+            pagination.innerHTML = html;
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            loadGames();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function searchGames() {
+            const query = document.getElementById('searchInput').value;
+            currentPage = 0;
+            
+            // You can add search parameter to the API call
+            loadGames();
+        }
+
+        function playGame(gameId) {
+            // Redirect to main game with game parameter
+            window.location.href = `index.html?game=${gameId}`;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

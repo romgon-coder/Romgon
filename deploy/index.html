@@ -19210,6 +19210,28 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 aiModelButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
             }
 
+            // Create Game Library button
+            const libraryButton = document.createElement('button');
+            libraryButton.innerHTML = '<span class="game-menu-button-emoji">📚</span><span class="game-menu-button-label">Game<br>Library</span>';
+            libraryButton.className = 'game-menu-button';
+            libraryButton.title = 'Browse custom games';
+            libraryButton.onclick = function() {
+                window.location.href = 'game-library.html';
+            };
+            libraryButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
+            libraryButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
+
+            // Create Game Creator button
+            const creatorButton = document.createElement('button');
+            creatorButton.innerHTML = '<span class="game-menu-button-emoji">🎨</span><span class="game-menu-button-label">Create<br>Game</span>';
+            creatorButton.className = 'game-menu-button';
+            creatorButton.title = 'Design your own game';
+            creatorButton.onclick = function() {
+                window.location.href = 'game-creator.html';
+            };
+            creatorButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
+            creatorButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
+
             // Create coordinate toggle button
             const coordButton = document.createElement('button');
             coordButton.innerHTML = '<span class="game-menu-button-emoji">📍</span><span class="game-menu-button-label">Show<br>Coords</span>';
@@ -19730,6 +19752,11 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             if (aiModelButton) {
                 gameButtonsPanel.appendChild(aiModelButton);
             }
+            
+            // Game Maker Platform navigation buttons
+            gameButtonsPanel.appendChild(libraryButton);
+            gameButtonsPanel.appendChild(creatorButton);
+            
             gameButtonsPanel.appendChild(coordButton);
             gameButtonsPanel.appendChild(defenseButton);
             gameButtonsPanel.appendChild(fogButton);
