@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Pixel Grid Drawing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background: #1a1a2e;
+            color: white;
+        }
+        h1 {
+            color: #00d2ff;
+        }
+        canvas {
+            border: 2px solid #333;
+            background: white;
+            cursor: crosshair;
+            margin: 20px 0;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 20px;
+            background: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #357abd;
+        }
+        .info {
+            background: #2a2a3e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            max-width: 400px;
+        }
+        input[type="color"] {
+            width: 60px;
+            height: 40px;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 Pixel Grid Drawing Test</h1>
+    
+    <div class="controls">
+        <label>Color: <input type="color" id="pieceColor" value="#4a90e2"></label>
+        <button onclick="clearCanvas()">Clear Canvas</button>
+        <button onclick="downloadSVG()">Download SVG</button>
+    </div>
+    
+    <canvas id="shapeCanvas" width="400" height="400"></canvas>
+    
+    <div class="info">
+        <strong>Controls:</strong>
+        <ul style="margin: 10px 0;">
+            <li>Left-click + drag = Draw pixels</li>
+            <li>Right-click + drag = Erase pixels</li>
+            <li>Change color anytime</li>
+        </ul>
+        <div id="status" style="color: #00d2ff; margin-top: 10px;">Ready to draw!</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('shapeCanvas');
+        const ctx = canvas.getContext('2d');
+        const colorInput = document.getElementById('pieceColor');
+        const statusDiv = document.getElementById('status');
+        
+        let pixelGrid = Array(10).fill(null).map(() => Array(10).fill(false));
+        let isDrawing = false;
+        let isErasing = false;
+
+        // Initialize
+        drawGrid();
+        
+        // Mouse events
+        canvas.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            isDrawing = true;
+            isErasing = e.button === 2; // Right click = erase
+            handleDraw(e);
+            updateStatus();
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            e.preventDefault();
+            if (isDrawing) {
+                handleDraw(e);
+            }
+        });
+        
+        canvas.addEventListener('mouseup', (e) => {
+            e.preventDefault();
+            isDrawing = false;
+            updateStatus();
+        });
+        
+        canvas.addEventListener('mouseleave', () => {
+            isDrawing = false;
+            updateStatus();
+        });
+        
+        canvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            return false;
+        });
+        
+        colorInput.addEventListener('change', () => {
+            drawGrid();
+        });
+
+        function handleDraw(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const cellSize = 40;
+            const gridX = Math.floor(x / cellSize);
+            const gridY = Math.floor(y / cellSize);
+            
+            if (gridX >= 0 && gridX < 10 && gridY >= 0 && gridY < 10) {
+                pixelGrid[gridY][gridX] = !isErasing;
+                drawGrid();
+            }
+        }
+
+        function drawGrid() {
+            const cellSize = 40;
+            
+            // Clear
+            ctx.clearRect(0, 0, 400, 400);
+            
+            // Grid lines
+            ctx.strokeStyle = '#ddd';
+            ctx.lineWidth = 1;
+            
+            for (let i = 0; i <= 10; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * cellSize, 0);
+                ctx.lineTo(i * cellSize, 400);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(0, i * cellSize);
+                ctx.lineTo(400, i * cellSize);
+                ctx.stroke();
+            }
+            
+            // Draw pixels
+            ctx.fillStyle = colorInput.value;
+            
+            for (let y = 0; y < 10; y++) {
+                for (let x = 0; x < 10; x++) {
+                    if (pixelGrid[y][x]) {
+                        ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                    }
+                }
+            }
+        }
+
+        function clearCanvas() {
+            pixelGrid = Array(10).fill(null).map(() => Array(10).fill(false));
+            drawGrid();
+            statusDiv.textContent = 'Canvas cleared!';
+            setTimeout(() => updateStatus(), 1500);
+        }
+
+        function generateSVG() {
+            let svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">\n';
+            const color = colorInput.value;
+            
+            for (let y = 0; y < 10; y++) {
+                for (let x = 0; x < 10; x++) {
+                    if (pixelGrid[y][x]) {
+                        svg += `  <rect x="${x}" y="${y}" width="1" height="1" fill="${color}"/>\n`;
+                    }
+                }
+            }
+            
+            svg += '</svg>';
+            return svg;
+        }
+
+        function downloadSVG() {
+            const svgData = generateSVG();
+            const blob = new Blob([svgData], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'pixel-shape.svg';
+            a.click();
+            URL.revokeObjectURL(url);
+            statusDiv.textContent = 'SVG downloaded!';
+            setTimeout(() => updateStatus(), 1500);
+        }
+
+        function updateStatus() {
+            if (isDrawing) {
+                statusDiv.textContent = isErasing ? '🧹 Erasing...' : '🎨 Drawing...';
+            } else {
+                const pixelCount = pixelGrid.flat().filter(Boolean).length;
+                statusDiv.textContent = `${pixelCount} pixel${pixelCount !== 1 ? 's' : ''} drawn`;
+            }
+        }
+
+        console.log('Pixel drawing test initialized ✓');
+    </script>
+</body>
+</html>
