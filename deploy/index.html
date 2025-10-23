@@ -8832,7 +8832,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 ">ℹ️ Info</button>
                 
                 <!-- Rotation controls inline -->
-                <div id="mobile-rotation-controls" style="display: none; gap: 4px; align-items: center;">
+                <div id="mobile-rotation-controls" style="display: none; flex-direction: row; gap: 4px; align-items: center;">
                     <button id="mobile-rotate-left" style="
                         background: rgba(155, 89, 182, 0.2);
                         border: 2px solid #9b59b6;
@@ -8906,11 +8906,6 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 /* Hide desktop rotation controls on mobile */
                 #rotation-controls {
                     display: none !important;
-                }
-                
-                /* Show mobile rotation controls inline when piece selected */
-                #mobile-rotation-controls {
-                    display: none !important; /* Will be shown by JS when piece selected */
                 }
             }
         </style>
@@ -21877,7 +21872,13 @@ ${moveHistory || '(No moves played yet - starting position)'}
                             
                             // Also show mobile rotation controls on mobile
                             const mobileRotationControls = document.getElementById('mobile-rotation-controls');
+                            console.log('🔧 Piece selected, checking mobile rotation controls...', {
+                                mobileRotationControls: !!mobileRotationControls,
+                                windowWidth: window.innerWidth,
+                                shouldShow: window.innerWidth <= 768
+                            });
                             if (mobileRotationControls && window.innerWidth <= 768) {
+                                console.log('📱 Showing mobile rotation controls');
                                 mobileRotationControls.style.display = 'flex';
                             }
                         } else {
