@@ -680,6 +680,13 @@ function clearBoardPlacements() {
 // ============================================================================
 
 function generateGameConfig() {
+    // Regenerate SVG for any pieces that don't have it
+    gameData.pieces.forEach(piece => {
+        if ((!piece.svg || piece.svg === '') && piece.pixelData) {
+            piece.svg = regenerateSVGFromPixelData(piece.pixelData, piece.color || '#4a90e2');
+        }
+    });
+    
     const config = {
         metadata: {
             name: document.getElementById('gameName')?.value || 'Untitled Game',
@@ -917,6 +924,16 @@ function loadFromLocalStorage() {
         const saved = localStorage.getItem('romgon_game_creator_data');
         if (saved) {
             const data = JSON.parse(saved);
+            
+            // Regenerate SVG for pieces that don't have it or have empty SVG
+            if (data.pieces && Array.isArray(data.pieces)) {
+                data.pieces.forEach(piece => {
+                    if ((!piece.svg || piece.svg === '') && piece.pixelData) {
+                        piece.svg = regenerateSVGFromPixelData(piece.pixelData, piece.color || '#4a90e2');
+                    }
+                });
+            }
+            
             Object.assign(gameData, data);
             updatePieceGallery();
             updateSelectors();
@@ -925,6 +942,24 @@ function loadFromLocalStorage() {
     } catch (e) {
         console.error('Failed to load from localStorage:', e);
     }
+}
+
+// Helper function to regenerate SVG from pixel data
+function regenerateSVGFromPixelData(pixelData, color) {
+    if (!pixelData || !Array.isArray(pixelData)) return '';
+    
+    let svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">';
+    
+    for (let y = 0; y < pixelData.length && y < 10; y++) {
+        for (let x = 0; x < pixelData[y].length && x < 10; x++) {
+            if (pixelData[y][x]) {
+                svg += '<rect x="' + x + '" y="' + y + '" width="1" height="1" fill="' + color + '"/>';
+            }
+        }
+    }
+    
+    svg += '</svg>';
+    return svg;
 }
 
 function closeModal(modalId) {
