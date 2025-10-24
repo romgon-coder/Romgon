@@ -5374,9 +5374,9 @@
                     </div>
                     
                     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                        <span style="color: #00d9ff; font-size: 1.6em;">🎮</span>
-                        <a onclick="window.open('game-engine-api.html', '_blank')" style="
-                            color: #00d9ff;
+                        <span style="color: #27ae60; font-size: 1.6em;">💡</span>
+                        <a onclick="openFaqModal()" style="
+                            color: #27ae60;
                             font-size: 0.95em;
                             font-weight: 600;
                             cursor: pointer;
@@ -5385,8 +5385,8 @@
                             transition: all 0.3s ease;
                             display: inline-block;
                             white-space: nowrap;
-                        " onmouseover="this.style.color='#33e6ff'; this.style.textShadow='0 0 15px rgba(0, 217, 255, 0.5)'" onmouseout="this.style.color='#00d9ff'; this.style.textShadow='none'">GAME ENGINE API</a>
-                        <span style="color: #666; font-size: 0.75em; margin-left: auto;">For developers • AI tools</span>
+                        " onmouseover="this.style.color='#2ecc71'; this.style.textShadow='0 0 15px rgba(39, 174, 96, 0.5)'" onmouseout="this.style.color='#27ae60'; this.style.textShadow='none'">FAQ & TIPS</a>
+                        <span style="color: #666; font-size: 0.75em; margin-left: auto;">Questions • Strategies</span>
                     </div>
                 </div>
             </div>
@@ -5548,6 +5548,28 @@
                             cursor: pointer;
                             text-decoration: none;
                             letter-spacing: 1px;
+                            transition: all 0.3s ease;
+                            display: inline-block;
+                            white-space: nowrap;
+                        " onmouseover="this.style.color='#a569bd'; this.style.textShadow='0 0 15px rgba(155, 89, 182, 0.5)'" onmouseout="this.style.color='#9b59b6'; this.style.textShadow='none'">GAME LIBRARY</a>
+                        <span style="color: #666; font-size: 0.75em; margin-left: auto;">Browse • Play</span>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <span style="color: #00d9ff; font-size: 1.6em;">🎮</span>
+                        <a onclick="window.open('game-engine-api.html', '_blank')" style="
+                            color: #00d9ff;
+                            font-size: 0.95em;
+                            font-weight: 600;
+                            cursor: pointer;
+                            text-decoration: none;
+                            letter-spacing: 1px;
+                            transition: all 0.3s ease;
+                            display: inline-block;
+                            white-space: nowrap;
+                        " onmouseover="this.style.color='#33e6ff'; this.style.textShadow='0 0 15px rgba(0, 217, 255, 0.5)'" onmouseout="this.style.color='#00d9ff'; this.style.textShadow='none'">GAME ENGINE API</a>
+                        <span style="color: #666; font-size: 0.75em; margin-left: auto;">For developers • AI tools</span>
+                    </div>
                             transition: all 0.3s ease;
                             display: inline-block;
                             white-space: nowrap;
@@ -5831,6 +5853,250 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     }
     </script>
             </div>
+                    
+    <!-- FAQ & Tips Modal -->
+    <div id="faq-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.92); z-index:10001; justify-content:center; align-items:center; overflow-y:auto;">
+        <div style="background:#262421; border:3px solid #27ae60; border-radius:20px; padding:40px 30px; max-width:900px; width:95vw; margin:40px auto; box-shadow:0 10px 50px rgba(39,174,96,0.2); position:relative; color:#fff;">
+            <h2 style="color:#27ae60; text-align:center; margin-bottom:24px; font-size:2em;">💡 FAQ & Tips Guide</h2>
+            <div id="faq-content" style="max-height:65vh; overflow-y:auto; color:#eee; font-size:1.05em; line-height:1.7; background:rgba(0,0,0,0.10); padding:18px; border-radius:10px; border:1px solid #444;"></div>
+            <button onclick="closeFaqModal()" style="margin-top:28px; background:#27ae60; color:#fff; border:none; padding:12px 32px; border-radius:8px; font-size:1.1em; font-weight:600; cursor:pointer; width:100%; transition:all 0.2s;" onmouseover="this.style.background='#2ecc71'" onmouseout="this.style.background='#27ae60'">Close</button>
+        </div>
+    </div>
+    <script>
+    // FAQ & TIPS MODAL LOGIC
+    function openFaqModal() {
+        const modal = document.getElementById('faq-modal');
+        const contentDiv = document.getElementById('faq-content');
+        if (!contentDiv.dataset.loaded) {
+            // Insert the FAQ content as HTML
+            contentDiv.innerHTML = `
+<p style="text-align:center; font-style:italic; color:#aaa; margin-bottom:20px;">Your comprehensive guide to mastering Romgon - from first moves to advanced tactics</p>
+
+<h3 style="color:#27ae60; border-bottom:2px solid #27ae60; padding-bottom:8px; margin-top:30px;">🎮 Game Basics</h3>
+
+<h4 style="color:#2ecc71; margin-top:20px;">Q: What is Romgon?</h4>
+<p><strong>A:</strong> Romgon is a strategic hexagonal board game where each player controls <strong>7 pieces</strong> (2 Triangles, 2 Squares, 1 Rhombus, 1 Circle, 1 Hexagon). The goal is to move your rhombus to the opponent's base or trap their rhombus.</p>
+
+<h4 style="color:#2ecc71; margin-top:20px;">Q: How do I win?</h4>
+<p><strong>A:</strong> There are three ways to win:</p>
+<ol style="margin-left:20px;">
+<li><strong>Base Capture</strong>: Move your rhombus to the opponent's base (White: row 3, column 8 / Black: row 3, column 0)</li>
+<li><strong>Deadlock</strong>: Trap the opponent's rhombus with no legal moves while under attack</li>
+<li><strong>Opponent Resignation</strong>: Your opponent runs out of legal moves (draglock) or resigns</li>
+</ol>
+
+<h4 style="color:#2ecc71; margin-top:20px;">Q: Who moves first?</h4>
+<p><strong>A:</strong> Black always moves first in Romgon.</p>
+
+<h4 style="color:#2ecc71; margin-top:20px;">Q: Can I undo moves?</h4>
+<p><strong>A:</strong> Yes! You can use undo/redo freely in local games. However, undo is disabled in online matches and tournament play.</p>
+
+<h4 style="color:#2ecc71; margin-top:20px;">Q: Is Romgon like chess?</h4>
+<p><strong>A:</strong> Yes and no. Romgon has comparable complexity to chess (state space: 10²⁵ to 10³² positions, game tree: 10⁸⁰ to 10¹²⁰ possible games), but with unique hexagonal movement and <strong>no draws</strong> - repetition is a loss!</p>
+
+<h3 style="color:#27ae60; border-bottom:2px solid #27ae60; padding-bottom:8px; margin-top:30px;">🎭 Pieces & Movement</h3>
+
+<h4 style="color:#2ecc71; margin-top:20px;">Q: What pieces are in the game?</h4>
+<p><strong>A:</strong> Each player has 7 pieces:</p>
+<ul style="margin-left:20px;">
+<li><strong>2 Triangles</strong> 🔺: Orientation-dependent movement (6 unique patterns)</li>
+<li><strong>2 Squares</strong> ⬜: Orthogonal movement (adjacent hexes)</li>
+<li><strong>1 Rhombus</strong> 💎: Must reach opponent's base, special rules apply</li>
+<li><strong>1 Circle</strong> ⭕: Moves within zones, uses gateways</li>
+<li><strong>1 Hexagon</strong> ⬡: Rotatable (3 unique movement patterns)</li>
+</ul>
+
+<h4 style="color:#2ecc71; margin-top:20px;">Q: How does the Triangle move?</h4>
+<p><strong>A:</strong> The Triangle has <strong>6 unique movement patterns</strong> - one for each orientation it can face. Unlike other pieces, each orientation has completely different moves (no repeats). After moving (not attacking), you can rotate it left or right to change its orientation.</p>
+<p style="background:rgba(39,174,96,0.1); padding:10px; border-left:3px solid #27ae60; margin:10px 0;"><strong>💡 TIP:</strong> Triangles are your most versatile tactical pieces. Master their orientations to unlock unexpected attacks!</p>
+
+<h4 style="color:#2ecc71; margin-top:20px;">Q: What makes the Rhombus special?</h4>
+<p><strong>A:</strong> The Rhombus is your <strong>king piece</strong>:</p>
+<ul style="margin-left:20px;">
+<li>Must reach the opponent's base to win</li>
+<li>Cannot capture other rhombuses</li>
+<li>Cannot be captured by opponent's rhombus</li>
+<li>Has a special diagonal move between Dead Zone and Inner Perimeter (cannot capture while using this move)</li>
+<li>Cannot voluntarily move into deadlock (unless capturing the attacking piece)</li>
+</ul>
+
+<h4 style="color:#2ecc71; margin-top:20px;">Q: Can pieces rotate?</h4>
+<p><strong>A:</strong> Only <strong>Triangles</strong> and <strong>Hexagons</strong> can rotate. Rotation is allowed <strong>after moving</strong> (not after attacking). You can rotate left (counterclockwise) or right (clockwise), and rotation counts as part of your turn.</p>
+
+<h3 style="color:#27ae60; border-bottom:2px solid #27ae60; padding-bottom:8px; margin-top:30px;">⚡ Special Rules & Win Conditions</h3>
+
+<h4 style="color:#2ecc71; margin-top:20px;">Q: What is "Deadlock"?</h4>
+<p><strong>A:</strong> Deadlock occurs when a rhombus is under attack and has <strong>no legal moves</strong>. This is an instant win for the attacker! If your opponent's rhombus is surrounded and you attack it with no escape, you win immediately.</p>
+
+<h4 style="color:#2ecc71; margin-top:20px;">Q: What is "Draglock"?</h4>
+<p><strong>A:</strong> Draglock is when a player has <strong>no legal moves at all</strong> with any piece. If it's your turn and you cannot move, you must resign - you lose!</p>
+<p style="background:rgba(231,76,60,0.1); padding:10px; border-left:3px solid #e74c3c; margin:10px 0;"><strong>⚠️ Prevention Tip:</strong> Always leave yourself escape options. Never sacrifice mobility for temporary gains.</p>
+
+<h4 style="color:#2ecc71; margin-top:20px;">Q: What happens if I repeat the same position three times?</h4>
+<p><strong>A: YOU LOSE!</strong> This is Romgon's most unique rule. Unlike chess where repetition is a draw, in Romgon <strong>threefold repetition is an automatic loss</strong>. The game detects this and warns you visually.</p>
+<p style="background:rgba(39,174,96,0.1); padding:10px; border-left:3px solid #27ae60; margin:10px 0;"><strong>Strategic Implication:</strong> You cannot infinitely defend by repeating moves. Games MUST progress toward a conclusion.</p>
+
+<h4 style="color:#2ecc71; margin-top:20px;">Q: What is an "Escape Race"?</h4>
+<p><strong>A:</strong> When <strong>only rhombuses remain</strong> on the board, Base Defense is disabled and it becomes a pure race to the goal. First rhombus to reach the opponent's base wins!</p>
+
+<h3 style="color:#27ae60; border-bottom:2px solid #27ae60; padding-bottom:8px; margin-top:30px;">🛡️ Base Defense System</h3>
+
+<h4 style="color:#2ecc71; margin-top:20px;">Q: What is Base Defense?</h4>
+<p><strong>A:</strong> Base Defense prevents easy wins by requiring you to deal with defenders before entering the enemy base. There are <strong>two variants</strong>:</p>
+
+<h4 style="color:#f39c12; margin-top:15px;">Variant 1: Original (Rhombus Defense Only)</h4>
+<ul style="margin-left:20px;">
+<li><strong>Rule:</strong> Only the opponent's rhombus (positioned on their own base) can block your rhombus from entering</li>
+<li><strong>Best for:</strong> Casual games, faster-paced play</li>
+<li><strong>Strategy:</strong> If the defending rhombus is away from base, your rhombus can enter and win</li>
+</ul>
+
+<h4 style="color:#f39c12; margin-top:15px;">Variant 2: Shape Defense</h4>
+<ul style="margin-left:20px;">
+<li><strong>Rule:</strong> <strong>Any piece</strong> attacking the base hex prevents the opponent's rhombus from entering until eliminated or moved</li>
+<li><strong>Best for:</strong> Tactical games, deeper strategy</li>
+<li><strong>Strategy:</strong> You can defend with Squares, Triangles, etc. - creates more complex endgames</li>
+</ul>
+
+<p style="background:rgba(39,174,96,0.1); padding:10px; border-left:3px solid #27ae60; margin:10px 0;"><strong>💡 Recommendation:</strong> New players start with <strong>Original</strong> (simpler, faster games). Experienced players try <strong>Shape Defense</strong> (more tactical depth). You can toggle this in game settings!</p>
+
+<h3 style="color:#27ae60; border-bottom:2px solid #27ae60; padding-bottom:8px; margin-top:30px;">🌟 Tips for Beginners</h3>
+
+<div style="background:rgba(39,174,96,0.05); padding:15px; border-radius:8px; margin:15px 0;">
+<h4 style="color:#2ecc71; margin-top:10px;">1. Control the Center</h4>
+<p>The Dead Zone and Inner Perimeter are the most important areas. Controlling the center gives you more mobility options, better piece coordination, and defensive depth.</p>
+
+<h4 style="color:#2ecc71; margin-top:15px;">2. Protect Your Rhombus</h4>
+<p>Your rhombus is precious! Keep it behind your other pieces early game, don't rush it forward without support, and never let it get surrounded (deadlock = instant loss!).</p>
+
+<h4 style="color:#2ecc71; margin-top:15px;">3. Learn Triangle Orientations</h4>
+<p>Practice with each orientation in safe positions. Rotate after moving to set up threats. Remember: 6 orientations = 6 completely different move sets.</p>
+
+<h4 style="color:#2ecc71; margin-top:15px;">4. Use Squares for Board Control</h4>
+<p>Squares move orthogonally (like chess rooks but 1 space). They're excellent for creating defensive lines, controlling key gateway hexes, and early-game development.</p>
+
+<h4 style="color:#2ecc71; margin-top:15px;">5. Don't Ignore the Circle</h4>
+<p>Beginners often undervalue the Circle. It controls entire zones once positioned, is difficult to remove from strong zones, and can create "safe havens" for retreating pieces.</p>
+
+<h4 style="color:#2ecc71; margin-top:15px;">6. Avoid Repetition</h4>
+<p>Remember: <strong>repetition = loss</strong>. Don't shuttle pieces back and forth. Always have a plan to advance position. If you feel stuck, change your approach before repeating.</p>
+
+<h4 style="color:#2ecc71; margin-top:15px;">7. Think Two Moves Ahead</h4>
+<p>Early game has 20-40 legal moves. You can't calculate everything, but think 2-3 moves ahead. Look for opponent's threats and plan piece coordination, not just individual moves.</p>
+
+<h4 style="color:#2ecc71; margin-top:15px;">8. Practice Base Defense</h4>
+<p>Know which pieces can defend (based on your variant setting). Position defenders proactively and don't abandon your base until you're winning.</p>
+</div>
+
+<h3 style="color:#27ae60; border-bottom:2px solid #27ae60; padding-bottom:8px; margin-top:30px;">🧠 Advanced Strategy</h3>
+
+<h4 style="color:#2ecc71; margin-top:20px;">Zugzwang</h4>
+<p><strong>Definition:</strong> A position where any move worsens your position. Create zugzwang by forcing opponent to move first in a locked position, creating situations where all their moves expose weaknesses. Common in endgames with limited pieces.</p>
+
+<h4 style="color:#2ecc71; margin-top:20px;">Fortress Endgames</h4>
+<p>When pieces blockade each other creating a "fortress":</p>
+<ul style="margin-left:20px;">
+<li><strong>Base Defense (Shape)</strong> prevents quick wins</li>
+<li><strong>Repetition rule</strong> forces fortress-breaker to find new moves</li>
+<li><strong>Tactical puzzle:</strong> Find the one breakthrough move</li>
+</ul>
+
+<h4 style="color:#2ecc71; margin-top:20px;">Piece Value Estimation</h4>
+<table style="width:100%; border-collapse:collapse; margin:15px 0;">
+<tr style="background:rgba(39,174,96,0.1);">
+<th style="padding:8px; text-align:left; border:1px solid #444;">Piece</th>
+<th style="padding:8px; text-align:left; border:1px solid #444;">Value</th>
+<th style="padding:8px; text-align:left; border:1px solid #444;">Notes</th>
+</tr>
+<tr><td style="padding:8px; border:1px solid #444;"><strong>Rhombus</strong></td><td style="padding:8px; border:1px solid #444;">Infinite</td><td style="padding:8px; border:1px solid #444;">Lose it = lose game</td></tr>
+<tr><td style="padding:8px; border:1px solid #444;"><strong>Triangle</strong></td><td style="padding:8px; border:1px solid #444;">5-7</td><td style="padding:8px; border:1px solid #444;">Most versatile, orientation-dependent</td></tr>
+<tr><td style="padding:8px; border:1px solid #444;"><strong>Hexagon</strong></td><td style="padding:8px; border:1px solid #444;">4-6</td><td style="padding:8px; border:1px solid #444;">Rotatable, 3 patterns</td></tr>
+<tr><td style="padding:8px; border:1px solid #444;"><strong>Square</strong></td><td style="padding:8px; border:1px solid #444;">3-4</td><td style="padding:8px; border:1px solid #444;">Reliable, orthogonal</td></tr>
+<tr><td style="padding:8px; border:1px solid #444;"><strong>Circle</strong></td><td style="padding:8px; border:1px solid #444;">3-5</td><td style="padding:8px; border:1px solid #444;">Zone control specialist</td></tr>
+</table>
+<p style="font-style:italic; color:#aaa;">Context matters: A Circle in the Dead Zone may be worth more than a Triangle on the perimeter!</p>
+
+<h3 style="color:#27ae60; border-bottom:2px solid #27ae60; padding-bottom:8px; margin-top:30px;">❌ Common Mistakes</h3>
+
+<div style="background:rgba(231,76,60,0.05); padding:15px; border-radius:8px; margin:15px 0;">
+<h4 style="color:#e74c3c; margin-top:10px;">1. Moving Without Purpose</h4>
+<p><strong>Mistake:</strong> Making moves that don't advance your plan.<br>
+<strong>Fix:</strong> Every move should either improve piece position, create threats, defend against opponent's plan, or control key territory.</p>
+
+<h4 style="color:#e74c3c; margin-top:15px;">2. Ignoring Opponent's Threats</h4>
+<p><strong>Mistake:</strong> Tunnel vision on your own plans.<br>
+<strong>Fix:</strong> After every opponent move, ask: "What are they threatening? Can they deadlock my rhombus? Am I about to repeat a position?"</p>
+
+<h4 style="color:#e74c3c; margin-top:15px;">3. Rushing the Rhombus</h4>
+<p><strong>Mistake:</strong> Pushing rhombus forward too early.<br>
+<strong>Fix:</strong> Develop other pieces first, clear the path with supporting pieces, and only advance rhombus when safe.</p>
+
+<h4 style="color:#e74c3c; margin-top:15px;">4. Not Rotating</h4>
+<p><strong>Mistake:</strong> Forgetting Triangles and Hexagons can rotate.<br>
+<strong>Fix:</strong> After moving, consider rotation. Rotation can unlock new attacks/defenses. Think of rotation as part of the move.</p>
+
+<h4 style="color:#e74c3c; margin-top:15px;">5. Neglecting Base Defense</h4>
+<p><strong>Mistake:</strong> Leaving base undefended to attack.<br>
+<strong>Fix:</strong> Keep at least one defender near base, position rhombus on base if using Original variant, and have pieces ready to return for defense.</p>
+
+<h4 style="color:#e74c3c; margin-top:15px;">6. Creating Accidental Repetition</h4>
+<p><strong>Mistake:</strong> Repeating position 3 times = instant loss.<br>
+<strong>Fix:</strong> Watch for visual repetition warnings, vary your moves even when defending, and change piece positions slightly to avoid repeats.</p>
+</div>
+
+<h3 style="color:#27ae60; border-bottom:2px solid #27ae60; padding-bottom:8px; margin-top:30px;">🤯 Did You Know?</h3>
+
+<div style="background:rgba(52,152,219,0.05); padding:15px; border-radius:8px; margin:15px 0;">
+<h4 style="color:#3498db;">Complexity Stats</h4>
+<ul style="margin-left:20px;">
+<li><strong>State Space:</strong> 10²⁵ to 10³² possible board positions (comparable to chess at ~10⁴⁴)</li>
+<li><strong>Game Tree:</strong> 10⁸⁰ to 10¹²⁰ possible games (chess is ~10¹²³)</li>
+<li><strong>Branching Factor:</strong> Early game: 20-40 legal moves | Mid game: 10-30 legal moves | Endgame: 2-10 legal moves</li>
+<li><strong>Average Game Length:</strong> 60-120 moves</li>
+<li><strong>Computational Complexity:</strong> EXPTIME-complete (provably hard)</li>
+</ul>
+
+<h4 style="color:#3498db; margin-top:15px;">No Draws!</h4>
+<p>Romgon is designed with <strong>zero draws</strong>:</p>
+<ul style="margin-left:20px;">
+<li>Threefold repetition = loss</li>
+<li>Five-fold shuttle = loss</li>
+<li>Draglock (no legal moves) = loss</li>
+<li>Escape race forces decisive result</li>
+</ul>
+<p><strong>Result:</strong> Every game must have a winner - no boring draws!</p>
+
+<h4 style="color:#3498db; margin-top:15px;">Opening Book Still Growing</h4>
+<p>Unlike chess with centuries of opening theory, Romgon's opening book is still being developed. You can discover new openings and contribute to theory!</p>
+</div>
+
+<h3 style="color:#27ae60; border-bottom:2px solid #27ae60; padding-bottom:8px; margin-top:30px;">🎯 Final Tips</h3>
+
+<ol style="margin-left:20px; line-height:1.8;">
+<li><strong>Practice makes perfect:</strong> Play against AI to learn piece movements</li>
+<li><strong>Study endgames:</strong> Most games are decided in endgame technique</li>
+<li><strong>Learn from losses:</strong> Review games to understand mistakes</li>
+<li><strong>Experiment:</strong> Try different openings and piece setups</li>
+<li><strong>Use analysis tools:</strong> Toggle "Show All Moves" and threat highlights</li>
+<li><strong>Stay calm:</strong> Complex positions are solvable with careful thought</li>
+<li><strong>Have fun:</strong> Romgon is meant to be enjoyed!</li>
+</ol>
+
+<p style="text-align:center; margin-top:30px; padding:20px; background:rgba(39,174,96,0.1); border-radius:8px; font-size:1.1em;">
+<strong style="color:#27ae60;">Ready to play?</strong><br>
+<span style="color:#aaa; font-size:0.9em;">Visit <a href="https://romgon.net" style="color:#00d9ff;">romgon.net</a> and start your journey to mastery!</span>
+</p>
+
+<p style="text-align:center; font-style:italic; color:#666; margin-top:20px; font-size:0.9em;">Last updated: January 2025</p>
+            `;
+            contentDiv.dataset.loaded = '1';
+        }
+        modal.style.display = 'flex';
+    }
+    function closeFaqModal() {
+        document.getElementById('faq-modal').style.display = 'none';
+    }
+    </script>
                     
             <!-- Quick Info -->
             <div style="
