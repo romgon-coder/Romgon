@@ -680,12 +680,19 @@ function clearBoardPlacements() {
 // ============================================================================
 
 function generateGameConfig() {
-    // Regenerate SVG for any pieces that don't have it
+    // Regenerate SVG for any pieces that don't have it or have corrupted SVG
     gameData.pieces.forEach(piece => {
-        if ((!piece.svg || piece.svg === '') && piece.pixelData) {
-            piece.svg = regenerateSVGFromPixelData(piece.pixelData, piece.color || '#4a90e2');
+        // Check if SVG is missing, empty, or contains escaped quotes (corrupted)
+        if (!piece.svg || piece.svg === '' || piece.svg.includes('\\"') || piece.svg.includes('\\\\')) {
+            if (piece.pixelData) {
+                piece.svg = regenerateSVGFromPixelData(piece.pixelData, piece.color || '#4a90e2');
+                console.log('Fixed corrupted SVG for piece:', piece.name);
+            }
         }
     });
+    
+    // Save the fixed data back to localStorage
+    saveToLocalStorage();
     
     const config = {
         metadata: {
@@ -925,11 +932,16 @@ function loadFromLocalStorage() {
         if (saved) {
             const data = JSON.parse(saved);
             
-            // Regenerate SVG for pieces that don't have it or have empty SVG
+            // Regenerate SVG for pieces that don't have it or have corrupted/escaped SVG
             if (data.pieces && Array.isArray(data.pieces)) {
                 data.pieces.forEach(piece => {
-                    if ((!piece.svg || piece.svg === '') && piece.pixelData) {
-                        piece.svg = regenerateSVGFromPixelData(piece.pixelData, piece.color || '#4a90e2');
+                    // Check if SVG is missing, empty, or contains escaped quotes (corrupted)
+                    if (!piece.svg || piece.svg === '' || piece.svg.includes('\\"') || piece.svg.includes('\\\\')) {
+                        // Always regenerate from pixelData for clean SVG
+                        if (piece.pixelData) {
+                            piece.svg = regenerateSVGFromPixelData(piece.pixelData, piece.color || '#4a90e2');
+                            console.log('Regenerated SVG for piece:', piece.name);
+                        }
                     }
                 });
             }
