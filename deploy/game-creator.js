@@ -17,7 +17,8 @@ const gameData = {
         width: 11,
         height: 11,
         zones: [],
-        initialSetup: []
+        placements: [],
+        deletedHexes: []
     },
     rules: {
         winConditions: [],
@@ -563,6 +564,11 @@ function redrawBoard() {
     const bHexHeight = bHexSize * 2;
     const horizontalSpacing = bHexWidth * 0.75;
     const verticalSpacing = bHexHeight * 0.75;
+
+    // Ensure deletedHexes array exists
+    if (!gameData.board.deletedHexes) {
+        gameData.board.deletedHexes = [];
+    }
 
     for (let row = 0; row < height; row++) {
         for (let col = 0; col < width; col++) {
