@@ -420,7 +420,10 @@
             container.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading games...</p></div>';
 
             try {
-                let endpoint = '/api/custom-games/list';
+                // API Base URL - use Railway backend
+                const API_BASE_URL = 'https://api.romgon.net';
+                
+                let endpoint = `${API_BASE_URL}/api/custom-games/list`;
                 let params = new URLSearchParams({
                     limit: gamesPerPage,
                     offset: currentPage * gamesPerPage,
@@ -429,13 +432,13 @@
                 });
 
                 if (currentTab === 'featured') {
-                    endpoint = '/api/custom-games/featured';
+                    endpoint = `${API_BASE_URL}/api/custom-games/featured`;
                     params = new URLSearchParams({ limit: gamesPerPage });
                 } else if (currentTab === 'popular') {
-                    endpoint = '/api/custom-games/popular';
+                    endpoint = `${API_BASE_URL}/api/custom-games/popular`;
                     params = new URLSearchParams({ limit: gamesPerPage });
                 } else if (currentTab === 'my-games') {
-                    endpoint = '/api/custom-games/my-games';
+                    endpoint = `${API_BASE_URL}/api/custom-games/my-games`;
                     params = '';
                 }
 

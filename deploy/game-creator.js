@@ -753,7 +753,10 @@ async function publishGame() {
     try {
         showNotification('Publishing game...', 'info');
         
-        const response = await fetch('/api/custom-games/create', {
+        // API Base URL - use Railway backend
+        const API_BASE_URL = 'https://api.romgon.net';
+        
+        const response = await fetch(`${API_BASE_URL}/api/custom-games/create`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
