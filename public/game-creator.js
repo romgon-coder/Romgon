@@ -633,6 +633,11 @@ function handleBoardClick(e) {
                         return;
                     }
                     
+                    // Ensure placements array exists
+                    if (!gameData.board.placements) {
+                        gameData.board.placements = [];
+                    }
+                    
                     gameData.board.placements.push({
                         pieceId: parseInt(pieceId),
                         player: player,
