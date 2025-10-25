@@ -75,6 +75,28 @@ app.get('/api/health', (req, res) => {
     });
 });
 
+// Database diagnostic endpoint
+app.get('/api/debug/database', async (req, res) => {
+    try {
+        // Test database connection
+        const testQuery = await dbPromise.all('SELECT name FROM sqlite_master WHERE type="table"');
+        
+        res.json({
+            status: 'OK',
+            database: 'connected',
+            tables: testQuery.map(t => t.name),
+            customGamesInitialized: !!require('./routes/custom-games').customGameModel,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: 'ERROR',
+            error: error.message,
+            stack: error.stack
+        });
+    }
+});
+
 // Authentication routes
 app.use('/api/auth', authRoutes);
 

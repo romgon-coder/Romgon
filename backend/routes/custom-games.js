@@ -106,6 +106,15 @@ router.get('/game/:game_id', async (req, res) => {
 // READ: List games with filters
 router.get('/list', async (req, res) => {
     try {
+        // Add defensive check
+        if (!customGameModel) {
+            console.error('❌ customGameModel not initialized!');
+            return res.status(500).json({
+                error: 'Database not initialized',
+                details: 'Custom game model is not ready. Server may be starting up.'
+            });
+        }
+
         const options = {
             limit: parseInt(req.query.limit) || 20,
             offset: parseInt(req.query.offset) || 0,
@@ -117,7 +126,11 @@ router.get('/list', async (req, res) => {
             tags: req.query.tags || null
         };
 
+        console.log('📋 Listing games with options:', options);
+
         const result = await customGameModel.listGames(options);
+
+        console.log('✅ Found games:', result.total);
 
         res.json({
             success: true,
@@ -125,10 +138,12 @@ router.get('/list', async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error listing games:', error);
+        console.error('❌ Error listing games:', error);
+        console.error('❌ Stack:', error.stack);
         res.status(500).json({
             error: 'Failed to list games',
-            details: error.message
+            details: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 });
