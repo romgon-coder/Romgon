@@ -492,17 +492,28 @@
             } else if (boardConfig.height && boardConfig.width) {
                 // Old format - convert to new format
                 rows = boardConfig.height || 7;
-                // Generate standard hexagon shape
+                const maxWidth = boardConfig.width || 7;
+                
+                // Generate hexagon shape based on dimensions
                 const mid = Math.floor(rows / 2);
                 colsPerRow = [];
+                
                 for (let i = 0; i < rows; i++) {
+                    // Calculate cols for this row to create hexagon shape
+                    let cols;
                     if (i <= mid) {
-                        colsPerRow.push(mid + 1 + i);
+                        // Expanding rows (top half)
+                        const expansion = Math.floor((maxWidth - rows) / 2);
+                        cols = Math.min(maxWidth, rows - mid + i + expansion);
                     } else {
-                        colsPerRow.push(mid + 1 + (rows - 1 - i));
+                        // Contracting rows (bottom half)
+                        const expansion = Math.floor((maxWidth - rows) / 2);
+                        cols = Math.min(maxWidth, rows - mid + (rows - 1 - i) + expansion);
                     }
+                    colsPerRow.push(Math.max(1, cols)); // At least 1 column per row
                 }
-                console.log('🔄 Converted old board format to new format');
+                
+                console.log('🔄 Converted old board format:', { height: rows, width: maxWidth, colsPerRow });
             } else {
                 // Fallback to default
                 rows = 7;
