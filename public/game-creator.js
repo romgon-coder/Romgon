@@ -637,7 +637,22 @@ function redrawBoard() {
     boardCtx.clearRect(0, 0, 700, 600);
     const centerX = 350;
     const centerY = 300;
-    const bHexSize = 20;
+    
+    // Dynamic hex size based on board dimensions
+    // Smaller hexes for larger boards to fit everything
+    const maxDimension = Math.max(width, height);
+    let bHexSize;
+    if (maxDimension <= 11) {
+        bHexSize = 20;
+    } else if (maxDimension <= 15) {
+        bHexSize = 16;
+    } else if (maxDimension <= 20) {
+        bHexSize = 13;
+    } else if (maxDimension <= 25) {
+        bHexSize = 10;
+    } else {
+        bHexSize = 8;
+    }
     
     // Matching board.HTML grid
     const bHexHeight = bHexSize * 2;
@@ -679,9 +694,10 @@ function redrawBoard() {
             
             drawHexagon(boardCtx, x, y, bHexSize, hexColor, '#666', 1);
             
-            // Draw coordinate labels (rotated -90° for readability)
+            // Draw coordinate labels (rotated -90° for readability, scaled with hex size)
             boardCtx.fillStyle = '#666';
-            boardCtx.font = '8px Arial';
+            const fontSize = Math.max(6, Math.floor(bHexSize * 0.4));
+            boardCtx.font = `${fontSize}px Arial`;
             boardCtx.textAlign = 'center';
             boardCtx.textBaseline = 'middle';
             boardCtx.save();
@@ -712,7 +728,21 @@ function handleBoardClick(e) {
     const height = gameData.board.height;
     const centerX = 350;
     const centerY = 300;
-    const bHexSize = 20;
+    
+    // Dynamic hex size (same as redrawBoard)
+    const maxDimension = Math.max(width, height);
+    let bHexSize;
+    if (maxDimension <= 11) {
+        bHexSize = 20;
+    } else if (maxDimension <= 15) {
+        bHexSize = 16;
+    } else if (maxDimension <= 20) {
+        bHexSize = 13;
+    } else if (maxDimension <= 25) {
+        bHexSize = 10;
+    } else {
+        bHexSize = 8;
+    }
     
     // Matching board.HTML grid
     const bHexHeight = bHexSize * 2;
@@ -778,6 +808,29 @@ function handleBoardClick(e) {
                 return;
             }
         }
+    }
+}
+
+function applyBoardPreset() {
+    const preset = document.getElementById('boardPreset').value;
+    if (!preset) return;
+    
+    const presets = {
+        '9x11': { width: 9, height: 11, name: 'Classic Romgon' },
+        '11x13': { width: 11, height: 13, name: 'Medium' },
+        '13x15': { width: 13, height: 15, name: 'Large' },
+        '15x17': { width: 15, height: 17, name: 'Extra Large' },
+        '17x19': { width: 17, height: 19, name: 'Huge' },
+        '20x20': { width: 20, height: 20, name: 'Massive Square' },
+        '25x25': { width: 25, height: 25, name: 'Epic' }
+    };
+    
+    const config = presets[preset];
+    if (config) {
+        document.getElementById('boardWidth').value = config.width;
+        document.getElementById('boardHeight').value = config.height;
+        redrawBoard();
+        showNotification(`Applied ${config.name} board (${config.width}×${config.height})`, 'success');
     }
 }
 
