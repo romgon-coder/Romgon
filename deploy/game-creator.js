@@ -856,8 +856,21 @@ function saveMovementPattern() {
     // Store both absolute coordinates AND relative offsets (like Romgon hardcoded moves)
     // Relative offsets make highlighting work regardless of piece position
     const board = gameData.board || {rows: 7, colsPerRow: [4, 5, 6, 7, 6, 5, 4]};
+    
+    // Validate board structure
+    if (!board.colsPerRow || board.colsPerRow.length === 0) {
+        alert('Error: Board not properly initialized. Please complete Step 3: Board Designer first.');
+        return;
+    }
+    
     const centerRow = Math.floor(board.rows / 2);
     const centerCol = Math.floor(board.colsPerRow[centerRow] / 2);
+    
+    // Additional validation for NaN
+    if (isNaN(centerRow) || isNaN(centerCol)) {
+        alert('Error: Invalid board dimensions. Please recreate your board in Step 3.');
+        return;
+    }
     
     // Convert to relative coordinates (offset from center)
     const relativeMove = currentMovement.move.map(hex => ({
