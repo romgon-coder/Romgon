@@ -1189,7 +1189,18 @@ function testGame() {
 }
 
 async function publishGame() {
-    const config = generateGameConfig();
+    console.log('🚀 publishGame() called');
+    
+    let config;
+    try {
+        config = generateGameConfig();
+        console.log('✅ Config generated:', config ? 'success' : 'null');
+    } catch (configError) {
+        console.error('❌ Error generating config:', configError);
+        alert('Error generating game configuration: ' + configError.message);
+        return;
+    }
+    
     if (!config) return;
     
     const visibility = document.getElementById('gameVisibility')?.value || 'public';
@@ -1206,16 +1217,25 @@ async function publishGame() {
         // API Base URL - use Railway backend
         const API_BASE_URL = 'https://api.romgon.net';
         
+        // Safely build payload
+        const tags = Array.isArray(config.metadata.tags) 
+            ? config.metadata.tags.join(',') 
+            : (config.metadata.tags || '');
+        
         const payload = {
             name: config.metadata.name,
             description: config.metadata.description,
             config: config,
             thumbnail: thumbnail,
-            tags: config.metadata.tags.join(','),
+            tags: tags,
             is_public: visibility === 'public'
         };
         
-        console.log('📤 Sending game data to API:', JSON.stringify(payload, null, 2));
+        console.log('📤 Sending game data to API:');
+        console.log('  - Name:', payload.name);
+        console.log('  - Tags:', payload.tags);
+        console.log('  - Pieces count:', payload.config.pieces.length);
+        console.log('  - Full payload size:', JSON.stringify(payload).length, 'bytes');
         console.log('📤 API endpoint:', `${API_BASE_URL}/api/custom-games/create`);
         
         let response;
