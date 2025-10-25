@@ -783,14 +783,31 @@ function setMoveTool(tool) {
 }
 
 function updateHardcodedPatternDisplay() {
-    const board = gameData.board || {rows: 7, colsPerRow: [4, 5, 6, 7, 6, 5, 4]};
-    const centerRow = Math.floor(board.rows / 2);
-    const centerCol = Math.floor(board.colsPerRow[centerRow] / 2);
-    
     const moveDisplay = document.getElementById('hardcodedMoveDisplay');
     const attackDisplay = document.getElementById('hardcodedAttackDisplay');
     
-    if (!moveDisplay || !attackDisplay) return; // Not on Movement Pattern step
+    // Not on Movement Pattern step or displays not available
+    if (!moveDisplay || !attackDisplay) return;
+    
+    // Safely get board data with fallback
+    const board = gameData.board || {rows: 7, colsPerRow: [4, 5, 6, 7, 6, 5, 4]};
+    
+    // Validate board structure before accessing
+    if (!board.colsPerRow || board.colsPerRow.length === 0) {
+        moveDisplay.textContent = '// Board not initialized yet';
+        attackDisplay.textContent = '// Board not initialized yet';
+        return;
+    }
+    
+    const centerRow = Math.floor(board.rows / 2);
+    const centerCol = Math.floor(board.colsPerRow[centerRow] / 2);
+    
+    // Validate center calculations
+    if (isNaN(centerRow) || isNaN(centerCol)) {
+        moveDisplay.textContent = '// Invalid board dimensions';
+        attackDisplay.textContent = '// Invalid board dimensions';
+        return;
+    }
     
     // Calculate relative offsets for movement
     if (currentMovement.move && currentMovement.move.length > 0) {
