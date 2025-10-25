@@ -126,6 +126,11 @@ window.addEventListener('DOMContentLoaded', () => {
     // Load saved data
     loadFromLocalStorage();
     
+    // Initialize default tool for movement pattern editor
+    if (!gameData.currentTool) {
+        setMoveTool('move');
+    }
+    
     // Draw initial states
     if (shapeCanvas) {
         redrawShapeCanvas();
@@ -512,8 +517,19 @@ function handleMoveClick(e) {
     
     if (hex) {
         console.log(`Hex detected: ${hex.row}-${hex.col}`);
-        const tool = gameData.currentTool;
+        const tool = gameData.currentTool || 'move'; // Default to 'move' if not set
+        
+        // Ensure currentMovement has all arrays initialized
+        if (!currentMovement.move) currentMovement.move = [];
+        if (!currentMovement.attack) currentMovement.attack = [];
+        if (!currentMovement.special) currentMovement.special = [];
+        
         const arr = currentMovement[tool];
+        if (!arr) {
+            console.error('Invalid tool:', tool);
+            return;
+        }
+        
         const idx = arr.findIndex(h => h.row === hex.row && h.col === hex.col);
         
         if (idx >= 0) {
