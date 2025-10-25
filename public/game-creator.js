@@ -42,10 +42,44 @@ let currentPieceForMovement = null;
 let currentMovement = { move: [], attack: [], special: [] };
 
 // ============================================================================
+// AUTO-FIX CORRUPTED SVG
+// ============================================================================
+
+function autoFixCorruptedSVG() {
+    try {
+        const saved = localStorage.getItem('romgon_game_creator_data');
+        if (!saved) return;
+        
+        const data = JSON.parse(saved);
+        if (!data.pieces || !Array.isArray(data.pieces)) return;
+        
+        let fixed = false;
+        data.pieces.forEach(piece => {
+            // Check if SVG is corrupted (contains escaped quotes)
+            if (piece.svg && (piece.svg.includes('\\"') || piece.svg.includes('\\\\'))) {
+                console.log('🔧 Auto-fixing corrupted SVG for:', piece.name);
+                piece.svg = ''; // Clear it, will regenerate from pixelData
+                fixed = true;
+            }
+        });
+        
+        if (fixed) {
+            localStorage.setItem('romgon_game_creator_data', JSON.stringify(data));
+            console.log('✅ Corrupted SVG data auto-fixed!');
+        }
+    } catch (e) {
+        console.error('Failed to auto-fix SVG:', e);
+    }
+}
+
+// ============================================================================
 // INITIALIZATION
 // ============================================================================
 
 window.addEventListener('DOMContentLoaded', () => {
+    // AUTO-FIX: Clean up corrupted SVG data on page load
+    autoFixCorruptedSVG();
+    
     // Shape canvas (10x10 grid)
     shapeCanvas = document.getElementById('shapeCanvas');
     if (shapeCanvas) {
