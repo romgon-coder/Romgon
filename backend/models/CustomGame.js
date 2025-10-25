@@ -106,7 +106,7 @@ class CustomGame {
             throw new Error('Game not found or permission denied');
         }
 
-        return { success: true, message: 'Game updated successfully' };
+        return { success: 1, message: 'Game updated successfully' };
     }
 
     // Get game by ID
@@ -117,17 +117,15 @@ class CustomGame {
                 config, thumbnail, plays, rating, ratings_count, favorites,
                 is_public, is_featured, tags, created_at, updated_at
             FROM custom_games 
-            WHERE game_id = ? AND is_public = TRUE
+            WHERE game_id = ? AND is_public = 1
         `;
 
-        const results = await this.db.run(query, [game_id]);
+        const game = await this.db.get(query, [game_id]);
         
-        if (results.length === 0) {
+        if (!game) {
             return null;
         }
 
-        const game = results[0];
-        
         // Parse JSON config
         if (typeof game.config === 'string') {
             game.config = JSON.parse(game.config);
@@ -155,7 +153,7 @@ class CustomGame {
                 thumbnail, plays, rating, ratings_count, favorites,
                 is_featured, tags, created_at
             FROM custom_games 
-            WHERE is_public = TRUE
+            WHERE is_public = 1
         `;
 
         const params = [];
@@ -172,7 +170,7 @@ class CustomGame {
         }
 
         if (featured) {
-            query += ` AND is_featured = TRUE`;
+            query += ` AND is_featured = 1`;
         }
 
         if (tags) {
@@ -188,10 +186,10 @@ class CustomGame {
         query += ` ORDER BY ${sortColumn} ${sortOrder} LIMIT ? OFFSET ?`;
         params.push(limit, offset);
 
-        const games = await this.db.run(query, params);
+        const games = await this.db.all(query, params);
 
         // Get total count
-        let countQuery = `SELECT COUNT(*) as total FROM custom_games WHERE is_public = TRUE`;
+        let countQuery = `SELECT COUNT(*) as total FROM custom_games WHERE is_public = 1`;
         const countParams = [];
 
         if (search) {
@@ -206,7 +204,7 @@ class CustomGame {
         }
 
         if (featured) {
-            countQuery += ` AND is_featured = TRUE`;
+            countQuery += ` AND is_featured = 1`;
         }
 
         if (tags) {
@@ -250,7 +248,7 @@ class CustomGame {
     }
 
     // Toggle favorite
-    async toggleFavorite(game_id, increment = true) {
+    async toggleFavorite(game_id, increment = 1) {
         const query = `
             UPDATE custom_games 
             SET favorites = favorites ${increment ? '+' : '-'} 1
@@ -276,7 +274,7 @@ class CustomGame {
             throw new Error('Game not found or permission denied');
         }
 
-        return { success: true, message: 'Game deleted successfully' };
+        return { success: 1, message: 'Game deleted successfully' };
     }
 
     // Get user's games
@@ -291,7 +289,7 @@ class CustomGame {
             ORDER BY created_at DESC
         `;
 
-        return await this.db.run(query, [creator_id]);
+        return await this.db.all(query, [creator_id]);
     }
 
     // Get featured games
@@ -302,12 +300,12 @@ class CustomGame {
                 thumbnail, plays, rating, ratings_count, favorites,
                 tags, created_at
             FROM custom_games 
-            WHERE is_public = TRUE AND is_featured = TRUE
+            WHERE is_public = 1 AND is_featured = 1
             ORDER BY created_at DESC
             LIMIT ?
         `;
 
-        return await this.db.run(query, [limit]);
+        return await this.db.all(query, [limit]);
     }
 
     // Get popular games
@@ -318,12 +316,12 @@ class CustomGame {
                 thumbnail, plays, rating, ratings_count, favorites,
                 tags, created_at
             FROM custom_games 
-            WHERE is_public = TRUE
+            WHERE is_public = 1
             ORDER BY plays DESC, rating DESC
             LIMIT ?
         `;
 
-        return await this.db.run(query, [limit]);
+        return await this.db.all(query, [limit]);
     }
 }
 
