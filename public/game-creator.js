@@ -1594,6 +1594,26 @@ function loadFromLocalStorage() {
                 });
             }
             
+            // MIGRATION: Fix old board data structure
+            if (data.board && !data.board.colsPerRow) {
+                console.log('🔧 Migrating old board structure...');
+                // Generate colsPerRow from rows (assume hexagonal shape)
+                const rows = data.board.rows || 7;
+                const colsPerRow = [];
+                const mid = Math.floor(rows / 2);
+                
+                for (let i = 0; i < rows; i++) {
+                    if (i <= mid) {
+                        colsPerRow.push(mid + 1 + i); // Expanding rows
+                    } else {
+                        colsPerRow.push(mid + 1 + (rows - 1 - i)); // Contracting rows
+                    }
+                }
+                
+                data.board.colsPerRow = colsPerRow;
+                console.log('✅ Board migrated with colsPerRow:', colsPerRow);
+            }
+            
             Object.assign(gameData, data);
             updatePieceGallery();
             updateSelectors();
