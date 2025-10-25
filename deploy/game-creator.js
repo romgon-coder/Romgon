@@ -1054,8 +1054,8 @@ function generateGameConfig() {
         }
     });
     
-    // Save the fixed data back to localStorage
-    saveToLocalStorage();
+    // DO NOT save to localStorage here! SVG is generated fresh, don't store it.
+    // saveToLocalStorage(); // REMOVED - causes escaping issues
     
     const config = {
         metadata: {
@@ -1283,7 +1283,17 @@ function saveProgress() {
 
 function saveToLocalStorage() {
     try {
-        localStorage.setItem('romgon_game_creator_data', JSON.stringify(gameData));
+        // CRITICAL: Never save SVG to localStorage - it gets escaped!
+        // Create a deep copy and strip out all SVG fields
+        const dataToSave = JSON.parse(JSON.stringify(gameData));
+        if (dataToSave.pieces) {
+            dataToSave.pieces.forEach(piece => {
+                delete piece.svg; // Remove SVG - we'll regenerate from pixelData
+            });
+        }
+        
+        localStorage.setItem('romgon_game_creator_data', JSON.stringify(dataToSave));
+        console.log('Saved to localStorage (SVG stripped to prevent escaping)');
     } catch (e) {
         console.error('Failed to save to localStorage:', e);
     }
