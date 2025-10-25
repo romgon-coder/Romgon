@@ -1595,26 +1595,71 @@ function loadFromLocalStorage() {
             }
             
             // MIGRATION: Fix old board data structure
-            if (data.board && !data.board.colsPerRow) {
-                console.log('🔧 Migrating old board structure...');
-                // Generate colsPerRow from rows (assume hexagonal shape)
-                const rows = data.board.rows || 7;
-                const colsPerRow = [];
-                const mid = Math.floor(rows / 2);
-                
-                for (let i = 0; i < rows; i++) {
-                    if (i <= mid) {
-                        colsPerRow.push(mid + 1 + i); // Expanding rows
-                    } else {
-                        colsPerRow.push(mid + 1 + (rows - 1 - i)); // Contracting rows
-                    }
+            let needsMigration = false;
+            
+            if (data.board) {
+                // Ensure board has rows property
+                if (!data.board.rows || isNaN(data.board.rows)) {
+                    console.log('🔧 Fixing missing/invalid board.rows...');
+                    data.board.rows = 7; // Default hexagon
+                    needsMigration = true;
                 }
                 
-                data.board.colsPerRow = colsPerRow;
-                console.log('✅ Board migrated with colsPerRow:', colsPerRow);
+                // Generate colsPerRow if missing
+                if (!data.board.colsPerRow || !Array.isArray(data.board.colsPerRow) || data.board.colsPerRow.length === 0) {
+                    console.log('🔧 Migrating old board structure...');
+                    const rows = data.board.rows;
+                    const colsPerRow = [];
+                    const mid = Math.floor(rows / 2);
+                    
+                    for (let i = 0; i < rows; i++) {
+                        if (i <= mid) {
+                            colsPerRow.push(mid + 1 + i); // Expanding rows
+                        } else {
+                            colsPerRow.push(mid + 1 + (rows - 1 - i)); // Contracting rows
+                        }
+                    }
+                    
+                    data.board.colsPerRow = colsPerRow;
+                    needsMigration = true;
+                    console.log('✅ Board migrated with colsPerRow:', colsPerRow);
+                }
+                
+                // Ensure zones array exists
+                if (!data.board.zones || !Array.isArray(data.board.zones)) {
+                    data.board.zones = [];
+                    needsMigration = true;
+                }
+                
+                // Ensure deletedHexes array exists
+                if (!data.board.deletedHexes || !Array.isArray(data.board.deletedHexes)) {
+                    data.board.deletedHexes = [];
+                    needsMigration = true;
+                }
+                
+                if (needsMigration) {
+                    console.log('✅ Board data structure fully migrated');
+                }
+            } else {
+                // No board at all - create default
+                console.log('🔧 Creating default board structure...');
+                data.board = {
+                    rows: 7,
+                    colsPerRow: [4, 5, 6, 7, 6, 5, 4],
+                    zones: [],
+                    deletedHexes: []
+                };
+                needsMigration = true;
             }
             
             Object.assign(gameData, data);
+            
+            // Save migrated data back to localStorage
+            if (needsMigration) {
+                console.log('💾 Saving migrated data to localStorage...');
+                saveToLocalStorage();
+            }
+            
             updatePieceGallery();
             updateSelectors();
             if (gameData.currentStep) goToStep(gameData.currentStep);
