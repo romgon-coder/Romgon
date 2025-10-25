@@ -100,7 +100,7 @@ class CustomGame {
             values.push(creator_id);
         }
 
-        const result = await this.db.query(query, values);
+        const result = await this.db.run(query, values);
         
         if (result.affectedRows === 0) {
             throw new Error('Game not found or permission denied');
@@ -120,7 +120,7 @@ class CustomGame {
             WHERE game_id = ? AND is_public = TRUE
         `;
 
-        const results = await this.db.query(query, [game_id]);
+        const results = await this.db.run(query, [game_id]);
         
         if (results.length === 0) {
             return null;
@@ -188,7 +188,7 @@ class CustomGame {
         query += ` ORDER BY ${sortColumn} ${sortOrder} LIMIT ? OFFSET ?`;
         params.push(limit, offset);
 
-        const games = await this.db.query(query, params);
+        const games = await this.db.run(query, params);
 
         // Get total count
         let countQuery = `SELECT COUNT(*) as total FROM custom_games WHERE is_public = TRUE`;
@@ -214,7 +214,7 @@ class CustomGame {
             countParams.push(`%${tags}%`);
         }
 
-        const countResult = await this.db.query(countQuery, countParams);
+        const countResult = await this.db.get(countQuery, countParams);
         const total = countResult[0].total;
 
         return {
@@ -229,7 +229,7 @@ class CustomGame {
     // Increment play count
     async incrementPlays(game_id) {
         const query = `UPDATE custom_games SET plays = plays + 1 WHERE game_id = ?`;
-        await this.db.query(query, [game_id]);
+        await this.db.run(query, [game_id]);
     }
 
     // Add/update rating
@@ -246,7 +246,7 @@ class CustomGame {
             WHERE game_id = ?
         `;
         
-        await this.db.query(query, [rating, game_id]);
+        await this.db.run(query, [rating, game_id]);
     }
 
     // Toggle favorite
@@ -257,7 +257,7 @@ class CustomGame {
             WHERE game_id = ?
         `;
         
-        await this.db.query(query, [game_id]);
+        await this.db.run(query, [game_id]);
     }
 
     // Delete game (only by creator or admin)
@@ -270,7 +270,7 @@ class CustomGame {
             params.push(creator_id);
         }
 
-        const result = await this.db.query(query, params);
+        const result = await this.db.run(query, params);
         
         if (result.affectedRows === 0) {
             throw new Error('Game not found or permission denied');
@@ -291,7 +291,7 @@ class CustomGame {
             ORDER BY created_at DESC
         `;
 
-        return await this.db.query(query, [creator_id]);
+        return await this.db.run(query, [creator_id]);
     }
 
     // Get featured games
@@ -307,7 +307,7 @@ class CustomGame {
             LIMIT ?
         `;
 
-        return await this.db.query(query, [limit]);
+        return await this.db.run(query, [limit]);
     }
 
     // Get popular games
@@ -323,7 +323,7 @@ class CustomGame {
             LIMIT ?
         `;
 
-        return await this.db.query(query, [limit]);
+        return await this.db.run(query, [limit]);
     }
 }
 
