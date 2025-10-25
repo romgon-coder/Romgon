@@ -213,7 +213,7 @@ class CustomGame {
         }
 
         const countResult = await this.db.get(countQuery, countParams);
-        const total = countResult[0].total;
+        const total = countResult ? countResult.total : 0; // Fix: db.get() returns an object, not array
 
         return {
             games,
