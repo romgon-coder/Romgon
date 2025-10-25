@@ -13,293 +13,734 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a1e26 0%, #23272e 100%);
+            color: #fff;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
         }
 
         .header {
-            background: rgba(255, 255, 255, 0.95);
-            width: 100%;
-            max-width: 1200px;
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 2px solid rgba(78, 205, 196, 0.3);
+            margin-bottom: 30px;
         }
 
         .header h1 {
-            color: #667eea;
+            font-size: 2.5em;
+            color: #4ecdc4;
             margin-bottom: 10px;
         }
 
-        .game-info {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            margin-top: 10px;
+        .game-layout {
+            display: grid;
+            grid-template-columns: 250px 1fr 250px;
+            gap: 20px;
+            margin-bottom: 30px;
         }
 
-        .game-info span {
-            background: #f0f4ff;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9em;
-        }
-
-        .game-container {
-            background: white;
-            width: 100%;
-            max-width: 1200px;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        }
-
-        #gameCanvas {
-            border: 3px solid #667eea;
-            border-radius: 10px;
-            display: block;
-            margin: 0 auto;
-            background: #f9f9f9;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 50px;
-        }
-
-        .loading h2 {
-            color: #667eea;
-            margin-bottom: 20px;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .error {
-            background: #fee;
-            border: 2px solid #fcc;
-            border-radius: 10px;
+        .side-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(78, 205, 196, 0.3);
+            border-radius: 12px;
             padding: 20px;
-            color: #c33;
-            text-align: center;
+            height: fit-content;
+        }
+
+        .side-panel h3 {
+            color: #4ecdc4;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .game-info-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .info-label {
+            color: #4ecdc4;
+            font-size: 0.85em;
+            margin-bottom: 3px;
+        }
+
+        .info-value {
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .board-container {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(78, 205, 196, 0.3);
+            border-radius: 12px;
+            padding: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 700px;
+        }
+
+        /* Hexagon board styles */
+        .board {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform: rotate(90deg);
+            position: relative;
+        }
+
+        .hex-row {
+            display: flex;
+            justify-content: center;
+            margin-top: -15px;
+        }
+
+        .hex-row:first-child {
+            margin-top: 0;
+        }
+
+        .hex-row.offset {
+            margin-left: 26px;
+        }
+
+        .hexagon {
+            position: relative;
+            width: 52px;
+            height: 60px;
+            background-color: #f57d2d;
+            margin: 0 2px;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            cursor: pointer;
+            transition: filter 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hexagon:hover {
+            filter: brightness(1.2);
+        }
+
+        /* Zone colors */
+        .zone-base { background-color: #6d3a13; }
+        .zone-inner { background-color: #fcc49c; }
+        .zone-middle { background-color: #f57d2d; }
+        .zone-outer { background-color: #f57d2d; }
+        .zone-dead { background-color: #6d3a13; }
+
+        /* Piece styles */
+        .piece {
+            width: 42px;
+            height: 42px;
+            transform: rotate(-90deg);
+            cursor: grab;
+            user-select: none;
+            pointer-events: all;
+            position: relative;
+            z-index: 10;
+        }
+
+        .piece.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .piece img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
         }
 
         .controls {
             display: flex;
             gap: 15px;
             justify-content: center;
-            margin-top: 20px;
+            flex-wrap: wrap;
         }
 
         .btn {
-            padding: 12px 30px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1em;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 600;
-        }
-
-        .btn-primary {
-            background: #667eea;
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
             color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            transition: all 0.3s ease;
         }
 
-        .btn-primary:hover {
-            background: #5568d3;
+        .btn:hover {
             transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(78, 205, 196, 0.4);
         }
 
         .btn-secondary {
-            background: #6c757d;
-            color: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
 
-        .btn-secondary:hover {
-            background: #5a6268;
+        .error-message {
+            background: rgba(255, 107, 107, 0.2);
+            border: 2px solid #ff6b6b;
+            color: #ff8a8a;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: #4ecdc4;
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        .turn-indicator {
+            text-align: center;
+            padding: 15px;
+            background: rgba(78, 205, 196, 0.2);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .move-list {
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 0.9em;
+        }
+
+        .move-item {
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            margin-bottom: 5px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        @media (max-width: 1200px) {
+            .game-layout {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+            }
+
+            .board {
+                transform: none;
+            }
+
+            .hex-row.offset {
+                margin-left: 0;
+                margin-top: -20px;
+            }
+
+            .hexagon {
+                transform: rotate(-90deg);
+            }
+
+            .piece {
+                transform: none;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1 id="gameName">Loading Custom Game...</h1>
-        <div class="game-info">
-            <span id="creator">Creator: Loading...</span>
-            <span id="plays">Plays: 0</span>
-            <span id="rating">Rating: N/A</span>
-        </div>
-    </div>
-
-    <div class="game-container">
-        <div id="loadingScreen" class="loading">
-            <h2>Loading Game...</h2>
-            <div class="spinner"></div>
-            <p style="margin-top: 20px; color: #666;">Fetching game configuration...</p>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Custom Game</h1>
+            <div id="loading" class="loading">Loading game</div>
         </div>
 
-        <div id="errorScreen" class="error" style="display: none;">
-            <h2>Error Loading Game</h2>
-            <p id="errorMessage"></p>
-            <button class="btn btn-primary" onclick="window.location.href='/game-creator.html'" style="margin-top: 20px;">
-                Create Your Own Game
-            </button>
-        </div>
+        <div id="error-container"></div>
 
-        <canvas id="gameCanvas" style="display: none;"></canvas>
+        <div id="game-content" style="display: none;">
+            <div class="game-layout">
+                <!-- Left Panel: White Info -->
+                <div class="side-panel">
+                    <h3>⚪ White Player</h3>
+                    <div class="turn-indicator" id="white-turn" style="display: none; background: rgba(255, 255, 255, 0.2);">
+                        Your Turn
+                    </div>
+                    <div class="game-info-item">
+                        <div class="info-label">Pieces Captured</div>
+                        <div class="info-value" id="white-captured">0</div>
+                    </div>
+                    <div class="game-info-item">
+                        <div class="info-label">Score</div>
+                        <div class="info-value" id="white-score">0</div>
+                    </div>
+                    <h4 style="margin-top: 20px; margin-bottom: 10px; color: #4ecdc4;">Pieces</h4>
+                    <div id="white-pieces-list"></div>
+                </div>
 
-        <div class="controls" id="gameControls" style="display: none;">
-            <button class="btn btn-secondary" onclick="resetGame()">Reset Game</button>
-            <button class="btn btn-primary" onclick="window.location.href='/game-library.html'">Browse Games</button>
+                <!-- Center: Game Board -->
+                <div class="board-container">
+                    <div id="board-display"></div>
+                </div>
+
+                <!-- Right Panel: Black Info & Game Info -->
+                <div class="side-panel">
+                    <h3>⚫ Black Player</h3>
+                    <div class="turn-indicator" id="black-turn" style="display: block; background: rgba(0, 0, 0, 0.4);">
+                        Your Turn
+                    </div>
+                    <div class="game-info-item">
+                        <div class="info-label">Pieces Captured</div>
+                        <div class="info-value" id="black-captured">0</div>
+                    </div>
+                    <div class="game-info-item">
+                        <div class="info-label">Score</div>
+                        <div class="info-value" id="black-score">0</div>
+                    </div>
+                    <h4 style="margin-top: 20px; margin-bottom: 10px; color: #4ecdc4;">Pieces</h4>
+                    <div id="black-pieces-list"></div>
+
+                    <hr style="margin: 20px 0; border: 1px solid rgba(78, 205, 196, 0.3);">
+
+                    <h3>📊 Game Info</h3>
+                    <div class="game-info-item">
+                        <div class="info-label">Name</div>
+                        <div class="info-value" id="game-name">---</div>
+                    </div>
+                    <div class="game-info-item">
+                        <div class="info-label">Creator</div>
+                        <div class="info-value" id="game-creator">---</div>
+                    </div>
+                    <div class="game-info-item">
+                        <div class="info-label">Total Plays</div>
+                        <div class="info-value" id="game-plays">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn" onclick="resetGame()">🔄 Reset Game</button>
+                <button class="btn btn-secondary" onclick="undoMove()" id="undo-btn" disabled>↶ Undo Move</button>
+                <button class="btn btn-secondary" onclick="window.location.href='game-creator.html'">← Back to Creator</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // Get game ID from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const gameId = urlParams.get('game');
+        const API_BASE = 'https://api.romgon.net/api/custom-games';
+        let currentGameConfig = null;
+        let gameState = {
+            currentPlayer: 'black',
+            moveHistory: [],
+            capturedPieces: { white: [], black: [] },
+            boardState: {}
+        };
 
-        if (!gameId) {
-            showError('No game ID provided in URL');
-        } else {
-            loadGame(gameId);
-        }
+        let draggedPiece = null;
+        let draggedFromHex = null;
 
         async function loadGame(gameId) {
             try {
-                console.log('🎮 Loading game:', gameId);
-
-                const API_BASE_URL = 'https://api.romgon.net';
-                const response = await fetch(`${API_BASE_URL}/api/custom-games/game/${gameId}`);
-
+                console.log(`📥 Loading game: ${gameId}`);
+                const response = await fetch(`${API_BASE}/game/${gameId}`);
+                
                 if (!response.ok) {
-                    throw new Error(`Failed to load game: ${response.status}`);
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
 
-                const result = await response.json();
-                console.log('📥 Game data loaded:', result);
+                const data = await response.json();
+                console.log('✅ Game loaded:', data);
 
-                if (!result || !result.config) {
-                    throw new Error('Invalid game data received');
+                if (!data.success || !data.game) {
+                    throw new Error(data.error || 'Game not found');
                 }
 
-                // Update header info
-                document.getElementById('gameName').textContent = result.name || 'Custom Game';
-                document.getElementById('creator').textContent = `Creator: ${result.creator_name || 'Anonymous'}`;
-                document.getElementById('plays').textContent = `Plays: ${result.plays || 0}`;
-                document.getElementById('rating').textContent = `Rating: ${result.rating ? result.rating.toFixed(1) : 'N/A'}`;
+                const game = data.game;
+                currentGameConfig = typeof game.config === 'string' 
+                    ? JSON.parse(game.config) 
+                    : game.config;
 
-                // Hide loading screen
-                document.getElementById('loadingScreen').style.display = 'none';
+                // Update UI
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('game-content').style.display = 'block';
+                document.getElementById('game-name').textContent = game.name;
+                document.getElementById('game-creator').textContent = game.creator || 'Anonymous';
+                document.getElementById('game-plays').textContent = game.plays || 0;
 
                 // Initialize game
-                initializeGame(result.config);
+                initializeGame(currentGameConfig);
 
                 // Increment play count
                 incrementPlayCount(gameId);
 
             } catch (error) {
-                console.error('❌ Error loading game:', error);
-                showError(error.message);
+                console.error('❌ Load error:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error-container').innerHTML = `
+                    <div class="error-message">
+                        <h3>❌ Error Loading Game</h3>
+                        <p>${error.message}</p>
+                        <button class="btn" onclick="window.location.href='game-creator.html'">← Back to Creator</button>
+                    </div>
+                `;
             }
         }
 
         function initializeGame(config) {
-            console.log('🎯 Initializing game with config:', config);
+            console.log('🎮 Initializing game with config:', config);
+            
+            // Reset game state
+            gameState = {
+                currentPlayer: 'black',
+                moveHistory: [],
+                capturedPieces: { white: [], black: [] },
+                boardState: {}
+            };
 
-            // Show canvas and controls
-            const canvas = document.getElementById('gameCanvas');
-            canvas.style.display = 'block';
-            document.getElementById('gameControls').style.display = 'flex';
+            // Render board
+            renderBoard(config.board);
+            
+            // Place pieces
+            placePieces(config.pieces, config.board.placements);
 
-            // Set canvas size based on board
-            const boardWidth = config.board?.width || 11;
-            const boardHeight = config.board?.height || 11;
-            canvas.width = 800;
-            canvas.height = 700;
+            // Update piece lists
+            updatePieceLists(config.pieces);
 
-            // Draw game board
-            const ctx = canvas.getContext('2d');
-            drawGame(ctx, config);
+            // Update turn indicator
+            updateTurnIndicator();
         }
 
-        function drawGame(ctx, config) {
-            // Clear canvas
-            ctx.fillStyle = '#f9f9f9';
-            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        function renderBoard(boardConfig) {
+            const boardDisplay = document.getElementById('board-display');
+            boardDisplay.innerHTML = '';
 
-            // Draw title
-            ctx.fillStyle = '#333';
-            ctx.font = 'bold 24px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('Custom Game Loaded Successfully!', ctx.canvas.width / 2, 50);
+            const board = document.createElement('div');
+            board.className = 'board';
+            board.id = 'game-board';
 
-            // Draw board info
-            ctx.font = '16px Arial';
-            ctx.fillText(`Board: ${config.board?.width || 11}x${config.board?.height || 11}`, ctx.canvas.width / 2, 100);
-            ctx.fillText(`Pieces: ${config.pieces?.length || 0}`, ctx.canvas.width / 2, 130);
+            const rows = boardConfig.rows || 7;
+            const colsPerRow = boardConfig.colsPerRow || [4, 5, 6, 7, 6, 5, 4];
+            const zones = boardConfig.zones || {};
+            const deletedHexes = boardConfig.deletedHexes || [];
 
-            // Draw pieces
-            if (config.pieces && config.pieces.length > 0) {
-                let y = 180;
-                ctx.textAlign = 'left';
-                ctx.fillText('Game Pieces:', 50, y);
-                y += 30;
+            for (let r = 0; r < rows; r++) {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'hex-row';
+                
+                // Even rows need offset
+                if (r % 2 === 0) {
+                    rowDiv.classList.add('offset');
+                }
 
-                config.pieces.forEach((piece, index) => {
-                    ctx.fillStyle = '#667eea';
-                    ctx.fillText(`${index + 1}. ${piece.name} (${piece.shape || 'custom'}, ${piece.color})`, 70, y);
-                    y += 25;
-                });
+                const cols = colsPerRow[r] || 0;
+                for (let c = 0; c < cols; c++) {
+                    const hexId = `${r}-${c}`;
+                    
+                    // Skip deleted hexes
+                    if (deletedHexes.includes(hexId)) {
+                        continue;
+                    }
+
+                    const hex = document.createElement('div');
+                    hex.className = 'hexagon';
+                    hex.id = `hex-${hexId}`;
+                    hex.dataset.row = r;
+                    hex.dataset.col = c;
+
+                    // Apply zone color
+                    const zone = getZoneForHex(hexId, zones);
+                    if (zone) {
+                        hex.classList.add(`zone-${zone}`);
+                    }
+
+                    // Setup drag & drop
+                    hex.addEventListener('dragover', handleDragOver);
+                    hex.addEventListener('drop', handleDrop);
+                    hex.addEventListener('click', handleHexClick);
+
+                    rowDiv.appendChild(hex);
+                }
+
+                board.appendChild(rowDiv);
             }
 
-            // Draw note
-            ctx.fillStyle = '#999';
-            ctx.font = 'italic 14px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('Full game engine integration coming soon!', ctx.canvas.width / 2, ctx.canvas.height - 30);
+            boardDisplay.appendChild(board);
+            console.log('✅ Board rendered');
+        }
+
+        function getZoneForHex(hexId, zones) {
+            for (const [zoneName, hexList] of Object.entries(zones)) {
+                if (hexList && hexList.includes(hexId)) {
+                    return zoneName;
+                }
+            }
+            return 'middle'; // default
+        }
+
+        function placePieces(pieces, placements) {
+            if (!pieces || !placements) return;
+
+            placements.forEach(placement => {
+                const piece = pieces.find(p => p.name === placement.piece);
+                if (!piece) return;
+
+                const hexId = `${placement.row}-${placement.col}`;
+                const hexEl = document.getElementById(`hex-${hexId}`);
+                if (!hexEl) return;
+
+                const pieceEl = createPieceElement(piece, placement.color);
+                hexEl.appendChild(pieceEl);
+
+                // Store in board state
+                gameState.boardState[hexId] = {
+                    piece: piece.name,
+                    color: placement.color
+                };
+            });
+
+            console.log('✅ Pieces placed');
+        }
+
+        function createPieceElement(piece, color) {
+            const pieceEl = document.createElement('div');
+            pieceEl.className = `piece piece-${color}`;
+            pieceEl.draggable = true;
+            pieceEl.dataset.pieceName = piece.name;
+            pieceEl.dataset.color = color;
+
+            const img = document.createElement('img');
+            img.src = piece.imageUrl || `ASSETS/${piece.shape} ${color} front.png`;
+            img.alt = piece.name;
+            img.draggable = false;
+
+            pieceEl.appendChild(img);
+
+            // Drag events
+            pieceEl.addEventListener('dragstart', handleDragStart);
+            pieceEl.addEventListener('dragend', handleDragEnd);
+
+            return pieceEl;
+        }
+
+        function handleDragStart(e) {
+            const pieceEl = e.target.closest('.piece');
+            const color = pieceEl.dataset.color;
+
+            // Only allow current player to drag their pieces
+            if (color !== gameState.currentPlayer) {
+                e.preventDefault();
+                return;
+            }
+
+            draggedPiece = pieceEl;
+            draggedFromHex = pieceEl.parentElement;
+            pieceEl.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd(e) {
+            const pieceEl = e.target.closest('.piece');
+            if (pieceEl) {
+                pieceEl.classList.remove('dragging');
+            }
+            draggedPiece = null;
+            draggedFromHex = null;
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            
+            if (!draggedPiece || !draggedFromHex) return;
+
+            const targetHex = e.target.closest('.hexagon');
+            if (!targetHex) return;
+
+            // Check if valid move (for now, allow any move)
+            const fromId = `${draggedFromHex.dataset.row}-${draggedFromHex.dataset.col}`;
+            const toId = `${targetHex.dataset.row}-${targetHex.dataset.col}`;
+
+            // Check if target has enemy piece (capture)
+            const targetPiece = targetHex.querySelector('.piece');
+            if (targetPiece) {
+                const targetColor = targetPiece.dataset.color;
+                if (targetColor === gameState.currentPlayer) {
+                    console.log('❌ Cannot capture own piece');
+                    return;
+                }
+                
+                // Capture piece
+                targetPiece.remove();
+                gameState.capturedPieces[targetColor].push(targetPiece.dataset.pieceName);
+                updateCaptureCount();
+            }
+
+            // Move piece
+            targetHex.appendChild(draggedPiece);
+
+            // Update board state
+            delete gameState.boardState[fromId];
+            gameState.boardState[toId] = {
+                piece: draggedPiece.dataset.pieceName,
+                color: draggedPiece.dataset.color
+            };
+
+            // Record move
+            gameState.moveHistory.push({
+                from: fromId,
+                to: toId,
+                piece: draggedPiece.dataset.pieceName,
+                captured: targetPiece ? targetPiece.dataset.pieceName : null
+            });
+
+            // Switch turns
+            gameState.currentPlayer = gameState.currentPlayer === 'black' ? 'white' : 'black';
+            updateTurnIndicator();
+            updateUndoButton();
+
+            console.log(`✅ Move: ${fromId} → ${toId}`);
+        }
+
+        function handleHexClick(e) {
+            // Future: handle piece selection for showing valid moves
+        }
+
+        function updatePieceLists(pieces) {
+            const whitePieces = pieces.filter(p => 
+                Object.values(gameState.boardState).some(bs => bs.piece === p.name && bs.color === 'white')
+            );
+            const blackPieces = pieces.filter(p => 
+                Object.values(gameState.boardState).some(bs => bs.piece === p.name && bs.color === 'black')
+            );
+
+            const whiteList = document.getElementById('white-pieces-list');
+            const blackList = document.getElementById('black-pieces-list');
+
+            whiteList.innerHTML = whitePieces.map(p => `
+                <div class="game-info-item">
+                    <div class="info-value">${p.name}</div>
+                    <div class="info-label">${p.shape}</div>
+                </div>
+            `).join('');
+
+            blackList.innerHTML = blackPieces.map(p => `
+                <div class="game-info-item">
+                    <div class="info-value">${p.name}</div>
+                    <div class="info-label">${p.shape}</div>
+                </div>
+            `).join('');
+        }
+
+        function updateTurnIndicator() {
+            const whiteIndicator = document.getElementById('white-turn');
+            const blackIndicator = document.getElementById('black-turn');
+
+            if (gameState.currentPlayer === 'white') {
+                whiteIndicator.style.display = 'block';
+                blackIndicator.style.display = 'none';
+            } else {
+                whiteIndicator.style.display = 'none';
+                blackIndicator.style.display = 'block';
+            }
+        }
+
+        function updateCaptureCount() {
+            document.getElementById('white-captured').textContent = gameState.capturedPieces.white.length;
+            document.getElementById('black-captured').textContent = gameState.capturedPieces.black.length;
+        }
+
+        function updateUndoButton() {
+            const undoBtn = document.getElementById('undo-btn');
+            undoBtn.disabled = gameState.moveHistory.length === 0;
+        }
+
+        function undoMove() {
+            if (gameState.moveHistory.length === 0) return;
+
+            const lastMove = gameState.moveHistory.pop();
+            
+            // Find piece and move it back
+            const toHex = document.getElementById(`hex-${lastMove.to}`);
+            const fromHex = document.getElementById(`hex-${lastMove.from}`);
+            const pieceEl = toHex.querySelector('.piece');
+
+            if (pieceEl && fromHex) {
+                fromHex.appendChild(pieceEl);
+
+                // Restore captured piece if any
+                if (lastMove.captured) {
+                    const capturedColor = gameState.currentPlayer; // opposite of current
+                    gameState.capturedPieces[capturedColor].pop();
+                    updateCaptureCount();
+                }
+
+                // Update board state
+                gameState.boardState[lastMove.from] = gameState.boardState[lastMove.to];
+                delete gameState.boardState[lastMove.to];
+
+                // Switch turn back
+                gameState.currentPlayer = gameState.currentPlayer === 'black' ? 'white' : 'black';
+                updateTurnIndicator();
+                updateUndoButton();
+
+                console.log('↶ Move undone');
+            }
         }
 
         function resetGame() {
-            const canvas = document.getElementById('gameCanvas');
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            location.reload();
+            if (currentGameConfig) {
+                initializeGame(currentGameConfig);
+                console.log('🔄 Game reset');
+            }
         }
 
         async function incrementPlayCount(gameId) {
             try {
-                const API_BASE_URL = 'https://api.romgon.net';
-                await fetch(`${API_BASE_URL}/api/custom-games/game/${gameId}/play`, {
-                    method: 'POST'
+                await fetch(`${API_BASE}/game/${gameId}/play`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
                 });
                 console.log('✅ Play count incremented');
             } catch (error) {
-                console.warn('Failed to increment play count:', error);
+                console.error('⚠️ Failed to increment play count:', error);
             }
         }
 
-        function showError(message) {
-            document.getElementById('loadingScreen').style.display = 'none';
-            document.getElementById('errorScreen').style.display = 'block';
-            document.getElementById('errorMessage').textContent = message;
+        // Extract game ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const gameId = urlParams.get('id') || urlParams.get('game');
+
+        if (gameId) {
+            loadGame(gameId);
+        } else {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error-container').innerHTML = `
+                <div class="error-message">
+                    <h3>❌ No Game ID</h3>
+                    <p>Please provide a game ID in the URL (?id=... or ?game=...)</p>
+                    <button class="btn" onclick="window.location.href='game-creator.html'">← Back to Creator</button>
+                </div>
+            `;
         }
     </script>
 </body>
