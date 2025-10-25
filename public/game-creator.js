@@ -280,8 +280,8 @@ const hexWidth = Math.sqrt(3) * hexSize;
 function drawHexagon(ctx, x, y, size, fill, stroke, lineWidth) {
     ctx.beginPath();
     for (let i = 0; i < 6; i++) {
-        // Add π/6 (30°) to make hexagons pointy-topped like Romgon board
-        const angle = Math.PI / 3 * i + Math.PI / 6;
+        // Flat-topped hexagons (standard orientation)
+        const angle = Math.PI / 3 * i;
         const hx = x + size * Math.cos(angle);
         const hy = y + size * Math.sin(angle);
         if (i === 0) ctx.moveTo(hx, hy);
@@ -300,11 +300,11 @@ function drawHexGrid(ctx, width, height, gridW, gridH) {
     const centerX = width / 2;
     const centerY = height / 2;
     
-    // For pointy-topped hexagons:
-    // Horizontal spacing is 1.5 * hexWidth (side-to-side distance)
+    // For flat-topped hexagons (standard Romgon orientation):
+    // Horizontal spacing is 0.75 * hexWidth (side-to-side distance)
     // Vertical spacing is hexHeight (top-to-bottom distance)
-    const horizontalSpacing = hexWidth;
-    const verticalSpacing = hexHeight * 0.75;
+    const horizontalSpacing = hexWidth * 0.75;
+    const verticalSpacing = hexHeight;
 
     for (let row = 0; row < gridH; row++) {
         for (let col = 0; col < gridW; col++) {
@@ -319,9 +319,9 @@ function pixelToHex(x, y, canvasW, canvasH, gridW, gridH) {
     const centerX = canvasW / 2;
     const centerY = canvasH / 2;
     
-    // For pointy-topped hexagons
-    const horizontalSpacing = hexWidth;
-    const verticalSpacing = hexHeight * 0.75;
+    // For flat-topped hexagons
+    const horizontalSpacing = hexWidth * 0.75;
+    const verticalSpacing = hexHeight;
 
     for (let row = 0; row < gridH; row++) {
         for (let col = 0; col < gridW; col++) {
@@ -459,9 +459,9 @@ function redrawMoveCanvas() {
     const centerX = 600 / 2;
     const centerY = 600 / 2;
     
-    // For pointy-topped hexagons
-    const horizontalSpacing = hexWidth;
-    const verticalSpacing = hexHeight * 0.75;
+    // For flat-topped hexagons
+    const horizontalSpacing = hexWidth * 0.75;
+    const verticalSpacing = hexHeight;
 
     // Draw piece in center (just a placeholder)
     if (gameData.currentPieceId) {
