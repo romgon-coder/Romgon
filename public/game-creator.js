@@ -301,17 +301,19 @@ function drawHexGrid(ctx, width, height, gridW, gridH) {
     const centerX = width / 2;
     const centerY = height / 2;
     
-    // POINTY-TOPPED hexagons (before CSS 90° rotation)
-    // For pointy-topped: horizontal = sqrt(3)*radius, vertical = 1.5*radius
-    const horizontalSpacing = hexSize * Math.sqrt(3);
-    const verticalSpacing = hexSize * 1.5;
+    // Matching board.HTML EXACTLY:
+    // - Pointy-topped hexagons (height = 2×size, width = √3×size)
+    // - Rows stack vertically with -10% margin overlap
+    // - Even ROWS shift RIGHT by hexWidth/2
+    const rowSpacing = hexHeight * 0.9;  // -10% overlap
+    const colSpacing = hexWidth;  // Full width between hexes in same row
 
     for (let row = 0; row < gridH; row++) {
         for (let col = 0; col < gridW; col++) {
-            // Odd columns shift down
-            const yOffset = (col % 2 === 1) ? (verticalSpacing * 0.5) : 0;
-            const x = centerX + (col - gridW/2) * horizontalSpacing;
-            const y = centerY + (row - gridH/2) * verticalSpacing + yOffset;
+            // Even ROWS (0, 2, 4...) shift RIGHT
+            const xOffset = (row % 2 === 0) ? (hexWidth * 0.5) : 0;
+            const x = centerX + (col - gridW/2) * colSpacing + xOffset;
+            const y = centerY + (row - gridH/2) * rowSpacing;
             drawHexagon(ctx, x, y, hexSize, '#fff', '#666', 1.5);
         }
     }
@@ -321,15 +323,15 @@ function pixelToHex(x, y, canvasW, canvasH, gridW, gridH) {
     const centerX = canvasW / 2;
     const centerY = canvasH / 2;
     
-    // POINTY-TOPPED hexagons
-    const horizontalSpacing = hexSize * Math.sqrt(3);
-    const verticalSpacing = hexSize * 1.5;
+    // Matching board.HTML grid
+    const rowSpacing = hexHeight * 0.9;
+    const colSpacing = hexWidth;
 
     for (let row = 0; row < gridH; row++) {
         for (let col = 0; col < gridW; col++) {
-            const yOffset = (col % 2 === 1) ? (verticalSpacing * 0.5) : 0;
-            const hx = centerX + (col - gridW/2) * horizontalSpacing;
-            const hy = centerY + (row - gridH/2) * verticalSpacing + yOffset;
+            const xOffset = (row % 2 === 0) ? (hexWidth * 0.5) : 0;
+            const hx = centerX + (col - gridW/2) * colSpacing + xOffset;
+            const hy = centerY + (row - gridH/2) * rowSpacing;
             const dist = Math.sqrt((x - hx) ** 2 + (y - hy) ** 2);
             if (dist < hexSize) {
                 return {row, col};
@@ -462,9 +464,9 @@ function redrawMoveCanvas() {
     const centerX = 600 / 2;
     const centerY = 600 / 2;
     
-    // POINTY-TOPPED hexagons
-    const horizontalSpacing = hexSize * Math.sqrt(3);
-    const verticalSpacing = hexSize * 1.5;
+    // Matching board.HTML grid
+    const rowSpacing = hexHeight * 0.9;
+    const colSpacing = hexWidth;
 
     // Draw piece in center (just a placeholder)
     if (gameData.currentPieceId) {
@@ -480,27 +482,27 @@ function redrawMoveCanvas() {
     // Draw movement patterns
     if (currentMovement.move) {
         currentMovement.move.forEach(hex => {
-            const yOffset = (hex.col % 2 === 1) ? (verticalSpacing * 0.5) : 0;
-            const x = centerX + (hex.col - 5.5) * horizontalSpacing;
-            const y = centerY + (hex.row - 5.5) * verticalSpacing + yOffset;
+            const xOffset = (hex.row % 2 === 0) ? (hexWidth * 0.5) : 0;
+            const x = centerX + (hex.col - 5.5) * colSpacing + xOffset;
+            const y = centerY + (hex.row - 5.5) * rowSpacing;
             drawHexagon(moveCtx, x, y, hexSize, '#2ecc71', '#27ae60', 2);
         });
     }
 
     if (currentMovement.attack) {
         currentMovement.attack.forEach(hex => {
-            const yOffset = (hex.col % 2 === 1) ? (verticalSpacing * 0.5) : 0;
-            const x = centerX + (hex.col - 5.5) * horizontalSpacing;
-            const y = centerY + (hex.row - 5.5) * verticalSpacing + yOffset;
+            const xOffset = (hex.row % 2 === 0) ? (hexWidth * 0.5) : 0;
+            const x = centerX + (hex.col - 5.5) * colSpacing + xOffset;
+            const y = centerY + (hex.row - 5.5) * rowSpacing;
             drawHexagon(moveCtx, x, y, hexSize, '#e74c3c', '#c0392b', 2);
         });
     }
 
     if (currentMovement.special) {
         currentMovement.special.forEach(hex => {
-            const yOffset = (hex.col % 2 === 1) ? (verticalSpacing * 0.5) : 0;
-            const x = centerX + (hex.col - 5.5) * horizontalSpacing;
-            const y = centerY + (hex.row - 5.5) * verticalSpacing + yOffset;
+            const xOffset = (hex.row % 2 === 0) ? (hexWidth * 0.5) : 0;
+            const x = centerX + (hex.col - 5.5) * colSpacing + xOffset;
+            const y = centerY + (hex.row - 5.5) * rowSpacing;
             drawHexagon(moveCtx, x, y, hexSize, '#f39c12', '#e67e22', 2);
         });
     }
@@ -572,9 +574,11 @@ function redrawBoard() {
     const centerY = 300;
     const bHexSize = 20;
     
-    // POINTY-TOPPED hexagons (90° rotation in CSS)
-    const horizontalSpacing = bHexSize * Math.sqrt(3);
-    const verticalSpacing = bHexSize * 1.5;
+    // Matching board.HTML grid
+    const bHexHeight = bHexSize * 2;
+    const bHexWidth = bHexSize * Math.sqrt(3);
+    const rowSpacing = bHexHeight * 0.9;
+    const colSpacing = bHexWidth;
 
     // Ensure deletedHexes array exists
     if (!gameData.board.deletedHexes) {
@@ -583,9 +587,9 @@ function redrawBoard() {
 
     for (let row = 0; row < height; row++) {
         for (let col = 0; col < width; col++) {
-            const yOffset = (col % 2 === 1) ? (verticalSpacing * 0.5) : 0;
-            const x = centerX + (col - width/2) * horizontalSpacing;
-            const y = centerY + (row - height/2) * verticalSpacing + yOffset;
+            const xOffset = (row % 2 === 0) ? (bHexWidth * 0.5) : 0;
+            const x = centerX + (col - width/2) * colSpacing + xOffset;
+            const y = centerY + (row - height/2) * rowSpacing;
             
             const hexKey = `${row}-${col}`;
             const isDeleted = gameData.board.deletedHexes.includes(hexKey);
@@ -612,16 +616,18 @@ function handleBoardClick(e) {
     const centerY = 300;
     const bHexSize = 20;
     
-    // POINTY-TOPPED hexagons
-    const horizontalSpacing = bHexSize * Math.sqrt(3);
-    const verticalSpacing = bHexSize * 1.5;
+    // Matching board.HTML grid
+    const bHexHeight = bHexSize * 2;
+    const bHexWidth = bHexSize * Math.sqrt(3);
+    const rowSpacing = bHexHeight * 0.9;
+    const colSpacing = bHexWidth;
 
     // Find clicked hex
     for (let row = 0; row < height; row++) {
         for (let col = 0; col < width; col++) {
-            const yOffset = (col % 2 === 1) ? (verticalSpacing * 0.5) : 0;
-            const hx = centerX + (col - width/2) * horizontalSpacing;
-            const hy = centerY + (row - height/2) * verticalSpacing + yOffset;
+            const xOffset = (row % 2 === 0) ? (bHexWidth * 0.5) : 0;
+            const hx = centerX + (col - width/2) * colSpacing + xOffset;
+            const hy = centerY + (row - height/2) * rowSpacing;
             const dist = Math.sqrt((x - hx) ** 2 + (y - hy) ** 2);
             
             if (dist < bHexSize) {
