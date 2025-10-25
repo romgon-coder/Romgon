@@ -798,7 +798,8 @@
                         <label>Board Preset</label>
                         <select id="boardPreset" onchange="applyBoardPreset()">
                             <option value="">-- Custom Size --</option>
-                            <option value="9x11">Classic Romgon (9×11)</option>
+                            <option value="7x7">Classic Romgon (7×7)</option>
+                            <option value="9x11">Extended Classic (9×11)</option>
                             <option value="11x13">Medium (11×13)</option>
                             <option value="13x15">Large (13×15)</option>
                             <option value="15x17">Extra Large (15×17)</option>
@@ -812,12 +813,12 @@
                 <div class="controls">
                     <div class="control-group">
                         <label>Board Width (columns)</label>
-                        <input type="number" id="boardWidth" min="5" max="30" value="9" onchange="redrawBoard()">
+                        <input type="number" id="boardWidth" min="5" max="30" value="7" onchange="redrawBoard()">
                         <small>Hex columns (5-30)</small>
                     </div>
                     <div class="control-group">
                         <label>Board Height (rows)</label>
-                        <input type="number" id="boardHeight" min="5" max="30" value="11" onchange="redrawBoard()">
+                        <input type="number" id="boardHeight" min="5" max="30" value="7" onchange="redrawBoard()">
                         <small>Hex rows (5-30)</small>
                     </div>
                     <div class="control-group">

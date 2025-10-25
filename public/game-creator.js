@@ -628,8 +628,8 @@ function saveMovementPattern() {
 // ============================================================================
 
 function redrawBoard() {
-    const width = parseInt(document.getElementById('boardWidth').value) || 9;
-    const height = parseInt(document.getElementById('boardHeight').value) || 11;
+    const width = parseInt(document.getElementById('boardWidth').value) || 7;
+    const height = parseInt(document.getElementById('boardHeight').value) || 7;
     
     gameData.board.width = width;
     gameData.board.height = height;
@@ -816,7 +816,8 @@ function applyBoardPreset() {
     if (!preset) return;
     
     const presets = {
-        '9x11': { width: 9, height: 11, name: 'Classic Romgon' },
+        '7x7': { width: 7, height: 7, name: 'Classic Romgon' },
+        '9x11': { width: 9, height: 11, name: 'Extended Classic' },
         '11x13': { width: 11, height: 13, name: 'Medium' },
         '13x15': { width: 13, height: 15, name: 'Large' },
         '15x17': { width: 15, height: 17, name: 'Extra Large' },
