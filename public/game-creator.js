@@ -850,29 +850,41 @@ function generateBoardShape() {
     gameData.board.deletedHexes = [];
     
     if (shape === 'hexagon') {
-        // Generate hexagon shape (diamond-like)
-        // Classic Romgon: rows grow then shrink
+        // Generate TRUE hexagon/diamond shape
+        // Top has 1 hex, middle is widest, bottom has 1 hex
+        // Example for 7 rows: 1, 2, 3, 4, 5, 6, 7 then 6, 5, 4, 3, 2, 1
+        // But since we have even rows shifting, we need to account for that
+        
         const midRow = Math.floor(height / 2);
         
         for (let row = 0; row < height; row++) {
-            const distFromCenter = Math.abs(row - midRow);
-            const hexesToRemove = distFromCenter;
+            let hexesInRow;
+            if (row <= midRow) {
+                // Growing phase: row 0=1, row 1=2, row 2=3, etc.
+                hexesInRow = row + 1;
+            } else {
+                // Shrinking phase: mirror the growing phase
+                hexesInRow = height - row;
+            }
             
-            // Remove hexes from both sides
+            // Calculate how many to remove from each side
+            const hexesToRemove = Math.floor((width - hexesInRow) / 2);
+            
+            // Delete hexes from left and right edges
             for (let col = 0; col < width; col++) {
                 if (col < hexesToRemove || col >= width - hexesToRemove) {
                     gameData.board.deletedHexes.push(`${row}-${col}`);
                 }
             }
         }
-        showNotification('Hexagon shape generated!', 'success');
+        showNotification('Hexagon/Diamond shape generated!', 'success');
     } else if (shape === 'diamond') {
-        // Generate diamond shape (narrower at top and bottom)
+        // Generate diamond shape (pointed top and bottom)
         const midRow = Math.floor(height / 2);
         
         for (let row = 0; row < height; row++) {
             const distFromCenter = Math.abs(row - midRow);
-            const hexesToRemove = Math.floor((height / 2) - distFromCenter);
+            const hexesToRemove = distFromCenter;
             
             // Remove hexes from both sides
             for (let col = 0; col < width; col++) {
