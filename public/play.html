@@ -566,33 +566,20 @@
             
             // PRIORITY: If both formats exist, use width/height (old format) as it's more reliable
             if (boardConfig.height && boardConfig.width) {
-                // Old format - convert to new format
+                // Old format with width/height
                 rows = boardConfig.height;
-                const maxWidth = boardConfig.width;
+                const width = boardConfig.width;
                 
-                // Generate hexagon shape: expand to middle, then contract
-                const mid = Math.floor(rows / 2);
-                colsPerRow = [];
+                // CREATE RECTANGLE: All rows have the same width
+                colsPerRow = Array(rows).fill(width);
                 
-                for (let i = 0; i < rows; i++) {
-                    let cols;
-                    if (i <= mid) {
-                        // Expanding rows: start small, grow to maxWidth at middle
-                        cols = Math.max(1, maxWidth - (mid - i));
-                    } else {
-                        // Contracting rows: shrink from maxWidth back down
-                        cols = Math.max(1, maxWidth - (i - mid));
-                    }
-                    colsPerRow.push(cols);
-                }
-                
-                console.log('🔄 Converted old board format:', { height: rows, width: maxWidth, colsPerRow });
+                console.log('🔄 Converted board to RECTANGLE:', { height: rows, width: width, shape: 'rectangle' });
             } else if (boardConfig.rows && boardConfig.colsPerRow) {
                 // New format
                 rows = boardConfig.rows;
                 colsPerRow = boardConfig.colsPerRow;
             } else {
-                // Fallback to default
+                // Fallback to default hexagon shape
                 rows = 7;
                 colsPerRow = [4, 5, 6, 7, 6, 5, 4];
             }
