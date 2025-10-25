@@ -814,20 +814,45 @@
             const targetHex = e.target.closest('.hexagon');
             if (!targetHex) return;
 
-            // Check if valid move (for now, allow any move)
-            const fromId = `${draggedFromHex.dataset.row}-${draggedFromHex.dataset.col}`;
-            const toId = `${targetHex.dataset.row}-${targetHex.dataset.col}`;
+            const fromRow = parseInt(draggedFromHex.dataset.row);
+            const fromCol = parseInt(draggedFromHex.dataset.col);
+            const toRow = parseInt(targetHex.dataset.row);
+            const toCol = parseInt(targetHex.dataset.col);
+            
+            const fromId = `${fromRow}-${fromCol}`;
+            const toId = `${toRow}-${toCol}`;
 
-            // Check if target has enemy piece (capture)
+            // Get piece data
+            const pieceData = JSON.parse(draggedPiece.dataset.pieceData);
+            
+            // Validate move using hardcoded patterns
+            const isValidMove = validateMove(pieceData, fromRow, fromCol, toRow, toCol);
+            
+            if (!isValidMove) {
+                console.log('❌ Invalid move');
+                return;
+            }
+
+            // Check if target has a piece
             const targetPiece = targetHex.querySelector('.piece');
             if (targetPiece) {
                 const targetColor = targetPiece.dataset.color;
+                
+                // Cannot move to own piece
                 if (targetColor === gameState.currentPlayer) {
-                    console.log('❌ Cannot capture own piece');
+                    console.log('❌ Cannot move to own piece');
+                    return;
+                }
+                
+                // Check if this is a valid attack
+                const isValidAttack = isAttackMove(pieceData, fromRow, fromCol, toRow, toCol);
+                if (!isValidAttack) {
+                    console.log('❌ Cannot attack this position');
                     return;
                 }
                 
                 // Capture piece
+                console.log(`⚔️ Captured ${targetPiece.dataset.pieceName}`);
                 targetPiece.remove();
                 gameState.capturedPieces[targetColor].push(targetPiece.dataset.pieceName);
                 updateCaptureCount();
@@ -858,6 +883,43 @@
             clearHighlights(); // Clear highlights after move
 
             console.log(`✅ Move: ${fromId} → ${toId}`);
+        }
+        
+        function validateMove(piece, fromRow, fromCol, toRow, toCol) {
+            if (!piece.movement) return false;
+            
+            const rowOffset = toRow - fromRow;
+            const colOffset = toCol - fromCol;
+            
+            // Check if move matches any hardcoded move pattern
+            if (piece.movement.hardcodedMove && piece.movement.hardcodedMove.length > 0) {
+                const isValid = piece.movement.hardcodedMove.some(pattern => 
+                    pattern.rowOffset === rowOffset && pattern.colOffset === colOffset
+                );
+                if (isValid) return true;
+            }
+            
+            // Check if it's an attack move (can move to attack positions)
+            if (piece.movement.hardcodedAttack && piece.movement.hardcodedAttack.length > 0) {
+                const isValid = piece.movement.hardcodedAttack.some(pattern => 
+                    pattern.rowOffset === rowOffset && pattern.colOffset === colOffset
+                );
+                if (isValid) return true;
+            }
+            
+            return false;
+        }
+        
+        function isAttackMove(piece, fromRow, fromCol, toRow, toCol) {
+            if (!piece.movement || !piece.movement.hardcodedAttack) return false;
+            
+            const rowOffset = toRow - fromRow;
+            const colOffset = toCol - fromCol;
+            
+            // Check if this move matches an attack pattern
+            return piece.movement.hardcodedAttack.some(pattern => 
+                pattern.rowOffset === rowOffset && pattern.colOffset === colOffset
+            );
         }
 
         function handleHexClick(e) {
