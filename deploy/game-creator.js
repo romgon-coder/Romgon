@@ -1216,20 +1216,30 @@ async function publishGame() {
         };
         
         console.log('📤 Sending game data to API:', JSON.stringify(payload, null, 2));
+        console.log('📤 API endpoint:', `${API_BASE_URL}/api/custom-games/create`);
         
-        const response = await fetch(`${API_BASE_URL}/api/custom-games/create`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        });
+        let response;
+        try {
+            response = await fetch(`${API_BASE_URL}/api/custom-games/create`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            console.log('📥 Fetch completed successfully');
+        } catch (fetchError) {
+            console.error('❌ Fetch failed:', fetchError);
+            throw new Error(`Network error: ${fetchError.message}`);
+        }
 
         console.log('📥 API Response status:', response.status);
+        console.log('📥 Response ok:', response.ok);
         console.log('📥 Response headers:', Object.fromEntries(response.headers.entries()));
         
         // Get response text first to see what we got
         const responseText = await response.text();
+        console.log('📥 Raw API Response length:', responseText.length);
         console.log('📥 Raw API Response:', responseText);
         
         let result;
