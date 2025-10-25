@@ -449,7 +449,7 @@ function handleMoveClick(e) {
     const x = canvasSize - clickY;
     const y = clickX;
     
-    const hex = pixelToHex(x, y, 600, 600, 11, 11);
+    const hex = pixelToHex(x, y, 600, 600, 10, 10); // 10x10 grid
     
     if (hex) {
         const tool = gameData.currentTool;
@@ -467,13 +467,29 @@ function handleMoveClick(e) {
 }
 
 function redrawMoveCanvas() {
-    drawHexGrid(moveCtx, 600, 600, 11, 11);
+    const gridSize = 10; // 10x10 grid
+    drawHexGrid(moveCtx, 600, 600, gridSize, gridSize);
     const centerX = 600 / 2;
     const centerY = 600 / 2;
     
     // Matching board.HTML grid
     const rowSpacing = hexHeight * 0.9;
     const colSpacing = hexWidth;
+    
+    // Draw coordinate labels on all hexes
+    moveCtx.fillStyle = '#666';
+    moveCtx.font = '10px Arial';
+    moveCtx.textAlign = 'center';
+    moveCtx.textBaseline = 'middle';
+    
+    for (let row = 0; row < gridSize; row++) {
+        for (let col = 0; col < gridSize; col++) {
+            const xOffset = (row % 2 === 0) ? (hexWidth * 0.5) : 0;
+            const x = centerX + (col - gridSize/2) * colSpacing + xOffset;
+            const y = centerY + (row - gridSize/2) * rowSpacing;
+            moveCtx.fillText(`${row}-${col}`, x, y);
+        }
+    }
     
     const centerRow = 5;
     const centerCol = 5;
@@ -483,37 +499,45 @@ function redrawMoveCanvas() {
         const piece = gameData.pieces.find(p => p.id === gameData.currentPieceId);
         if (piece) {
             const xOffset = (centerRow % 2 === 0) ? (hexWidth * 0.5) : 0;
-            const x = centerX + (centerCol - 5.5) * colSpacing + xOffset;
-            const y = centerY + (centerRow - 5.5) * rowSpacing;
+            const x = centerX + (centerCol - gridSize/2) * colSpacing + xOffset;
+            const y = centerY + (centerRow - gridSize/2) * rowSpacing;
             drawHexagon(moveCtx, x, y, hexSize, piece.color, '#333', 2);
+            moveCtx.fillStyle = '#fff';
+            moveCtx.fillText(`${centerRow}-${centerCol}`, x, y);
         }
     }
 
-    // Draw movement patterns
+    // Draw movement patterns with labels
     if (currentMovement.move) {
         currentMovement.move.forEach(hex => {
             const xOffset = (hex.row % 2 === 0) ? (hexWidth * 0.5) : 0;
-            const x = centerX + (hex.col - 5.5) * colSpacing + xOffset;
-            const y = centerY + (hex.row - 5.5) * rowSpacing;
+            const x = centerX + (hex.col - gridSize/2) * colSpacing + xOffset;
+            const y = centerY + (hex.row - gridSize/2) * rowSpacing;
             drawHexagon(moveCtx, x, y, hexSize, '#2ecc71', '#27ae60', 2);
+            moveCtx.fillStyle = '#fff';
+            moveCtx.fillText(`${hex.row}-${hex.col}`, x, y);
         });
     }
 
     if (currentMovement.attack) {
         currentMovement.attack.forEach(hex => {
             const xOffset = (hex.row % 2 === 0) ? (hexWidth * 0.5) : 0;
-            const x = centerX + (hex.col - 5.5) * colSpacing + xOffset;
-            const y = centerY + (hex.row - 5.5) * rowSpacing;
+            const x = centerX + (hex.col - gridSize/2) * colSpacing + xOffset;
+            const y = centerY + (hex.row - gridSize/2) * rowSpacing;
             drawHexagon(moveCtx, x, y, hexSize, '#e74c3c', '#c0392b', 2);
+            moveCtx.fillStyle = '#fff';
+            moveCtx.fillText(`${hex.row}-${hex.col}`, x, y);
         });
     }
 
     if (currentMovement.special) {
         currentMovement.special.forEach(hex => {
             const xOffset = (hex.row % 2 === 0) ? (hexWidth * 0.5) : 0;
-            const x = centerX + (hex.col - 5.5) * colSpacing + xOffset;
-            const y = centerY + (hex.row - 5.5) * rowSpacing;
+            const x = centerX + (hex.col - gridSize/2) * colSpacing + xOffset;
+            const y = centerY + (hex.row - gridSize/2) * rowSpacing;
             drawHexagon(moveCtx, x, y, hexSize, '#f39c12', '#e67e22', 2);
+            moveCtx.fillStyle = '#fff';
+            moveCtx.fillText(`${hex.row}-${hex.col}`, x, y);
         });
     }
 }
