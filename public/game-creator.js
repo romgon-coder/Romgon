@@ -1206,32 +1206,39 @@ async function publishGame() {
         // API Base URL - use Railway backend
         const API_BASE_URL = 'https://api.romgon.net';
         
+        const payload = {
+            name: config.metadata.name,
+            description: config.metadata.description,
+            config: config,
+            thumbnail: thumbnail,
+            tags: config.metadata.tags.join(','),
+            is_public: visibility === 'public'
+        };
+        
+        console.log('📤 Sending game data to API:', JSON.stringify(payload, null, 2));
+        
         const response = await fetch(`${API_BASE_URL}/api/custom-games/create`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                name: config.metadata.name,
-                description: config.metadata.description,
-                config: config,
-                thumbnail: thumbnail,
-                tags: config.metadata.tags.join(','),
-                is_public: visibility === 'public'
-            })
+            body: JSON.stringify(payload)
         });
 
+        console.log('📥 API Response status:', response.status);
+        
         const result = await response.json();
+        console.log('📥 API Response body:', result);
 
         if (result.success) {
             showPublishSuccess(result);
         } else {
-            throw new Error(result.error || 'Failed to publish game');
+            throw new Error(result.error || 'Failed to create game');
         }
 
     } catch (error) {
-        console.error('Error publishing game:', error);
-        alert('Failed to publish game: ' + error.message);
+        console.error('❌ Error publishing game:', error);
+        alert('Failed to publish game: ' + error.message + '\n\nCheck browser console (F12) for details.');
     }
 }
 
