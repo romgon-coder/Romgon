@@ -667,6 +667,31 @@ function redrawBoard() {
     if (!gameData.board.zones) {
         gameData.board.zones = {};
     }
+    if (!gameData.board.placements) {
+        gameData.board.placements = [];
+    }
+    
+    // CLEAN UP: Remove deleted hexes that are out of bounds
+    gameData.board.deletedHexes = gameData.board.deletedHexes.filter(hexKey => {
+        const [row, col] = hexKey.split('-').map(Number);
+        return row >= 0 && row < height && col >= 0 && col < width;
+    });
+    
+    // CLEAN UP: Remove placements that are out of bounds
+    gameData.board.placements = gameData.board.placements.filter(placement => {
+        const [row, col] = placement.hex.split('-').map(Number);
+        return row >= 0 && row < height && col >= 0 && col < width;
+    });
+    
+    // CLEAN UP: Remove zone assignments that are out of bounds
+    const validZones = {};
+    Object.keys(gameData.board.zones).forEach(hexKey => {
+        const [row, col] = hexKey.split('-').map(Number);
+        if (row >= 0 && row < height && col >= 0 && col < width) {
+            validZones[hexKey] = gameData.board.zones[hexKey];
+        }
+    });
+    gameData.board.zones = validZones;
     
     // Get zone colors
     const zoneColors = {
@@ -694,6 +719,19 @@ function redrawBoard() {
             const hexColor = zone ? zoneColors[zone] : '#fcc49c';
             
             drawHexagon(boardCtx, x, y, bHexSize, hexColor, '#666', 1);
+            
+            // Check if there's a piece placement on this hex
+            const placement = gameData.board.placements.find(p => p.hex === hexKey);
+            if (placement) {
+                // Draw piece indicator (circle with player color)
+                boardCtx.beginPath();
+                boardCtx.arc(x, y, bHexSize * 0.4, 0, Math.PI * 2);
+                boardCtx.fillStyle = placement.player === 'white' ? '#ffffff' : '#000000';
+                boardCtx.fill();
+                boardCtx.strokeStyle = placement.player === 'white' ? '#000000' : '#ffffff';
+                boardCtx.lineWidth = 2;
+                boardCtx.stroke();
+            }
             
             // Draw coordinate labels (rotated -90° for readability, scaled with hex size)
             // Use same format as board.HTML: "row-col"
@@ -901,11 +939,12 @@ function setBoardTool(tool) {
 }
 
 function clearBoardPlacements() {
-    if (confirm('Clear all piece placements?')) {
+    if (confirm('Clear all piece placements, zones, and deleted hexes? This will reset the board to empty rectangle.')) {
         gameData.board.placements = [];
         gameData.board.deletedHexes = [];
+        gameData.board.zones = {};
         redrawBoard();
-        showNotification('Board cleared', 'warning');
+        showNotification('Board completely reset!', 'success');
     }
 }
 
