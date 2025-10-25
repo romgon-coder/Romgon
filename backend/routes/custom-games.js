@@ -24,9 +24,13 @@ function optionalAuth(req, res, next) {
 // CREATE: Save new custom game
 router.post('/create', optionalAuth, async (req, res) => {
     try {
+        console.log('📥 Received create game request');
+        console.log('Body keys:', Object.keys(req.body));
+        
         const { name, description, config, thumbnail, tags, is_public } = req.body;
 
         if (!name || !config) {
+            console.error('❌ Missing required fields:', { name: !!name, config: !!config });
             return res.status(400).json({
                 error: 'Missing required fields',
                 required: ['name', 'config']
@@ -48,7 +52,11 @@ router.post('/create', optionalAuth, async (req, res) => {
             is_public
         };
 
+        console.log('💾 Creating game:', game_id, 'by', gameData.creator_name);
+
         const result = await customGameModel.createGame(gameData);
+
+        console.log('✅ Game created successfully:', result.game_id);
 
         res.json({
             success: true,
@@ -58,10 +66,13 @@ router.post('/create', optionalAuth, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error creating game:', error);
+        console.error('❌ Error creating game:', error);
+        console.error('❌ Error stack:', error.stack);
         res.status(500).json({
+            success: false,
             error: 'Failed to create game',
-            details: error.message
+            details: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 });

@@ -1226,18 +1226,30 @@ async function publishGame() {
         });
 
         console.log('📥 API Response status:', response.status);
+        console.log('📥 Response headers:', Object.fromEntries(response.headers.entries()));
         
-        const result = await response.json();
-        console.log('📥 API Response body:', result);
+        // Get response text first to see what we got
+        const responseText = await response.text();
+        console.log('📥 Raw API Response:', responseText);
+        
+        let result;
+        try {
+            result = JSON.parse(responseText);
+            console.log('📥 Parsed API Response:', result);
+        } catch (parseError) {
+            console.error('❌ Failed to parse response as JSON:', parseError);
+            throw new Error(`API returned non-JSON response: ${responseText.substring(0, 200)}`);
+        }
 
         if (result.success) {
             showPublishSuccess(result);
         } else {
-            throw new Error(result.error || 'Failed to create game');
+            throw new Error(result.error || result.details || 'Failed to create game');
         }
 
     } catch (error) {
         console.error('❌ Error publishing game:', error);
+        console.error('❌ Error stack:', error.stack);
         alert('Failed to publish game: ' + error.message + '\n\nCheck browser console (F12) for details.');
     }
 }
