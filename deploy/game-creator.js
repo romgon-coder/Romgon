@@ -53,19 +53,40 @@ function autoFixCorruptedSVG() {
         const data = JSON.parse(saved);
         if (!data.pieces || !Array.isArray(data.pieces)) return;
         
-        let fixed = false;
+        let needsNuke = false;
         data.pieces.forEach(piece => {
             // Check if SVG is corrupted (contains escaped quotes)
             if (piece.svg && (piece.svg.includes('\\"') || piece.svg.includes('\\\\'))) {
-                console.log('🔧 Auto-fixing corrupted SVG for:', piece.name);
-                piece.svg = ''; // Clear it, will regenerate from pixelData
-                fixed = true;
+                console.warn('❌ CORRUPTED SVG DETECTED for:', piece.name);
+                needsNuke = true;
             }
         });
         
-        if (fixed) {
+        // If ANY piece has corrupted SVG, we need to completely regenerate
+        if (needsNuke) {
+            console.log('🔥 NUKING corrupted SVG data and regenerating...');
+            data.pieces.forEach(piece => {
+                if (piece.pixelData && Array.isArray(piece.pixelData)) {
+                    // Generate FRESH SVG using template literals
+                    const svgParts = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">'];
+                    for (let y = 0; y < piece.pixelData.length && y < 10; y++) {
+                        for (let x = 0; x < piece.pixelData[y].length && x < 10; x++) {
+                            if (piece.pixelData[y][x]) {
+                                svgParts.push(`<rect x="${x}" y="${y}" width="1" height="1" fill="${piece.color || '#4a90e2'}"/>`);
+                            }
+                        }
+                    }
+                    svgParts.push('</svg>');
+                    piece.svg = svgParts.join('');
+                    console.log('✅ Regenerated CLEAN SVG for:', piece.name);
+                } else {
+                    piece.svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"></svg>';
+                }
+            });
             localStorage.setItem('romgon_game_creator_data', JSON.stringify(data));
-            console.log('✅ Corrupted SVG data auto-fixed!');
+            console.log('✅ ALL SVG data regenerated and saved!');
+            alert('🔧 Corrupted SVG data detected and fixed! The page will reload.');
+            window.location.reload();
         }
     } catch (e) {
         console.error('Failed to auto-fix SVG:', e);
