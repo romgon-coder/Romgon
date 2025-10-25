@@ -10,32 +10,27 @@ class CustomGame {
     async initTable() {
         const query = `
             CREATE TABLE IF NOT EXISTS custom_games (
-                id INT PRIMARY KEY AUTO_INCREMENT,
-                game_id VARCHAR(100) UNIQUE NOT NULL,
-                name VARCHAR(255) NOT NULL,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                game_id TEXT UNIQUE NOT NULL,
+                name TEXT NOT NULL,
                 description TEXT,
-                creator_id INT,
-                creator_name VARCHAR(100),
-                config JSON NOT NULL,
+                creator_id INTEGER,
+                creator_name TEXT,
+                config TEXT NOT NULL,
                 thumbnail TEXT,
-                plays INT DEFAULT 0,
-                rating DECIMAL(3,2) DEFAULT 0.00,
-                ratings_count INT DEFAULT 0,
-                favorites INT DEFAULT 0,
-                is_public BOOLEAN DEFAULT TRUE,
-                is_featured BOOLEAN DEFAULT FALSE,
-                tags VARCHAR(500),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                INDEX idx_game_id (game_id),
-                INDEX idx_creator (creator_id),
-                INDEX idx_public (is_public),
-                INDEX idx_featured (is_featured),
-                INDEX idx_created (created_at)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+                plays INTEGER DEFAULT 0,
+                rating REAL DEFAULT 0.00,
+                ratings_count INTEGER DEFAULT 0,
+                favorites INTEGER DEFAULT 0,
+                is_public INTEGER DEFAULT 1,
+                is_featured INTEGER DEFAULT 0,
+                tags TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
         `;
         
-        await this.db.query(query);
+        await this.db.run(query);
         console.log('✓ Custom games table initialized');
     }
 
@@ -59,7 +54,7 @@ class CustomGame {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
-        const result = await this.db.query(query, [
+        const result = await this.db.run(query, [
             game_id,
             name,
             description || '',
@@ -68,11 +63,11 @@ class CustomGame {
             JSON.stringify(config),
             thumbnail || '',
             tags || '',
-            is_public !== false
+            is_public !== false ? 1 : 0
         ]);
 
         return {
-            id: result.insertId,
+            id: result.id,
             game_id,
             message: 'Game created successfully'
         };
