@@ -280,8 +280,8 @@ const hexWidth = Math.sqrt(3) * hexSize;
 function drawHexagon(ctx, x, y, size, fill, stroke, lineWidth) {
     ctx.beginPath();
     for (let i = 0; i < 6; i++) {
-        // Flat-topped hexagons (standard orientation)
-        const angle = Math.PI / 3 * i;
+        // Pointy-topped hexagons for beehive pattern (flat sides vertical)
+        const angle = Math.PI / 3 * i - Math.PI / 2;
         const hx = x + size * Math.cos(angle);
         const hy = y + size * Math.sin(angle);
         if (i === 0) ctx.moveTo(hx, hy);
@@ -300,16 +300,17 @@ function drawHexGrid(ctx, width, height, gridW, gridH) {
     const centerX = width / 2;
     const centerY = height / 2;
     
-    // For flat-topped hexagons (standard Romgon orientation):
-    // Horizontal spacing is 0.75 * hexWidth (side-to-side distance)
-    // Vertical spacing is hexHeight (top-to-bottom distance)
-    const horizontalSpacing = hexWidth * 0.75;
-    const verticalSpacing = hexHeight;
+    // For pointy-topped hexagons (beehive/honeycomb pattern):
+    // Flat sides are vertical, points are top/bottom
+    // Horizontal spacing: 1.5 * radius (3/4 of width between centers)
+    // Vertical spacing: sqrt(3) * radius (full height)
+    const horizontalSpacing = hexSize * 1.5;  // 3/4 of hexWidth
+    const verticalSpacing = hexSize * Math.sqrt(3);  // Full hexHeight
 
     for (let row = 0; row < gridH; row++) {
         for (let col = 0; col < gridW; col++) {
-            const x = centerX + (col - gridW/2) * horizontalSpacing + (row % 2) * (horizontalSpacing * 0.5);
-            const y = centerY + (row - gridH/2) * verticalSpacing;
+            const x = centerX + (col - gridW/2) * horizontalSpacing;
+            const y = centerY + (row - gridH/2) * verticalSpacing + (col % 2) * (verticalSpacing * 0.5);
             drawHexagon(ctx, x, y, hexSize, '#fff', '#666', 1.5);
         }
     }
@@ -319,14 +320,14 @@ function pixelToHex(x, y, canvasW, canvasH, gridW, gridH) {
     const centerX = canvasW / 2;
     const centerY = canvasH / 2;
     
-    // For flat-topped hexagons
-    const horizontalSpacing = hexWidth * 0.75;
-    const verticalSpacing = hexHeight;
+    // For pointy-topped hexagons (beehive pattern)
+    const horizontalSpacing = hexSize * 1.5;
+    const verticalSpacing = hexSize * Math.sqrt(3);
 
     for (let row = 0; row < gridH; row++) {
         for (let col = 0; col < gridW; col++) {
-            const hx = centerX + (col - gridW/2) * horizontalSpacing + (row % 2) * (horizontalSpacing * 0.5);
-            const hy = centerY + (row - gridH/2) * verticalSpacing;
+            const hx = centerX + (col - gridW/2) * horizontalSpacing;
+            const hy = centerY + (row - gridH/2) * verticalSpacing + (col % 2) * (verticalSpacing * 0.5);
             const dist = Math.sqrt((x - hx) ** 2 + (y - hy) ** 2);
             if (dist < hexSize) {
                 return {row, col};
@@ -430,7 +431,7 @@ function loadPieceForMovement() {
 
 function handleMoveClick(e) {
     if (!gameData.currentPieceId) {
-        alert('Please select a piece first!');
+        alert('Please select a shape first!');
         return;
     }
     
@@ -459,9 +460,9 @@ function redrawMoveCanvas() {
     const centerX = 600 / 2;
     const centerY = 600 / 2;
     
-    // For flat-topped hexagons
-    const horizontalSpacing = hexWidth * 0.75;
-    const verticalSpacing = hexHeight;
+    // For pointy-topped hexagons (beehive pattern)
+    const horizontalSpacing = hexSize * 1.5;
+    const verticalSpacing = hexSize * Math.sqrt(3);
 
     // Draw piece in center (just a placeholder)
     if (gameData.currentPieceId) {
@@ -477,24 +478,24 @@ function redrawMoveCanvas() {
     // Draw movement patterns
     if (currentMovement.move) {
         currentMovement.move.forEach(hex => {
-            const x = centerX + (hex.col - 5.5) * horizontalSpacing + (hex.row % 2) * (horizontalSpacing * 0.5);
-            const y = centerY + (hex.row - 5.5) * verticalSpacing;
+            const x = centerX + (hex.col - 5.5) * horizontalSpacing;
+            const y = centerY + (hex.row - 5.5) * verticalSpacing + (hex.col % 2) * (verticalSpacing * 0.5);
             drawHexagon(moveCtx, x, y, hexSize, '#2ecc71', '#27ae60', 2);
         });
     }
 
     if (currentMovement.attack) {
         currentMovement.attack.forEach(hex => {
-            const x = centerX + (hex.col - 5.5) * horizontalSpacing + (hex.row % 2) * (horizontalSpacing * 0.5);
-            const y = centerY + (hex.row - 5.5) * verticalSpacing;
+            const x = centerX + (hex.col - 5.5) * horizontalSpacing;
+            const y = centerY + (hex.row - 5.5) * verticalSpacing + (hex.col % 2) * (verticalSpacing * 0.5);
             drawHexagon(moveCtx, x, y, hexSize, '#e74c3c', '#c0392b', 2);
         });
     }
 
     if (currentMovement.special) {
         currentMovement.special.forEach(hex => {
-            const x = centerX + (hex.col - 5.5) * horizontalSpacing + (hex.row % 2) * (horizontalSpacing * 0.5);
-            const y = centerY + (hex.row - 5.5) * verticalSpacing;
+            const x = centerX + (hex.col - 5.5) * horizontalSpacing;
+            const y = centerY + (hex.row - 5.5) * verticalSpacing + (hex.col % 2) * (verticalSpacing * 0.5);
             drawHexagon(moveCtx, x, y, hexSize, '#f39c12', '#e67e22', 2);
         });
     }
@@ -520,7 +521,7 @@ function clearAllMovement() {
 
 function saveMovementPattern() {
     if (!gameData.currentPieceId) {
-        alert('Please select a piece!');
+        alert('Please select a shape!');
         return;
     }
     
@@ -568,8 +569,9 @@ function redrawBoard() {
     
     const bHexWidth = Math.sqrt(3) * bHexSize;
     const bHexHeight = bHexSize * 2;
+    // Fixed spacing for flat-topped hexagons (row-based offset)
     const horizontalSpacing = bHexWidth * 0.75;
-    const verticalSpacing = bHexHeight * 0.75;
+    const verticalSpacing = bHexHeight;
 
     // Ensure deletedHexes array exists
     if (!gameData.board.deletedHexes) {
@@ -578,8 +580,8 @@ function redrawBoard() {
 
     for (let row = 0; row < height; row++) {
         for (let col = 0; col < width; col++) {
-            const x = centerX + (col - width/2) * horizontalSpacing;
-            const y = centerY + (row - height/2) * verticalSpacing + (col % 2) * (verticalSpacing * 0.5);
+            const x = centerX + (col - width/2) * horizontalSpacing + (row % 2) * (horizontalSpacing * 0.5);
+            const y = centerY + (row - height/2) * verticalSpacing;
             
             const hexKey = `${row}-${col}`;
             const isDeleted = gameData.board.deletedHexes.includes(hexKey);
@@ -608,14 +610,15 @@ function handleBoardClick(e) {
     
     const bHexWidth = Math.sqrt(3) * bHexSize;
     const bHexHeight = bHexSize * 2;
+    // Fixed spacing for flat-topped hexagons (row-based offset)
     const horizontalSpacing = bHexWidth * 0.75;
-    const verticalSpacing = bHexHeight * 0.75;
+    const verticalSpacing = bHexHeight;
 
     // Find clicked hex
     for (let row = 0; row < height; row++) {
         for (let col = 0; col < width; col++) {
-            const hx = centerX + (col - width/2) * horizontalSpacing;
-            const hy = centerY + (row - height/2) * verticalSpacing + (col % 2) * (verticalSpacing * 0.5);
+            const hx = centerX + (col - width/2) * horizontalSpacing + (row % 2) * (horizontalSpacing * 0.5);
+            const hy = centerY + (row - height/2) * verticalSpacing;
             const dist = Math.sqrt((x - hx) ** 2 + (y - hy) ** 2);
             
             if (dist < bHexSize) {
@@ -630,12 +633,12 @@ function handleBoardClick(e) {
                     }
                     redrawBoard();
                 } else if (gameData.currentBoardTool === 'place') {
-                    // Place piece logic
+                    // Place shape logic
                     const pieceId = document.getElementById('placePieceSelector').value;
                     const player = document.getElementById('placePlayer').value;
                     
                     if (!pieceId) {
-                        alert('Please select a piece to place!');
+                        alert('Please select a shape to place!');
                         return;
                     }
                     
@@ -651,7 +654,7 @@ function handleBoardClick(e) {
                     });
                     
                     redrawBoard();
-                    showNotification('Piece placed', 'success');
+                    showNotification('Shape placed', 'success');
                 }
                 return;
             }
