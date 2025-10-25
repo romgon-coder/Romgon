@@ -443,15 +443,20 @@ function handleMoveClick(e) {
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
     
-    // Un-rotate coordinates (canvas is rotated 90° clockwise via CSS)
-    // For 90° clockwise rotation: newX = canvasHeight - clickY, newY = clickX
+    // Canvas is 600x600, rotated 90° clockwise via CSS
+    // getBoundingClientRect gives us coordinates in the rotated space
+    // We need to transform back to canvas space
+    // For 90° CW rotation: canvas_x = clickY, canvas_y = canvasSize - clickX
     const canvasSize = 600;
-    const x = canvasSize - clickY;
-    const y = clickX;
+    const x = clickY;
+    const y = canvasSize - clickX;
+    
+    console.log(`Click at screen (${Math.round(clickX)}, ${Math.round(clickY)}) -> canvas (${Math.round(x)}, ${Math.round(y)})`);
     
     const hex = pixelToHex(x, y, 600, 600, 10, 10); // 10x10 grid
     
     if (hex) {
+        console.log(`Hex detected: ${hex.row}-${hex.col}`);
         const tool = gameData.currentTool;
         const arr = currentMovement[tool];
         const idx = arr.findIndex(h => h.row === hex.row && h.col === hex.col);
@@ -476,7 +481,7 @@ function redrawMoveCanvas() {
     const rowSpacing = hexHeight * 0.9;
     const colSpacing = hexWidth;
     
-    // Draw coordinate labels on all hexes
+    // Draw coordinate labels on all hexes (rotated -90° for readability)
     moveCtx.fillStyle = '#666';
     moveCtx.font = '10px Arial';
     moveCtx.textAlign = 'center';
@@ -487,7 +492,13 @@ function redrawMoveCanvas() {
             const xOffset = (row % 2 === 0) ? (hexWidth * 0.5) : 0;
             const x = centerX + (col - gridSize/2) * colSpacing + xOffset;
             const y = centerY + (row - gridSize/2) * rowSpacing;
-            moveCtx.fillText(`${row}-${col}`, x, y);
+            
+            // Rotate text -90° (counter-clockwise) so it's readable after canvas rotation
+            moveCtx.save();
+            moveCtx.translate(x, y);
+            moveCtx.rotate(-Math.PI / 2);
+            moveCtx.fillText(`${row}-${col}`, 0, 0);
+            moveCtx.restore();
         }
     }
     
@@ -502,8 +513,13 @@ function redrawMoveCanvas() {
             const x = centerX + (centerCol - gridSize/2) * colSpacing + xOffset;
             const y = centerY + (centerRow - gridSize/2) * rowSpacing;
             drawHexagon(moveCtx, x, y, hexSize, piece.color, '#333', 2);
+            
             moveCtx.fillStyle = '#fff';
-            moveCtx.fillText(`${centerRow}-${centerCol}`, x, y);
+            moveCtx.save();
+            moveCtx.translate(x, y);
+            moveCtx.rotate(-Math.PI / 2);
+            moveCtx.fillText(`${centerRow}-${centerCol}`, 0, 0);
+            moveCtx.restore();
         }
     }
 
@@ -514,8 +530,13 @@ function redrawMoveCanvas() {
             const x = centerX + (hex.col - gridSize/2) * colSpacing + xOffset;
             const y = centerY + (hex.row - gridSize/2) * rowSpacing;
             drawHexagon(moveCtx, x, y, hexSize, '#2ecc71', '#27ae60', 2);
+            
             moveCtx.fillStyle = '#fff';
-            moveCtx.fillText(`${hex.row}-${hex.col}`, x, y);
+            moveCtx.save();
+            moveCtx.translate(x, y);
+            moveCtx.rotate(-Math.PI / 2);
+            moveCtx.fillText(`${hex.row}-${hex.col}`, 0, 0);
+            moveCtx.restore();
         });
     }
 
@@ -525,8 +546,13 @@ function redrawMoveCanvas() {
             const x = centerX + (hex.col - gridSize/2) * colSpacing + xOffset;
             const y = centerY + (hex.row - gridSize/2) * rowSpacing;
             drawHexagon(moveCtx, x, y, hexSize, '#e74c3c', '#c0392b', 2);
+            
             moveCtx.fillStyle = '#fff';
-            moveCtx.fillText(`${hex.row}-${hex.col}`, x, y);
+            moveCtx.save();
+            moveCtx.translate(x, y);
+            moveCtx.rotate(-Math.PI / 2);
+            moveCtx.fillText(`${hex.row}-${hex.col}`, 0, 0);
+            moveCtx.restore();
         });
     }
 
@@ -536,8 +562,13 @@ function redrawMoveCanvas() {
             const x = centerX + (hex.col - gridSize/2) * colSpacing + xOffset;
             const y = centerY + (hex.row - gridSize/2) * rowSpacing;
             drawHexagon(moveCtx, x, y, hexSize, '#f39c12', '#e67e22', 2);
+            
             moveCtx.fillStyle = '#fff';
-            moveCtx.fillText(`${hex.row}-${hex.col}`, x, y);
+            moveCtx.save();
+            moveCtx.translate(x, y);
+            moveCtx.rotate(-Math.PI / 2);
+            moveCtx.fillText(`${hex.row}-${hex.col}`, 0, 0);
+            moveCtx.restore();
         });
     }
 }
