@@ -850,26 +850,34 @@ function generateBoardShape() {
     gameData.board.deletedHexes = [];
     
     if (shape === 'hexagon') {
-        // Generate hexagon/diamond shape using axial distance
+        // Generate hexagon/diamond shape using offset coordinates
         // For a perfect hexagon, we need to use the smaller dimension as the radius
         const radius = Math.floor(Math.min(width, height) / 2);
-        const centerRow = Math.floor(height / 2);
-        const centerCol = Math.floor(width / 2);
+        const centerRow = height / 2 - 0.5;
+        const centerCol = width / 2 - 0.5;
         
         for (let row = 0; row < height; row++) {
             for (let col = 0; col < width; col++) {
-                // Convert to axial coordinates (accounting for even row offset)
-                const q = col - Math.floor(row / 2);
-                const r = row;
+                // Calculate offset coordinate position
+                // For even row offset: visual x = col + (row % 2) * 0.5
+                const hexX = col + (row % 2) * 0.5;
+                const hexY = row;
                 
-                // Convert center to axial
-                const centerQ = centerCol - Math.floor(centerRow / 2);
-                const centerR = centerRow;
+                // Distance from center
+                const dx = hexX - centerCol;
+                const dy = hexY - centerRow;
                 
-                // Calculate axial distance from center
-                const dq = q - centerQ;
-                const dr = r - centerR;
-                const distance = (Math.abs(dq) + Math.abs(dr) + Math.abs(dq + dr)) / 2;
+                // Convert to cube coordinates for proper hex distance
+                const cubeX = hexX;
+                const cubeZ = hexY;
+                const cubeY = -cubeX - cubeZ;
+                
+                const centerCubeX = centerCol;
+                const centerCubeZ = centerRow;
+                const centerCubeY = -centerCubeX - centerCubeZ;
+                
+                // Hexagonal distance in cube coordinates
+                const distance = (Math.abs(cubeX - centerCubeX) + Math.abs(cubeY - centerCubeY) + Math.abs(cubeZ - centerCubeZ)) / 2;
                 
                 // Delete if outside radius
                 if (distance > radius) {
