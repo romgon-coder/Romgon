@@ -695,6 +695,7 @@ function redrawBoard() {
             drawHexagon(boardCtx, x, y, bHexSize, hexColor, '#666', 1);
             
             // Draw coordinate labels (rotated -90° for readability, scaled with hex size)
+            // Use same format as board.HTML: "row-col"
             boardCtx.fillStyle = '#666';
             const fontSize = Math.max(6, Math.floor(bHexSize * 0.4));
             boardCtx.font = `${fontSize}px Arial`;
@@ -703,6 +704,7 @@ function redrawBoard() {
             boardCtx.save();
             boardCtx.translate(x, y);
             boardCtx.rotate(-Math.PI / 2);
+            // Display as "row-col" to match board.HTML hex IDs (hex-row-col)
             boardCtx.fillText(`${row}-${col}`, 0, 0);
             boardCtx.restore();
         }
