@@ -876,6 +876,13 @@
                 captured: targetPiece ? targetPiece.dataset.pieceName : null
             });
 
+            // Check for win conditions BEFORE switching turns
+            const winResult = checkWinCondition(toRow, toCol, pieceData, targetPiece);
+            if (winResult) {
+                showGameOver(winResult.winner, winResult.reason);
+                return;
+            }
+
             // Switch turns
             gameState.currentPlayer = gameState.currentPlayer === 'black' ? 'white' : 'black';
             updateTurnIndicator();
@@ -920,6 +927,162 @@
             return piece.movement.hardcodedAttack.some(pattern => 
                 pattern.rowOffset === rowOffset && pattern.colOffset === colOffset
             );
+        }
+
+        function checkWinCondition(toRow, toCol, movingPiece, capturedPiece) {
+            const currentPlayer = gameState.currentPlayer;
+            const opponent = currentPlayer === 'black' ? 'white' : 'black';
+            
+            // 1. CHECK: King Capture (if a "King" piece was captured)
+            if (capturedPiece) {
+                const capturedName = capturedPiece.dataset.pieceName.toLowerCase();
+                if (capturedName.includes('king') || capturedName.includes('monarch') || capturedName.includes('ruler')) {
+                    console.log(`👑 King captured! ${currentPlayer} wins!`);
+                    return {
+                        winner: currentPlayer,
+                        reason: `${currentPlayer === 'black' ? 'Black' : 'White'} captured the enemy King!`
+                    };
+                }
+            }
+            
+            // 2. CHECK: Base Capture (piece reached opponent's base zone)
+            const hexId = `${toRow}-${toCol}`;
+            const hexEl = document.getElementById(`hex-${hexId}`);
+            if (hexEl && hexEl.classList.contains('zone-base')) {
+                // Check if this is the OPPONENT's base
+                // In a typical setup, black bases are at low rows, white bases at high rows
+                // We'll use a simple heuristic: if current player is black and reached a base in top half, or vice versa
+                const boardConfig = currentGameConfig.board;
+                const midRow = Math.floor((boardConfig.rows || boardConfig.height || 7) / 2);
+                
+                if ((currentPlayer === 'black' && toRow < midRow) || 
+                    (currentPlayer === 'white' && toRow > midRow)) {
+                    console.log(`🏁 Base captured! ${currentPlayer} wins!`);
+                    return {
+                        winner: currentPlayer,
+                        reason: `${currentPlayer === 'black' ? 'Black' : 'White'} reached the opponent's base!`
+                    };
+                }
+            }
+            
+            // 3. CHECK: Elimination (all opponent pieces captured)
+            const opponentPieces = Object.values(gameState.boardState).filter(
+                state => state.color === opponent
+            );
+            
+            if (opponentPieces.length === 0) {
+                console.log(`🎯 All pieces eliminated! ${currentPlayer} wins!`);
+                return {
+                    winner: currentPlayer,
+                    reason: `${currentPlayer === 'black' ? 'Black' : 'White'} eliminated all enemy pieces!`
+                };
+            }
+            
+            // No win condition met
+            return null;
+        }
+        
+        function showGameOver(winner, reason) {
+            console.log(`🎉 GAME OVER! Winner: ${winner}, Reason: ${reason}`);
+            
+            // Disable all piece interactions
+            document.querySelectorAll('.piece').forEach(piece => {
+                piece.draggable = false;
+                piece.style.cursor = 'default';
+            });
+            
+            // Show modal
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                animation: fadeIn 0.3s ease;
+            `;
+            
+            const winnerColor = winner === 'black' ? '#2c3e50' : '#ecf0f1';
+            const winnerText = winner === 'black' ? 'BLACK' : 'WHITE';
+            
+            modal.innerHTML = `
+                <div style="
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    padding: 40px;
+                    border-radius: 20px;
+                    text-align: center;
+                    max-width: 500px;
+                    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+                    animation: slideIn 0.5s ease;
+                ">
+                    <h1 style="
+                        font-size: 3em;
+                        margin: 0 0 20px 0;
+                        color: ${winnerColor};
+                        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+                    ">🏆 VICTORY!</h1>
+                    <h2 style="
+                        font-size: 2em;
+                        margin: 0 0 15px 0;
+                        color: ${winnerColor};
+                    ">${winnerText} WINS!</h2>
+                    <p style="
+                        font-size: 1.2em;
+                        color: #fff;
+                        margin: 20px 0 30px 0;
+                    ">${reason}</p>
+                    <button onclick="window.location.reload()" style="
+                        padding: 15px 40px;
+                        font-size: 1.2em;
+                        background: ${winnerColor};
+                        color: ${winner === 'black' ? '#fff' : '#2c3e50'};
+                        border: none;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        font-weight: bold;
+                        margin-right: 10px;
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                        transition: transform 0.2s;
+                    " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        Play Again
+                    </button>
+                    <button onclick="window.location.href='game-library.html'" style="
+                        padding: 15px 40px;
+                        font-size: 1.2em;
+                        background: rgba(255,255,255,0.2);
+                        color: #fff;
+                        border: 2px solid #fff;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        font-weight: bold;
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                        transition: transform 0.2s;
+                    " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        Game Library
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Add CSS animations
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes slideIn {
+                    from { transform: translateY(-50px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
         }
 
         function handleHexClick(e) {
