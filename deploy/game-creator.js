@@ -957,16 +957,29 @@ function clearBoardPlacements() {
 // ============================================================================
 
 function generateGameConfig() {
-    // ALWAYS regenerate clean SVG from pixelData before publishing
-    // This prevents any accumulated escaping issues
+    // FORCE CLEAR corrupted SVG first, then regenerate
     gameData.pieces.forEach(piece => {
+        // Always clear the SVG field first to prevent using corrupted data
+        piece.svg = '';
+        
         if (piece.pixelData && Array.isArray(piece.pixelData)) {
-            // Generate fresh, clean SVG
-            piece.svg = regenerateSVGFromPixelData(piece.pixelData, piece.color || '#4a90e2');
-            console.log('Generated fresh SVG for piece:', piece.name);
-        } else if (!piece.svg) {
-            console.warn('Piece missing both SVG and pixelData:', piece.name);
-            piece.svg = ''; // Ensure it's at least an empty string
+            // Generate fresh, clean SVG with template literals (no escaping issues)
+            const svgParts = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">'];
+            
+            for (let y = 0; y < piece.pixelData.length && y < 10; y++) {
+                for (let x = 0; x < piece.pixelData[y].length && x < 10; x++) {
+                    if (piece.pixelData[y][x]) {
+                        svgParts.push(`<rect x="${x}" y="${y}" width="1" height="1" fill="${piece.color || '#4a90e2'}"/>`);
+                    }
+                }
+            }
+            
+            svgParts.push('</svg>');
+            piece.svg = svgParts.join('');
+            console.log('Generated CLEAN SVG for piece:', piece.name);
+        } else {
+            console.warn('Piece missing pixelData:', piece.name);
+            piece.svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"></svg>';
         }
     });
     
@@ -1253,6 +1266,30 @@ function regenerateSVGFromPixelData(pixelData, color) {
 function closeModal(modalId) {
     document.getElementById(modalId).classList.remove('active');
 }
+
+// EMERGENCY FIX: Call this from console if SVG is corrupted
+// Type: window.fixCorruptedSVG() in browser console
+window.fixCorruptedSVG = function() {
+    console.log('🔧 Fixing corrupted SVG data...');
+    gameData.pieces.forEach(piece => {
+        if (piece.pixelData && Array.isArray(piece.pixelData)) {
+            const svgParts = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">'];
+            for (let y = 0; y < piece.pixelData.length && y < 10; y++) {
+                for (let x = 0; x < piece.pixelData[y].length && x < 10; x++) {
+                    if (piece.pixelData[y][x]) {
+                        svgParts.push(`<rect x="${x}" y="${y}" width="1" height="1" fill="${piece.color || '#4a90e2'}"/>`);
+                    }
+                }
+            }
+            svgParts.push('</svg>');
+            piece.svg = svgParts.join('');
+            console.log('✅ Fixed SVG for:', piece.name);
+        }
+    });
+    saveToLocalStorage();
+    console.log('✅ All SVG data fixed and saved!');
+    alert('SVG data fixed! Refresh the page to see changes.');
+};
 
 // Add CSS animation
 const style = document.createElement('style');
