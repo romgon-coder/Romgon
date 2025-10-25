@@ -440,8 +440,15 @@ function handleMoveClick(e) {
     }
     
     const rect = moveCanvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+    
+    // Un-rotate coordinates (canvas is rotated 90° clockwise via CSS)
+    // For 90° clockwise rotation: newX = canvasHeight - clickY, newY = clickX
+    const canvasSize = 600;
+    const x = canvasSize - clickY;
+    const y = clickX;
+    
     const hex = pixelToHex(x, y, 600, 600, 11, 11);
     
     if (hex) {
@@ -467,14 +474,17 @@ function redrawMoveCanvas() {
     // Matching board.HTML grid
     const rowSpacing = hexHeight * 0.9;
     const colSpacing = hexWidth;
+    
+    const centerRow = 5;
+    const centerCol = 5;
 
-    // Draw piece in center (just a placeholder)
+    // Draw piece in center hex (using proper grid coordinates)
     if (gameData.currentPieceId) {
         const piece = gameData.pieces.find(p => p.id === gameData.currentPieceId);
         if (piece) {
-            // Draw a center hex to represent the piece
-            const x = centerX;
-            const y = centerY;
+            const xOffset = (centerRow % 2 === 0) ? (hexWidth * 0.5) : 0;
+            const x = centerX + (centerCol - 5.5) * colSpacing + xOffset;
+            const y = centerY + (centerRow - 5.5) * rowSpacing;
             drawHexagon(moveCtx, x, y, hexSize, piece.color, '#333', 2);
         }
     }
@@ -607,8 +617,14 @@ function redrawBoard() {
 
 function handleBoardClick(e) {
     const rect = boardCanvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+    
+    // Un-rotate coordinates (canvas is rotated 90° clockwise via CSS)
+    // boardCanvas is 700x600, but after 90° rotation it appears as 600x700
+    // For 90° clockwise: newX = canvasHeight - clickY, newY = clickX
+    const x = 600 - clickY;
+    const y = clickX;
     
     const width = gameData.board.width;
     const height = gameData.board.height;
