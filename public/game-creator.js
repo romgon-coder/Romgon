@@ -32,6 +32,9 @@ let shapeCanvas, shapeCtx;
 let moveCanvas, moveCtx;
 let boardCanvas, boardCtx;
 
+// NEW: Shape selection instead of pixel art
+let selectedShape = null;
+
 // Shape designer - 10x10 pixel grid
 let pixelGrid = Array(10).fill(null).map(() => Array(10).fill(false));
 let isDrawing = false;
@@ -258,7 +261,87 @@ function generateSVGFromGrid() {
     return svgParts.join('');
 }
 
+// ============================================================================
+// STEP 1: GEOMETRIC SHAPE SELECTOR (replaces pixel art)
+// ============================================================================
+
+function selectShape(shapeName) {
+    selectedShape = shapeName;
+    
+    // Update UI
+    document.querySelectorAll('.shape-option').forEach(opt => {
+        opt.classList.remove('selected');
+    });
+    document.querySelector(`[data-shape="${shapeName}"]`).classList.add('selected');
+    
+    // Update preview
+    const color = document.getElementById('pieceColor').value || 'black';
+    const preview = document.getElementById('shapePreview');
+    preview.innerHTML = `<img src="ASSETS/${shapeName} ${color} front.png" style="max-width: 150px; max-height: 150px;">`;
+    
+    console.log('Selected shape:', shapeName);
+}
+
 function savePieceShape() {
+    const name = document.getElementById('pieceName').value.trim();
+    
+    if (!name) {
+        alert('Please enter a piece name!');
+        return;
+    }
+    
+    if (!selectedShape) {
+        alert('Please select a shape first!');
+        return;
+    }
+
+    const color = document.getElementById('pieceColor').value;
+    const piece = {
+        id: Date.now(),
+        name: name,
+        shape: selectedShape, // Store shape name instead of pixelData
+        color: color,
+        imageUrl: `ASSETS/${selectedShape} ${color} front.png`, // Direct image reference
+        description: document.getElementById('pieceDesc').value,
+        abilities: {
+            canRotate: document.getElementById('canRotate').checked,
+            canFlip: document.getElementById('canFlip').checked,
+            canMove: document.getElementById('canMove').checked,
+            canAttack: document.getElementById('canAttack').checked,
+            canDefend: document.getElementById('canDefend').checked,
+            canEscape: document.getElementById('canEscape').checked,
+            canCapture: document.getElementById('canCapture').checked
+        },
+        movement: {
+            move: [],
+            attack: [],
+            special: [],
+            type: 'adjacent',
+            range: 1,
+            rules: {}
+        }
+    };
+
+    gameData.pieces.push(piece);
+    updatePieceGallery();
+    updateSelectors();
+    saveToLocalStorage();
+    
+    // Clear form
+    document.getElementById('pieceName').value = '';
+    document.getElementById('pieceDesc').value = '';
+    selectedShape = null;
+    document.querySelectorAll('.shape-option').forEach(opt => opt.classList.remove('selected'));
+    document.getElementById('shapePreview').innerHTML = '<div style="color: #999; font-style: italic;">Select a shape above</div>';
+    
+    showNotification('✓ Piece added to collection!', 'success');
+}
+
+// ============================================================================
+// OLD PIXEL ART SYSTEM (deprecated but kept for compatibility)
+// ============================================================================
+
+function savePieceShapeOLD() {
     const name = document.getElementById('pieceName').value.trim();
     
     if (!name) {
@@ -396,19 +479,26 @@ function updatePieceGallery() {
         return;
     }
 
-    gallery.innerHTML = gameData.pieces.map(p => `
-        <div class="piece-card" onclick="selectPieceCard(${p.id})" data-piece-id="${p.id}">
-            <button class="delete-btn" onclick="event.stopPropagation(); deletePiece(${p.id})">×</button>
-            <h3>${p.name}</h3>
-            <p style="font-size: 0.9em; color: #666; margin-bottom: 10px;">${p.description || 'No description'}</p>
-            <div class="piece-preview" style="width: 100px; height: 100px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
-                ${p.svg}
+    gallery.innerHTML = gameData.pieces.map(p => {
+        // Support both new geometric shapes and old pixel art (for backwards compatibility)
+        const imageHtml = p.imageUrl 
+            ? `<img src="${p.imageUrl}" style="max-width: 100px; max-height: 100px;">`
+            : p.svg || '<div style="color: #999;">No preview</div>';
+            
+        return `
+            <div class="piece-card" onclick="selectPieceCard(${p.id})" data-piece-id="${p.id}">
+                <button class="delete-btn" onclick="event.stopPropagation(); deletePiece(${p.id})">×</button>
+                <h3>${p.name}</h3>
+                <p style="font-size: 0.9em; color: #666; margin-bottom: 10px;">${p.description || 'No description'}</p>
+                <div class="piece-preview" style="width: 100px; height: 100px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                    ${imageHtml}
+                </div>
+                <div style="font-size: 0.85em; color: #999; margin-top: 10px;">
+                    ${p.shape ? `Shape: ${p.shape}` : 'Custom design'} • ${Object.values(p.abilities).filter(Boolean).length} abilities
+                </div>
             </div>
-            <div style="font-size: 0.85em; color: #999; margin-top: 10px;">
-                ${Object.values(p.abilities).filter(Boolean).length} abilities enabled
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function deletePiece(id) {
@@ -1011,13 +1101,16 @@ function clearBoardPlacements() {
 // ============================================================================
 
 function generateGameConfig() {
-    // FORCE CLEAR corrupted SVG first, then regenerate
+    // NEW SYSTEM: No SVG generation needed! Just use the shape names and colors
+    // For backwards compatibility, still handle old pixel art pieces
     gameData.pieces.forEach(piece => {
-        // Always clear the SVG field first to prevent using corrupted data
-        piece.svg = '';
-        
-        if (piece.pixelData && Array.isArray(piece.pixelData)) {
-            // Generate fresh, clean SVG with template literals (no escaping issues)
+        if (piece.shape && piece.color) {
+            // New geometric shape system - use direct image reference
+            piece.imageUrl = `ASSETS/${piece.shape} ${piece.color} front.png`;
+            delete piece.svg; // Remove any old SVG data
+            console.log('Using geometric shape:', piece.shape, piece.color);
+        } else if (piece.pixelData && Array.isArray(piece.pixelData)) {
+            // Old pixel art system - generate SVG for backwards compatibility
             const svgParts = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">'];
             
             for (let y = 0; y < piece.pixelData.length && y < 10; y++) {
@@ -1030,15 +1123,9 @@ function generateGameConfig() {
             
             svgParts.push('</svg>');
             piece.svg = svgParts.join('');
-            console.log('Generated CLEAN SVG for piece:', piece.name);
-        } else {
-            console.warn('Piece missing pixelData:', piece.name);
-            piece.svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"></svg>';
+            console.log('Generated SVG for legacy piece:', piece.name);
         }
     });
-    
-    // DO NOT save to localStorage here! SVG is generated fresh, don't store it.
-    // saveToLocalStorage(); // REMOVED - causes escaping issues
     
     const config = {
         metadata: {
