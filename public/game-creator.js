@@ -255,19 +255,19 @@ function downloadSVG() {
 function generateSVGFromGrid() {
     const color = document.getElementById('pieceColor')?.value || '#4a90e2';
     
-    // Build SVG without template literals to avoid escaping issues
-    let svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">';
+    // Build SVG using template literals to prevent escaping
+    const svgParts = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">'];
     
     for (let y = 0; y < 10; y++) {
         for (let x = 0; x < 10; x++) {
             if (pixelGrid[y][x]) {
-                svg += '<rect x="' + x + '" y="' + y + '" width="1" height="1" fill="' + color + '"/>';
+                svgParts.push(`<rect x="${x}" y="${y}" width="1" height="1" fill="${color}"/>`);
             }
         }
     }
     
-    svg += '</svg>';
-    return svg;
+    svgParts.push('</svg>');
+    return svgParts.join('');
 }
 
 function savePieceShape() {
@@ -1304,18 +1304,18 @@ function loadFromLocalStorage() {
 function regenerateSVGFromPixelData(pixelData, color) {
     if (!pixelData || !Array.isArray(pixelData)) return '';
     
-    let svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">';
+    const svgParts = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">'];
     
     for (let y = 0; y < pixelData.length && y < 10; y++) {
         for (let x = 0; x < pixelData[y].length && x < 10; x++) {
             if (pixelData[y][x]) {
-                svg += '<rect x="' + x + '" y="' + y + '" width="1" height="1" fill="' + color + '"/>';
+                svgParts.push(`<rect x="${x}" y="${y}" width="1" height="1" fill="${color}"/>`);
             }
         }
     }
     
-    svg += '</svg>';
-    return svg;
+    svgParts.push('</svg>');
+    return svgParts.join('');
 }
 
 function closeModal(modalId) {
