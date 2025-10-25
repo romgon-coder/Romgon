@@ -434,11 +434,15 @@
         function initializeGame(config) {
             console.log('🎮 Initializing game with config:', config);
             
+            // Store config globally
+            currentGameConfig = config;
+            
             // Debug logging
             console.log('📋 Board config:', config.board);
             console.log('📋 Zones:', config.board?.zones);
             console.log('📋 Placements:', config.board?.placements);
             console.log('📋 Pieces count:', config.pieces?.length);
+            console.log('⚙️ Game Features:', config.rules);
             
             if (!config.board) {
                 console.error('❌ No board config found!');
@@ -461,6 +465,9 @@
                 boardState: {}
             };
 
+            // Apply game feature settings
+            applyGameFeatures(config.rules);
+
             // Render board
             renderBoard(config.board);
             
@@ -472,6 +479,78 @@
 
             // Update turn indicator
             updateTurnIndicator();
+        }
+
+        function applyGameFeatures(rules) {
+            if (!rules) {
+                console.warn('⚠️ No game rules/features found, using defaults');
+                return;
+            }
+            
+            console.log('⚙️ Applying game features:', rules);
+            
+            // 1. Enable/Disable Undo/Redo
+            const undoBtn = document.getElementById('undo-btn');
+            if (undoBtn) {
+                if (rules.enableUndo === false) {
+                    undoBtn.style.display = 'none';
+                    console.log('❌ Undo/Redo disabled');
+                } else {
+                    undoBtn.style.display = 'inline-block';
+                    console.log('✅ Undo/Redo enabled');
+                }
+            }
+            
+            // 2. Show/Hide Move History
+            const moveList = document.getElementById('move-list');
+            if (moveList && moveList.parentElement) {
+                if (rules.showHistory === false) {
+                    moveList.parentElement.style.display = 'none';
+                    console.log('❌ Move History hidden');
+                } else {
+                    moveList.parentElement.style.display = 'block';
+                    console.log('✅ Move History shown');
+                }
+            }
+            
+            // 3. Enable/Disable Move Preview (highlighting)
+            gameState.showMovePreview = rules.showPreview !== false;
+            if (!gameState.showMovePreview) {
+                console.log('❌ Move highlighting disabled');
+            } else {
+                console.log('✅ Move highlighting enabled');
+            }
+            
+            // 4. Enable/Disable Drag & Drop
+            gameState.enableDragDrop = rules.enableDragDrop !== false;
+            if (!gameState.enableDragDrop) {
+                console.log('❌ Drag & Drop disabled');
+            } else {
+                console.log('✅ Drag & Drop enabled');
+            }
+            
+            // 5. Enable/Disable Click-to-Move
+            gameState.enableClickMove = rules.enableClickMove !== false;
+            if (!gameState.enableClickMove) {
+                console.log('❌ Click-to-Move disabled');
+            } else {
+                console.log('✅ Click-to-Move enabled');
+            }
+            
+            // 6. Show/Hide Chat (if exists)
+            const chatPanel = document.getElementById('chat-panel');
+            if (chatPanel) {
+                if (rules.enableChat === false) {
+                    chatPanel.style.display = 'none';
+                    console.log('❌ Chat disabled');
+                } else {
+                    chatPanel.style.display = 'block';
+                    console.log('✅ Chat enabled');
+                }
+            }
+            
+            // Store rules in gameState for later reference
+            gameState.rules = rules;
         }
 
         function renderBoard(boardConfig) {
@@ -666,7 +745,10 @@
         function createPieceElement(piece, color) {
             const pieceEl = document.createElement('div');
             pieceEl.className = `piece piece-${color}`;
-            pieceEl.draggable = true;
+            
+            // Only enable dragging if drag & drop is enabled (default true)
+            pieceEl.draggable = gameState.enableDragDrop !== false;
+            
             pieceEl.dataset.pieceName = piece.name;
             pieceEl.dataset.color = color;
             
@@ -680,12 +762,16 @@
 
             pieceEl.appendChild(img);
 
-            // Drag events
-            pieceEl.addEventListener('dragstart', handleDragStart);
-            pieceEl.addEventListener('dragend', handleDragEnd);
+            // Drag events (only if enabled)
+            if (gameState.enableDragDrop !== false) {
+                pieceEl.addEventListener('dragstart', handleDragStart);
+                pieceEl.addEventListener('dragend', handleDragEnd);
+            }
             
-            // Click to select/highlight
-            pieceEl.addEventListener('click', handlePieceClick);
+            // Click to select/highlight (only if enabled)
+            if (gameState.enableClickMove !== false) {
+                pieceEl.addEventListener('click', handlePieceClick);
+            }
 
             return pieceEl;
         }
@@ -738,6 +824,12 @@
         }
         
         function highlightValidMoves(piece, currentRow, currentCol) {
+            // Check if move preview is enabled
+            if (gameState.showMovePreview === false) {
+                console.log('⚠️ Move highlighting is disabled in game settings');
+                return;
+            }
+            
             console.log('🔍 Attempting to highlight moves for piece:', piece.name);
             console.log('📍 Current position:', currentRow, currentCol);
             console.log('🎯 Movement data:', piece.movement);
@@ -794,6 +886,13 @@
         }
 
         function handleDragStart(e) {
+            // Check if drag & drop is enabled
+            if (gameState.enableDragDrop === false) {
+                e.preventDefault();
+                console.log('❌ Drag & Drop is disabled in game settings');
+                return;
+            }
+            
             const pieceEl = e.target.closest('.piece');
             const color = pieceEl.dataset.color;
 
@@ -1109,11 +1208,106 @@
         }
 
         function handleHexClick(e) {
-            // Clear piece selection if clicking empty hex
+            // Check if click-to-move is enabled
+            if (gameState.enableClickMove === false) {
+                return;
+            }
+            
+            const targetHex = e.target.closest('.hexagon');
+            if (!targetHex) return;
+            
+            // If a piece is selected, try to move it to clicked hex
             if (selectedPiece) {
+                const fromHex = selectedPiece.parentElement;
+                const fromRow = parseInt(fromHex.dataset.row);
+                const fromCol = parseInt(fromHex.dataset.col);
+                const toRow = parseInt(targetHex.dataset.row);
+                const toCol = parseInt(targetHex.dataset.col);
+                
+                const pieceData = JSON.parse(selectedPiece.dataset.pieceData);
+                
+                // Validate move
+                const isValidMove = validateMove(pieceData, fromRow, fromCol, toRow, toCol);
+                
+                if (!isValidMove) {
+                    console.log('❌ Invalid move via click');
+                    clearHighlights();
+                    selectedPiece.classList.remove('selected');
+                    selectedPiece = null;
+                    return;
+                }
+                
+                // Check if target has a piece
+                const targetPiece = targetHex.querySelector('.piece');
+                
+                if (targetPiece) {
+                    const targetColor = targetPiece.dataset.color;
+                    const fromColor = selectedPiece.dataset.color;
+                    
+                    // Can't capture own piece
+                    if (targetColor === fromColor) {
+                        console.log('❌ Cannot capture own piece');
+                        clearHighlights();
+                        selectedPiece.classList.remove('selected');
+                        selectedPiece = null;
+                        return;
+                    }
+                    
+                    // Validate attack move
+                    const isValidAttack = isAttackMove(pieceData, fromRow, fromCol, toRow, toCol);
+                    if (!isValidAttack) {
+                        console.log('❌ Cannot attack this position');
+                        clearHighlights();
+                        selectedPiece.classList.remove('selected');
+                        selectedPiece = null;
+                        return;
+                    }
+                    
+                    // Capture piece
+                    console.log(`⚔️ Capturing ${targetPiece.dataset.pieceName}!`);
+                    targetPiece.remove();
+                    gameState.capturedPieces[targetColor].push(targetPiece.dataset.pieceName);
+                    updateCaptureCount();
+                }
+                
+                // Move piece
+                targetHex.appendChild(selectedPiece);
+                
+                // Update board state
+                const fromId = `${fromRow}-${fromCol}`;
+                const toId = `${toRow}-${toCol}`;
+                gameState.boardState[toId] = gameState.boardState[fromId];
+                delete gameState.boardState[fromId];
+                
+                // Record move
+                gameState.moveHistory.push({
+                    from: fromId,
+                    to: toId,
+                    piece: pieceData.name,
+                    captured: targetPiece ? targetPiece.dataset.pieceName : null
+                });
+                
+                // Check win condition
+                const winResult = checkWinCondition(toRow, toCol, pieceData, targetPiece);
+                if (winResult) {
+                    showGameOver(winResult.winner, winResult.reason);
+                    clearHighlights();
+                    selectedPiece.classList.remove('selected');
+                    selectedPiece = null;
+                    return;
+                }
+                
+                // Switch turns
+                gameState.currentPlayer = gameState.currentPlayer === 'black' ? 'white' : 'black';
+                updateTurnIndicator();
+                updateUndoButton();
+                
+                // Clear selection
+                clearHighlights();
                 selectedPiece.classList.remove('selected');
                 selectedPiece = null;
-                clearHighlights();
+                
+                console.log(`✅ Moved via click from ${fromId} to ${toId}`);
             }
         }
 
