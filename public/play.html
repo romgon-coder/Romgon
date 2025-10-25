@@ -434,6 +434,25 @@
         function initializeGame(config) {
             console.log('🎮 Initializing game with config:', config);
             
+            // Debug logging
+            console.log('📋 Board config:', config.board);
+            console.log('📋 Zones:', config.board?.zones);
+            console.log('📋 Placements:', config.board?.placements);
+            console.log('📋 Pieces count:', config.pieces?.length);
+            
+            if (!config.board) {
+                console.error('❌ No board config found!');
+                return;
+            }
+            
+            if (!config.pieces || config.pieces.length === 0) {
+                console.error('❌ No pieces found!');
+            }
+            
+            if (!config.board.placements || config.board.placements.length === 0) {
+                console.warn('⚠️ No piece placements found!');
+            }
+            
             // Reset game state
             gameState = {
                 currentPlayer: 'black',
@@ -467,6 +486,11 @@
             const colsPerRow = boardConfig.colsPerRow || [4, 5, 6, 7, 6, 5, 4];
             const zones = boardConfig.zones || {};
             const deletedHexes = boardConfig.deletedHexes || [];
+
+            console.log(`🔷 Rendering board: ${rows} rows`);
+            console.log(`🔷 Cols per row:`, colsPerRow);
+            console.log(`🔷 Zones:`, Object.keys(zones).length, 'zones');
+            console.log(`🔷 Deleted hexes:`, deletedHexes.length);
 
             for (let r = 0; r < rows; r++) {
                 const rowDiv = document.createElement('div');
@@ -523,15 +547,26 @@
         }
 
         function placePieces(pieces, placements) {
-            if (!pieces || !placements) return;
+            if (!pieces || !placements) {
+                console.warn('⚠️ No pieces or placements provided');
+                return;
+            }
+
+            console.log(`🎯 Placing ${placements.length} pieces...`);
 
             placements.forEach(placement => {
                 const piece = pieces.find(p => p.name === placement.piece);
-                if (!piece) return;
+                if (!piece) {
+                    console.warn(`⚠️ Piece not found: ${placement.piece}`);
+                    return;
+                }
 
                 const hexId = `${placement.row}-${placement.col}`;
                 const hexEl = document.getElementById(`hex-${hexId}`);
-                if (!hexEl) return;
+                if (!hexEl) {
+                    console.warn(`⚠️ Hex not found: ${hexId}`);
+                    return;
+                }
 
                 const pieceEl = createPieceElement(piece, placement.color);
                 hexEl.appendChild(pieceEl);
@@ -541,6 +576,8 @@
                     piece: piece.name,
                     color: placement.color
                 };
+                
+                console.log(`  ✓ Placed ${piece.name} (${placement.color}) at ${hexId}`);
             });
 
             console.log('✅ Pieces placed');
