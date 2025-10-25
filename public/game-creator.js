@@ -850,29 +850,29 @@ function generateBoardShape() {
     gameData.board.deletedHexes = [];
     
     if (shape === 'hexagon') {
-        // Generate TRUE hexagon/diamond shape
-        // Top has 1 hex, middle is widest, bottom has 1 hex
-        // Example for 7 rows: 1, 2, 3, 4, 5, 6, 7 then 6, 5, 4, 3, 2, 1
-        // But since we have even rows shifting, we need to account for that
-        
-        const midRow = Math.floor(height / 2);
+        // Generate hexagon/diamond shape using axial distance
+        // For a perfect hexagon, we need to use the smaller dimension as the radius
+        const radius = Math.floor(Math.min(width, height) / 2);
+        const centerRow = Math.floor(height / 2);
+        const centerCol = Math.floor(width / 2);
         
         for (let row = 0; row < height; row++) {
-            let hexesInRow;
-            if (row <= midRow) {
-                // Growing phase: row 0=1, row 1=2, row 2=3, etc.
-                hexesInRow = row + 1;
-            } else {
-                // Shrinking phase: mirror the growing phase
-                hexesInRow = height - row;
-            }
-            
-            // Calculate how many to remove from each side
-            const hexesToRemove = Math.floor((width - hexesInRow) / 2);
-            
-            // Delete hexes from left and right edges
             for (let col = 0; col < width; col++) {
-                if (col < hexesToRemove || col >= width - hexesToRemove) {
+                // Convert to axial coordinates (accounting for even row offset)
+                const q = col - Math.floor(row / 2);
+                const r = row;
+                
+                // Convert center to axial
+                const centerQ = centerCol - Math.floor(centerRow / 2);
+                const centerR = centerRow;
+                
+                // Calculate axial distance from center
+                const dq = q - centerQ;
+                const dr = r - centerR;
+                const distance = (Math.abs(dq) + Math.abs(dr) + Math.abs(dq + dr)) / 2;
+                
+                // Delete if outside radius
+                if (distance > radius) {
                     gameData.board.deletedHexes.push(`${row}-${col}`);
                 }
             }
