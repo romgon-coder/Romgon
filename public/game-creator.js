@@ -53,39 +53,22 @@ function autoFixCorruptedSVG() {
         const data = JSON.parse(saved);
         if (!data.pieces || !Array.isArray(data.pieces)) return;
         
-        let needsNuke = false;
+        let hadCorruption = false;
         data.pieces.forEach(piece => {
-            // Check if SVG is corrupted (contains escaped quotes)
-            if (piece.svg && (piece.svg.includes('\\"') || piece.svg.includes('\\\\'))) {
-                console.warn('❌ CORRUPTED SVG DETECTED for:', piece.name);
-                needsNuke = true;
+            // Check if SVG exists at all (it shouldn't be in localStorage!)
+            if (piece.svg) {
+                console.warn('⚠️ Found SVG in localStorage for:', piece.name, '- removing it');
+                delete piece.svg; // Remove SVG from localStorage
+                hadCorruption = true;
             }
         });
         
-        // If ANY piece has corrupted SVG, we need to completely regenerate
-        if (needsNuke) {
-            console.log('🔥 NUKING corrupted SVG data and regenerating...');
-            data.pieces.forEach(piece => {
-                if (piece.pixelData && Array.isArray(piece.pixelData)) {
-                    // Generate FRESH SVG using template literals
-                    const svgParts = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">'];
-                    for (let y = 0; y < piece.pixelData.length && y < 10; y++) {
-                        for (let x = 0; x < piece.pixelData[y].length && x < 10; x++) {
-                            if (piece.pixelData[y][x]) {
-                                svgParts.push(`<rect x="${x}" y="${y}" width="1" height="1" fill="${piece.color || '#4a90e2'}"/>`);
-                            }
-                        }
-                    }
-                    svgParts.push('</svg>');
-                    piece.svg = svgParts.join('');
-                    console.log('✅ Regenerated CLEAN SVG for:', piece.name);
-                } else {
-                    piece.svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"></svg>';
-                }
-            });
+        // If we found any SVG data in localStorage, clean it up
+        if (hadCorruption) {
+            console.log('🔥 Cleaning up localStorage - removing all SVG data...');
             localStorage.setItem('romgon_game_creator_data', JSON.stringify(data));
-            console.log('✅ ALL SVG data regenerated and saved!');
-            alert('🔧 Corrupted SVG data detected and fixed! The page will reload.');
+            console.log('✅ localStorage cleaned! SVG will be generated fresh from pixelData.');
+            alert('🔧 Cleaned up corrupted data! The page will reload.');
             window.location.reload();
         }
     } catch (e) {
