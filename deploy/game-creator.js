@@ -572,6 +572,11 @@ function handleMoveClick(e) {
         return;
     }
     
+    const board = gameData.board || {rows: 7, colsPerRow: [4, 5, 6, 7, 6, 5, 4]};
+    const rows = board.rows || 7;
+    const colsPerRow = board.colsPerRow || [4, 5, 6, 7, 6, 5, 4];
+    const deletedHexes = board.deletedHexes || [];
+    
     const rect = moveCanvas.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
@@ -586,38 +591,59 @@ function handleMoveClick(e) {
     
     console.log(`Click at screen (${Math.round(clickX)}, ${Math.round(clickY)}) -> canvas (${Math.round(x)}, ${Math.round(y)})`);
     
-    const hex = pixelToHex(x, y, 600, 600, 10, 10); // 10x10 grid
+    // Use custom board dimensions
+    const maxCols = Math.max(...colsPerRow);
+    const hex = pixelToHex(x, y, 600, 600, rows, maxCols);
     
-    if (hex) {
-        console.log(`Hex detected: ${hex.row}-${hex.col}`);
-        const tool = gameData.currentTool || 'move'; // Default to 'move' if not set
-        
-        // Ensure currentMovement has all arrays initialized
-        if (!currentMovement.move) currentMovement.move = [];
-        if (!currentMovement.attack) currentMovement.attack = [];
-        if (!currentMovement.special) currentMovement.special = [];
-        
-        const arr = currentMovement[tool];
-        if (!arr) {
-            console.error('Invalid tool:', tool);
-            return;
+    if (hex && hex.row >= 0 && hex.row < rows) {
+        const cols = colsPerRow[hex.row] || 0;
+        if (hex.col >= 0 && hex.col < cols) {
+            const hexId = `${hex.row}-${hex.col}`;
+            
+            // Skip deleted hexes
+            if (deletedHexes.includes(hexId)) {
+                console.log('Clicked on deleted hex, ignoring');
+                return;
+            }
+            
+            console.log(`Hex detected: ${hex.row}-${hex.col}`);
+            const tool = gameData.currentTool || 'move'; // Default to 'move' if not set
+            
+            // Ensure currentMovement has all arrays initialized
+            if (!currentMovement.move) currentMovement.move = [];
+            if (!currentMovement.attack) currentMovement.attack = [];
+            if (!currentMovement.special) currentMovement.special = [];
+            
+            const arr = currentMovement[tool];
+            if (!arr) {
+                console.error('Invalid tool:', tool);
+                return;
+            }
+            
+            const idx = arr.findIndex(h => h.row === hex.row && h.col === hex.col);
+            
+            if (idx >= 0) {
+                arr.splice(idx, 1);
+            } else {
+                arr.push(hex);
+            }
+            
+            redrawMoveCanvas();
         }
-        
-        const idx = arr.findIndex(h => h.row === hex.row && h.col === hex.col);
-        
-        if (idx >= 0) {
-            arr.splice(idx, 1);
-        } else {
-            arr.push(hex);
-        }
-        
-        redrawMoveCanvas();
     }
 }
 
 function redrawMoveCanvas() {
-    const gridSize = 10; // 10x10 grid
-    drawHexGrid(moveCtx, 600, 600, gridSize, gridSize);
+    // Use actual custom board from gameData.board instead of static 10x10 grid
+    const board = gameData.board || {rows: 7, colsPerRow: [4, 5, 6, 7, 6, 5, 4], zones: {}, deletedHexes: []};
+    const rows = board.rows || 7;
+    const colsPerRow = board.colsPerRow || [4, 5, 6, 7, 6, 5, 4];
+    const zones = board.zones || {};
+    const deletedHexes = board.deletedHexes || [];
+    
+    // Clear canvas
+    moveCtx.clearRect(0, 0, 600, 600);
+    
     const centerX = 600 / 2;
     const centerY = 600 / 2;
     
@@ -625,44 +651,66 @@ function redrawMoveCanvas() {
     const rowSpacing = hexHeight * 0.9;
     const colSpacing = hexWidth;
     
+    // Calculate offsets to center the board
+    const maxCols = Math.max(...colsPerRow);
+    
     // Draw coordinate labels on all hexes (rotated -90° for readability)
     moveCtx.fillStyle = '#666';
     moveCtx.font = '10px Arial';
     moveCtx.textAlign = 'center';
     moveCtx.textBaseline = 'middle';
     
-    for (let row = 0; row < gridSize; row++) {
-        for (let col = 0; col < gridSize; col++) {
+    // Draw all hexes with zone colors
+    for (let row = 0; row < rows; row++) {
+        const cols = colsPerRow[row] || 0;
+        for (let col = 0; col < cols; col++) {
+            const hexId = `${row}-${col}`;
+            
+            // Skip deleted hexes
+            if (deletedHexes.includes(hexId)) continue;
+            
             const xOffset = (row % 2 === 0) ? (hexWidth * 0.5) : 0;
-            const x = centerX + (col - gridSize/2) * colSpacing + xOffset;
-            const y = centerY + (row - gridSize/2) * rowSpacing;
+            const x = centerX + (col - maxCols/2) * colSpacing + xOffset;
+            const y = centerY + (row - rows/2) * rowSpacing;
+            
+            // Get zone color for this hex
+            let zoneColor = '#f57d2d'; // default middle zone
+            if (zones.base && zones.base.includes(hexId)) zoneColor = '#6d3a13';
+            else if (zones.inner && zones.inner.includes(hexId)) zoneColor = '#fcc49c';
+            else if (zones.outer && zones.outer.includes(hexId)) zoneColor = '#f57d2d';
+            else if (zones.dead && zones.dead.includes(hexId)) zoneColor = '#6d3a13';
+            
+            drawHexagon(moveCtx, x, y, hexSize, zoneColor, '#333', 1);
             
             // Rotate text -90° (counter-clockwise) so it's readable after canvas rotation
             moveCtx.save();
             moveCtx.translate(x, y);
             moveCtx.rotate(-Math.PI / 2);
+            moveCtx.fillStyle = '#666';
             moveCtx.fillText(`${row}-${col}`, 0, 0);
             moveCtx.restore();
         }
     }
     
-    const centerRow = 5;
-    const centerCol = 5;
+    // Find center hex for piece placement (use middle of board)
+    const centerRow = Math.floor(rows / 2);
+    const centerCol = Math.floor(colsPerRow[centerRow] / 2);
 
     // Draw piece in center hex (using proper grid coordinates)
     if (gameData.currentPieceId) {
         const piece = gameData.pieces.find(p => p.id === gameData.currentPieceId);
         if (piece) {
             const xOffset = (centerRow % 2 === 0) ? (hexWidth * 0.5) : 0;
-            const x = centerX + (centerCol - gridSize/2) * colSpacing + xOffset;
-            const y = centerY + (centerRow - gridSize/2) * rowSpacing;
+            const x = centerX + (centerCol - maxCols/2) * colSpacing + xOffset;
+            const y = centerY + (centerRow - rows/2) * rowSpacing;
             drawHexagon(moveCtx, x, y, hexSize, piece.color, '#333', 2);
             
             moveCtx.fillStyle = '#fff';
             moveCtx.save();
             moveCtx.translate(x, y);
             moveCtx.rotate(-Math.PI / 2);
-            moveCtx.fillText(`${centerRow}-${centerCol}`, 0, 0);
+            moveCtx.font = 'bold 12px Arial';
+            moveCtx.fillText('🎯', 0, 0);
             moveCtx.restore();
         }
     }
@@ -671,14 +719,15 @@ function redrawMoveCanvas() {
     if (currentMovement.move) {
         currentMovement.move.forEach(hex => {
             const xOffset = (hex.row % 2 === 0) ? (hexWidth * 0.5) : 0;
-            const x = centerX + (hex.col - gridSize/2) * colSpacing + xOffset;
-            const y = centerY + (hex.row - gridSize/2) * rowSpacing;
+            const x = centerX + (hex.col - maxCols/2) * colSpacing + xOffset;
+            const y = centerY + (hex.row - rows/2) * rowSpacing;
             drawHexagon(moveCtx, x, y, hexSize, '#2ecc71', '#27ae60', 2);
             
             moveCtx.fillStyle = '#fff';
             moveCtx.save();
             moveCtx.translate(x, y);
             moveCtx.rotate(-Math.PI / 2);
+            moveCtx.font = 'bold 10px Arial';
             moveCtx.fillText(`${hex.row}-${hex.col}`, 0, 0);
             moveCtx.restore();
         });
@@ -687,14 +736,15 @@ function redrawMoveCanvas() {
     if (currentMovement.attack) {
         currentMovement.attack.forEach(hex => {
             const xOffset = (hex.row % 2 === 0) ? (hexWidth * 0.5) : 0;
-            const x = centerX + (hex.col - gridSize/2) * colSpacing + xOffset;
-            const y = centerY + (hex.row - gridSize/2) * rowSpacing;
+            const x = centerX + (hex.col - maxCols/2) * colSpacing + xOffset;
+            const y = centerY + (hex.row - rows/2) * rowSpacing;
             drawHexagon(moveCtx, x, y, hexSize, '#e74c3c', '#c0392b', 2);
             
             moveCtx.fillStyle = '#fff';
             moveCtx.save();
             moveCtx.translate(x, y);
             moveCtx.rotate(-Math.PI / 2);
+            moveCtx.font = 'bold 10px Arial';
             moveCtx.fillText(`${hex.row}-${hex.col}`, 0, 0);
             moveCtx.restore();
         });
@@ -703,18 +753,22 @@ function redrawMoveCanvas() {
     if (currentMovement.special) {
         currentMovement.special.forEach(hex => {
             const xOffset = (hex.row % 2 === 0) ? (hexWidth * 0.5) : 0;
-            const x = centerX + (hex.col - gridSize/2) * colSpacing + xOffset;
-            const y = centerY + (hex.row - gridSize/2) * rowSpacing;
+            const x = centerX + (hex.col - maxCols/2) * colSpacing + xOffset;
+            const y = centerY + (hex.row - rows/2) * rowSpacing;
             drawHexagon(moveCtx, x, y, hexSize, '#f39c12', '#e67e22', 2);
             
             moveCtx.fillStyle = '#fff';
             moveCtx.save();
             moveCtx.translate(x, y);
             moveCtx.rotate(-Math.PI / 2);
+            moveCtx.font = 'bold 10px Arial';
             moveCtx.fillText(`${hex.row}-${hex.col}`, 0, 0);
             moveCtx.restore();
         });
     }
+    
+    // Update hardcoded pattern display
+    updateHardcodedPatternDisplay();
 }
 
 function setMoveTool(tool) {
@@ -726,6 +780,45 @@ function setMoveTool(tool) {
             btn.classList.remove('active');
         }
     });
+}
+
+function updateHardcodedPatternDisplay() {
+    const board = gameData.board || {rows: 7, colsPerRow: [4, 5, 6, 7, 6, 5, 4]};
+    const centerRow = Math.floor(board.rows / 2);
+    const centerCol = Math.floor(board.colsPerRow[centerRow] / 2);
+    
+    const moveDisplay = document.getElementById('hardcodedMoveDisplay');
+    const attackDisplay = document.getElementById('hardcodedAttackDisplay');
+    
+    if (!moveDisplay || !attackDisplay) return; // Not on Movement Pattern step
+    
+    // Calculate relative offsets for movement
+    if (currentMovement.move && currentMovement.move.length > 0) {
+        const relativeMove = currentMovement.move.map(hex => ({
+            rowOffset: hex.row - centerRow,
+            colOffset: hex.col - centerCol
+        }));
+        
+        moveDisplay.textContent = JSON.stringify(relativeMove, null, 2);
+        moveDisplay.style.color = '#27ae60';
+    } else {
+        moveDisplay.textContent = '// No movement pattern set\n// Click green hexes on the board';
+        moveDisplay.style.color = '#999';
+    }
+    
+    // Calculate relative offsets for attack
+    if (currentMovement.attack && currentMovement.attack.length > 0) {
+        const relativeAttack = currentMovement.attack.map(hex => ({
+            rowOffset: hex.row - centerRow,
+            colOffset: hex.col - centerCol
+        }));
+        
+        attackDisplay.textContent = JSON.stringify(relativeAttack, null, 2);
+        attackDisplay.style.color = '#c0392b';
+    } else {
+        attackDisplay.textContent = '// No attack pattern set\n// Switch to Attack tool and click red hexes';
+        attackDisplay.style.color = '#999';
+    }
 }
 
 function clearAllMovement() {
@@ -743,10 +836,42 @@ function saveMovementPattern() {
     
     const piece = gameData.pieces.find(p => p.id === gameData.currentPieceId);
     
+    // Store both absolute coordinates AND relative offsets (like Romgon hardcoded moves)
+    // Relative offsets make highlighting work regardless of piece position
+    const board = gameData.board || {rows: 7, colsPerRow: [4, 5, 6, 7, 6, 5, 4]};
+    const centerRow = Math.floor(board.rows / 2);
+    const centerCol = Math.floor(board.colsPerRow[centerRow] / 2);
+    
+    // Convert to relative coordinates (offset from center)
+    const relativeMove = currentMovement.move.map(hex => ({
+        rowOffset: hex.row - centerRow,
+        colOffset: hex.col - centerCol,
+        row: hex.row,  // Keep absolute for reference
+        col: hex.col
+    }));
+    
+    const relativeAttack = currentMovement.attack.map(hex => ({
+        rowOffset: hex.row - centerRow,
+        colOffset: hex.col - centerCol,
+        row: hex.row,
+        col: hex.col
+    }));
+    
+    const relativeSpecial = currentMovement.special.map(hex => ({
+        rowOffset: hex.row - centerRow,
+        colOffset: hex.col - centerCol,
+        row: hex.row,
+        col: hex.col
+    }));
+    
     piece.movement = {
         move: [...currentMovement.move],
         attack: [...currentMovement.attack],
         special: [...currentMovement.special],
+        // NEW: Hardcoded relative patterns (like original Romgon)
+        hardcodedMove: relativeMove,
+        hardcodedAttack: relativeAttack,
+        hardcodedSpecial: relativeSpecial,
         type: document.getElementById('moveType').value,
         range: parseInt(document.getElementById('moveRange').value),
         rules: {
@@ -764,7 +889,11 @@ function saveMovementPattern() {
     };
     
     saveToLocalStorage();
-    showNotification(`Movement pattern saved for ${piece.name}!`, 'success');
+    console.log('💾 Movement pattern saved with hardcoded offsets:', {
+        move: relativeMove,
+        attack: relativeAttack
+    });
+    showNotification(`Movement pattern saved for ${piece.name}! (${relativeMove.length} moves, ${relativeAttack.length} attacks)`, 'success');
 }
 
 // ============================================================================
