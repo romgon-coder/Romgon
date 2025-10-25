@@ -1449,6 +1449,29 @@ function showPublishSuccess(result) {
     
     const gameUrl = `${window.location.origin}/play?game=${result.game_id}`;
     
+    // Save to "My Games" list in localStorage
+    try {
+        const myGamesJSON = localStorage.getItem('romgon_my_published_games');
+        const myGames = myGamesJSON ? JSON.parse(myGamesJSON) : [];
+        
+        // Add this game to the list
+        myGames.push({
+            game_id: result.game_id,
+            name: gameData.metadata?.name || 'Untitled Game',
+            description: gameData.metadata?.description || '',
+            creator_name: 'You',
+            thumbnail: document.getElementById('gameThumbnail')?.value || '',
+            plays: 0,
+            rating: 0,
+            created_at: new Date().toISOString()
+        });
+        
+        localStorage.setItem('romgon_my_published_games', JSON.stringify(myGames));
+        console.log('✅ Game saved to My Games list');
+    } catch (error) {
+        console.error('Failed to save to My Games:', error);
+    }
+    
     resultDiv.innerHTML = `
         <p style="margin: 15px 0;">Your game has been published!</p>
         <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 15px 0;">

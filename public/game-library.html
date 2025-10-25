@@ -420,6 +420,12 @@
             container.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading games...</p></div>';
 
             try {
+                // Special handling for "My Games" - use localStorage instead of API
+                if (currentTab === 'my-games') {
+                    loadMyGamesFromLocalStorage();
+                    return;
+                }
+
                 // API Base URL - use Railway backend
                 const API_BASE_URL = 'https://api.romgon.net';
                 
@@ -437,9 +443,6 @@
                 } else if (currentTab === 'popular') {
                     endpoint = `${API_BASE_URL}/api/custom-games/popular`;
                     params = new URLSearchParams({ limit: gamesPerPage });
-                } else if (currentTab === 'my-games') {
-                    endpoint = `${API_BASE_URL}/api/custom-games/my-games`;
-                    params = '';
                 }
 
                 const response = await fetch(`${endpoint}?${params}`);
@@ -460,6 +463,65 @@
                         <p>${error.message}</p>
                         <p style="color: #999; font-size: 0.9em;">Make sure the backend server is running.</p>
                         <button class="search-btn" onclick="loadGames()">Try Again</button>
+                    </div>
+                `;
+            }
+        }
+
+        function loadMyGamesFromLocalStorage() {
+            const container = document.getElementById('gamesContainer');
+            
+            // Get list of game IDs published from this browser
+            const myGamesJSON = localStorage.getItem('romgon_my_published_games');
+            
+            if (!myGamesJSON) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h2>🎮 No Games Found</h2>
+                        <p>You haven't created any games yet from this browser.</p>
+                        <a href="game-creator.html" class="search-btn">Create New Game</a>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const myGames = JSON.parse(myGamesJSON);
+                
+                if (myGames.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <h2>🎮 No Games Found</h2>
+                            <p>You haven't created any games yet from this browser.</p>
+                            <a href="game-creator.html" class="search-btn">Create New Game</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Format games to match API structure
+                const formattedGames = myGames.map(game => ({
+                    game_id: game.game_id,
+                    name: game.name,
+                    description: game.description || 'Custom Romgon game',
+                    creator_name: game.creator_name || 'You',
+                    thumbnail: game.thumbnail || '',
+                    plays: game.plays || 0,
+                    rating: game.rating || 0,
+                    created_at: game.created_at || new Date().toISOString()
+                }));
+
+                displayGames(formattedGames);
+                
+                // Hide pagination for My Games (all loaded from localStorage)
+                document.getElementById('pagination').innerHTML = '';
+
+            } catch (error) {
+                console.error('Error loading my games:', error);
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h2>⚠️ Error</h2>
+                        <p>Could not load your games from local storage.</p>
                     </div>
                 `;
             }
