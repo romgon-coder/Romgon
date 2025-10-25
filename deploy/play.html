@@ -554,6 +554,9 @@
                     const zone = getZoneForHex(hexId, zones);
                     if (zone) {
                         hex.classList.add(`zone-${zone}`);
+                        console.log(`🎨 Applied zone-${zone} to hex ${hexId}`);
+                    } else {
+                        console.log(`⚪ No zone for hex ${hexId}, using default`);
                     }
 
                     // Setup drag & drop
@@ -735,34 +738,54 @@
         }
         
         function highlightValidMoves(piece, currentRow, currentCol) {
-            if (!piece.movement) return;
+            console.log('🔍 Attempting to highlight moves for piece:', piece.name);
+            console.log('📍 Current position:', currentRow, currentCol);
+            console.log('🎯 Movement data:', piece.movement);
+            
+            if (!piece.movement) {
+                console.warn('⚠️ No movement data found for piece:', piece.name);
+                return;
+            }
+            
+            let moveCount = 0;
+            let attackCount = 0;
             
             // Use hardcoded patterns if available (preferred method)
             if (piece.movement.hardcodedMove && piece.movement.hardcodedMove.length > 0) {
+                console.log('🟢 Processing hardcodedMove patterns:', piece.movement.hardcodedMove);
                 piece.movement.hardcodedMove.forEach(offset => {
                     const targetRow = currentRow + offset.rowOffset;
                     const targetCol = currentCol + offset.colOffset;
                     
                     const hexEl = document.getElementById(`hex-${targetRow}-${targetCol}`);
+                    console.log(`  → Trying to highlight move hex-${targetRow}-${targetCol}:`, hexEl ? '✅ Found' : '❌ Not found');
                     if (hexEl) {
                         hexEl.classList.add('valid-move');
+                        moveCount++;
                     }
                 });
+            } else {
+                console.warn('⚠️ No hardcodedMove patterns found');
             }
             
             if (piece.movement.hardcodedAttack && piece.movement.hardcodedAttack.length > 0) {
+                console.log('🔴 Processing hardcodedAttack patterns:', piece.movement.hardcodedAttack);
                 piece.movement.hardcodedAttack.forEach(offset => {
                     const targetRow = currentRow + offset.rowOffset;
                     const targetCol = currentCol + offset.colOffset;
                     
                     const hexEl = document.getElementById(`hex-${targetRow}-${targetCol}`);
+                    console.log(`  → Trying to highlight attack hex-${targetRow}-${targetCol}:`, hexEl ? '✅ Found' : '❌ Not found');
                     if (hexEl) {
                         hexEl.classList.add('valid-attack');
+                        attackCount++;
                     }
                 });
+            } else {
+                console.warn('⚠️ No hardcodedAttack patterns found');
             }
             
-            console.log(`💡 Highlighted ${piece.movement.hardcodedMove?.length || 0} moves, ${piece.movement.hardcodedAttack?.length || 0} attacks`);
+            console.log(`💡 Successfully highlighted ${moveCount} moves, ${attackCount} attacks`);
         }
         
         function clearHighlights() {
