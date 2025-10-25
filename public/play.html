@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Play Custom Game - Romgon</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            width: 100%;
+            max-width: 1200px;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .game-info {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .game-info span {
+            background: #f0f4ff;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        .game-container {
+            background: white;
+            width: 100%;
+            max-width: 1200px;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        #gameCanvas {
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            display: block;
+            margin: 0 auto;
+            background: #f9f9f9;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+        }
+
+        .loading h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fee;
+            border: 2px solid #fcc;
+            border-radius: 10px;
+            padding: 20px;
+            color: #c33;
+            text-align: center;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 id="gameName">Loading Custom Game...</h1>
+        <div class="game-info">
+            <span id="creator">Creator: Loading...</span>
+            <span id="plays">Plays: 0</span>
+            <span id="rating">Rating: N/A</span>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <div id="loadingScreen" class="loading">
+            <h2>Loading Game...</h2>
+            <div class="spinner"></div>
+            <p style="margin-top: 20px; color: #666;">Fetching game configuration...</p>
+        </div>
+
+        <div id="errorScreen" class="error" style="display: none;">
+            <h2>Error Loading Game</h2>
+            <p id="errorMessage"></p>
+            <button class="btn btn-primary" onclick="window.location.href='/game-creator.html'" style="margin-top: 20px;">
+                Create Your Own Game
+            </button>
+        </div>
+
+        <canvas id="gameCanvas" style="display: none;"></canvas>
+
+        <div class="controls" id="gameControls" style="display: none;">
+            <button class="btn btn-secondary" onclick="resetGame()">Reset Game</button>
+            <button class="btn btn-primary" onclick="window.location.href='/game-library.html'">Browse Games</button>
+        </div>
+    </div>
+
+    <script>
+        // Get game ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const gameId = urlParams.get('game');
+
+        if (!gameId) {
+            showError('No game ID provided in URL');
+        } else {
+            loadGame(gameId);
+        }
+
+        async function loadGame(gameId) {
+            try {
+                console.log('🎮 Loading game:', gameId);
+
+                const API_BASE_URL = 'https://api.romgon.net';
+                const response = await fetch(`${API_BASE_URL}/api/custom-games/game/${gameId}`);
+
+                if (!response.ok) {
+                    throw new Error(`Failed to load game: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log('📥 Game data loaded:', result);
+
+                if (!result || !result.config) {
+                    throw new Error('Invalid game data received');
+                }
+
+                // Update header info
+                document.getElementById('gameName').textContent = result.name || 'Custom Game';
+                document.getElementById('creator').textContent = `Creator: ${result.creator_name || 'Anonymous'}`;
+                document.getElementById('plays').textContent = `Plays: ${result.plays || 0}`;
+                document.getElementById('rating').textContent = `Rating: ${result.rating ? result.rating.toFixed(1) : 'N/A'}`;
+
+                // Hide loading screen
+                document.getElementById('loadingScreen').style.display = 'none';
+
+                // Initialize game
+                initializeGame(result.config);
+
+                // Increment play count
+                incrementPlayCount(gameId);
+
+            } catch (error) {
+                console.error('❌ Error loading game:', error);
+                showError(error.message);
+            }
+        }
+
+        function initializeGame(config) {
+            console.log('🎯 Initializing game with config:', config);
+
+            // Show canvas and controls
+            const canvas = document.getElementById('gameCanvas');
+            canvas.style.display = 'block';
+            document.getElementById('gameControls').style.display = 'flex';
+
+            // Set canvas size based on board
+            const boardWidth = config.board?.width || 11;
+            const boardHeight = config.board?.height || 11;
+            canvas.width = 800;
+            canvas.height = 700;
+
+            // Draw game board
+            const ctx = canvas.getContext('2d');
+            drawGame(ctx, config);
+        }
+
+        function drawGame(ctx, config) {
+            // Clear canvas
+            ctx.fillStyle = '#f9f9f9';
+            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+            // Draw title
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Custom Game Loaded Successfully!', ctx.canvas.width / 2, 50);
+
+            // Draw board info
+            ctx.font = '16px Arial';
+            ctx.fillText(`Board: ${config.board?.width || 11}x${config.board?.height || 11}`, ctx.canvas.width / 2, 100);
+            ctx.fillText(`Pieces: ${config.pieces?.length || 0}`, ctx.canvas.width / 2, 130);
+
+            // Draw pieces
+            if (config.pieces && config.pieces.length > 0) {
+                let y = 180;
+                ctx.textAlign = 'left';
+                ctx.fillText('Game Pieces:', 50, y);
+                y += 30;
+
+                config.pieces.forEach((piece, index) => {
+                    ctx.fillStyle = '#667eea';
+                    ctx.fillText(`${index + 1}. ${piece.name} (${piece.shape || 'custom'}, ${piece.color})`, 70, y);
+                    y += 25;
+                });
+            }
+
+            // Draw note
+            ctx.fillStyle = '#999';
+            ctx.font = 'italic 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Full game engine integration coming soon!', ctx.canvas.width / 2, ctx.canvas.height - 30);
+        }
+
+        function resetGame() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            location.reload();
+        }
+
+        async function incrementPlayCount(gameId) {
+            try {
+                const API_BASE_URL = 'https://api.romgon.net';
+                await fetch(`${API_BASE_URL}/api/custom-games/game/${gameId}/play`, {
+                    method: 'POST'
+                });
+                console.log('✅ Play count incremented');
+            } catch (error) {
+                console.warn('Failed to increment play count:', error);
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('loadingScreen').style.display = 'none';
+            document.getElementById('errorScreen').style.display = 'block';
+            document.getElementById('errorMessage').textContent = message;
+        }
+    </script>
+</body>
+</html>
