@@ -823,13 +823,19 @@
                     </div>
                     <div class="control-group">
                         <label>Board Shape</label>
-                        <select id="boardShape" onchange="redrawBoard()">
+                        <select id="boardShape" onchange="generateBoardShape()">
                             <option value="custom">Custom (Free-form)</option>
                             <option value="rectangle">Rectangle</option>
-                            <option value="hexagon">Hexagon</option>
+                            <option value="hexagon">Hexagon (Classic Romgon)</option>
                             <option value="diamond">Diamond</option>
                         </select>
+                        <small>Auto-shapes hexes by deleting edges</small>
                     </div>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <button class="btn btn-primary" onclick="generateBoardShape()">🎯 Apply Board Shape</button>
+                    <button class="btn btn-secondary" onclick="gameData.board.deletedHexes = []; redrawBoard();">↩️ Restore All Hexes</button>
                 </div>
 
                 <h3 style="margin: 30px 0 15px;">Hex Zone Configuration</h3>

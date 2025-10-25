@@ -837,6 +837,61 @@ function applyBoardPreset() {
     }
 }
 
+function generateBoardShape() {
+    const shape = document.getElementById('boardShape').value;
+    const height = gameData.board.height;
+    const width = gameData.board.width;
+    
+    if (!gameData.board.deletedHexes) {
+        gameData.board.deletedHexes = [];
+    }
+    
+    // Clear deleted hexes first
+    gameData.board.deletedHexes = [];
+    
+    if (shape === 'hexagon') {
+        // Generate hexagon shape (diamond-like)
+        // Classic Romgon: rows grow then shrink
+        const midRow = Math.floor(height / 2);
+        
+        for (let row = 0; row < height; row++) {
+            const distFromCenter = Math.abs(row - midRow);
+            const hexesToRemove = distFromCenter;
+            
+            // Remove hexes from both sides
+            for (let col = 0; col < width; col++) {
+                if (col < hexesToRemove || col >= width - hexesToRemove) {
+                    gameData.board.deletedHexes.push(`${row}-${col}`);
+                }
+            }
+        }
+        showNotification('Hexagon shape generated!', 'success');
+    } else if (shape === 'diamond') {
+        // Generate diamond shape (narrower at top and bottom)
+        const midRow = Math.floor(height / 2);
+        
+        for (let row = 0; row < height; row++) {
+            const distFromCenter = Math.abs(row - midRow);
+            const hexesToRemove = Math.floor((height / 2) - distFromCenter);
+            
+            // Remove hexes from both sides
+            for (let col = 0; col < width; col++) {
+                if (col < hexesToRemove || col >= width - hexesToRemove) {
+                    gameData.board.deletedHexes.push(`${row}-${col}`);
+                }
+            }
+        }
+        showNotification('Diamond shape generated!', 'success');
+    } else if (shape === 'rectangle') {
+        // Keep all hexes (clear deletions)
+        gameData.board.deletedHexes = [];
+        showNotification('Rectangle shape - all hexes visible', 'success');
+    }
+    // 'custom' - do nothing, let user manually delete hexes
+    
+    redrawBoard();
+}
+
 function setBoardTool(tool) {
     gameData.currentBoardTool = tool;
     document.querySelectorAll('.tool-bar [data-tool]').forEach(btn => {
