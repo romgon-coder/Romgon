@@ -670,6 +670,7 @@ function redrawBoard() {
     
     // Get zone colors
     const zoneColors = {
+        base: document.getElementById('baseZoneColor')?.value || '#8b4513',
         inner: document.getElementById('innerZoneColor')?.value || '#6d3a13',
         middle: document.getElementById('middleZoneColor')?.value || '#f57d2d',
         outer: document.getElementById('outerZoneColor')?.value || '#fcc49c',
@@ -764,16 +765,26 @@ function handleBoardClick(e) {
                 console.log(`Board hex detected: ${row}-${col}`);
                 const hexKey = `${row}-${col}`;
                 
-                if (gameData.currentBoardTool === 'delete') {
+                if (gameData.currentBoardTool === 'add') {
+                    // Add hex (restore deleted hex)
                     const idx = gameData.board.deletedHexes.indexOf(hexKey);
                     if (idx >= 0) {
-                        // Un-delete (restore) the hex
                         gameData.board.deletedHexes.splice(idx, 1);
+                        redrawBoard();
+                        showNotification(`Hex ${hexKey} restored`, 'success');
+                    } else {
+                        showNotification(`Hex ${hexKey} already exists`, 'info');
+                    }
+                } else if (gameData.currentBoardTool === 'delete') {
+                    const idx = gameData.board.deletedHexes.indexOf(hexKey);
+                    if (idx >= 0) {
+                        showNotification(`Hex ${hexKey} already deleted`, 'info');
                     } else {
                         // Delete the hex (it will disappear completely)
                         gameData.board.deletedHexes.push(hexKey);
+                        redrawBoard();
+                        showNotification(`Hex ${hexKey} deleted`, 'success');
                     }
-                    redrawBoard();
                 } else if (gameData.currentBoardTool === 'zone') {
                     // Paint zone
                     const selectedZone = document.getElementById('zoneSelector').value;
@@ -849,65 +860,12 @@ function generateBoardShape() {
     // Clear deleted hexes first
     gameData.board.deletedHexes = [];
     
-    if (shape === 'hexagon') {
-        // Generate hexagon/diamond shape using offset coordinates
-        // For a perfect hexagon, we need to use the smaller dimension as the radius
-        const radius = Math.floor(Math.min(width, height) / 2);
-        const centerRow = height / 2 - 0.5;
-        const centerCol = width / 2 - 0.5;
-        
-        for (let row = 0; row < height; row++) {
-            for (let col = 0; col < width; col++) {
-                // Calculate offset coordinate position
-                // For even row offset: visual x = col + (row % 2) * 0.5
-                const hexX = col + (row % 2) * 0.5;
-                const hexY = row;
-                
-                // Distance from center
-                const dx = hexX - centerCol;
-                const dy = hexY - centerRow;
-                
-                // Convert to cube coordinates for proper hex distance
-                const cubeX = hexX;
-                const cubeZ = hexY;
-                const cubeY = -cubeX - cubeZ;
-                
-                const centerCubeX = centerCol;
-                const centerCubeZ = centerRow;
-                const centerCubeY = -centerCubeX - centerCubeZ;
-                
-                // Hexagonal distance in cube coordinates
-                const distance = (Math.abs(cubeX - centerCubeX) + Math.abs(cubeY - centerCubeY) + Math.abs(cubeZ - centerCubeZ)) / 2;
-                
-                // Delete if outside radius
-                if (distance > radius) {
-                    gameData.board.deletedHexes.push(`${row}-${col}`);
-                }
-            }
-        }
-        showNotification('Hexagon/Diamond shape generated!', 'success');
-    } else if (shape === 'diamond') {
-        // Generate diamond shape (pointed top and bottom)
-        const midRow = Math.floor(height / 2);
-        
-        for (let row = 0; row < height; row++) {
-            const distFromCenter = Math.abs(row - midRow);
-            const hexesToRemove = distFromCenter;
-            
-            // Remove hexes from both sides
-            for (let col = 0; col < width; col++) {
-                if (col < hexesToRemove || col >= width - hexesToRemove) {
-                    gameData.board.deletedHexes.push(`${row}-${col}`);
-                }
-            }
-        }
-        showNotification('Diamond shape generated!', 'success');
-    } else if (shape === 'rectangle') {
+    if (shape === 'rectangle') {
         // Keep all hexes (clear deletions)
         gameData.board.deletedHexes = [];
         showNotification('Rectangle shape - all hexes visible', 'success');
     }
-    // 'custom' - do nothing, let user manually delete hexes
+    // 'custom' - do nothing, let user manually add/delete hexes
     
     redrawBoard();
 }
@@ -931,6 +889,10 @@ function setBoardTool(tool) {
     // Update cursor
     if (tool === 'delete') {
         boardCanvas.style.cursor = 'not-allowed';
+    } else if (tool === 'add') {
+        boardCanvas.style.cursor = 'crosshair';
+    } else if (tool === 'zone') {
+        boardCanvas.style.cursor = 'pointer';
     } else if (tool === 'place') {
         boardCanvas.style.cursor = 'copy';
     } else {

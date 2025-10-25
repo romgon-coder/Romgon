@@ -826,8 +826,6 @@
                         <select id="boardShape" onchange="generateBoardShape()">
                             <option value="custom">Custom (Free-form)</option>
                             <option value="rectangle">Rectangle</option>
-                            <option value="hexagon">Hexagon (Classic Romgon)</option>
-                            <option value="diamond">Diamond</option>
                         </select>
                         <small>Auto-shapes hexes by deleting edges</small>
                     </div>
@@ -841,9 +839,14 @@
                 <h3 style="margin: 30px 0 15px;">Hex Zone Configuration</h3>
                 <div class="controls">
                     <div class="control-group">
+                        <label>Base Zone Color</label>
+                        <input type="color" id="baseZoneColor" value="#8b4513">
+                        <small>Starting positions only</small>
+                    </div>
+                    <div class="control-group">
                         <label>Inner Zone Color</label>
                         <input type="color" id="innerZoneColor" value="#6d3a13">
-                        <small>Base hexes - starting positions</small>
+                        <small>Close to base</small>
                     </div>
                     <div class="control-group">
                         <label>Middle Zone Color</label>
@@ -858,7 +861,7 @@
                     <div class="control-group">
                         <label>Dead Zone Color</label>
                         <input type="color" id="deadZoneColor" value="#333333">
-                        <small>Unusable hexes (removed from board)</small>
+                        <small>Unusable hexes</small>
                     </div>
                 </div>
 
@@ -879,6 +882,9 @@
                     <button class="tool-btn" onclick="setBoardTool('zone')" data-tool="zone">
                         🎨 Paint Zones
                     </button>
+                    <button class="tool-btn" onclick="setBoardTool('add')" data-tool="add">
+                        ➕ Add Hex
+                    </button>
                     <button class="tool-btn" onclick="setBoardTool('delete')" data-tool="delete">
                         🗑 Delete Hex
                     </button>
@@ -891,10 +897,11 @@
                     <div class="control-group">
                         <label>Zone to Paint</label>
                         <select id="zoneSelector">
-                            <option value="inner">Inner Zone (Base)</option>
+                            <option value="base">Base Zone (Starting Positions)</option>
+                            <option value="inner">Inner Zone</option>
                             <option value="middle">Middle Zone (Battlefield)</option>
                             <option value="outer">Outer Zone (Edge)</option>
-                            <option value="dead">Dead Zone (Removed)</option>
+                            <option value="dead">Dead Zone</option>
                         </select>
                     </div>
                 </div>
