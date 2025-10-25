@@ -482,8 +482,33 @@
             board.className = 'board';
             board.id = 'game-board';
 
-            const rows = boardConfig.rows || 7;
-            const colsPerRow = boardConfig.colsPerRow || [4, 5, 6, 7, 6, 5, 4];
+            // Handle both old and new board formats
+            let rows, colsPerRow;
+            
+            if (boardConfig.rows && boardConfig.colsPerRow) {
+                // New format
+                rows = boardConfig.rows;
+                colsPerRow = boardConfig.colsPerRow;
+            } else if (boardConfig.height && boardConfig.width) {
+                // Old format - convert to new format
+                rows = boardConfig.height || 7;
+                // Generate standard hexagon shape
+                const mid = Math.floor(rows / 2);
+                colsPerRow = [];
+                for (let i = 0; i < rows; i++) {
+                    if (i <= mid) {
+                        colsPerRow.push(mid + 1 + i);
+                    } else {
+                        colsPerRow.push(mid + 1 + (rows - 1 - i));
+                    }
+                }
+                console.log('🔄 Converted old board format to new format');
+            } else {
+                // Fallback to default
+                rows = 7;
+                colsPerRow = [4, 5, 6, 7, 6, 5, 4];
+            }
+
             const zones = boardConfig.zones || {};
             const deletedHexes = boardConfig.deletedHexes || [];
 
@@ -538,11 +563,30 @@
         }
 
         function getZoneForHex(hexId, zones) {
-            for (const [zoneName, hexList] of Object.entries(zones)) {
-                if (hexList && hexList.includes(hexId)) {
-                    return zoneName;
+            if (!zones || Object.keys(zones).length === 0) {
+                return 'middle'; // default
+            }
+            
+            // Handle both zone formats:
+            // Format 1: {base: ['4-6', '2-6'], inner: [...]}  (new format)
+            // Format 2: {'4-6': 'base', '2-6': 'base'}  (old format)
+            
+            // Check if first value is an array (new format)
+            const firstValue = Object.values(zones)[0];
+            if (Array.isArray(firstValue)) {
+                // New format: {base: ['4-6', '2-6']}
+                for (const [zoneName, hexList] of Object.entries(zones)) {
+                    if (hexList && hexList.includes(hexId)) {
+                        return zoneName;
+                    }
+                }
+            } else {
+                // Old format: {'4-6': 'base'}
+                if (zones[hexId]) {
+                    return zones[hexId];
                 }
             }
+            
             return 'middle'; // default
         }
 
