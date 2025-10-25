@@ -645,28 +645,42 @@ function redrawBoard() {
     const rowSpacing = bHexHeight * 0.9;
     const colSpacing = bHexWidth;
 
-    // Ensure deletedHexes array exists
+    // Ensure arrays exist
     if (!gameData.board.deletedHexes) {
         gameData.board.deletedHexes = [];
     }
+    if (!gameData.board.zones) {
+        gameData.board.zones = {};
+    }
+    
+    // Get zone colors
+    const zoneColors = {
+        inner: document.getElementById('innerZoneColor')?.value || '#6d3a13',
+        middle: document.getElementById('middleZoneColor')?.value || '#f57d2d',
+        outer: document.getElementById('outerZoneColor')?.value || '#fcc49c',
+        dead: document.getElementById('deadZoneColor')?.value || '#333333'
+    };
 
     for (let row = 0; row < height; row++) {
         for (let col = 0; col < width; col++) {
+            const hexKey = `${row}-${col}`;
+            const isDeleted = gameData.board.deletedHexes.includes(hexKey);
+            
+            // SKIP DELETED HEXES - don't draw them at all
+            if (isDeleted) continue;
+            
             const xOffset = (row % 2 === 0) ? (bHexWidth * 0.5) : 0;
             const x = centerX + (col - width/2) * colSpacing + xOffset;
             const y = centerY + (row - height/2) * rowSpacing;
             
-            const hexKey = `${row}-${col}`;
-            const isDeleted = gameData.board.deletedHexes.includes(hexKey);
+            // Check if hex has a zone assigned
+            const zone = gameData.board.zones[hexKey];
+            const hexColor = zone ? zoneColors[zone] : '#fcc49c';
             
-            if (isDeleted) {
-                drawHexagon(boardCtx, x, y, bHexSize, '#333', '#f00', 2);
-            } else {
-                drawHexagon(boardCtx, x, y, bHexSize, '#fcc49c', '#666', 1);
-            }
+            drawHexagon(boardCtx, x, y, bHexSize, hexColor, '#666', 1);
             
             // Draw coordinate labels (rotated -90° for readability)
-            boardCtx.fillStyle = isDeleted ? '#fff' : '#666';
+            boardCtx.fillStyle = '#666';
             boardCtx.font = '8px Arial';
             boardCtx.textAlign = 'center';
             boardCtx.textBaseline = 'middle';
@@ -721,11 +735,22 @@ function handleBoardClick(e) {
                 if (gameData.currentBoardTool === 'delete') {
                     const idx = gameData.board.deletedHexes.indexOf(hexKey);
                     if (idx >= 0) {
+                        // Un-delete (restore) the hex
                         gameData.board.deletedHexes.splice(idx, 1);
                     } else {
+                        // Delete the hex (it will disappear completely)
                         gameData.board.deletedHexes.push(hexKey);
                     }
                     redrawBoard();
+                } else if (gameData.currentBoardTool === 'zone') {
+                    // Paint zone
+                    const selectedZone = document.getElementById('zoneSelector').value;
+                    if (!gameData.board.zones) {
+                        gameData.board.zones = {};
+                    }
+                    gameData.board.zones[hexKey] = selectedZone;
+                    redrawBoard();
+                    showNotification(`Hex ${hexKey} set to ${selectedZone} zone`, 'success');
                 } else if (gameData.currentBoardTool === 'place') {
                     // Place shape logic
                     const pieceId = document.getElementById('placePieceSelector').value;
@@ -765,6 +790,12 @@ function setBoardTool(tool) {
             btn.classList.remove('active');
         }
     });
+    
+    // Show/hide zone selector
+    const zoneControls = document.getElementById('zoneControls');
+    if (zoneControls) {
+        zoneControls.style.display = (tool === 'zone') ? 'block' : 'none';
+    }
     
     // Update cursor
     if (tool === 'delete') {

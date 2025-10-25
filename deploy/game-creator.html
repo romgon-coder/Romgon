@@ -857,8 +857,20 @@
                     </button>
                 </div>
 
-                <div style="text-align: center; margin: 30px 0;">
-                    <canvas id="boardCanvas" width="700" height="600" style="transform: rotate(90deg);"></canvas>
+                <div class="controls" id="zoneControls" style="display: none; margin: 20px 0;">
+                    <div class="control-group">
+                        <label>Zone to Paint</label>
+                        <select id="zoneSelector">
+                            <option value="inner">Inner Zone (Base)</option>
+                            <option value="middle">Middle Zone (Battlefield)</option>
+                            <option value="outer">Outer Zone (Edge)</option>
+                            <option value="dead">Dead Zone (Removed)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="text-align: right; margin: 30px 0; position: relative; height: 700px;">
+                    <canvas id="boardCanvas" width="700" height="600" style="transform: rotate(90deg); position: absolute; right: 0; top: 50%; margin-top: -300px;"></canvas>
                 </div>
 
                 <h3 style="margin: 30px 0 15px;">Starting Positions</h3>
