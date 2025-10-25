@@ -664,6 +664,17 @@ function redrawBoard() {
             } else {
                 drawHexagon(boardCtx, x, y, bHexSize, '#fcc49c', '#666', 1);
             }
+            
+            // Draw coordinate labels (rotated -90° for readability)
+            boardCtx.fillStyle = isDeleted ? '#fff' : '#666';
+            boardCtx.font = '8px Arial';
+            boardCtx.textAlign = 'center';
+            boardCtx.textBaseline = 'middle';
+            boardCtx.save();
+            boardCtx.translate(x, y);
+            boardCtx.rotate(-Math.PI / 2);
+            boardCtx.fillText(`${row}-${col}`, 0, 0);
+            boardCtx.restore();
         }
     }
     
@@ -675,11 +686,13 @@ function handleBoardClick(e) {
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
     
-    // Un-rotate coordinates (canvas is rotated 90° clockwise via CSS)
-    // boardCanvas is 700x600, but after 90° rotation it appears as 600x700
-    // For 90° clockwise: newX = canvasHeight - clickY, newY = clickX
-    const x = 600 - clickY;
-    const y = clickX;
+    // Canvas is 700x600, rotated 90° clockwise via CSS
+    // After rotation it appears as 600x700 to the user
+    // For 90° CW rotation: canvas_x = clickY, canvas_y = canvasHeight - clickX
+    const x = clickY;
+    const y = 600 - clickX;
+    
+    console.log(`Board click at screen (${Math.round(clickX)}, ${Math.round(clickY)}) -> canvas (${Math.round(x)}, ${Math.round(y)})`);
     
     const width = gameData.board.width;
     const height = gameData.board.height;
@@ -702,6 +715,7 @@ function handleBoardClick(e) {
             const dist = Math.sqrt((x - hx) ** 2 + (y - hy) ** 2);
             
             if (dist < bHexSize) {
+                console.log(`Board hex detected: ${row}-${col}`);
                 const hexKey = `${row}-${col}`;
                 
                 if (gameData.currentBoardTool === 'delete') {
