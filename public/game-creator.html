@@ -590,7 +590,7 @@
                     <div class="canvas-panel">
                         <div class="controls">
                             <div class="control-group">
-                                <label>Piece Name *</label>
+                                <label>Shape Name *</label>
                                 <input type="text" id="pieceName" placeholder="e.g., Warrior, Defender, Scout">
                             </div>
                             <div class="control-group">
@@ -599,11 +599,11 @@
                             </div>
                             <div class="control-group">
                                 <label>Description</label>
-                                <textarea id="pieceDesc" rows="3" placeholder="Describe this piece's role..."></textarea>
+                                <textarea id="pieceDesc" rows="3" placeholder="Describe this shape's role..."></textarea>
                             </div>
                         </div>
 
-                        <h3 style="margin: 20px 0 10px;">Piece Abilities</h3>
+                        <h3 style="margin: 20px 0 10px;">Shape Abilities</h3>
                         <div class="checkbox-wrapper">
                             <input type="checkbox" id="canRotate" checked>
                             <label for="canRotate">Can Rotate (orientation-dependent movement)</label>
@@ -668,9 +668,9 @@
             <div class="section">
                 <h2>Movement Pattern Designer</h2>
                 <div class="control-group">
-                    <label>Select Piece to Configure:</label>
+                    <label>Select Shape to Configure:</label>
                     <select id="movePieceSelector" onchange="loadPieceForMovement()">
-                        <option value="">-- Select a piece --</option>
+                        <option value="">-- Select a shape --</option>
                     </select>
                 </div>
 
@@ -692,7 +692,7 @@
                 <div class="canvas-area">
                     <div class="canvas-panel">
                         <h3>Click Hexes to Mark Valid Positions</h3>
-                        <canvas id="moveCanvas" width="600" height="600"></canvas>
+                        <canvas id="moveCanvas" width="600" height="600" style="transform: rotate(90deg);"></canvas>
                         <div style="margin-top: 15px; font-size: 0.9em; color: #666;">
                             <strong>Tip:</strong> The piece is shown in the center. Click hexes around it to define movement/attack patterns.
                             Click again to remove a hex from the pattern.
@@ -853,24 +853,24 @@
                         🗑 Delete Hex
                     </button>
                     <button class="tool-btn" onclick="setBoardTool('place')" data-tool="place">
-                        📍 Place Piece
+                        📍 Place Shape
                     </button>
                 </div>
 
                 <div style="text-align: center; margin: 30px 0;">
-                    <canvas id="boardCanvas" width="700" height="600"></canvas>
+                    <canvas id="boardCanvas" width="700" height="600" style="transform: rotate(90deg);"></canvas>
                 </div>
 
                 <h3 style="margin: 30px 0 15px;">Starting Positions</h3>
                 <div class="alert alert-warning">
-                    Use the "Place Piece" tool above to set starting positions on the board.
-                    Select piece type and player below, then click on board hexes.
+                    Use the "Place Shape" tool above to set starting positions on the board.
+                    Select shape type and player below, then click on board hexes.
                 </div>
                 <div class="controls">
                     <div class="control-group">
-                        <label>Piece to Place</label>
+                        <label>Shape to Place</label>
                         <select id="placePieceSelector">
-                            <option value="">-- Select piece --</option>
+                            <option value="">-- Select shape --</option>
                         </select>
                     </div>
                     <div class="control-group">
@@ -1096,6 +1096,6 @@
         </div>
     </div>
 
-    <script src="game-creator.js?v=2.1"></script>
+    <script src="game-creator.js?v=2.3"></script>
 </body>
 </html>

@@ -280,7 +280,7 @@ const hexWidth = Math.sqrt(3) * hexSize;
 function drawHexagon(ctx, x, y, size, fill, stroke, lineWidth) {
     ctx.beginPath();
     for (let i = 0; i < 6; i++) {
-        // Pointy-topped hexagons for beehive pattern (flat sides vertical)
+        // Pointy-topped hexagons (rotated 90° in CSS to appear flat-topped like Romgon)
         const angle = Math.PI / 3 * i - Math.PI / 2;
         const hx = x + size * Math.cos(angle);
         const hy = y + size * Math.sin(angle);
@@ -300,17 +300,17 @@ function drawHexGrid(ctx, width, height, gridW, gridH) {
     const centerX = width / 2;
     const centerY = height / 2;
     
-    // For pointy-topped hexagons (beehive/honeycomb pattern):
-    // Flat sides are vertical, points are top/bottom
-    // Horizontal spacing: 1.5 * radius (3/4 of width between centers)
-    // Vertical spacing: sqrt(3) * radius (full height)
-    const horizontalSpacing = hexSize * 1.5;  // 3/4 of hexWidth
-    const verticalSpacing = hexSize * Math.sqrt(3);  // Full hexHeight
+    // Flat-topped hexagons (canvas rotated 90° in CSS for beehive appearance)
+    // Using Romgon board formula:
+    // hex-width = hex-size * 1.73205 (sqrt(3))
+    // hex-height = hex-size * 2
+    const horizontalSpacing = hexWidth * 0.75;  // 3/4 of width between centers
+    const verticalSpacing = hexHeight;  // Full height between rows
 
     for (let row = 0; row < gridH; row++) {
         for (let col = 0; col < gridW; col++) {
-            const x = centerX + (col - gridW/2) * horizontalSpacing;
-            const y = centerY + (row - gridH/2) * verticalSpacing + (col % 2) * (verticalSpacing * 0.5);
+            const x = centerX + (col - gridW/2) * horizontalSpacing + (row % 2) * (horizontalSpacing * 0.5);
+            const y = centerY + (row - gridH/2) * verticalSpacing;
             drawHexagon(ctx, x, y, hexSize, '#fff', '#666', 1.5);
         }
     }
@@ -320,14 +320,14 @@ function pixelToHex(x, y, canvasW, canvasH, gridW, gridH) {
     const centerX = canvasW / 2;
     const centerY = canvasH / 2;
     
-    // For pointy-topped hexagons (beehive pattern)
-    const horizontalSpacing = hexSize * 1.5;
-    const verticalSpacing = hexSize * Math.sqrt(3);
+    // Flat-topped hexagons (rotated 90° in CSS)
+    const horizontalSpacing = hexWidth * 0.75;
+    const verticalSpacing = hexHeight;
 
     for (let row = 0; row < gridH; row++) {
         for (let col = 0; col < gridW; col++) {
-            const hx = centerX + (col - gridW/2) * horizontalSpacing;
-            const hy = centerY + (row - gridH/2) * verticalSpacing + (col % 2) * (verticalSpacing * 0.5);
+            const hx = centerX + (col - gridW/2) * horizontalSpacing + (row % 2) * (horizontalSpacing * 0.5);
+            const hy = centerY + (row - gridH/2) * verticalSpacing;
             const dist = Math.sqrt((x - hx) ** 2 + (y - hy) ** 2);
             if (dist < hexSize) {
                 return {row, col};
@@ -460,9 +460,9 @@ function redrawMoveCanvas() {
     const centerX = 600 / 2;
     const centerY = 600 / 2;
     
-    // For pointy-topped hexagons (beehive pattern)
-    const horizontalSpacing = hexSize * 1.5;
-    const verticalSpacing = hexSize * Math.sqrt(3);
+    // Flat-topped hexagons (rotated 90° in CSS)
+    const horizontalSpacing = hexWidth * 0.75;
+    const verticalSpacing = hexHeight;
 
     // Draw piece in center (just a placeholder)
     if (gameData.currentPieceId) {
@@ -478,24 +478,24 @@ function redrawMoveCanvas() {
     // Draw movement patterns
     if (currentMovement.move) {
         currentMovement.move.forEach(hex => {
-            const x = centerX + (hex.col - 5.5) * horizontalSpacing;
-            const y = centerY + (hex.row - 5.5) * verticalSpacing + (hex.col % 2) * (verticalSpacing * 0.5);
+            const x = centerX + (hex.col - 5.5) * horizontalSpacing + (hex.row % 2) * (horizontalSpacing * 0.5);
+            const y = centerY + (hex.row - 5.5) * verticalSpacing;
             drawHexagon(moveCtx, x, y, hexSize, '#2ecc71', '#27ae60', 2);
         });
     }
 
     if (currentMovement.attack) {
         currentMovement.attack.forEach(hex => {
-            const x = centerX + (hex.col - 5.5) * horizontalSpacing;
-            const y = centerY + (hex.row - 5.5) * verticalSpacing + (hex.col % 2) * (verticalSpacing * 0.5);
+            const x = centerX + (hex.col - 5.5) * horizontalSpacing + (hex.row % 2) * (horizontalSpacing * 0.5);
+            const y = centerY + (hex.row - 5.5) * verticalSpacing;
             drawHexagon(moveCtx, x, y, hexSize, '#e74c3c', '#c0392b', 2);
         });
     }
 
     if (currentMovement.special) {
         currentMovement.special.forEach(hex => {
-            const x = centerX + (hex.col - 5.5) * horizontalSpacing;
-            const y = centerY + (hex.row - 5.5) * verticalSpacing + (hex.col % 2) * (verticalSpacing * 0.5);
+            const x = centerX + (hex.col - 5.5) * horizontalSpacing + (hex.row % 2) * (horizontalSpacing * 0.5);
+            const y = centerY + (hex.row - 5.5) * verticalSpacing;
             drawHexagon(moveCtx, x, y, hexSize, '#f39c12', '#e67e22', 2);
         });
     }
