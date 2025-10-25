@@ -575,6 +575,12 @@
 
             <div class="section">
                 <h2>SVG Shape Designer</h2>
+                <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 15px; margin-bottom: 20px; border-radius: 8px;">
+                    <strong>⚠️ SVG Corruption Issues?</strong><br>
+                    <button class="btn btn-warning" onclick="if(confirm('This will delete ALL your game data and start fresh. Continue?')) { localStorage.clear(); alert('Data cleared! Page will reload.'); window.location.reload(); }" style="margin-top: 10px; background: #dc3545; color: white;">
+                        🔥 Nuclear Option: Clear All Data
+                    </button>
+                </div>
                 <div class="canvas-area">
                     <div class="canvas-panel">
                         <h3>Draw on 10x10 Grid</h3>
