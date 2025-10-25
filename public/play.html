@@ -485,11 +485,8 @@
             // Handle both old and new board formats
             let rows, colsPerRow;
             
-            if (boardConfig.rows && boardConfig.colsPerRow) {
-                // New format
-                rows = boardConfig.rows;
-                colsPerRow = boardConfig.colsPerRow;
-            } else if (boardConfig.height && boardConfig.width) {
+            // PRIORITY: If both formats exist, use width/height (old format) as it's more reliable
+            if (boardConfig.height && boardConfig.width) {
                 // Old format - convert to new format
                 rows = boardConfig.height;
                 const maxWidth = boardConfig.width;
@@ -511,6 +508,10 @@
                 }
                 
                 console.log('🔄 Converted old board format:', { height: rows, width: maxWidth, colsPerRow });
+            } else if (boardConfig.rows && boardConfig.colsPerRow) {
+                // New format
+                rows = boardConfig.rows;
+                colsPerRow = boardConfig.colsPerRow;
             } else {
                 // Fallback to default
                 rows = 7;
@@ -607,29 +608,53 @@
             console.log(`🎯 Placing ${placements.length} pieces...`);
 
             placements.forEach(placement => {
-                const piece = pieces.find(p => p.name === placement.piece);
+                // Handle both old and new placement formats
+                let pieceName, color, row, col;
+                
+                if (placement.hex && placement.pieceId) {
+                    // Old format: {pieceId: 123, player: 'black', hex: '5-8'}
+                    const [r, c] = placement.hex.split('-').map(Number);
+                    row = r;
+                    col = c;
+                    color = placement.player;
+                    // Find piece by ID
+                    const piece = pieces.find(p => p.id === placement.pieceId);
+                    if (!piece) {
+                        console.warn(`⚠️ Piece not found with ID: ${placement.pieceId}`);
+                        return;
+                    }
+                    pieceName = piece.name;
+                } else {
+                    // New format: {piece: "PieceName", color: "black", row: 5, col: 8}
+                    pieceName = placement.piece;
+                    color = placement.color;
+                    row = placement.row;
+                    col = placement.col;
+                }
+                
+                const piece = pieces.find(p => p.name === pieceName);
                 if (!piece) {
-                    console.warn(`⚠️ Piece not found: ${placement.piece}`);
+                    console.warn(`⚠️ Piece not found: ${pieceName}`);
                     return;
                 }
 
-                const hexId = `${placement.row}-${placement.col}`;
+                const hexId = `${row}-${col}`;
                 const hexEl = document.getElementById(`hex-${hexId}`);
                 if (!hexEl) {
                     console.warn(`⚠️ Hex not found: ${hexId}`);
                     return;
                 }
 
-                const pieceEl = createPieceElement(piece, placement.color);
+                const pieceEl = createPieceElement(piece, color);
                 hexEl.appendChild(pieceEl);
 
                 // Store in board state
                 gameState.boardState[hexId] = {
                     piece: piece.name,
-                    color: placement.color
+                    color: color
                 };
                 
-                console.log(`  ✓ Placed ${piece.name} (${placement.color}) at ${hexId}`);
+                console.log(`  ✓ Placed ${piece.name} (${color}) at ${hexId}`);
             });
 
             console.log('✅ Pieces placed');
