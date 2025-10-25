@@ -13,6 +13,9 @@ const path = require('path');
 // Load environment variables
 dotenv.config();
 
+// Import database
+const { db, dbPromise } = require('./config/database');
+
 // Import routes
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
@@ -89,6 +92,10 @@ app.use('/api/stats', statsRoutes);
 
 // Custom Games routes (Game Creator Platform)
 app.use('/api/custom-games', customGamesRoutes);
+
+// Initialize custom games with database
+initCustomGames(dbPromise);
+console.log('✅ Custom games routes initialized with database');
 
 // ============================================
 // WEBSOCKET SETUP
