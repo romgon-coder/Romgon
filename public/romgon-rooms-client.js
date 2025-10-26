@@ -3,7 +3,15 @@
 // ============================================
 
 // Use BACKEND_API_URL from global scope (defined in index.html)
-const WEBSOCKET_URL = 'wss://api.romgon.net';
+// Derive WebSocket URL from BACKEND_API_URL
+function getBackendAPIURL() {
+    return typeof BACKEND_API_URL !== 'undefined' ? BACKEND_API_URL : 'https://api.romgon.net';
+}
+
+function getWebSocketURL() {
+    const apiUrl = getBackendAPIURL();
+    return apiUrl.replace('https://', 'wss://').replace('http://', 'ws://');
+}
 
 class RoomClient {
     constructor() {
@@ -35,13 +43,19 @@ class RoomClient {
 
         console.log('🔌 Connecting to game server...', { userId, username });
 
-        this.socket = io(`${WEBSOCKET_URL}/game`, {
+        const wsUrl = getWebSocketURL();
+        console.log('🔌 WebSocket URL:', wsUrl);
+
+        this.socket = io(`${wsUrl}/game`, {
             auth: {
                 userId,
                 username,
                 rating: 1600
             },
-            transports: ['websocket', 'polling']
+            transports: ['websocket', 'polling'],
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionAttempts: 5
         });
 
         this.setupEventHandlers();
@@ -108,7 +122,7 @@ class RoomClient {
     async createRoom(options = {}) {
         try {
             const token = localStorage.getItem('romgon-jwt');
-            const response = await fetch(`${BACKEND_API_URL}/api/rooms/create`, {
+            const response = await fetch(`${getBackendAPIURL()}/api/rooms/create`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -136,7 +150,7 @@ class RoomClient {
     async joinRoom(roomCode) {
         try {
             const token = localStorage.getItem('romgon-jwt');
-            const response = await fetch(`${BACKEND_API_URL}/api/rooms/join`, {
+            const response = await fetch(`${getBackendAPIURL()}/api/rooms/join`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -168,7 +182,7 @@ class RoomClient {
             const token = localStorage.getItem('romgon-jwt');
             const roomCode = this.currentRoom.code;
             
-            const response = await fetch(`${BACKEND_API_URL}/api/rooms/${roomCode}/leave`, {
+            const response = await fetch(`${getBackendAPIURL()}/api/rooms/${roomCode}/leave`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -195,7 +209,7 @@ class RoomClient {
             const token = localStorage.getItem('romgon-jwt');
             const roomCode = this.currentRoom.code;
             
-            const response = await fetch(`${BACKEND_API_URL}/api/rooms/${roomCode}/ready`, {
+            const response = await fetch(`${getBackendAPIURL()}/api/rooms/${roomCode}/ready`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -225,7 +239,7 @@ class RoomClient {
     async getRoomInfo(roomCode) {
         try {
             const token = localStorage.getItem('romgon-jwt');
-            const response = await fetch(`${BACKEND_API_URL}/api/rooms/${roomCode}`, {
+            const response = await fetch(`${getBackendAPIURL()}/api/rooms/${roomCode}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -242,7 +256,7 @@ class RoomClient {
     async listPublicRooms() {
         try {
             const token = localStorage.getItem('romgon-jwt');
-            const response = await fetch(`${BACKEND_API_URL}/api/rooms/list/public`, {
+            const response = await fetch(`${getBackendAPIURL()}/api/rooms/list/public`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -263,7 +277,7 @@ class RoomClient {
     async joinMatchmaking(options = {}) {
         try {
             const token = localStorage.getItem('romgon-jwt');
-            const response = await fetch(`${BACKEND_API_URL}/api/rooms/matchmaking/join`, {
+            const response = await fetch(`${getBackendAPIURL()}/api/rooms/matchmaking/join`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -302,7 +316,7 @@ class RoomClient {
     async leaveMatchmaking() {
         try {
             const token = localStorage.getItem('romgon-jwt');
-            const response = await fetch(`${BACKEND_API_URL}/api/rooms/matchmaking/leave`, {
+            const response = await fetch(`${getBackendAPIURL()}/api/rooms/matchmaking/leave`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -329,7 +343,7 @@ class RoomClient {
 
             try {
                 const token = localStorage.getItem('romgon-jwt');
-                const response = await fetch(`${BACKEND_API_URL}/api/rooms/matchmaking/status`, {
+                const response = await fetch(`${getBackendAPIURL()}/api/rooms/matchmaking/status`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
