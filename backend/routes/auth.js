@@ -360,29 +360,47 @@ router.get('/google/callback', async (req, res) => {
         const googleUser = await userInfoResponse.json();
         console.log('✅ Google user info received:', googleUser.email);
 
-        // Check if user exists
+        // Check if user exists by google_id (most reliable)
         let user = await dbPromise.get(
-            'SELECT * FROM users WHERE email = ? OR google_id = ?',
-            [googleUser.email, googleUser.id]
+            'SELECT * FROM users WHERE google_id = ?',
+            [googleUser.id]
         );
 
         if (!user) {
-            console.log('📝 Creating new user for:', googleUser.email);
-            // Create new user
-            const username = googleUser.email.split('@')[0] + '_' + Math.random().toString(36).substring(2, 6);
-            const result = await dbPromise.run(
-                `INSERT INTO users (username, email, password_hash, rating, google_id) 
-                 VALUES (?, ?, ?, 1600, ?)`,
-                [username, googleUser.email, 'google_oauth', googleUser.id]
+            // Check if user exists by email (for migration of old accounts)
+            user = await dbPromise.get(
+                'SELECT * FROM users WHERE email = ?',
+                [googleUser.email]
             );
 
-            user = {
-                id: result.id,
-                username,
-                email: googleUser.email,
-                rating: 1600
-            };
-            console.log('✅ New user created with ID:', user.id);
+            if (user) {
+                // Update existing user with google_id
+                console.log('� Updating existing user with Google ID:', user.username);
+                await dbPromise.run(
+                    'UPDATE users SET google_id = ? WHERE id = ?',
+                    [googleUser.id, user.id]
+                );
+                user.google_id = googleUser.id;
+            } else {
+                // Create new user (only if truly doesn't exist)
+                console.log('📝 Creating new user for:', googleUser.email);
+                const baseUsername = googleUser.email.split('@')[0];
+                const username = baseUsername + '_' + Math.random().toString(36).substring(2, 6);
+                const result = await dbPromise.run(
+                    `INSERT INTO users (username, email, password_hash, rating, google_id) 
+                     VALUES (?, ?, ?, 1600, ?)`,
+                    [username, googleUser.email, 'google_oauth', googleUser.id]
+                );
+
+                user = {
+                    id: result.lastID,
+                    username,
+                    email: googleUser.email,
+                    rating: 1600,
+                    google_id: googleUser.id
+                };
+                console.log('✅ New user created with ID:', user.id);
+            }
         } else {
             console.log('✅ Existing user found:', user.username);
         }
