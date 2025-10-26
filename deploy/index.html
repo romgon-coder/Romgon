@@ -2857,6 +2857,8 @@
     
     // NEW: Tab switching for preferences
     function switchPrefsTab(tabName) {
+        console.log('Switching to tab:', tabName);
+        
         // Hide all panels
         document.querySelectorAll('.pref-panel').forEach(panel => {
             panel.style.display = 'none';
@@ -2869,12 +2871,22 @@
         });
         
         // Show selected panel
-        document.getElementById('pref-panel-' + tabName).style.display = 'flex';
+        const panel = document.getElementById('pref-panel-' + tabName);
+        if (panel) {
+            panel.style.display = 'flex';
+            console.log('Panel shown:', 'pref-panel-' + tabName);
+        } else {
+            console.error('Panel not found:', 'pref-panel-' + tabName);
+        }
         
         // Activate selected tab
         const activeTab = document.getElementById('tab-' + tabName);
-        activeTab.style.color = '#fff';
-        activeTab.style.borderBottom = '3px solid #a55eea';
+        if (activeTab) {
+            activeTab.style.color = '#fff';
+            activeTab.style.borderBottom = '3px solid #a55eea';
+        } else {
+            console.error('Tab button not found:', 'tab-' + tabName);
+        }
     }
     
     // NEW: Mockup functions (to be implemented later)
