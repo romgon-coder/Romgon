@@ -2573,32 +2573,60 @@
                     const backendWinRate = backendStats.winRate || 0;
                     
                     console.log('✅ Using backend stats:', backendStats);
+                    console.log('📝 Updating DOM elements with backend stats...');
                     
-                    document.getElementById('account-wins').textContent = backendWins;
-                    document.getElementById('account-losses').textContent = backendLosses;
-                    document.getElementById('account-games').textContent = backendTotal;
-                    document.getElementById('account-total-games').textContent = backendTotal;
+                    const winsEl = document.getElementById('account-wins');
+                    const lossesEl = document.getElementById('account-losses');
+                    const gamesEl = document.getElementById('account-games');
+                    const totalGamesEl = document.getElementById('account-total-games');
                     
-                    if (winRateEl) winRateEl.textContent = Math.round(backendWinRate) + '%';
+                    if (winsEl) {
+                        winsEl.textContent = backendWins;
+                        console.log('  ✓ Updated account-wins:', backendWins);
+                    }
+                    if (lossesEl) {
+                        lossesEl.textContent = backendLosses;
+                        console.log('  ✓ Updated account-losses:', backendLosses);
+                    }
+                    if (gamesEl) {
+                        gamesEl.textContent = backendTotal;
+                        console.log('  ✓ Updated account-games:', backendTotal);
+                    }
+                    if (totalGamesEl) {
+                        totalGamesEl.textContent = backendTotal;
+                        console.log('  ✓ Updated account-total-games:', backendTotal);
+                    }
+                    
+                    if (winRateEl) {
+                        winRateEl.textContent = Math.round(backendWinRate) + '%';
+                        console.log('  ✓ Updated winRate:', Math.round(backendWinRate) + '%');
+                    }
                     
                     // Update member level from backend
                     if (memberLevelEl && stats.memberLevel) {
                         memberLevelEl.textContent = stats.memberLevel;
+                        console.log('  ✓ Updated memberLevel:', stats.memberLevel);
                     } else if (memberLevelEl) {
-                        if (backendTotal >= 100) memberLevelEl.textContent = 'Gold';
-                        else if (backendTotal >= 50) memberLevelEl.textContent = 'Silver';
-                        else memberLevelEl.textContent = 'Bronze';
+                        const level = backendTotal >= 100 ? 'Gold' : backendTotal >= 50 ? 'Silver' : 'Bronze';
+                        memberLevelEl.textContent = level;
+                        console.log('  ✓ Updated memberLevel (calculated):', level);
                     }
                     
                     // Update moves and captures
-                    if (backendStats.totalMoves) {
-                        document.getElementById('account-total-moves').textContent = backendStats.totalMoves;
+                    const movesEl = document.getElementById('account-total-moves');
+                    const capturesEl = document.getElementById('account-total-captures');
+                    
+                    if (movesEl && backendStats.totalMoves !== undefined) {
+                        movesEl.textContent = backendStats.totalMoves;
+                        console.log('  ✓ Updated totalMoves:', backendStats.totalMoves);
                     }
-                    if (backendStats.totalCaptures) {
-                        document.getElementById('account-total-captures').textContent = backendStats.totalCaptures;
+                    if (capturesEl && backendStats.totalCaptures !== undefined) {
+                        capturesEl.textContent = backendStats.totalCaptures;
+                        console.log('  ✓ Updated totalCaptures:', backendStats.totalCaptures);
                     }
                     
                     updateTopBarStats(backendWins, backendLosses, Math.round(backendWinRate));
+                    console.log('✅ All backend stats applied to Player Hub');
                 } else {
                     console.warn('⚠️ Backend stats not in expected format:', stats);
                 }
