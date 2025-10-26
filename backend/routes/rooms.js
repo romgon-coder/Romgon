@@ -376,6 +376,39 @@ router.get('/list/public', authenticateToken, async (req, res) => {
 });
 
 // ============================================
+// DEBUG ENDPOINT (No Auth Required)
+// ============================================
+
+/**
+ * GET /api/rooms/debug/count
+ * Get room count for debugging (no auth)
+ */
+router.get('/debug/count', (req, res) => {
+    try {
+        const totalRooms = activeRooms.size;
+        const permanentRooms = Array.from(activeRooms.values()).filter(r => r.isPermanent);
+        const roomCodes = Array.from(activeRooms.keys());
+        
+        res.json({
+            success: true,
+            totalRooms,
+            permanentRoomCount: permanentRooms.length,
+            allRoomCodes: roomCodes,
+            permanentRooms: permanentRooms.map(r => ({
+                code: r.code,
+                name: r.name,
+                playerCount: r.players.length
+            }))
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// ============================================
 // MATCHMAKING
 // ============================================
 
