@@ -1586,6 +1586,36 @@
                 <div id="pref-panel-account" class="pref-panel" style="display: none; flex-direction: column; gap: 24px;">
                     <h3 style="color: #4ecdc4; margin: 0 0 12px 0; font-size: 1.2em;">👤 Profile Settings</h3>
                     
+                    <!-- Player Hub Button -->
+                    <div style="
+                        background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+                        border: 2px solid rgba(102, 126, 234, 0.4);
+                        border-radius: 12px;
+                        padding: 20px;
+                        text-align: center;
+                    ">
+                        <h4 style="margin: 0 0 12px 0; color: #667eea; font-size: 1.1em;">🎮 Player Hub</h4>
+                        <p style="color: #aaa; font-size: 0.9em; margin: 0 0 16px 0;">
+                            View your complete profile, stats, achievements, and game history
+                        </p>
+                        <button onclick="hideSettingsModal(); showAccountModal();" style="
+                            background: linear-gradient(135deg, #667eea, #764ba2);
+                            color: white;
+                            border: none;
+                            padding: 12px 32px;
+                            border-radius: 8px;
+                            font-size: 1em;
+                            font-weight: 600;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+                        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.3)'">
+                            🚀 Open Player Hub
+                        </button>
+                    </div>
+                    
+                    <div style="border-top: 2px solid rgba(78, 205, 196, 0.2); padding-top: 20px;"></div>
+                    
                     <div>
                         <label style="display: block; color: #4ecdc4; font-weight: 600; margin-bottom: 8px; font-size: 0.95em;">Display Name</label>
                         <input type="text" id="settings-display-name" placeholder="Your Name" style="
@@ -2273,103 +2303,154 @@
     }
     
     // Account Modal Functions
-    function showAccountModal() {
+    async function showAccountModal() {
+        console.log('🔓 Opening Player Hub...');
+        
         const currentUser = JSON.parse(localStorage.getItem('romgon-user') || '{}');
-        const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
         
-        // Check if guest user
-        if (!currentUser.username || currentUser.type === 'guest') {
-            // Guest user - show limited profile
-            document.getElementById('account-sidebar-name').textContent = 'Guest Player';
-            document.getElementById('account-sidebar-email').textContent = 'Session: ' + (currentUser.id || 'Anonymous');
-            document.getElementById('account-sidebar-date').textContent = 'Not registered';
-            
-            // Set guest avatar to emoji
-            document.getElementById('account-avatar').textContent = '👤';
-            document.getElementById('account-avatar').style.background = 'rgba(255, 255, 255, 0.2)';
-            
-            // Main content
-            document.getElementById('account-username').textContent = 'Guest Player';
-            document.getElementById('account-email').textContent = 'Session: ' + (currentUser.id || 'Anonymous');
-            
-            // Show guest stats from localStorage
-            const guestStats = JSON.parse(localStorage.getItem('romgon-guest-settings') || '{}');
-            document.getElementById('account-wins').textContent = guestStats.gamesWon || 0;
-            document.getElementById('account-losses').textContent = guestStats.gamesLost || 0;
-            document.getElementById('account-games').textContent = (guestStats.gamesWon || 0) + (guestStats.gamesLost || 0);
-            
-            // Hide last login and saved games for guests
-            const lastLoginEl = document.getElementById('account-last-login');
-            const savedGamesEl = document.getElementById('account-saved-games');
-            if (lastLoginEl) lastLoginEl.textContent = 'Session only';
-            if (savedGamesEl) savedGamesEl.textContent = '0 (session)';
-            
-            // Hide delete account button for guests
-            const deleteBtn = document.querySelector('button[onclick="deleteAccount()"]');
-            if (deleteBtn) deleteBtn.style.display = 'none';
-            
-            document.getElementById('account-modal').style.display = 'block';
+        // Check if user is logged in
+        if (!currentUser.id) {
+            alert('📝 Please sign in to access Player Hub!');
             return;
         }
         
-        // Registered user
-        if (!allUsers[currentUser.username]) {
-            // User account not found
-            alert('📝 Create an account to access your profile, stats, and settings!\n\nClick "Create Account" on the login screen to get started.');
-            return;
-        }
-        
-        const userAccount = allUsers[currentUser.username];
-        const regDate = new Date(userAccount.registeredDate);
-        
-        // Update sidebar with user info
-        document.getElementById('account-sidebar-name').textContent = userAccount.username;
-        document.getElementById('account-sidebar-email').textContent = userAccount.email;
-        document.getElementById('account-sidebar-date').textContent = regDate.toLocaleDateString();
-        
-        // Set avatar - use Google profile picture if available, or initials
-        const avatarEl = document.getElementById('account-avatar');
-        if (userAccount.picture) {
-            avatarEl.innerHTML = `<img src="${userAccount.picture}" style="width: 100%; height: 100%; object-fit: cover;" />`;
-        } else {
-            const initials = (userAccount.username || 'U').charAt(0).toUpperCase();
-            avatarEl.textContent = initials;
-        }
-        
-        // Populate main content account info
-        document.getElementById('account-username').textContent = userAccount.username;
-        document.getElementById('account-email').textContent = userAccount.email;
-        
-        // Populate real stats from getUserStats
-        const stats = getUserStats(userAccount.username);
-        if (stats) {
-            document.getElementById('account-wins').textContent = stats.gamesWon || 0;
-            document.getElementById('account-losses').textContent = stats.gamesLost || 0;
-            document.getElementById('account-games').textContent = stats.gamesPlayed || 0;
-            
-            // Add last login
-            const lastLoginEl = document.getElementById('account-last-login');
-            if (lastLoginEl && stats.lastLogin) {
-                const lastLoginDate = new Date(stats.lastLogin);
-                lastLoginEl.textContent = lastLoginDate.toLocaleString();
-            }
-            
-            // Add saved games count
-            const savedGamesEl = document.getElementById('account-saved-games');
-            if (savedGamesEl) {
-                savedGamesEl.textContent = (stats.savedGames || []).length;
-            }
-        } else {
-            document.getElementById('account-wins').textContent = 0;
-            document.getElementById('account-losses').textContent = 0;
-            document.getElementById('account-games').textContent = 0;
-        }
-        
-        // Show delete account button for registered users
-        const deleteBtn = document.querySelector('button[onclick="deleteAccount()"]');
-        if (deleteBtn) deleteBtn.style.display = 'block';
-        
+        // Show modal immediately with loading state
         document.getElementById('account-modal').style.display = 'block';
+        
+        // Show loading indicators
+        document.getElementById('account-sidebar-name').textContent = 'Loading...';
+        document.getElementById('account-username').textContent = 'Loading...';
+        
+        // Determine account type and display badge
+        const accountType = currentUser.type === 'guest' ? 'Guest' : 'Registered';
+        const accountTypeEl = document.getElementById('user-home-account-type');
+        if (accountTypeEl) {
+            accountTypeEl.textContent = accountType;
+            if (accountType === 'Registered') {
+                accountTypeEl.style.background = 'rgba(78, 205, 196, 0.2)';
+                accountTypeEl.style.color = '#4ecdc4';
+            }
+        }
+        
+        try {
+            // Fetch data from backend
+            const [profile, stats, games] = await Promise.all([
+                fetchUserProfile(),
+                fetchUserStats(),
+                fetchUserGames(10)
+            ]);
+            
+            console.log('📊 Fetched data:', { profile, stats, games });
+            
+            // Update sidebar with user info
+            if (profile) {
+                const username = profile.username || currentUser.name || 'Player';
+                document.getElementById('account-sidebar-name').textContent = username;
+                document.getElementById('account-username').textContent = username;
+                
+                if (profile.email) {
+                    document.getElementById('account-sidebar-email').textContent = profile.email;
+                    document.getElementById('account-email').textContent = profile.email;
+                } else {
+                    document.getElementById('account-sidebar-email').textContent = 'No email';
+                    document.getElementById('account-email').textContent = 'No email';
+                }
+                
+                // Set registration date
+                if (profile.created_at) {
+                    const regDate = new Date(profile.created_at);
+                    document.getElementById('account-sidebar-date').textContent = regDate.toLocaleDateString();
+                } else {
+                    document.getElementById('account-sidebar-date').textContent = 'Unknown';
+                }
+                
+                // Set avatar
+                const avatarEl = document.getElementById('account-avatar');
+                if (profile.picture) {
+                    avatarEl.innerHTML = `<img src="${profile.picture}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />`;
+                } else {
+                    const initials = (username || 'U').charAt(0).toUpperCase();
+                    avatarEl.textContent = initials;
+                    avatarEl.style.background = 'linear-gradient(135deg, #4ecdc4, #a55eea)';
+                }
+            }
+            
+            // Update stats
+            if (stats) {
+                const wins = stats.wins || 0;
+                const losses = stats.losses || 0;
+                const totalGames = wins + losses;
+                const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
+                
+                // Update modal stats
+                document.getElementById('account-wins').textContent = wins;
+                document.getElementById('account-losses').textContent = losses;
+                document.getElementById('account-games').textContent = totalGames;
+                document.getElementById('account-total-games').textContent = totalGames;
+                
+                // Update win rate if element exists
+                const winRateEl = document.getElementById('account-winrate');
+                if (winRateEl) winRateEl.textContent = winRate + '%';
+                
+                // Update member level based on games played
+                const memberLevelEl = document.getElementById('account-member-level');
+                if (memberLevelEl) {
+                    if (totalGames >= 100) memberLevelEl.textContent = 'Gold';
+                    else if (totalGames >= 50) memberLevelEl.textContent = 'Silver';
+                    else memberLevelEl.textContent = 'Bronze';
+                }
+                
+                // Update top bar stats
+                updateTopBarStats(wins, losses, winRate);
+            } else {
+                // No stats found - show zeros
+                document.getElementById('account-wins').textContent = '0';
+                document.getElementById('account-losses').textContent = '0';
+                document.getElementById('account-games').textContent = '0';
+                document.getElementById('account-total-games').textContent = '0';
+                updateTopBarStats(0, 0, 0);
+            }
+            
+            // Show delete account button only for registered users
+            const deleteBtn = document.querySelector('button[onclick="deleteAccount()"]');
+            if (deleteBtn) {
+                deleteBtn.style.display = currentUser.type === 'guest' ? 'none' : 'block';
+            }
+            
+            console.log('✅ Player Hub loaded successfully');
+            
+        } catch (error) {
+            console.error('❌ Failed to load Player Hub data:', error);
+            alert('⚠️ Failed to load account data. Please try again.');
+            hideAccountModal();
+        }
+    }
+    
+    function updateTopBarStats(wins, losses, winRate) {
+        // Update stats in top bar
+        const winsEl = document.getElementById('user-home-wins-mini');
+        const lossesEl = document.getElementById('user-home-losses-mini');
+        const winRateEl = document.getElementById('user-home-winrate-mini');
+        
+        if (winsEl) winsEl.textContent = wins;
+        if (lossesEl) lossesEl.textContent = losses;
+        if (winRateEl) winRateEl.textContent = winRate + '%';
+        
+        // Also update the larger stats display if present
+        const winsLargeEl = document.getElementById('user-home-wins');
+        const lossesLargeEl = document.getElementById('user-home-losses');
+        const winRateLargeEl = document.getElementById('user-home-winrate');
+        const gamesEl = document.getElementById('user-home-games');
+        
+        if (winsLargeEl) winsLargeEl.textContent = wins;
+        if (lossesLargeEl) lossesLargeEl.textContent = losses;
+        if (winRateLargeEl) winRateLargeEl.textContent = winRate + '%';
+        if (gamesEl) gamesEl.textContent = wins + losses;
+    }
+    
+    function openPlayerHubFromTopBar() {
+        console.log('🎯 Opening Player Hub from top bar');
+        showAccountModal();
     }
     
     function hideAccountModal() {
@@ -5234,11 +5315,21 @@
             </div>
             
             <div style="display: flex; align-items: center; gap: 20px;">
-                <!-- User Profile -->
-                <div style="display: flex; align-items: center; gap: 12px;">
+                <!-- Account Status Bar -->
+                <div onclick="openPlayerHubFromTopBar()" style="
+                    display: flex;
+                    align-items: center;
+                    gap: 15px;
+                    padding: 8px 16px;
+                    background: rgba(78, 205, 196, 0.15);
+                    border: 1px solid rgba(78, 205, 196, 0.3);
+                    border-radius: 12px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                " onmouseover="this.style.background='rgba(78, 205, 196, 0.25)'; this.style.borderColor='rgba(78, 205, 196, 0.5)'" onmouseout="this.style.background='rgba(78, 205, 196, 0.15)'; this.style.borderColor='rgba(78, 205, 196, 0.3)'">
                     <div id="user-home-avatar-small" style="
-                        width: 40px;
-                        height: 40px;
+                        width: 42px;
+                        height: 42px;
                         border-radius: 50%;
                         background: linear-gradient(135deg, #4ecdc4, #a55eea);
                         display: flex;
@@ -5247,8 +5338,29 @@
                         font-size: 18px;
                         font-weight: bold;
                         color: #fff;
+                        border: 2px solid rgba(255, 255, 255, 0.3);
                     ">G</div>
-                    <span id="user-home-name-small" style="font-weight: 600; color: #fff;">Player</span>
+                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span id="user-home-name-small" style="font-weight: 600; color: #fff; font-size: 0.95em;">Player</span>
+                            <span id="user-home-account-type" style="
+                                font-size: 0.7em;
+                                padding: 2px 8px;
+                                background: rgba(255, 215, 0, 0.2);
+                                color: #ffd700;
+                                border-radius: 8px;
+                                font-weight: 600;
+                                text-transform: uppercase;
+                            ">Guest</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px; font-size: 0.75em; color: #aaa;">
+                            <span><span style="color: #26de81;" id="user-home-wins-mini">0</span>W</span>
+                            <span style="color: #555;">•</span>
+                            <span><span style="color: #ff6b6b;" id="user-home-losses-mini">0</span>L</span>
+                            <span style="color: #555;">•</span>
+                            <span id="user-home-winrate-mini" style="color: #4ecdc4;">0%</span>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Quick Icons -->
@@ -15007,6 +15119,136 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         
         let gameSocket = null;
         const BACKEND_API_URL = 'https://api.romgon.net'; // Production backend URL
+        
+        // ============================================
+        // BACKEND API INTEGRATION FUNCTIONS
+        // ============================================
+        
+        /**
+         * Get authorization headers with JWT token
+         */
+        function getAuthHeaders() {
+            const user = JSON.parse(localStorage.getItem('romgon-user') || '{}');
+            const token = user.token;
+            
+            if (token) {
+                return {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                };
+            }
+            return {
+                'Content-Type': 'application/json'
+            };
+        }
+        
+        /**
+         * Fetch user profile from backend
+         */
+        async function fetchUserProfile() {
+            try {
+                const user = JSON.parse(localStorage.getItem('romgon-user') || '{}');
+                if (!user.id) {
+                    console.warn('No user ID found');
+                    return null;
+                }
+                
+                const response = await fetch(`${BACKEND_API_URL}/api/users/profile`, {
+                    headers: getAuthHeaders()
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('✅ User profile fetched:', data);
+                return data;
+            } catch (error) {
+                console.error('❌ Failed to fetch user profile:', error);
+                return null;
+            }
+        }
+        
+        /**
+         * Fetch user statistics from backend
+         */
+        async function fetchUserStats() {
+            try {
+                const user = JSON.parse(localStorage.getItem('romgon-user') || '{}');
+                if (!user.id) {
+                    console.warn('No user ID found');
+                    return null;
+                }
+                
+                const response = await fetch(`${BACKEND_API_URL}/api/users/stats`, {
+                    headers: getAuthHeaders()
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('✅ User stats fetched:', data);
+                return data;
+            } catch (error) {
+                console.error('❌ Failed to fetch user stats:', error);
+                return null;
+            }
+        }
+        
+        /**
+         * Fetch user game history from backend
+         */
+        async function fetchUserGames(limit = 10) {
+            try {
+                const user = JSON.parse(localStorage.getItem('romgon-user') || '{}');
+                if (!user.id) {
+                    console.warn('No user ID found');
+                    return [];
+                }
+                
+                const response = await fetch(`${BACKEND_API_URL}/api/games/history?limit=${limit}`, {
+                    headers: getAuthHeaders()
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('✅ User games fetched:', data);
+                return data.games || [];
+            } catch (error) {
+                console.error('❌ Failed to fetch user games:', error);
+                return [];
+            }
+        }
+        
+        /**
+         * Update user profile on backend
+         */
+        async function updateUserProfile(updates) {
+            try {
+                const response = await fetch(`${BACKEND_API_URL}/api/users/profile`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(updates)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('✅ User profile updated:', data);
+                return data;
+            } catch (error) {
+                console.error('❌ Failed to update user profile:', error);
+                return null;
+            }
+        }
         
         /**
          * Initialize lobby - load active games, stats, and match history
@@ -25025,12 +25267,78 @@ ${moveHistory || '(No moves played yet - starting position)'}
         }
 
         // Hide splash page and show main menu
-        function hideSplashPage() {
+        async function hideSplashPage() {
             const splashPage = document.getElementById('splash-page');
             const startMenu = document.getElementById('start-menu');
 
             if (splashPage) splashPage.style.display = 'none';
             if (startMenu) startMenu.style.display = 'flex';
+            
+            // Load user data when entering main menu
+            await loadUserHomeData();
+        }
+        
+        /**
+         * Load user data for the main menu home screen
+         */
+        async function loadUserHomeData() {
+            const currentUser = JSON.parse(localStorage.getItem('romgon-user') || '{}');
+            
+            if (!currentUser.id) {
+                console.warn('No user logged in');
+                return;
+            }
+            
+            console.log('📊 Loading user home data...');
+            
+            // Update username in top bar
+            const usernameEl = document.getElementById('user-home-name-small');
+            if (usernameEl) {
+                usernameEl.textContent = currentUser.name || 'Player';
+            }
+            
+            // Update account type badge
+            const accountTypeEl = document.getElementById('user-home-account-type');
+            if (accountTypeEl) {
+                const accountType = currentUser.type === 'guest' ? 'Guest' : 'Registered';
+                accountTypeEl.textContent = accountType;
+                
+                if (accountType === 'Registered') {
+                    accountTypeEl.style.background = 'rgba(78, 205, 196, 0.2)';
+                    accountTypeEl.style.color = '#4ecdc4';
+                } else {
+                    accountTypeEl.style.background = 'rgba(255, 215, 0, 0.2)';
+                    accountTypeEl.style.color = '#ffd700';
+                }
+            }
+            
+            // Update avatar
+            const avatarEl = document.getElementById('user-home-avatar-small');
+            if (avatarEl && currentUser.name) {
+                const initial = currentUser.name.charAt(0).toUpperCase();
+                avatarEl.textContent = initial;
+            }
+            
+            // Fetch and display stats if registered user
+            if (currentUser.type !== 'guest' && currentUser.token) {
+                try {
+                    const stats = await fetchUserStats();
+                    if (stats) {
+                        const wins = stats.wins || 0;
+                        const losses = stats.losses || 0;
+                        const totalGames = wins + losses;
+                        const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
+                        
+                        updateTopBarStats(wins, losses, winRate);
+                        console.log('✅ User stats loaded:', {wins, losses, winRate});
+                    }
+                } catch (error) {
+                    console.error('❌ Failed to load user stats:', error);
+                }
+            } else {
+                // Guest user - show zeros
+                updateTopBarStats(0, 0, 0);
+            }
         }
 
         // ============================================
