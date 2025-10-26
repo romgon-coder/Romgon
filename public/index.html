@@ -16419,56 +16419,18 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
          * Fetch user statistics from backend
          */
         async function fetchUserStats() {
-            try {
-                const user = JSON.parse(localStorage.getItem('romgon-user') || '{}');
-                if (!user.id) {
-                    console.warn('No user ID found');
-                    return null;
-                }
-                
-                const response = await fetch(`${BACKEND_API_URL}/api/users/stats`, {
-                    headers: getAuthHeaders()
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
-                const data = await response.json();
-                console.log('✅ User stats fetched:', data);
-                return data;
-            } catch (error) {
-                console.error('❌ Failed to fetch user stats:', error);
-                return null;
-            }
+            // TODO: Backend endpoint not implemented yet - using local stats only
+            console.log('⚠️ fetchUserStats: Backend endpoint not available, using local data');
+            return null;
         }
         
         /**
          * Fetch user game history from backend
          */
         async function fetchUserGames(limit = 10) {
-            try {
-                const user = JSON.parse(localStorage.getItem('romgon-user') || '{}');
-                if (!user.id) {
-                    console.warn('No user ID found');
-                    return [];
-                }
-                
-                const response = await fetch(`${BACKEND_API_URL}/api/games/history?limit=${limit}`, {
-                    headers: getAuthHeaders()
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
-                const data = await response.json();
-                console.log('✅ User games fetched:', data);
-                return data.games || [];
-            } catch (error) {
-                console.error('❌ Failed to fetch user games:', error);
-                return [];
-            }
+            // TODO: Backend endpoint not implemented yet - using local games only
+            console.log('⚠️ fetchUserGames: Backend endpoint not available, using local data');
+            return [];
         }
         
         /**
@@ -16483,14 +16445,16 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    // Backend endpoint may not exist yet
+                    console.warn('⚠️ Profile update endpoint not available');
+                    return null;
                 }
                 
                 const data = await response.json();
                 console.log('✅ User profile updated:', data);
                 return data;
             } catch (error) {
-                console.error('❌ Failed to update user profile:', error);
+                console.warn('⚠️ Failed to update user profile on backend (using local only):', error.message);
                 return null;
             }
         }
