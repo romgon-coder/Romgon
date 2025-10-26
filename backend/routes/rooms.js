@@ -121,15 +121,25 @@ router.post('/join', authenticateToken, async (req, res) => {
             });
         }
 
-        // Add player as black
+        // For permanent rooms, assign colors based on join order
+        let playerColor;
+        if (room.isPermanent && room.players.length === 0) {
+            playerColor = 'white'; // First player is white
+            room.hostId = userId; // First player becomes host
+            room.hostUsername = username;
+        } else {
+            playerColor = 'black'; // Second player is black
+        }
+
+        // Add player
         room.players.push({
             userId,
             username,
-            color: 'black',
+            color: playerColor,
             ready: false
         });
 
-        console.log(`👤 ${username} joined room ${roomCode}`);
+        console.log(`👤 ${username} joined room ${roomCode} as ${playerColor}`);
 
         res.json({
             success: true,
@@ -215,10 +225,22 @@ router.post('/:roomCode/leave', authenticateToken, async (req, res) => {
         // Remove player from room
         room.players = room.players.filter(p => p.userId !== userId);
 
-        // If host left or room is empty, delete room
-        if (room.hostId === userId || room.players.length === 0) {
-            activeRooms.delete(roomCode.toUpperCase());
-            console.log(`🗑️ Room ${roomCode} deleted`);
+        // For permanent rooms, reset them instead of deleting
+        if (room.isPermanent) {
+            if (room.players.length === 0) {
+                // Reset permanent room to initial state
+                room.hostId = 'system';
+                room.hostUsername = 'System';
+                room.status = 'waiting';
+                room.gameId = null;
+                console.log(`🔄 Reset permanent room ${roomCode}`);
+            }
+        } else {
+            // For regular rooms, delete if host left or room is empty
+            if (room.hostId === userId || room.players.length === 0) {
+                activeRooms.delete(roomCode.toUpperCase());
+                console.log(`🗑️ Room ${roomCode} deleted`);
+            }
         }
 
         res.json({
@@ -323,13 +345,22 @@ router.get('/list/public', authenticateToken, async (req, res) => {
             .map(room => ({
                 code: room.code,
                 id: room.id,
+                name: room.name || null,
+                description: room.description || null,
+                isPermanent: room.isPermanent || false,
                 hostUsername: room.hostUsername,
                 playerCount: room.players.length,
                 maxPlayers: 2,
                 variant: room.variant,
                 timeControl: room.timeControl,
                 createdAt: room.createdAt
-            }));
+            }))
+            .sort((a, b) => {
+                // Permanent rooms first
+                if (a.isPermanent && !b.isPermanent) return -1;
+                if (!a.isPermanent && b.isPermanent) return 1;
+                return new Date(b.createdAt) - new Date(a.createdAt);
+            });
 
         res.json({
             success: true,
@@ -558,6 +589,57 @@ function findMatch(userId, player) {
 }
 
 // ============================================
+// PERMANENT PUBLIC ROOMS
+// ============================================
+
+// Initialize 3 permanent public rooms on server start
+function initializePermanentRooms() {
+    const permanentRooms = [
+        {
+            code: 'ROOM01',
+            name: 'Beginners Lounge',
+            description: 'Welcome new players! Casual games.'
+        },
+        {
+            code: 'ROOM02',
+            name: 'Quick Match Arena',
+            description: 'Fast-paced games for everyone.'
+        },
+        {
+            code: 'ROOM03',
+            name: 'Masters Hall',
+            description: 'Competitive play for experienced players.'
+        }
+    ];
+
+    permanentRooms.forEach(config => {
+        if (!activeRooms.has(config.code)) {
+            const room = {
+                id: uuidv4(),
+                code: config.code,
+                name: config.name,
+                description: config.description,
+                hostId: 'system',
+                hostUsername: 'System',
+                players: [],
+                isPrivate: false,
+                isPermanent: true, // Mark as permanent so it's not cleaned up
+                timeControl: null,
+                variant: 'standard',
+                status: 'waiting',
+                createdAt: new Date().toISOString(),
+                gameId: null
+            };
+            activeRooms.set(config.code, room);
+            console.log(`🎮 Initialized permanent room: ${config.name} (${config.code})`);
+        }
+    });
+}
+
+// Initialize permanent rooms on startup
+initializePermanentRooms();
+
+// ============================================
 // CLEANUP
 // ============================================
 
@@ -567,6 +649,9 @@ setInterval(() => {
     const maxAge = 30 * 60 * 1000; // 30 minutes
     
     for (const [code, room] of activeRooms.entries()) {
+        // Don't clean up permanent rooms
+        if (room.isPermanent) continue;
+        
         const age = now - new Date(room.createdAt).getTime();
         if (age > maxAge && room.status === 'waiting') {
             activeRooms.delete(code);
