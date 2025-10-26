@@ -23998,7 +23998,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         }
 
         // Function to show game over screen
-        function showGameOver(winner, reason) {
+        async function showGameOver(winner, reason) {
             console.log('🏁 GAME OVER SCREEN TRIGGERED!');
             console.log('Winner:', winner, 'Reason:', reason);
             
@@ -24096,6 +24096,46 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 console.log('📊 Updated user stats:', allUsers[currentUser.username].stats);
                 console.log('⭐ Updated user rating:', allUsers[currentUser.username].rating);
                 console.log('💾 Updated currentUser in localStorage');
+                
+                // ============================================
+                // BACKEND SYNC - Submit game result to backend
+                // ============================================
+                const jwtToken = localStorage.getItem('romgon-jwt');
+                if (jwtToken && currentUser.id) {
+                    console.log('🔄 Submitting game result to backend...');
+                    
+                    // For local/AI games, we need to submit as a completed game
+                    // Since we don't have a gameId, we'll need to create a simple result submission
+                    try {
+                        const gameData = {
+                            opponent_type: 'ai', // or 'local' for PvP
+                            result: playerWon ? 'win' : 'loss',
+                            winner: winner.toLowerCase(),
+                            move_count: moveCount,
+                            // The backend will use the authenticated user from JWT
+                        };
+                        
+                        // Note: This endpoint doesn't exist yet, but we'll handle it gracefully
+                        const response = await fetch(`${BACKEND_API_URL || 'https://api.romgon.net'}/api/games/submit-result`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${jwtToken}`
+                            },
+                            body: JSON.stringify(gameData)
+                        });
+                        
+                        if (response.ok) {
+                            console.log('✅ Game result submitted to backend successfully');
+                        } else {
+                            console.warn('⚠️ Backend game submission failed:', response.status, response.statusText);
+                        }
+                    } catch (error) {
+                        console.warn('⚠️ Could not submit game to backend (endpoint may not exist yet):', error.message);
+                    }
+                } else {
+                    console.log('ℹ️ No JWT token or user ID - skipping backend sync');
+                }
             } else {
                 console.log('👤 Guest user - no stats saved');
             }
