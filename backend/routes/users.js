@@ -86,10 +86,10 @@ router.get('/stats', authenticateToken, async (req, res) => {
         // Get recent performance (last 10 games)
         const recentGames = await dbPromise.all(
             `SELECT winner_id, white_player_id, black_player_id, total_moves, 
-                    reason, updated_at
+                    reason, end_time
              FROM games 
              WHERE (white_player_id = ? OR black_player_id = ?) AND status = 'finished'
-             ORDER BY updated_at DESC LIMIT 10`,
+             ORDER BY end_time DESC LIMIT 10`,
             [userId, userId]
         );
 

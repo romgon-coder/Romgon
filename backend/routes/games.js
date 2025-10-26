@@ -454,7 +454,7 @@ router.get('/history',
                  LEFT JOIN users b ON g.black_player_id = b.id
                  WHERE (g.white_player_id = ? OR g.black_player_id = ?)
                  AND g.status = 'finished'
-                 ORDER BY g.updated_at DESC
+                 ORDER BY COALESCE(g.end_time, g.start_time) DESC
                  LIMIT ?`,
                 [playerId, playerId, limit]
             );
@@ -468,7 +468,7 @@ router.get('/history',
 
                 return {
                     gameId: game.id,
-                    date: game.updated_at,
+                    date: game.end_time || game.start_time,
                     opponent: {
                         name: opponentName || 'Unknown',
                         rating: opponentRating || 1600
@@ -477,7 +477,7 @@ router.get('/history',
                     result,
                     reason: game.reason,
                     moves: game.total_moves,
-                    duration: calculateGameDuration(game.created_at, game.updated_at)
+                    duration: calculateGameDuration(game.start_time, game.end_time)
                 };
             });
 
