@@ -18668,8 +18668,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
 
         // Initialize Socket.IO connection
         function initializeMultiplayerConnection() {
-            // Connect to server (change this to your server URL in production)
-            // Check if we're on file:// protocol or localhost
+            // Use BACKEND_API_URL for multiplayer connection
             let serverURL;
             if (window.location.protocol === 'file:' || 
                 window.location.hostname === '' || 
@@ -18677,7 +18676,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 window.location.hostname === '127.0.0.1') {
                 serverURL = 'http://localhost:3000';
             } else {
-                serverURL = window.location.origin;
+                serverURL = typeof BACKEND_API_URL !== 'undefined' ? BACKEND_API_URL : 'https://api.romgon.net';
             }
             
             console.log('🔌 Connecting to multiplayer server:', serverURL);
@@ -18698,10 +18697,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             });
             
             socket.on('connect_error', (error) => {
-                console.error('❌ Connection error:', error);
-                updateConnectionStatus('disconnected', 'Server not found');
-                document.getElementById('mp-error-message').textContent = 
-                    '⚠️ Cannot connect to server. Make sure the server is running (npm start)';
+                console.warn('⚠️ Multiplayer WebSocket unavailable:', error.message);
+                console.log('ℹ️ Use Rooms system for multiplayer (new feature)');
+                updateConnectionStatus('disconnected', 'Use Rooms for multiplayer');
+                // Don't show error - rooms system is the new way
             });
             
             // Room created
