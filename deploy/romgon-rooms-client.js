@@ -65,14 +65,48 @@ class RoomClient {
         // Connection events
         this.socket.on('connect', () => {
             console.log('✅ Connected to game server:', this.socket.id);
+            // Clear any error messages
+            if (typeof showMultiplayerConnectionStatus === 'function') {
+                showMultiplayerConnectionStatus('connected', 'Connected to server');
+            }
         });
 
         this.socket.on('disconnect', () => {
             console.log('❌ Disconnected from game server');
+            if (typeof showMultiplayerConnectionStatus === 'function') {
+                showMultiplayerConnectionStatus('disconnected', 'Disconnected from server');
+            }
         });
 
         this.socket.on('connect_error', (error) => {
             console.error('❌ Connection error:', error);
+            
+            // Show user-friendly error message
+            const errorMsg = 'Unable to connect to multiplayer server. The server may be starting up or temporarily unavailable. Please try again in a moment.';
+            
+            if (typeof showMultiplayerConnectionStatus === 'function') {
+                showMultiplayerConnectionStatus('error', errorMsg);
+            }
+            
+            // Also show in UI if we're in the multiplayer modal
+            const errorElement = document.getElementById('mp-error-message');
+            if (errorElement && errorElement.offsetParent !== null) {
+                errorElement.textContent = errorMsg;
+                errorElement.style.display = 'block';
+            }
+        });
+
+        this.socket.on('reconnect_attempt', (attemptNumber) => {
+            console.log(`🔄 Reconnection attempt ${attemptNumber}...`);
+        });
+
+        this.socket.on('reconnect_failed', () => {
+            console.error('❌ Failed to reconnect to server');
+            const errorMsg = 'Failed to connect to multiplayer server after multiple attempts. Please try again later.';
+            
+            if (typeof showMultiplayerConnectionStatus === 'function') {
+                showMultiplayerConnectionStatus('error', errorMsg);
+            }
         });
 
         // Room events

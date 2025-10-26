@@ -18839,9 +18839,37 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             document.getElementById('mp-main-menu').style.display = 'none';
             document.getElementById('mp-create-room').style.display = 'none';
             document.getElementById('mp-join-room').style.display = 'none';
+            document.getElementById('mp-matchmaking').style.display = 'none';
+            document.getElementById('mp-public-rooms').style.display = 'none';
+            document.getElementById('mp-waiting-room').style.display = 'none';
             
             // Show requested view
-            document.getElementById(viewId).style.display = 'block';
+            const viewElement = document.getElementById(viewId);
+            if (viewElement) {
+                viewElement.style.display = 'block';
+            }
+        }
+
+        function showMultiplayerConnectionStatus(status, message) {
+            console.log(`🔌 Connection status: ${status} - ${message}`);
+            
+            // Update connection indicator if it exists
+            updateConnectionStatus(status, message);
+            
+            // Also show in modal if open
+            const modal = document.getElementById('multiplayer-modal');
+            if (modal && modal.classList.contains('active')) {
+                const errorElement = document.getElementById('mp-error-message');
+                if (errorElement) {
+                    if (status === 'error') {
+                        errorElement.textContent = message;
+                        errorElement.style.display = 'block';
+                        errorElement.style.color = '#e74c3c';
+                    } else if (status === 'connected') {
+                        errorElement.style.display = 'none';
+                    }
+                }
+            }
         }
         
         // ============================================
@@ -18859,11 +18887,22 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     return;
                 }
 
+                // Clear any previous errors
+                const errorElement = document.getElementById('mp-error-message');
+                if (errorElement) {
+                    errorElement.style.display = 'none';
+                }
+
                 // Connect to WebSocket
                 if (!roomClient.socket || !roomClient.socket.connected) {
                     roomClient.connect();
                     // Wait a bit for connection
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    // Check if connection succeeded
+                    if (!roomClient.socket || !roomClient.socket.connected) {
+                        throw new Error('Failed to connect to multiplayer server. Please try again.');
+                    }
                 }
 
                 showView('mp-create-room');
