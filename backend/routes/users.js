@@ -45,9 +45,9 @@ router.get('/debug/list', async (req, res) => {
 
 router.get('/stats', authenticateToken, async (req, res) => {
     try {
-        const { userId } = req.user;
+        const { userId, username } = req.user;
         
-        console.log(`📊 Fetching stats for user ID: ${userId}`);
+        console.log(`📊 Fetching stats for user ID: ${userId}, username: ${username}`);
 
         const user = await dbPromise.get(
             `SELECT id, username, email, rating, wins, losses, total_games, 
@@ -57,11 +57,13 @@ router.get('/stats', authenticateToken, async (req, res) => {
         );
 
         if (!user) {
-            console.error(`❌ User ID ${userId} not found in database`);
+            console.error(`❌ User ID ${userId} (${username}) not found in database`);
             return res.status(404).json({
                 error: 'User not found',
                 userId: userId,
-                message: `No user exists with ID ${userId}. The user may need to be created or re-authenticated.`
+                username: username,
+                message: `User ID ${userId} doesn't exist in the production database. Please log out and log in again with Google to create your account.`,
+                action: 'Please clear your session and re-authenticate'
             });
         }
         

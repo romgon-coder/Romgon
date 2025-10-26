@@ -16426,12 +16426,28 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 });
                 
                 if (!response.ok) {
-                    const errorText = await response.text();
+                    const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
                     console.error('❌ Failed to fetch user stats from backend:', {
                         status: response.status,
                         statusText: response.statusText,
-                        error: errorText
+                        error: errorData
                     });
+                    
+                    // If user not found (404), clear session and force re-login
+                    if (response.status === 404 && errorData.error === 'User not found') {
+                        console.warn('⚠️ User not found in backend database. Clearing session...');
+                        localStorage.removeItem('romgon-session');
+                        localStorage.removeItem('romgon-jwt');
+                        localStorage.removeItem('romgon-user');
+                        
+                        // Show user-friendly message
+                        alert('Your session is out of sync with the server. Please log in again.');
+                        
+                        // Reload page to show login screen
+                        window.location.reload();
+                        return null;
+                    }
+                    
                     return null;
                 }
                 
