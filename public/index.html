@@ -23759,8 +23759,14 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
             
             if (!allUsers[username]) {
-                console.warn('❌ User not found for rating update:', username);
-                return;
+                console.warn('⚠️ User not found in localStorage for rating update:', username);
+                console.log('ℹ️ OAuth users use backend rating system - skipping localStorage rating update');
+                // Return a neutral rating change for OAuth users
+                return {
+                    oldRating: 1600,
+                    newRating: 1600,
+                    ratingChange: 0
+                };
             }
             
             // Initialize rating if not exists
