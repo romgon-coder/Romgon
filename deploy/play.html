@@ -136,6 +136,18 @@
         .zone-outer { background-color: #f57d2d; }
         .zone-dead { background-color: #6d3a13; }
 
+        /* Coordinate labels on hexagons */
+        .hex-coord {
+            position: absolute;
+            font-size: 9px;
+            font-weight: bold;
+            color: rgba(0, 0, 0, 0.4);
+            pointer-events: none;
+            user-select: none;
+            text-shadow: 0 0 2px rgba(255, 255, 255, 0.5);
+            z-index: 1;
+        }
+
         /* Piece styles */
         .piece {
             width: 42px;
@@ -615,6 +627,12 @@
                     hex.id = `hex-${hexId}`;
                     hex.dataset.row = r;
                     hex.dataset.col = c;
+
+                    // Add coordinate label
+                    const coordLabel = document.createElement('div');
+                    coordLabel.className = 'hex-coord';
+                    coordLabel.textContent = hexId;
+                    hex.appendChild(coordLabel);
 
                     // Apply zone color
                     const zone = getZoneForHex(hexId, zones);
