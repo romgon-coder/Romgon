@@ -315,11 +315,20 @@ router.get('/google', (req, res) => {
 // Handle Google OAuth callback
 router.get('/google/callback', async (req, res) => {
     try {
-        const { code } = req.query;
+        const { code, error: oauthError } = req.query;
+
+        // Check if Google returned an error
+        if (oauthError) {
+            console.error('❌ Google OAuth error from Google:', oauthError);
+            return res.redirect(`${process.env.FRONTEND_URL || 'https://romgon.net'}?error=oauth_${oauthError}`);
+        }
 
         if (!code) {
-            return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}?error=no_code`);
+            console.error('❌ No authorization code received');
+            return res.redirect(`${process.env.FRONTEND_URL || 'https://romgon.net'}?error=no_code`);
         }
+
+        console.log('✅ Received authorization code, exchanging for tokens...');
 
         // Exchange code for tokens
         const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
@@ -329,16 +338,19 @@ router.get('/google/callback', async (req, res) => {
                 code,
                 client_id: process.env.GOOGLE_CLIENT_ID,
                 client_secret: process.env.GOOGLE_CLIENT_SECRET,
-                redirect_uri: process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/auth/google/callback',
+                redirect_uri: process.env.GOOGLE_REDIRECT_URI || 'https://api.romgon.net/api/auth/google/callback',
                 grant_type: 'authorization_code'
             })
         });
 
         const tokens = await tokenResponse.json();
-
+        
         if (!tokens.access_token) {
-            throw new Error('No access token received');
+            console.error('❌ Token exchange failed:', tokens);
+            throw new Error(`No access token received: ${tokens.error || 'Unknown error'}`);
         }
+
+        console.log('✅ Access token received, fetching user info...');
 
         // Get user info from Google
         const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
@@ -346,14 +358,16 @@ router.get('/google/callback', async (req, res) => {
         });
 
         const googleUser = await userInfoResponse.json();
+        console.log('✅ Google user info received:', googleUser.email);
 
         // Check if user exists
         let user = await dbPromise.get(
-            'SELECT * FROM users WHERE email = ?',
-            [googleUser.email]
+            'SELECT * FROM users WHERE email = ? OR google_id = ?',
+            [googleUser.email, googleUser.id]
         );
 
         if (!user) {
+            console.log('📝 Creating new user for:', googleUser.email);
             // Create new user
             const username = googleUser.email.split('@')[0] + '_' + Math.random().toString(36).substring(2, 6);
             const result = await dbPromise.run(
@@ -363,22 +377,27 @@ router.get('/google/callback', async (req, res) => {
             );
 
             user = {
-                id: result.id,  // Fixed: use result.id instead of result.lastID
+                id: result.id,
                 username,
                 email: googleUser.email,
                 rating: 1600
             };
+            console.log('✅ New user created with ID:', user.id);
+        } else {
+            console.log('✅ Existing user found:', user.username);
         }
 
         // Generate JWT token
         const token = generateToken(user.id, user.username);
+        console.log('✅ JWT generated, redirecting to frontend...');
 
         // Redirect to frontend with token
-        res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}?token=${token}`);
+        res.redirect(`${process.env.FRONTEND_URL || 'https://romgon.net'}?token=${token}`);
 
     } catch (err) {
-        console.error('❌ Google OAuth error:', err);
-        res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}?error=auth_failed`);
+        console.error('❌ Google OAuth error:', err.message);
+        console.error('❌ Stack trace:', err.stack);
+        res.redirect(`${process.env.FRONTEND_URL || 'https://romgon.net'}?error=auth_failed&detail=${encodeURIComponent(err.message)}`);
     }
 });
 
