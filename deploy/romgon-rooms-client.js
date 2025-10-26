@@ -2,7 +2,7 @@
 // ROMGON ROOMS & MATCHMAKING CLIENT
 // ============================================
 
-const BACKEND_API_URL = 'https://api.romgon.net';
+// Use BACKEND_API_URL from global scope (defined in index.html)
 const WEBSOCKET_URL = 'wss://api.romgon.net';
 
 class RoomClient {
