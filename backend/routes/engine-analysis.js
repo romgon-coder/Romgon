@@ -98,10 +98,12 @@ router.get('/stats', async (req, res) => {
             FROM games 
             GROUP BY status
         `).all();
-        stats.gamesByStatus = gamesByStatus.reduce((acc, row) => {
-            acc[row.status] = row.count;
-            return acc;
-        }, {});
+        stats.gamesByStatus = {};
+        if (Array.isArray(gamesByStatus)) {
+            gamesByStatus.forEach(row => {
+                stats.gamesByStatus[row.status] = row.count;
+            });
+        }
 
         // Total users
         const usersCount = db.prepare('SELECT COUNT(*) as count FROM users').get();
