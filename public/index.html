@@ -2424,12 +2424,49 @@
     async function showAccountModal() {
         console.log('🔓 Opening Player Hub...');
         
-        const currentUser = window.currentUser || JSON.parse(localStorage.getItem('romgon-user') || '{}');
+        // Debug: Check all possible sources of user data
+        const storedUser = localStorage.getItem('romgon-user');
+        const jwtToken = localStorage.getItem('romgon-jwt');
         
-        console.log('📋 Current user data:', currentUser);
+        console.log('📋 Debug - localStorage romgon-user:', storedUser);
+        console.log('📋 Debug - JWT token exists:', !!jwtToken);
+        console.log('📋 Debug - window.currentUser:', window.currentUser);
+        
+        let currentUser = window.currentUser || (storedUser ? JSON.parse(storedUser) : {});
+        
+        // If we have a JWT but user data looks like guest, try to decode JWT
+        if (jwtToken && (!currentUser.email || currentUser.username === 'Guest Player')) {
+            try {
+                const jwtPayload = JSON.parse(atob(jwtToken.split('.')[1]));
+                console.log('🔑 JWT payload:', jwtPayload);
+                
+                // Update currentUser with JWT data
+                if (jwtPayload.email) {
+                    currentUser = {
+                        id: jwtPayload.id || jwtPayload.userId,
+                        username: jwtPayload.name || jwtPayload.username || jwtPayload.email.split('@')[0],
+                        email: jwtPayload.email,
+                        name: jwtPayload.name,
+                        picture: jwtPayload.picture,
+                        type: 'registered',
+                        google_id: jwtPayload.google_id
+                    };
+                    
+                    // Save corrected user data
+                    localStorage.setItem('romgon-user', JSON.stringify(currentUser));
+                    window.currentUser = currentUser;
+                    
+                    console.log('✅ Corrected user data from JWT:', currentUser);
+                }
+            } catch (error) {
+                console.error('❌ Failed to decode JWT:', error);
+            }
+        }
+        
+        console.log('📋 Final user data to display:', currentUser);
         
         // Check if user is logged in
-        if (!currentUser.id && !currentUser.username) {
+        if (!currentUser.id && !currentUser.username && !currentUser.email) {
             alert('📝 Please sign in to access Player Hub!');
             return;
         }
@@ -2448,10 +2485,12 @@
         };
         
         // Set initial values from local data
-        const username = currentUser.username || currentUser.name || 'Player';
+        const username = currentUser.username || currentUser.name || currentUser.email?.split('@')[0] || 'Player';
         const email = currentUser.email || 'No email';
         const accountType = currentUser.type === 'guest' ? 'Guest' : 'Registered';
-        const avatar = currentUser.avatar || '👤';
+        const avatar = currentUser.avatar || currentUser.picture || '👤';
+        
+        console.log('📊 Displaying - Username:', username, 'Email:', email, 'Type:', accountType);
         
         // Update sidebar immediately with local data
         document.getElementById('account-sidebar-name').textContent = username;
