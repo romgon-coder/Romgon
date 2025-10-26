@@ -288,11 +288,15 @@ router.post('/guest', async (req, res) => {
 router.get('/google', (req, res) => {
     const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/auth/google/callback';
     const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
-    if (!clientId) {
-        return res.status(500).json({
+    // Check if Google OAuth is configured
+    if (!clientId || !clientSecret) {
+        console.error('❌ Google OAuth not configured. Missing environment variables.');
+        return res.status(503).json({
             error: 'Google OAuth not configured',
-            message: 'GOOGLE_CLIENT_ID environment variable is missing'
+            message: 'Google sign-in is not available. Please configure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in the server environment variables.',
+            documentation: 'See GOOGLE_OAUTH_SETUP.md for setup instructions'
         });
     }
 
@@ -304,6 +308,7 @@ router.get('/google', (req, res) => {
         `access_type=offline&` +
         `prompt=consent`;
 
+    console.log(`🔄 Redirecting to Google OAuth: ${googleAuthUrl.substring(0, 100)}...`);
     res.redirect(googleAuthUrl);
 });
 

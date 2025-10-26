@@ -6907,12 +6907,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         try { localStorage.removeItem('romgon-user'); } catch (e) {}
         try { sessionStorage.clear(); } catch (e) {}
         
-        // Disable Google auto-select
-        try { 
-            if (window.google && window.google.accounts && window.google.accounts.id) {
-                google.accounts.id.disableAutoSelect(); 
-            } 
-        } catch (e) {}
+        // Note: Google One Tap auto-select disabled (now using OAuth flow)
         
         // Remove logged-in user UI
         try { removeLoggedInUserUI(); } catch (e) {}
@@ -19863,22 +19858,11 @@ ${moveHistory || '(No moves played yet - starting position)'}
         }
 
         // ----------------------
-        // Google Sign-In helpers
+        // Google Sign-In helpers - OAuth Flow (Backend)
         // ----------------------
-        const GOOGLE_CLIENT_ID = '629995302527-jvm799stiufn1ipvp94611518iojqabc.apps.googleusercontent.com';
-
-        function loadGoogleIdentityScript() {
-            return new Promise((resolve, reject) => {
-                if (window.google && window.google.accounts && window.google.accounts.id) return resolve();
-                const s = document.createElement('script');
-                s.src = 'https://accounts.google.com/gsi/client';
-                s.async = true; s.defer = true;
-                s.onload = () => setTimeout(resolve, 50);
-                s.onerror = reject;
-                document.head.appendChild(s);
-            });
-        }
-
+        // Note: Google OAuth is handled through backend at /api/auth/google
+        // The handleGoogleLogin() function redirects to backend OAuth endpoint
+        
         function parseJwt(token) {
             try {
                 const base64Url = token.split('.')[1];
@@ -19893,87 +19877,41 @@ ${moveHistory || '(No moves played yet - starting position)'}
             }
         }
 
-        function handleGoogleCredentialResponse(response) {
-            const payload = parseJwt(response.credential);
-            if (!payload) {
-                alert('Google sign-in failed to parse credentials.');
-                return;
-            }
-            
-            // First, try to find if this email has a registered account
-            const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
-            
-            let registeredUsername = null;
-            for (let username in allUsers) {
-                const storedEmail = allUsers[username].email;
-                if (storedEmail && storedEmail.toLowerCase() === payload.email.toLowerCase()) {
-                    registeredUsername = username;
-                    break;
-                }
-            }
-            
-            if (!registeredUsername) {
-                // Ask if they want to link to an existing account
-                const linkUsername = prompt('No account found for ' + payload.email + '\n\nDo you have an existing account? Enter your username to link it, or leave blank to create new:\n(Your first account was "nick1")');
-                if (linkUsername && allUsers[linkUsername]) {
-                    // Update the registered account with Google email
-                    allUsers[linkUsername].email = payload.email;
-                    localStorage.setItem('romgon-users', JSON.stringify(allUsers));
-                    registeredUsername = linkUsername;
-                }
-            }
-            
-            const user = {
-                provider: 'google',
-                id: payload.sub,
-                name: payload.name || payload.email,
-                email: payload.email,
-                picture: payload.picture || null,
-            };
-            
-            // If user is registered, add their username
-            if (registeredUsername) {
-                user.username = registeredUsername;
-            }
-            
-            // Persist the user and update UI
-            try { persistCurrentUser(user); } catch (e) { window.currentUser = user; }
-            // Close modal if open
-            try { closeAccountModal(); } catch (e) {}
-            console.info('✅ Signed in as', user.email);
-        }
+        // Note: handleGoogleCredentialResponse removed - now using backend OAuth flow
 
         async function handleGoogleLogin() {
             try {
-                await loadGoogleIdentityScript();
-                if (!window.google || !window.google.accounts || !window.google.accounts.id) {
-                    alert('Google Identity library failed to load.');
-                    return;
-                }
-                // Initialize the Google Identity Services client
-                google.accounts.id.initialize({
-                    client_id: GOOGLE_CLIENT_ID,
-                    callback: handleGoogleCredentialResponse,
-                    auto_select: false,
-                });
-
-                // If there's a placeholder button in the modal, render Google's button into it
-                const holder = document.getElementById('account-google-btn');
-                if (holder) {
-                    holder.innerHTML = '';
-                    google.accounts.id.renderButton(holder, { theme: 'outline', size: 'large' });
-                }
-
-                // Trigger the one-tap prompt (optional).
-                // Wrap in try/catch to avoid FedCM/One-tap network/CORS errors causing uncaught exceptions.
+                console.log('🔄 Initiating Google OAuth flow...');
+                
+                // Get the API base URL from the UI manager or use default
+                const apiUrl = window.apiClient?.getBaseURL()?.replace('/api', '') || 'http://localhost:3000';
+                
+                // Check if backend OAuth is configured
                 try {
-                    google.accounts.id.prompt();
-                } catch (promptErr) {
-                    console.warn('google.accounts.id.prompt() failed (FedCM/OneTap may be blocked):', promptErr);
+                    const checkResponse = await fetch(`${apiUrl}/api/auth/google`, {
+                        method: 'GET',
+                        redirect: 'manual'
+                    });
+                    
+                    // If we get an error response (503 = not configured), show it
+                    if (checkResponse.status === 503 || checkResponse.status === 500) {
+                        const errorData = await checkResponse.json();
+                        alert(`Google sign-in not available: ${errorData.message || 'Not configured'}\n\nPlease use Email/Password registration or Guest mode.`);
+                        console.error('Google OAuth not configured:', errorData);
+                        return;
+                    }
+                } catch (fetchError) {
+                    // If fetch fails with CORS/network error, it might be a redirect (which is good!)
+                    console.log('OAuth pre-check complete (or redirecting)');
                 }
+                
+                // Redirect to backend OAuth endpoint
+                console.log(`🔄 Redirecting to: ${apiUrl}/api/auth/google`);
+                window.location.href = `${apiUrl}/api/auth/google`;
+                
             } catch (e) {
                 console.error('handleGoogleLogin error', e);
-                alert('Failed to load Google sign-in: ' + (e && e.message ? e.message : e));
+                alert('Failed to initiate Google sign-in. Please try Email/Password or Guest mode.');
             }
         }
 
@@ -20024,7 +19962,7 @@ ${moveHistory || '(No moves played yet - starting position)'}
             try { localStorage.removeItem('romgon-user'); } catch (e) {}
             try { localStorage.removeItem('romgon_token'); } catch (e) {}
             removeLoggedInUserUI();
-            try { if (window.google && window.google.accounts && window.google.accounts.id) google.accounts.id.disableAutoSelect(); } catch (e) {}
+            // Note: Google One Tap removed (using OAuth flow)
             // Hide user-home if visible
             try { hideUserHome(); } catch (e) {}
             alert('Signed out');

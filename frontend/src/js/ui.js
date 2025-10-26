@@ -439,16 +439,37 @@ class AuthPage {
     async handleGoogleAuth() {
         try {
             gameState.setLoading(true);
-            uiManager.showNotification('🔍 Redirecting to Google...', 'info');
+            uiManager.showNotification('🔍 Checking Google authentication...', 'info');
             
             // Get the API base URL
             const apiUrl = apiClient.getBaseURL().replace('/api', '');
             
-            // Redirect to Google OAuth endpoint
+            // First check if Google OAuth is configured by making a HEAD request
+            const checkResponse = await fetch(`${apiUrl}/api/auth/google`, {
+                method: 'GET',
+                redirect: 'manual' // Don't follow redirect
+            });
+            
+            // If we get a JSON error response, show it to the user
+            if (checkResponse.status === 503 || checkResponse.status === 500) {
+                const errorData = await checkResponse.json();
+                uiManager.showNotification(
+                    `❌ Google sign-in not available: ${errorData.message || 'Not configured'}`,
+                    'error',
+                    5000
+                );
+                console.error('Google OAuth not configured:', errorData);
+                gameState.setLoading(false);
+                return;
+            }
+            
+            // If successful or redirect, proceed with OAuth flow
+            uiManager.showNotification('🔍 Redirecting to Google...', 'info');
             window.location.href = `${apiUrl}/api/auth/google`;
+            
         } catch (error) {
             console.error('❌ Error initiating Google auth:', error);
-            uiManager.showError('Failed to connect with Google');
+            uiManager.showError('Failed to connect with Google. Try email login or guest mode instead.');
             gameState.setLoading(false);
         }
     }

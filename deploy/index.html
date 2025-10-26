@@ -3340,6 +3340,10 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="favicon.svg">
     <title>ROMGON</title>
     <!-- Version: 2025-10-26-PREFS-FIX-v4-DUPEBOOK -->
     <!-- Keyboard Navigation Systems -->
@@ -14666,6 +14670,60 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             });
         }
 
+        function showTypingIndicator(data) {
+            const { userId, username, chatType, targetUserId } = data;
+            
+            if (chatType === 'global') {
+                // Show typing indicator in global chat
+                const chatContainer = document.getElementById('global-chat-messages');
+                if (!chatContainer) return;
+                
+                // Remove existing typing indicator for this user
+                const existingIndicator = document.getElementById(`typing-${userId}`);
+                if (existingIndicator) return; // Already showing
+                
+                // Create typing indicator
+                const indicator = document.createElement('div');
+                indicator.id = `typing-${userId}`;
+                indicator.style.cssText = 'padding: 8px; color: #8be9fd; font-style: italic; opacity: 0.8;';
+                indicator.textContent = `${username} is typing...`;
+                
+                chatContainer.appendChild(indicator);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            } else if (chatType === 'direct') {
+                // Show typing indicator in direct messages (if viewing that conversation)
+                if (romgonChat.currentChatWith === userId) {
+                    const dmContainer = document.getElementById('direct-messages-container');
+                    if (!dmContainer) return;
+                    
+                    const existingIndicator = document.getElementById(`typing-dm-${userId}`);
+                    if (existingIndicator) return;
+                    
+                    const indicator = document.createElement('div');
+                    indicator.id = `typing-dm-${userId}`;
+                    indicator.style.cssText = 'padding: 8px; color: #8be9fd; font-style: italic; opacity: 0.8;';
+                    indicator.textContent = `${username} is typing...`;
+                    
+                    dmContainer.appendChild(indicator);
+                    dmContainer.scrollTop = dmContainer.scrollHeight;
+                }
+            }
+        }
+
+        function hideTypingIndicator(userId) {
+            // Remove typing indicator from global chat
+            const globalIndicator = document.getElementById(`typing-${userId}`);
+            if (globalIndicator) {
+                globalIndicator.remove();
+            }
+            
+            // Remove typing indicator from direct messages
+            const dmIndicator = document.getElementById(`typing-dm-${userId}`);
+            if (dmIndicator) {
+                dmIndicator.remove();
+            }
+        }
+
         function switchChatTab(tab) {
             const globalTab = document.getElementById('global-chat-tab');
             const friendsTab = document.getElementById('friends-chat-tab');
@@ -15115,6 +15173,18 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 console.log('📡 Requesting online players list...');
                 gameSocket.emit('lobby:getOnlinePlayers');
             }, 500);
+        }
+        
+        function updateUserOnlineStatus(userId, isOnline) {
+            if (isOnline) {
+                // User came online - they should already be in the list from playerJoined event
+                console.log(`👤 User ${userId} is now online`);
+            } else {
+                // User went offline - remove from list
+                console.log(`👋 User ${userId} went offline`);
+                onlinePlayers.delete(userId);
+                renderOnlinePlayers();
+            }
         }
         
         function updateOnlinePlayersList(players) {
@@ -25178,54 +25248,59 @@ ${moveHistory || '(No moves played yet - starting position)'}
             }
         }
 
-        function handleGoogleCredentialResponse(response) {
+        async function handleGoogleCredentialResponse(response) {
             const payload = parseJwt(response.credential);
             if (!payload) {
                 alert('Google sign-in failed to parse credentials.');
                 return;
             }
             
-            // First, try to find if this email has a registered account
-            const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
-            
-            let registeredUsername = null;
-            for (let username in allUsers) {
-                const storedEmail = allUsers[username].email;
-                if (storedEmail && storedEmail.toLowerCase() === payload.email.toLowerCase()) {
-                    registeredUsername = username;
-                    break;
+            try {
+                // Send Google credential to backend for authentication
+                const backendResponse = await fetch(`${BACKEND_API_URL}/api/auth/google`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        credential: response.credential
+                    })
+                });
+                
+                if (!backendResponse.ok) {
+                    const errorData = await backendResponse.json();
+                    alert('Google sign-in failed: ' + (errorData.error || 'Unknown error'));
+                    return;
                 }
+                
+                const data = await backendResponse.json();
+                
+                // Store the JWT token and userId from backend
+                localStorage.setItem('romgon_token', data.token);
+                localStorage.setItem('userId', data.user.id.toString());
+                
+                // Create user object for UI
+                const user = {
+                    provider: 'google',
+                    id: payload.sub, // Google sub ID for profile display
+                    name: payload.name || data.user.username || payload.email,
+                    email: payload.email,
+                    picture: payload.picture || null,
+                    username: data.user.username,
+                    rating: data.user.rating,
+                    dbUserId: data.user.id // Database user ID for API calls
+                };
+                
+                // Persist the user and update UI
+                try { persistCurrentUser(user); } catch (e) { window.currentUser = user; }
+                // Close modal if open
+                try { closeAccountModal(); } catch (e) {}
+                console.info('✅ Signed in as', user.email);
+                console.info('🔑 Database userId:', data.user.id);
+            } catch (error) {
+                console.error('Google sign-in error:', error);
+                alert('Google sign-in failed. Please try again.');
             }
-            
-            if (!registeredUsername) {
-                // Ask if they want to link to an existing account
-                const linkUsername = prompt('No account found for ' + payload.email + '\n\nDo you have an existing account? Enter your username to link it, or leave blank to create new:\n(Your first account was "nick1")');
-                if (linkUsername && allUsers[linkUsername]) {
-                    // Update the registered account with Google email
-                    allUsers[linkUsername].email = payload.email;
-                    localStorage.setItem('romgon-users', JSON.stringify(allUsers));
-                    registeredUsername = linkUsername;
-                }
-            }
-            
-            const user = {
-                provider: 'google',
-                id: payload.sub,
-                name: payload.name || payload.email,
-                email: payload.email,
-                picture: payload.picture || null,
-            };
-            
-            // If user is registered, add their username
-            if (registeredUsername) {
-                user.username = registeredUsername;
-            }
-            
-            // Persist the user and update UI
-            try { persistCurrentUser(user); } catch (e) { window.currentUser = user; }
-            // Close modal if open
-            try { closeAccountModal(); } catch (e) {}
-            console.info('✅ Signed in as', user.email);
         }
 
         async function handleGoogleLogin() {
