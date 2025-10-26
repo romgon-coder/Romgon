@@ -2567,15 +2567,40 @@
         if (shouldFetchBackend) {
             try {
                 console.log('🔄 Fetching backend data...');
-                const [profile, stats, games] = await Promise.all([
-                    fetchUserProfile(),
-                    fetchUserStats(),
-                    fetchUserGames(10)
-                ]);
                 
-                console.log('📊 Backend data:', { profile, stats, games });
+                // Fetch stats (required) and games (optional)
+                const statsPromise = fetchUserStats();
+                const gamesPromise = fetchUserGames(10).catch(err => {
+                    console.warn('⚠️ Could not fetch game history:', err);
+                    return [];
+                });
+                
+                const [stats, games] = await Promise.all([statsPromise, gamesPromise]);
+                
+                console.log('📊 Backend data:', { stats, games });
                 
                 // Update with backend data if available
+                if (stats) {
+                    // Update email if available from backend
+                    if (stats.email) {
+                        console.log('✅ Updating email from backend:', stats.email);
+                        document.getElementById('account-sidebar-email').textContent = stats.email;
+                        document.getElementById('account-email').textContent = stats.email;
+                        
+                        // Also update currentUser and localStorage
+                        currentUser.email = stats.email;
+                        localStorage.setItem('romgon-user', JSON.stringify(currentUser));
+                        window.currentUser = currentUser;
+                    }
+                    
+                    // Update username if available
+                    if (stats.username) {
+                        console.log('✅ Updating username from backend:', stats.username);
+                        document.getElementById('account-sidebar-name').textContent = stats.username;
+                        document.getElementById('account-username').textContent = stats.username;
+                    }
+                }
+                
                 if (stats && stats.stats) {
                     // Backend returns { stats: { wins, losses, totalGames, ... } }
                     const backendStats = stats.stats;
