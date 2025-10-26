@@ -3,6 +3,7 @@
 // ============================================
 
 const db = require('../config/database');
+const { activeRooms, matchmakingQueue } = require('../routes/rooms');
 
 /**
  * Setup WebSocket event handlers for game synchronization
@@ -58,6 +59,108 @@ function setupSocketHandlers(io) {
             console.log(`📋 Online players requested by ${username}`);
             socket.emit('lobby:onlinePlayers', Array.from(onlinePlayers.values()));
         });
+
+        // ============================================
+        // ROOM EVENTS
+        // ============================================
+
+        // Join a room
+        socket.on('room:join', (data) => {
+            const { roomCode } = data;
+            const room = activeRooms.get(roomCode);
+            
+            if (room) {
+                socket.join(`room-${roomCode}`);
+                socket.roomCode = roomCode;
+                
+                console.log(`🚪 ${username} joined room ${roomCode}`);
+                
+                // Notify others in the room
+                socket.to(`room-${roomCode}`).emit('room:playerJoined', {
+                    userId: userId.toString(),
+                    username,
+                    players: room.players,
+                    timestamp: new Date().toISOString()
+                });
+                
+                // Send room state to joining player
+                socket.emit('room:state', {
+                    room: {
+                        code: roomCode,
+                        hostUsername: room.hostUsername,
+                        players: room.players,
+                        status: room.status,
+                        gameId: room.gameId
+                    }
+                });
+            }
+        });
+
+        // Leave a room
+        socket.on('room:leave', (data) => {
+            const { roomCode } = data;
+            socket.leave(`room-${roomCode}`);
+            
+            const room = activeRooms.get(roomCode);
+            if (room) {
+                console.log(`🚪 ${username} left room ${roomCode}`);
+                
+                // Notify others
+                socket.to(`room-${roomCode}`).emit('room:playerLeft', {
+                    userId: userId.toString(),
+                    username,
+                    players: room.players,
+                    timestamp: new Date().toISOString()
+                });
+            }
+        });
+
+        // Player ready status changed
+        socket.on('room:ready', (data) => {
+            const { roomCode, ready } = data;
+            const room = activeRooms.get(roomCode);
+            
+            if (room) {
+                // Notify all in room
+                gameNamespace.to(`room-${roomCode}`).emit('room:playerReady', {
+                    userId: userId.toString(),
+                    username,
+                    ready,
+                    players: room.players,
+                    timestamp: new Date().toISOString()
+                });
+            }
+        });
+
+        // Game started in room
+        socket.on('room:gameStarted', (data) => {
+            const { roomCode, gameId } = data;
+            
+            // Notify all in room
+            gameNamespace.to(`room-${roomCode}`).emit('room:gameStarted', {
+                gameId,
+                timestamp: new Date().toISOString()
+            });
+        });
+
+        // ============================================
+        // MATCHMAKING EVENTS
+        // ============================================
+
+        // Matchmaking status update
+        socket.on('matchmaking:checkStatus', () => {
+            const inQueue = matchmakingQueue.has(userId?.toString());
+            
+            socket.emit('matchmaking:status', {
+                inQueue,
+                queueSize: matchmakingQueue.size,
+                timestamp: new Date().toISOString()
+            });
+        });
+
+        // ============================================
+        // GAME EVENTS
+        // ============================================
 
         // Join a game room
         socket.on('game:join', (data) => {

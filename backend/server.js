@@ -25,6 +25,7 @@ const statsRoutes = require('./routes/stats');
 const { router: customGamesRoutes, initCustomGames } = require('./routes/custom-games');
 const engineAnalysisRoutes = require('./routes/engine-analysis');
 const apiKeysRoutes = require('./routes/api-keys');
+const { router: roomsRoutes } = require('./routes/rooms');
 
 // Import WebSocket handlers
 const setupSocketHandlers = require('./websocket/gameSocket');
@@ -122,6 +123,9 @@ app.use('/api/engine', engineAnalysisRoutes);
 
 // API Keys management routes
 app.use('/api/keys', apiKeysRoutes);
+
+// Rooms and matchmaking routes
+app.use('/api/rooms', roomsRoutes);
 
 // Initialize custom games with database
 initCustomGames(dbPromise);

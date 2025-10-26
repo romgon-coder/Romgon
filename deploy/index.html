@@ -4335,6 +4335,8 @@
     <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
     <!-- Chat Client -->
     <script src="romgon-chat-client.js"></script>
+    <!-- Rooms & Matchmaking Client -->
+    <script src="romgon-rooms-client.js"></script>
     <style>
         :root { /* CSS variables - LIGHT MODE (Default) */
             --hex-size: 48px;
@@ -9676,11 +9678,17 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         <div class="multiplayer-container" id="mp-main-menu">
             <h2>🌐 Multiplayer Mode</h2>
             <div class="multiplayer-options">
+                <button class="mp-button" onclick="startMatchmaking()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    🎯 Quick Match (Matchmaking)
+                </button>
                 <button class="mp-button" onclick="createMultiplayerRoom()">
-                    🎮 Create Game Room
+                    🎮 Create Private Room
                 </button>
                 <button class="mp-button secondary" onclick="showJoinRoom()">
-                    🔗 Join Game Room
+                    🔗 Join Private Room
+                </button>
+                <button class="mp-button" onclick="showPublicRooms()" style="background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);">
+                    📋 Browse Public Rooms
                 </button>
                 <button class="mp-button" onclick="startDevMode()" style="background: linear-gradient(135deg, #ffa502 0%, #ff6348 100%);">
                     🔧 Dev Mode (Local Test)
@@ -9691,14 +9699,63 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             </div>
         </div>
 
+        <!-- Matchmaking View -->
+        <div class="multiplayer-container" id="mp-matchmaking" style="display: none;">
+            <h2>🎯 Finding Match</h2>
+            <div style="text-align: center; padding: 40px 20px;">
+                <div class="loading-spinner" style="
+                    border: 4px solid rgba(78, 205, 196, 0.2);
+                    border-top: 4px solid #4ecdc4;
+                    border-radius: 50%;
+                    width: 60px;
+                    height: 60px;
+                    animation: spin 1s linear infinite;
+                    margin: 0 auto 20px;
+                "></div>
+                <p class="waiting-message">Searching for opponent...</p>
+                <p id="matchmaking-queue-info" style="color: #888; font-size: 14px; margin-top: 10px;">
+                    Players in queue: <span id="queue-size">0</span>
+                </p>
+                <p style="color: #888; font-size: 12px; margin-top: 20px;">
+                    You'll be matched with players of similar skill level
+                </p>
+            </div>
+            <button class="mp-back-button" onclick="cancelMatchmaking()">
+                Cancel Search
+            </button>
+        </div>
+
+        <!-- Public Rooms View -->
+        <div class="multiplayer-container" id="mp-public-rooms" style="display: none;">
+            <h2>📋 Public Rooms</h2>
+            <div id="public-rooms-list" style="
+                max-height: 400px;
+                overflow-y: auto;
+                margin: 20px 0;
+                padding: 10px;
+            ">
+                <p style="text-align: center; color: #888;">Loading rooms...</p>
+            </div>
+            <button class="mp-back-button" onclick="backToMultiplayerMenu()">
+                ← Back
+            </button>
+        </div>
+
         <!-- Create Room View -->
         <div class="multiplayer-container" id="mp-create-room" style="display: none;">
             <h2>🎮 Hosting Game Room</h2>
             <div class="room-code-display" id="room-code-display">------</div>
-            <p class="waiting-message">Waiting for opponent to join...</p>
+            <div id="room-players-list" style="margin: 20px 0;">
+                <div class="room-player">
+                    <span class="player-name">Waiting for opponent...</span>
+                </div>
+            </div>
             <p style="color: #888; font-size: 14px; text-align: center;">
                 Share this room code with your opponent
             </p>
+            <button class="mp-button" id="ready-button" onclick="toggleReady()" style="display: none;">
+                ✓ Ready
+            </button>
             <button class="mp-back-button" onclick="cancelCreateRoom()">
                 Cancel
             </button>
@@ -9722,7 +9779,86 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 ← Back
             </button>
         </div>
+
+        <!-- Waiting Room View (after joining) -->
+        <div class="multiplayer-container" id="mp-waiting-room" style="display: none;">
+            <h2>🎮 Game Room</h2>
+            <div class="room-code-display" id="waiting-room-code">------</div>
+            <div id="waiting-room-players" style="margin: 20px 0;">
+                <!-- Players will be populated here -->
+            </div>
+            <button class="mp-button" id="waiting-ready-button" onclick="toggleReady()">
+                ✓ Ready
+            </button>
+            <button class="mp-back-button" onclick="leaveWaitingRoom()">
+                Leave Room
+            </button>
+        </div>
     </div>
+
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .room-player {
+            background: rgba(78, 205, 196, 0.1);
+            border: 2px solid rgba(78, 205, 196, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .room-player.ready {
+            border-color: #2ecc71;
+            background: rgba(46, 204, 113, 0.1);
+        }
+        
+        .player-name {
+            font-weight: bold;
+            color: #4ecdc4;
+        }
+        
+        .player-ready-badge {
+            background: #2ecc71;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .public-room-item {
+            background: rgba(78, 205, 196, 0.1);
+            border: 2px solid rgba(78, 205, 196, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .public-room-item:hover {
+            background: rgba(78, 205, 196, 0.2);
+            border-color: #4ecdc4;
+            transform: translateX(5px);
+        }
+        
+        .room-code-badge {
+            display: inline-block;
+            background: #4ecdc4;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+    </style>
 
     <!-- Multiplayer Status Indicator -->
     <div id="multiplayer-status" class="multiplayer-status" style="display: none;">
@@ -18703,7 +18839,324 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             document.getElementById(viewId).style.display = 'block';
         }
         
-        function createMultiplayerRoom() {
+        // ============================================
+        // MULTIPLAYER ROOM & MATCHMAKING FUNCTIONS
+        // ============================================
+
+        let isPlayerReady = false;
+
+        async function createMultiplayerRoom() {
+            try {
+                // Check if user is logged in
+                const token = localStorage.getItem('romgon-jwt');
+                if (!token) {
+                    alert('Please log in to create a multiplayer room');
+                    return;
+                }
+
+                // Connect to WebSocket
+                if (!roomClient.socket || !roomClient.socket.connected) {
+                    roomClient.connect();
+                    // Wait a bit for connection
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+
+                showView('mp-create-room');
+                document.getElementById('room-code-display').textContent = 'Creating...';
+
+                const room = await roomClient.createRoom({ isPrivate: false });
+                
+                document.getElementById('room-code-display').textContent = room.code;
+                console.log('✅ Room created:', room);
+
+                // Setup room event handlers
+                roomClient.onPlayerJoinedRoom = (data) => {
+                    console.log('👤 Player joined:', data);
+                    updateRoomPlayersList(data.players);
+                    
+                    // Show ready button when both players present
+                    if (data.players && data.players.length === 2) {
+                        document.getElementById('ready-button').style.display = 'block';
+                    }
+                };
+
+                roomClient.onGameStarted = (data) => {
+                    console.log('🎮 Game starting!', data);
+                    closeMultiplayerModal();
+                    startMultiplayerGame(data.gameId);
+                };
+            } catch (error) {
+                console.error('❌ Error creating room:', error);
+                alert('Failed to create room: ' + error.message);
+                backToMultiplayerMenu();
+            }
+        }
+
+        async function startMatchmaking() {
+            try {
+                // Check if user is logged in
+                const token = localStorage.getItem('romgon-jwt');
+                if (!token) {
+                    alert('Please log in to use matchmaking');
+                    return;
+                }
+
+                // Connect to WebSocket
+                if (!roomClient.socket || !roomClient.socket.connected) {
+                    roomClient.connect();
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+
+                showView('mp-matchmaking');
+
+                const result = await roomClient.joinMatchmaking({ variant: 'standard' });
+
+                if (result.matched) {
+                    // Match found immediately
+                    console.log('🎯 Match found!', result.room);
+                    showView('mp-waiting-room');
+                    document.getElementById('waiting-room-code').textContent = result.room.code;
+                    startMultiplayerGame(result.room.gameId);
+                } else {
+                    // Waiting for match
+                    console.log('🔍 Searching for opponent...');
+                    
+                    // Setup callback for when match is found
+                    roomClient.onPlayerJoinedRoom = (data) => {
+                        if (data.players && data.players.length === 2) {
+                            console.log('🎯 Opponent found!');
+                            showView('mp-waiting-room');
+                            document.getElementById('waiting-room-code').textContent = roomClient.currentRoom.code;
+                            updateWaitingRoomPlayers(data.players);
+                        }
+                    };
+
+                    roomClient.onGameStarted = (data) => {
+                        console.log('🎮 Game starting!', data);
+                        closeMultiplayerModal();
+                        startMultiplayerGame(data.gameId);
+                    };
+                }
+            } catch (error) {
+                console.error('❌ Matchmaking error:', error);
+                alert('Matchmaking failed: ' + error.message);
+                backToMultiplayerMenu();
+            }
+        }
+
+        async function cancelMatchmaking() {
+            await roomClient.leaveMatchmaking();
+            backToMultiplayerMenu();
+        }
+
+        async function showPublicRooms() {
+            try {
+                showView('mp-public-rooms');
+                
+                const rooms = await roomClient.listPublicRooms();
+                const container = document.getElementById('public-rooms-list');
+
+                if (rooms.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: #888;">No public rooms available</p>';
+                } else {
+                    container.innerHTML = rooms.map(room => `
+                        <div class="public-room-item" onclick="joinPublicRoom('${room.code}')">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <strong>${room.hostUsername}'s Room</strong>
+                                    <span class="room-code-badge">${room.code}</span>
+                                </div>
+                                <div style="font-size: 14px; color: #888;">
+                                    ${room.playerCount}/${room.maxPlayers} players
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('❌ Error loading public rooms:', error);
+            }
+        }
+
+        async function joinPublicRoom(roomCode) {
+            try {
+                await joinMultiplayerRoomByCode(roomCode);
+            } catch (error) {
+                console.error('❌ Error joining public room:', error);
+                alert('Failed to join room: ' + error.message);
+            }
+        }
+        
+        function showJoinRoom() {
+            showView('mp-join-room');
+            document.getElementById('mp-error-message').textContent = '';
+            document.getElementById('room-code-input').value = '';
+        }
+        
+        async function joinMultiplayerRoom() {
+            const roomCode = document.getElementById('room-code-input').value.trim().toUpperCase();
+            await joinMultiplayerRoomByCode(roomCode);
+        }
+
+        async function joinMultiplayerRoomByCode(roomCode) {
+            try {
+                if (roomCode.length !== 6) {
+                    document.getElementById('mp-error-message').textContent = 'Room code must be 6 characters';
+                    return;
+                }
+
+                // Check if user is logged in
+                const token = localStorage.getItem('romgon-jwt');
+                if (!token) {
+                    alert('Please log in to join a multiplayer room');
+                    return;
+                }
+
+                // Connect to WebSocket
+                if (!roomClient.socket || !roomClient.socket.connected) {
+                    roomClient.connect();
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+
+                document.getElementById('mp-error-message').textContent = '';
+
+                const room = await roomClient.joinRoom(roomCode);
+                
+                console.log('✅ Joined room:', room);
+
+                showView('mp-waiting-room');
+                document.getElementById('waiting-room-code').textContent = room.code;
+                updateWaitingRoomPlayers(room.players);
+
+                // Setup room event handlers
+                roomClient.onPlayerReady = (data) => {
+                    console.log('✅ Player ready:', data);
+                    updateWaitingRoomPlayers(data.players);
+                };
+
+                roomClient.onGameStarted = (data) => {
+                    console.log('🎮 Game starting!', data);
+                    closeMultiplayerModal();
+                    startMultiplayerGame(data.gameId);
+                };
+            } catch (error) {
+                console.error('❌ Error joining room:', error);
+                document.getElementById('mp-error-message').textContent = error.message;
+            }
+        }
+
+        async function toggleReady() {
+            isPlayerReady = !isPlayerReady;
+            
+            const readyButton = document.getElementById('ready-button') || document.getElementById('waiting-ready-button');
+            if (readyButton) {
+                readyButton.textContent = isPlayerReady ? '✓ Ready' : 'Ready?';
+                readyButton.style.background = isPlayerReady 
+                    ? 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)'
+                    : 'linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%)';
+            }
+
+            await roomClient.setReady(isPlayerReady);
+        }
+
+        function updateRoomPlayersList(players) {
+            const container = document.getElementById('room-players-list');
+            if (!container || !players) return;
+
+            container.innerHTML = players.map(player => `
+                <div class="room-player ${player.ready ? 'ready' : ''}">
+                    <span class="player-name">${player.username} (${player.color})</span>
+                    ${player.ready ? '<span class="player-ready-badge">✓ Ready</span>' : ''}
+                </div>
+            `).join('');
+        }
+
+        function updateWaitingRoomPlayers(players) {
+            const container = document.getElementById('waiting-room-players');
+            if (!container || !players) return;
+
+            container.innerHTML = players.map(player => `
+                <div class="room-player ${player.ready ? 'ready' : ''}">
+                    <span class="player-name">${player.username} (${player.color})</span>
+                    ${player.ready ? '<span class="player-ready-badge">✓ Ready</span>' : ''}
+                </div>
+            `).join('');
+        }
+
+        async function leaveWaitingRoom() {
+            await roomClient.leaveRoom();
+            isPlayerReady = false;
+            backToMultiplayerMenu();
+        }
+
+        function cancelCreateRoom() {
+            if (roomClient.currentRoom) {
+                roomClient.leaveRoom();
+            }
+            resetMultiplayerState();
+            showView('mp-main-menu');
+        }
+        
+        function backToMultiplayerMenu() {
+            showView('mp-main-menu');
+            document.getElementById('mp-error-message').textContent = '';
+            isPlayerReady = false;
+        }
+
+        function startMultiplayerGame(gameId) {
+            console.log('🎮 Starting multiplayer game:', gameId);
+            
+            multiplayerMode = true;
+            
+            // Determine player color from room
+            if (roomClient.currentRoom && roomClient.currentRoom.players) {
+                const token = localStorage.getItem('romgon-jwt');
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const myPlayer = roomClient.currentRoom.players.find(p => p.userId === payload.userId);
+                
+                if (myPlayer) {
+                    myPlayerColor = myPlayer.color;
+                    console.log('👤 You are playing as:', myPlayerColor);
+                }
+            }
+
+            // Join the game room via WebSocket
+            roomClient.socket.emit('game:join', {
+                gameId,
+                userId: JSON.parse(atob(localStorage.getItem('romgon-jwt').split('.')[1])).userId
+            });
+
+            // Start the game
+            closeMultiplayerModal();
+            document.getElementById('multiplayer-status').style.display = 'block';
+            document.getElementById('room-info').style.display = 'block';
+            document.getElementById('current-room-code').textContent = roomClient.currentRoom?.code || gameId.slice(0, 6);
+            document.getElementById('player-color-display').textContent = myPlayerColor || 'Unknown';
+
+            // Initialize game
+            initGame();
+        }
+        
+        function updateConnectionStatus(status, text) {
+            const indicator = document.getElementById('connection-indicator');
+            const textElement = document.getElementById('connection-text');
+            
+            if (indicator) indicator.className = 'status-indicator ' + status;
+            if (textElement) textElement.textContent = text;
+        }
+        
+        function resetMultiplayerState() {
+            multiplayerMode = false;
+            myPlayerColor = null;
+            opponentConnected = false;
+            isPlayerReady = false;
+            if (document.getElementById('multiplayer-status')) {
+                document.getElementById('multiplayer-status').style.display = 'none';
+            }
+            if (document.getElementById('room-info')) {
+                document.getElementById('room-info').style.display = 'none';
+            }
+        }
             if (!socket || !socket.connected) {
                 document.getElementById('mp-error-message').textContent = 'Connecting to server...';
                 setTimeout(() => {
@@ -18715,66 +19168,6 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 }, 2000);
                 return;
             }
-            
-            // Request room creation
-            socket.emit('create-room', {
-                gameMode: 'full',
-                initialPieces: getPiecePositions()
-            });
-        }
-        
-        function showJoinRoom() {
-            showView('mp-join-room');
-            document.getElementById('mp-error-message').textContent = '';
-            document.getElementById('room-code-input').value = '';
-        }
-        
-        function joinMultiplayerRoom() {
-            const roomCode = document.getElementById('room-code-input').value.trim().toUpperCase();
-            
-            if (roomCode.length !== 6) {
-                document.getElementById('mp-error-message').textContent = 'Room code must be 6 characters';
-                return;
-            }
-            
-            if (!socket || !socket.connected) {
-                document.getElementById('mp-error-message').textContent = 'Not connected to server';
-                return;
-            }
-            
-            document.getElementById('mp-error-message').textContent = '';
-            socket.emit('join-room', { roomCode: roomCode });
-        }
-        
-        function cancelCreateRoom() {
-            if (socket && currentRoomCode) {
-                socket.disconnect();
-                socket = null;
-            }
-            resetMultiplayerState();
-            showView('mp-main-menu');
-        }
-        
-        function backToMultiplayerMenu() {
-            showView('mp-main-menu');
-            document.getElementById('mp-error-message').textContent = '';
-        }
-        
-        function updateConnectionStatus(status, text) {
-            const indicator = document.getElementById('connection-indicator');
-            const textElement = document.getElementById('connection-text');
-            
-            indicator.className = 'status-indicator ' + status;
-            textElement.textContent = text;
-        }
-        
-        function resetMultiplayerState() {
-            multiplayerMode = false;
-            myPlayerColor = null;
-            currentRoomCode = null;
-            opponentConnected = false;
-            document.getElementById('multiplayer-status').style.display = 'none';
-            document.getElementById('room-info').style.display = 'none';
         }
         
         // Game state synchronization functions
