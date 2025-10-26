@@ -1131,11 +1131,26 @@
                     cursor: pointer; font-weight: 600; border-bottom: 3px solid transparent;
                     transition: all 0.3s;
                 ">♟️ Gameplay</button>
+                <button onclick="switchPrefsTab('lobby')" id="tab-lobby" class="pref-tab" style="
+                    background: transparent; border: none; color: #888; padding: 12px 20px;
+                    cursor: pointer; font-weight: 600; border-bottom: 3px solid transparent;
+                    transition: all 0.3s;
+                ">🏠 Lobby</button>
                 <button onclick="switchPrefsTab('custom-games')" id="tab-custom-games" class="pref-tab" style="
                     background: transparent; border: none; color: #888; padding: 12px 20px;
                     cursor: pointer; font-weight: 600; border-bottom: 3px solid transparent;
                     transition: all 0.3s;
                 ">🎨 Custom Games</button>
+                <button onclick="switchPrefsTab('game-creator')" id="tab-game-creator" class="pref-tab" style="
+                    background: transparent; border: none; color: #888; padding: 12px 20px;
+                    cursor: pointer; font-weight: 600; border-bottom: 3px solid transparent;
+                    transition: all 0.3s;
+                ">🛠️ Game Creator</button>
+                <button onclick="switchPrefsTab('engine')" id="tab-engine" class="pref-tab" style="
+                    background: transparent; border: none; color: #888; padding: 12px 20px;
+                    cursor: pointer; font-weight: 600; border-bottom: 3px solid transparent;
+                    transition: all 0.3s;
+                ">⚡ Engine</button>
                 <button onclick="switchPrefsTab('account')" id="tab-account" class="pref-tab" style="
                     background: transparent; border: none; color: #888; padding: 12px 20px;
                     cursor: pointer; font-weight: 600; border-bottom: 3px solid transparent;
@@ -1227,32 +1242,41 @@
                             <input type="checkbox" id="settings-show-attack-moves" checked style="width: 18px; height: 18px; cursor: pointer;">
                             <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Show Attack Moves</span>
                         </label>
-                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Highlight attack moves differently</p>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Highlight attack moves with red indicators</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-show-threatened" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Show Threatened Pieces</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Highlight pieces under attack</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-show-last-move" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Highlight Last Move</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Show opponent's previous move</p>
                     </div>
                     
                     <div>
                         <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
                             <input type="checkbox" id="settings-confirm-moves" style="width: 18px; height: 18px; cursor: pointer;">
-                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Confirm Moves</span>
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Confirm Dangerous Moves</span>
                         </label>
-                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Require confirmation before moving</p>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Ask before risky moves (sacrifice, blunder)</p>
                     </div>
                     
-                    <h3 style="color: #4ecdc4; margin: 24px 0 12px 0; font-size: 1.2em;">⚙️ Game Features</h3>
-                    
-                    <div>
-                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
-                            <input type="checkbox" id="settings-auto-queen" checked style="width: 18px; height: 18px; cursor: pointer;">
-                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Auto-Promote to Queen</span>
-                        </label>
-                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Automatically promote rhombus to queen</p>
-                    </div>
+                    <h3 style="color: #4ecdc4; margin: 24px 0 12px 0; font-size: 1.2em;">⚙️ Input Controls</h3>
                     
                     <div>
                         <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
                             <input type="checkbox" id="settings-drag-drop" checked style="width: 18px; height: 18px; cursor: pointer;">
                             <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Enable Drag & Drop</span>
                         </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Drag pieces to move them</p>
                     </div>
                     
                     <div>
@@ -1260,25 +1284,237 @@
                             <input type="checkbox" id="settings-click-move" checked style="width: 18px; height: 18px; cursor: pointer;">
                             <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Enable Click-to-Move</span>
                         </label>
-                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Click piece then destination</p>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Click piece then destination hex</p>
                     </div>
                     
                     <div>
                         <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
-                            <input type="checkbox" id="settings-show-coords" style="width: 18px; height: 18px; cursor: pointer;">
-                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Show Coordinates</span>
+                            <input type="checkbox" id="settings-keyboard-navigation" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Keyboard Navigation</span>
                         </label>
-                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Display hex coordinates (0-0, 1-2, etc.)</p>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Use arrow keys and Enter to move</p>
                     </div>
                     
-                    <h3 style="color: #4ecdc4; margin: 24px 0 12px 0; font-size: 1.2em;">📊 Analysis</h3>
+                    <h3 style="color: #4ecdc4; margin: 24px 0 12px 0; font-size: 1.2em;">♟️ Game Rules</h3>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-auto-queen" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Auto-Promote to Queen</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Automatically promote rhombus reaching back line</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-enforce-legal-moves" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Enforce Legal Moves Only</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Prevent illegal moves (disable for testing)</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; color: #4ecdc4; font-weight: 600; margin-bottom: 8px; font-size: 0.95em;">Move Speed Limit</label>
+                        <select id="settings-move-speed" style="
+                            width: 100%; padding: 10px 12px; background: #1a1e26;
+                            border: 2px solid #a55eea; border-radius: 8px; color: #fff;
+                            font-size: 1em; cursor: pointer;
+                        ">
+                            <option value="none">None (instant moves)</option>
+                            <option value="250">Fast (0.25s delay)</option>
+                            <option value="500" selected>Normal (0.5s delay)</option>
+                            <option value="1000">Slow (1s delay)</option>
+                        </select>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 0;">Minimum time between moves (prevents accidents)</p>
+                    </div>
+                    
+                    <h3 style="color: #4ecdc4; margin: 24px 0 12px 0; font-size: 1.2em;">📊 Board Display</h3>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-show-coords" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Show Hex Coordinates</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Display coordinate labels (0-0, 1-2, etc.)</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-show-zones" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Show Zone Colors</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Color-code board zones (custom games)</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-piece-shadows" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Piece Shadows</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Add drop shadow to pieces for depth</p>
+                    </div>
+                    
+                    <h3 style="color: #4ecdc4; margin: 24px 0 12px 0; font-size: 1.2em;">📊 Analysis & Learning</h3>
                     
                     <div>
                         <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
                             <input type="checkbox" id="settings-engine-analysis" style="width: 18px; height: 18px; cursor: pointer;">
                             <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Enable Engine Analysis</span>
                         </label>
-                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Show position evaluation (Coming Soon)</p>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Show position evaluation bar (Coming Soon)</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-move-hints" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Show Move Hints</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Suggest good moves during games</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-blunder-warnings" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Warn About Blunders</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Alert when making a bad move</p>
+                    </div>
+                </div>
+                
+                <!-- LOBBY TAB -->
+                <div id="pref-panel-lobby" class="pref-panel" style="display: none; flex-direction: column; gap: 24px;">
+                    <h3 style="color: #4ecdc4; margin: 0 0 12px 0; font-size: 1.2em;">🎮 Matchmaking</h3>
+                    
+                    <div>
+                        <label style="display: block; color: #4ecdc4; font-weight: 600; margin-bottom: 8px; font-size: 0.95em;">Quick Match Time Control</label>
+                        <select id="settings-quickmatch-time" style="
+                            width: 100%; padding: 10px 12px; background: #1a1e26;
+                            border: 2px solid #a55eea; border-radius: 8px; color: #fff;
+                            font-size: 1em; cursor: pointer;
+                        ">
+                            <option value="1min">⚡ Bullet (1 min)</option>
+                            <option value="3min">🚀 Blitz (3 min)</option>
+                            <option value="5min" selected>⏱️ Rapid (5 min)</option>
+                            <option value="10min">🎯 Standard (10 min)</option>
+                            <option value="30min">♟️ Classical (30 min)</option>
+                            <option value="unlimited">∞ Unlimited</option>
+                        </select>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 0;">Default time for Quick Match</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; color: #4ecdc4; font-weight: 600; margin-bottom: 8px; font-size: 0.95em;">Skill Range</label>
+                        <select id="settings-skill-range" style="
+                            width: 100%; padding: 10px 12px; background: #1a1e26;
+                            border: 2px solid #a55eea; border-radius: 8px; color: #fff;
+                            font-size: 1em; cursor: pointer;
+                        ">
+                            <option value="strict">±50 rating (strict)</option>
+                            <option value="moderate" selected>±150 rating (moderate)</option>
+                            <option value="wide">±300 rating (wide)</option>
+                            <option value="any">Any rating</option>
+                        </select>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 0;">Match with similar skill level</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-auto-accept" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Auto-Accept Matches</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Automatically accept when match found</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-rematch-prompt" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Prompt for Rematch</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Ask after game if you want a rematch</p>
+                    </div>
+                    
+                    <h3 style="color: #4ecdc4; margin: 24px 0 12px 0; font-size: 1.2em;">👥 Social Features</h3>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-show-player-avatars" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Show Player Avatars</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Display profile pictures in lobby</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-show-player-count" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Show Online Player Count</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Display number of active players</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-lobby-chat" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Enable Lobby Chat</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Show global chat in main lobby</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-friend-notifications" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Friend Login Notifications</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Get notified when friends come online</p>
+                    </div>
+                    
+                    <h3 style="color: #4ecdc4; margin: 24px 0 12px 0; font-size: 1.2em;">🎨 Lobby Appearance</h3>
+                    
+                    <div>
+                        <label style="display: block; color: #4ecdc4; font-weight: 600; margin-bottom: 8px; font-size: 0.95em;">Game List Sort</label>
+                        <select id="settings-game-sort" style="
+                            width: 100%; padding: 10px 12px; background: #1a1e26;
+                            border: 2px solid #a55eea; border-radius: 8px; color: #fff;
+                            font-size: 1em; cursor: pointer;
+                        ">
+                            <option value="recent">📅 Most Recent</option>
+                            <option value="rating">⭐ Highest Rating</option>
+                            <option value="time">⏱️ Time Control</option>
+                            <option value="players">👥 Most Players</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-show-game-previews" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Show Game Previews</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Display board thumbnails in lobby</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-compact-lobby" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Compact Lobby View</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Show more games per screen</p>
+                    </div>
+                    
+                    <h3 style="color: #4ecdc4; margin: 24px 0 12px 0; font-size: 1.2em;">🔔 Game Invitations</h3>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-accept-challenges" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Accept Challenges from Anyone</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Allow strangers to invite you</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-friends-only" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Friends Only Mode</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Only accept from friends list</p>
                     </div>
                 </div>
                 
@@ -1403,6 +1639,301 @@
                             <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Enable Guest Access</span>
                         </label>
                         <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Allow playing without account creation</p>
+                    </div>
+                </div>
+                
+                <!-- GAME CREATOR TAB -->
+                <div id="pref-panel-game-creator" class="pref-panel" style="display: none; flex-direction: column; gap: 24px;">
+                    <h3 style="color: #4ecdc4; margin: 0 0 12px 0; font-size: 1.2em;">🛠️ Creator Interface</h3>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-show-grid-creator" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Show Hex Grid</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Display grid lines between hexagons</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-snap-to-grid" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Snap to Grid</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Auto-align pieces to hex centers</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-show-zone-names" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Show Zone Names</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Label zones with their names</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; color: #4ecdc4; font-weight: 600; margin-bottom: 8px; font-size: 0.95em;">Auto-Save Frequency</label>
+                        <select id="settings-autosave-freq" style="
+                            width: 100%; padding: 10px 12px; background: #1a1e26;
+                            border: 2px solid #a55eea; border-radius: 8px; color: #fff;
+                            font-size: 1em; cursor: pointer;
+                        ">
+                            <option value="off">Off (manual only)</option>
+                            <option value="30s">Every 30 seconds</option>
+                            <option value="1min">Every minute</option>
+                            <option value="3min" selected>Every 3 minutes</option>
+                            <option value="5min">Every 5 minutes</option>
+                        </select>
+                    </div>
+                    
+                    <h3 style="color: #4ecdc4; margin: 24px 0 12px 0; font-size: 1.2em;">🎨 Piece Tools</h3>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-multi-select" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Enable Multi-Select</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Select multiple pieces with Ctrl+Click</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-copy-paste" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Enable Copy/Paste</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Duplicate pieces with Ctrl+C/V</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-undo-redo" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Unlimited Undo/Redo</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Track full edit history</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; color: #4ecdc4; font-weight: 600; margin-bottom: 8px; font-size: 0.95em;">Piece Palette Layout</label>
+                        <select id="settings-palette-layout" style="
+                            width: 100%; padding: 10px 12px; background: #1a1e26;
+                            border: 2px solid #a55eea; border-radius: 8px; color: #fff;
+                            font-size: 1em; cursor: pointer;
+                        ">
+                            <option value="sidebar" selected>Sidebar (right panel)</option>
+                            <option value="bottom">Bottom toolbar</option>
+                            <option value="floating">Floating palette</option>
+                            <option value="popup">Click-to-open popup</option>
+                        </select>
+                    </div>
+                    
+                    <h3 style="color: #4ecdc4; margin: 24px 0 12px 0; font-size: 1.2em;">🧪 Testing & Validation</h3>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-auto-validate" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Auto-Validate Rules</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Check for errors while creating</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-playtest-mode" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Quick Playtest Mode</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Test game without saving (Alt+P)</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-warn-unfinished" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Warn About Incomplete Games</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Alert if missing pieces, zones, or patterns</p>
+                    </div>
+                    
+                    <h3 style="color: #4ecdc4; margin: 24px 0 12px 0; font-size: 1.2em;">📚 Templates & Presets</h3>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-show-templates" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Show Template Library</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Browse starting templates on launch</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-save-as-template" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Save Custom Templates</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Create reusable starting boards</p>
+                    </div>
+                </div>
+                
+                <!-- ENGINE TAB -->
+                <div id="pref-panel-engine" class="pref-panel" style="display: none; flex-direction: column; gap: 24px;">
+                    <h3 style="color: #4ecdc4; margin: 0 0 12px 0; font-size: 1.2em;">⚡ Performance Settings</h3>
+                    
+                    <div>
+                        <label style="display: block; color: #4ecdc4; font-weight: 600; margin-bottom: 8px; font-size: 0.95em;">Engine Strength</label>
+                        <select id="settings-engine-strength" style="
+                            width: 100%; padding: 10px 12px; background: #1a1e26;
+                            border: 2px solid #a55eea; border-radius: 8px; color: #fff;
+                            font-size: 1em; cursor: pointer;
+                        ">
+                            <option value="1">Level 1 (Beginner)</option>
+                            <option value="3">Level 3 (Novice)</option>
+                            <option value="5" selected>Level 5 (Intermediate)</option>
+                            <option value="7">Level 7 (Advanced)</option>
+                            <option value="10">Level 10 (Expert)</option>
+                            <option value="max">Maximum (Unlimited)</option>
+                        </select>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 0;">CPU strength for computer opponent</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; color: #4ecdc4; font-weight: 600; margin-bottom: 12px; font-size: 0.95em;">Search Depth</label>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <input type="range" id="settings-search-depth" min="3" max="20" step="1" value="10" style="flex: 1; cursor: pointer;">
+                            <span id="depth-value" style="color: #ffd700; font-weight: bold; min-width: 70px;">10 moves</span>
+                        </div>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 0;">How many moves ahead to analyze</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; color: #4ecdc4; font-weight: 600; margin-bottom: 8px; font-size: 0.95em;">Move Time Limit</label>
+                        <select id="settings-move-time-limit" style="
+                            width: 100%; padding: 10px 12px; background: #1a1e26;
+                            border: 2px solid #a55eea; border-radius: 8px; color: #fff;
+                            font-size: 1em; cursor: pointer;
+                        ">
+                            <option value="100">0.1s (Lightning)</option>
+                            <option value="500">0.5s (Fast)</option>
+                            <option value="1000">1s (Quick)</option>
+                            <option value="3000" selected>3s (Normal)</option>
+                            <option value="5000">5s (Thoughtful)</option>
+                            <option value="10000">10s (Deep)</option>
+                            <option value="unlimited">Unlimited (Best Move)</option>
+                        </select>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 0;">Max time per move calculation</p>
+                    </div>
+                    
+                    <h3 style="color: #4ecdc4; margin: 24px 0 12px 0; font-size: 1.2em;">🧠 AI Behavior</h3>
+                    
+                    <div>
+                        <label style="display: block; color: #4ecdc4; font-weight: 600; margin-bottom: 8px; font-size: 0.95em;">Playing Style</label>
+                        <select id="settings-ai-style" style="
+                            width: 100%; padding: 10px 12px; background: #1a1e26;
+                            border: 2px solid #a55eea; border-radius: 8px; color: #fff;
+                            font-size: 1em; cursor: pointer;
+                        ">
+                            <option value="balanced" selected>⚖️ Balanced</option>
+                            <option value="aggressive">⚔️ Aggressive (attacks)</option>
+                            <option value="defensive">🛡️ Defensive (safe)</option>
+                            <option value="positional">♟️ Positional (strategic)</option>
+                            <option value="tactical">🎯 Tactical (tricky)</option>
+                            <option value="random">🎲 Random (unpredictable)</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-opening-book" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Use Opening Book</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Play known openings (first 10 moves)</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-endgame-tables" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Endgame Tablebases</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Perfect play in 5-piece endgames</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-contempt-factor" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Contempt (Avoid Draws)</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Engine prefers winning chances over draws</p>
+                    </div>
+                    
+                    <h3 style="color: #4ecdc4; margin: 24px 0 12px 0; font-size: 1.2em;">📊 Analysis Display</h3>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-show-eval-bar" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Show Evaluation Bar</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Display position advantage (±score)</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-show-best-move" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Highlight Best Move</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Show engine's top choice</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-multi-pv" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Show Multiple Lines</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Display top 3 move candidates</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; color: #4ecdc4; font-weight: 600; margin-bottom: 8px; font-size: 0.95em;">Analysis Updates</label>
+                        <select id="settings-analysis-frequency" style="
+                            width: 100%; padding: 10px 12px; background: #1a1e26;
+                            border: 2px solid #a55eea; border-radius: 8px; color: #fff;
+                            font-size: 1em; cursor: pointer;
+                        ">
+                            <option value="realtime" selected>Real-time (live)</option>
+                            <option value="1s">Every 1 second</option>
+                            <option value="3s">Every 3 seconds</option>
+                            <option value="5s">Every 5 seconds</option>
+                            <option value="manual">Manual only (Ctrl+A)</option>
+                        </select>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 0;">How often to refresh analysis</p>
+                    </div>
+                    
+                    <h3 style="color: #4ecdc4; margin: 24px 0 12px 0; font-size: 1.2em;">🔧 Advanced Tuning</h3>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-multi-threading" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Multi-Threading</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Use all CPU cores (4x faster on quad-core)</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; color: #4ecdc4; font-weight: 600; margin-bottom: 8px; font-size: 0.95em;">Hash Table Size</label>
+                        <select id="settings-hash-size" style="
+                            width: 100%; padding: 10px 12px; background: #1a1e26;
+                            border: 2px solid #a55eea; border-radius: 8px; color: #fff;
+                            font-size: 1em; cursor: pointer;
+                        ">
+                            <option value="16">16 MB (Low RAM)</option>
+                            <option value="64">64 MB (Standard)</option>
+                            <option value="128" selected>128 MB (Recommended)</option>
+                            <option value="256">256 MB (High)</option>
+                            <option value="512">512 MB (Maximum)</option>
+                        </select>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 0;">Memory for move caching</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-syzygy-probe" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Syzygy Tablebase Probing</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Query online endgame databases</p>
                     </div>
                 </div>
                 
