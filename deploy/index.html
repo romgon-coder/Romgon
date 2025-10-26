@@ -2756,20 +2756,233 @@
         '🎮', '🎯', '🏆', '👑', '⚔️', '🛡️', '🎲', '🃏'
     ];
     
-    // Badge system with unlock requirements
+    // Comprehensive Badge System - 210+ Badges
     const BADGE_SYSTEM = {
-        '🆕 Newcomer': { requirement: 'Default badge', unlocked: true },
-        '🎯 First Victory': { requirement: 'Win 1 game', games_won: 1 },
-        '🔥 Hot Streak': { requirement: 'Win 5 games in a row', win_streak: 5 },
-        '⚔️ Warrior': { requirement: 'Win 10 games', games_won: 10 },
-        '🏆 Champion': { requirement: 'Win 25 games', games_won: 25 },
-        '👑 Legend': { requirement: 'Win 50 games', games_won: 50 },
-        '💎 Master': { requirement: 'Win 100 games', games_won: 100 },
-        '🎓 Scholar': { requirement: 'Play 50 games', games_played: 50 },
-        '🎮 Veteran': { requirement: 'Play 100 games', games_played: 100 },
-        '⚡ Speed Demon': { requirement: 'Win in under 10 moves', fastest_win: 10 },
-        '🛡️ Defender': { requirement: 'Win without losing a piece', perfect_win: 1 },
-        '🎯 Sharpshooter': { requirement: 'Capture 100 pieces total', total_captures: 100 }
+        // ===== 🏆 ACHIEVEMENT BADGES (First Steps) =====
+        '🎮 First Move': { category: 'Achievement', rarity: 'common', requirement: 'Make your first move', unlocked: true, points: 5 },
+        '🎯 First Game': { category: 'Achievement', rarity: 'common', requirement: 'Complete your first game', games_played: 1, points: 10 },
+        '🥇 First Victory': { category: 'Achievement', rarity: 'common', requirement: 'Win your first game', games_won: 1, points: 25 },
+        '🏆 First Checkmate': { category: 'Achievement', rarity: 'common', requirement: 'Win by checkmate', checkmate_wins: 1, points: 30 },
+        '🎪 First Base Capture': { category: 'Achievement', rarity: 'common', requirement: 'Win by base capture', base_capture_wins: 1, points: 30 },
+        
+        // Game Count Milestones
+        '🎲 Apprentice Player': { category: 'Achievement', rarity: 'common', requirement: 'Play 10 games', games_played: 10, points: 50 },
+        '🎯 Dedicated Player': { category: 'Achievement', rarity: 'uncommon', requirement: 'Play 50 games', games_played: 50, points: 100 },
+        '🎮 Veteran Player': { category: 'Achievement', rarity: 'rare', requirement: 'Play 100 games', games_played: 100, points: 250 },
+        '🏆 Master Player': { category: 'Achievement', rarity: 'epic', requirement: 'Play 500 games', games_played: 500, points: 1000 },
+        '💎 Legend Player': { category: 'Achievement', rarity: 'legendary', requirement: 'Play 1000 games', games_played: 1000, points: 2500 },
+        
+        // Win Streaks
+        '🔥 On Fire': { category: 'Achievement', rarity: 'uncommon', requirement: 'Win 3 games in a row', win_streak: 3, points: 75 },
+        '🌟 Unstoppable': { category: 'Achievement', rarity: 'rare', requirement: 'Win 5 games in a row', win_streak: 5, points: 150 },
+        '⚡ Dominating': { category: 'Achievement', rarity: 'epic', requirement: 'Win 10 games in a row', win_streak: 10, points: 500 },
+        '🌪️ Unstoppable Force': { category: 'Achievement', rarity: 'legendary', requirement: 'Win 20 games in a row', win_streak: 20, points: 1500 },
+        
+        // Win Count Milestones
+        '🥈 Ten Victories': { category: 'Achievement', rarity: 'common', requirement: 'Achieve 10 wins', games_won: 10, points: 100 },
+        '🥇 Half Century': { category: 'Achievement', rarity: 'uncommon', requirement: 'Achieve 50 wins', games_won: 50, points: 300 },
+        '🏆 Centurion': { category: 'Achievement', rarity: 'rare', requirement: 'Achieve 100 wins', games_won: 100, points: 750 },
+        '👑 Champion': { category: 'Achievement', rarity: 'epic', requirement: 'Achieve 500 wins', games_won: 500, points: 2500 },
+        '🌟 Immortal': { category: 'Achievement', rarity: 'legendary', requirement: 'Achieve 1000 wins', games_won: 1000, points: 10000 },
+        
+        // ===== 🎯 SKILL BADGES (Performance) =====
+        // Speed & Efficiency
+        '⚡ Lightning Fast': { category: 'Skill', rarity: 'uncommon', requirement: 'Win in under 15 moves', fastest_win: 15, points: 100 },
+        '🚀 Blitz Master': { category: 'Skill', rarity: 'rare', requirement: 'Win 10 games in under 20 moves', fast_wins_count: 10, points: 300 },
+        '💨 Speed Demon': { category: 'Skill', rarity: 'epic', requirement: 'Win in under 10 moves', fastest_win: 10, points: 500 },
+        '�️ Fastest Win Record': { category: 'Skill', rarity: 'legendary', requirement: 'Win in 8 moves or less', fastest_win: 8, points: 1000 },
+        
+        // Win Rate Excellence
+        '📊 Solid Record': { category: 'Skill', rarity: 'uncommon', requirement: '60% win rate (20+ games)', win_rate: 60, min_games: 20, points: 150 },
+        '🎯 Sharp Player': { category: 'Skill', rarity: 'rare', requirement: '70% win rate (50+ games)', win_rate: 70, min_games: 50, points: 400 },
+        '🏆 Dominant Force': { category: 'Skill', rarity: 'epic', requirement: '80% win rate (100+ games)', win_rate: 80, min_games: 100, points: 1000 },
+        '👑 Untouchable': { category: 'Skill', rarity: 'legendary', requirement: '90% win rate (200+ games)', win_rate: 90, min_games: 200, points: 5000 },
+        
+        // Perfect Games
+        '✨ Flawless Victory': { category: 'Skill', rarity: 'rare', requirement: 'Win without losing pieces', perfect_wins: 1, points: 200 },
+        '💎 Perfection': { category: 'Skill', rarity: 'epic', requirement: 'Win 10 games without losing pieces', perfect_wins: 10, points: 750 },
+        '🌟 Untouchable Master': { category: 'Skill', rarity: 'legendary', requirement: 'Win 50 games without losing pieces', perfect_wins: 50, points: 3000 },
+        
+        // Comeback King
+        '🔄 Comeback Kid': { category: 'Skill', rarity: 'uncommon', requirement: 'Win from material disadvantage', comeback_wins: 1, points: 150 },
+        '🦅 Phoenix Rising': { category: 'Skill', rarity: 'rare', requirement: 'Win 10 comeback games', comeback_wins: 10, points: 400 },
+        '🔥 Miracle Worker': { category: 'Skill', rarity: 'epic', requirement: 'Win from 4-piece deficit', comeback_from_4: 1, points: 1000 },
+        
+        // ===== 🧠 STRATEGIC BADGES =====
+        // Tactical Genius
+        '🎯 Fork Master': { category: 'Strategic', rarity: 'uncommon', requirement: 'Execute 50 fork attacks', forks: 50, points: 200 },
+        '🗡️ Pin Specialist': { category: 'Strategic', rarity: 'rare', requirement: 'Pin 100 enemy pieces', pins: 100, points: 300 },
+        '♟️ Discovered Attack': { category: 'Strategic', rarity: 'rare', requirement: 'Execute 25 discovered attacks', discovered_attacks: 25, points: 350 },
+        '🧩 Tactical Genius': { category: 'Strategic', rarity: 'epic', requirement: '10 tactical moves in one game', tactics_single_game: 10, points: 500 },
+        
+        // Positional Mastery
+        '🏰 Fortress Builder': { category: 'Strategic', rarity: 'uncommon', requirement: 'Win 20 fortress games', fortress_wins: 20, points: 200 },
+        '🛡️ Defender': { category: 'Strategic', rarity: 'rare', requirement: 'Block 100 base captures', defenses: 100, points: 300 },
+        '🗺️ Zone Controller': { category: 'Strategic', rarity: 'epic', requirement: 'Control all zones at once', zone_control: 1, points: 500 },
+        '👁️ Positional Master': { category: 'Strategic', rarity: 'legendary', requirement: 'Win 50 games down material', material_disadvantage_wins: 50, points: 2000 },
+        
+        // Endgame Mastery
+        '🎭 Endgame Artist': { category: 'Strategic', rarity: 'rare', requirement: 'Win 20 Rhombus-only endgames', rhombus_only_wins: 20, points: 400 },
+        '⚔️ Minimal Pieces': { category: 'Strategic', rarity: 'epic', requirement: 'Win with only 2 pieces left', minimal_piece_wins: 1, points: 600 },
+        '� King Walk': { category: 'Strategic', rarity: 'legendary', requirement: 'Solo Rhombus base capture', solo_rhombus_win: 1, points: 1500 },
+        
+        // Opening Mastery
+        '📖 Opening Scholar': { category: 'Strategic', rarity: 'common', requirement: 'Try 10 different openings', unique_openings: 10, points: 100 },
+        '🎓 Opening Expert': { category: 'Strategic', rarity: 'rare', requirement: 'Play 100 games from same opening', same_opening: 100, points: 400 },
+        '📚 Opening Theorist': { category: 'Strategic', rarity: 'epic', requirement: 'Win with 20 different openings', unique_opening_wins: 20, points: 800 },
+        
+        // ===== ♟️ PIECE MASTERY BADGES =====
+        // Rhombus Mastery
+        '💎 Rhombus Guardian': { category: 'Piece Mastery', rarity: 'uncommon', requirement: 'Never lose Rhombus in 50 games', rhombus_survival: 50, points: 200 },
+        '👑 Kings March': { category: 'Piece Mastery', rarity: 'rare', requirement: '20 Rhombus base captures', rhombus_captures: 20, points: 400 },
+        '🏆 Rhombus Master': { category: 'Piece Mastery', rarity: 'epic', requirement: '100 base capture wins', rhombus_captures: 100, points: 1000 },
+        
+        // Hexagon Mastery
+        '⬡ Hexagon Apprentice': { category: 'Piece Mastery', rarity: 'common', requirement: '50 Hexagon captures', hexagon_captures: 50, points: 100 },
+        '🌀 Rotation Specialist': { category: 'Piece Mastery', rarity: 'uncommon', requirement: '100 Hexagon rotations', hexagon_rotations: 100, points: 200 },
+        '⚡ Hexagon Dominance': { category: 'Piece Mastery', rarity: 'rare', requirement: '5 captures with one Hexagon', hexagon_multi_capture: 5, points: 500 },
+        '🎯 Hexagon Master': { category: 'Piece Mastery', rarity: 'epic', requirement: 'Hexagon MVP 50 times', hexagon_mvp: 50, points: 1500 },
+        
+        // Triangle Mastery
+        '🔺 Triangle Tactician': { category: 'Piece Mastery', rarity: 'common', requirement: '50 Triangle captures', triangle_captures: 50, points: 100 },
+        '🗡️ Directional Strike': { category: 'Piece Mastery', rarity: 'uncommon', requirement: '25 combo moves with Triangle', triangle_combos: 25, points: 250 },
+        '🎯 Arrow Strike': { category: 'Piece Mastery', rarity: 'rare', requirement: '3 linear captures in one game', triangle_linear: 3, points: 400 },
+        '⚔️ Triangle Master': { category: 'Piece Mastery', rarity: 'epic', requirement: 'Triangle MVP 50 times', triangle_mvp: 50, points: 1500 },
+        
+        // Square Mastery
+        '🟦 Square Defender': { category: 'Piece Mastery', rarity: 'common', requirement: '100 defensive blocks', square_blocks: 100, points: 100 },
+        '🏰 Fortress Piece': { category: 'Piece Mastery', rarity: 'uncommon', requirement: 'All Squares survive 30 games', square_survival: 30, points: 300 },
+        '🛡️ Wall of Steel': { category: 'Piece Mastery', rarity: 'rare', requirement: 'Win with 0 Square losses', square_perfect: 1, points: 500 },
+        '🏆 Square Master': { category: 'Piece Mastery', rarity: 'epic', requirement: 'Square MVP 50 times', square_mvp: 50, points: 1500 },
+        
+        // Circle Mastery
+        '⚪ Circle Striker': { category: 'Piece Mastery', rarity: 'common', requirement: '50 Circle captures', circle_captures: 50, points: 100 },
+        '� Jump Master': { category: 'Piece Mastery', rarity: 'uncommon', requirement: '100 Circle jumps', circle_jumps: 100, points: 200 },
+        '🌟 Surprise Attack': { category: 'Piece Mastery', rarity: 'rare', requirement: '50 surprise Circle captures', circle_surprise: 50, points: 400 },
+        '�🏆 Circle Master': { category: 'Piece Mastery', rarity: 'epic', requirement: 'Circle MVP 50 times', circle_mvp: 50, points: 1500 },
+        
+        // ===== 🎮 GAME MODE BADGES =====
+        // Standard Romgon
+        '🎯 Standard Player': { category: 'Game Mode', rarity: 'common', requirement: '10 Standard games', standard_games: 10, points: 50 },
+        '🏆 Standard Expert': { category: 'Game Mode', rarity: 'uncommon', requirement: '50 Standard wins', standard_wins: 50, points: 300 },
+        '👑 Standard Master': { category: 'Game Mode', rarity: 'rare', requirement: '200 Standard wins', standard_wins: 200, points: 1000 },
+        
+        // Shapes Defense
+        '🛡️ Defense Initiate': { category: 'Game Mode', rarity: 'common', requirement: '10 Shapes Defense games', defense_games: 10, points: 50 },
+        '🏰 Fortress Commander': { category: 'Game Mode', rarity: 'uncommon', requirement: '50 Shapes Defense wins', defense_wins: 50, points: 300 },
+        '�️ Defense Master': { category: 'Game Mode', rarity: 'rare', requirement: '200 Shapes Defense wins', defense_wins: 200, points: 1000 },
+        
+        // Rhombus Original
+        '♦️ Original Player': { category: 'Game Mode', rarity: 'common', requirement: '10 Rhombus Original games', original_games: 10, points: 50 },
+        '⚡ Speed Specialist': { category: 'Game Mode', rarity: 'uncommon', requirement: '50 Rhombus Original wins', original_wins: 50, points: 300 },
+        '💎 Original Master': { category: 'Game Mode', rarity: 'rare', requirement: '200 Rhombus Original wins', original_wins: 200, points: 1000 },
+        
+        // Fortress Mode
+        '🏰 Fortress Beginner': { category: 'Game Mode', rarity: 'common', requirement: '10 Fortress games', fortress_games: 10, points: 50 },
+        '� Siege Expert': { category: 'Game Mode', rarity: 'uncommon', requirement: '50 Fortress wins', fortress_wins_mode: 50, points: 300 },
+        '👑 Fortress Master': { category: 'Game Mode', rarity: 'rare', requirement: '200 Fortress wins', fortress_wins_mode: 200, points: 1000 },
+        
+        // Versatility
+        '🎨 Versatile Player': { category: 'Game Mode', rarity: 'uncommon', requirement: 'Win in all 4 game modes', all_modes: 1, points: 200 },
+        '🌟 Jack of All Trades': { category: 'Game Mode', rarity: 'rare', requirement: '10 wins in each mode', all_modes_10: 1, points: 600 },
+        '🏆 Master of All': { category: 'Game Mode', rarity: 'epic', requirement: '100 wins in each mode', all_modes_100: 1, points: 3000 },
+        
+        // ===== 👥 SOCIAL BADGES =====
+        '👋 Friendly Player': { category: 'Social', rarity: 'common', requirement: '10 games with friends', friend_games: 10, points: 100 },
+        '💬 Chatty': { category: 'Social', rarity: 'common', requirement: '100 chat messages', chat_messages: 100, points: 50 },
+        '🤝 Good Sport': { category: 'Social', rarity: 'uncommon', requirement: '50 GG reactions', gg_received: 50, points: 200 },
+        '🌟 Popular Player': { category: 'Social', rarity: 'rare', requirement: '50 friends', friends_count: 50, points: 300 },
+        '👑 Community Leader': { category: 'Social', rarity: 'epic', requirement: '100 helpful forum posts', forum_posts: 100, points: 1000 },
+        
+        // Teaching & Mentoring
+        '🎓 Teacher': { category: 'Social', rarity: 'uncommon', requirement: 'Help 10 new players', tutorials: 10, points: 300 },
+        '📚 Mentor': { category: 'Social', rarity: 'rare', requirement: 'Mentor 25 players', mentorships: 25, points: 750 },
+        '🏆 Master Teacher': { category: 'Social', rarity: 'epic', requirement: 'Create 10 guides', guides_created: 10, points: 1500 },
+        
+        // Spectating
+        '👁️ Observer': { category: 'Social', rarity: 'common', requirement: 'Watch 20 complete games', spectated: 20, points: 50 },
+        '🎬 Spectator': { category: 'Social', rarity: 'uncommon', requirement: 'Watch 100 complete games', spectated: 100, points: 200 },
+        '📺 Viewer Extraordinaire': { category: 'Social', rarity: 'rare', requirement: 'Watch 500 complete games', spectated: 500, points: 750 },
+        
+        // ===== 🎨 CREATOR BADGES =====
+        // Game Creation
+        '🎨 First Creation': { category: 'Creator', rarity: 'common', requirement: 'Create your first game', games_created: 1, points: 100 },
+        '🛠️ Game Designer': { category: 'Creator', rarity: 'uncommon', requirement: 'Create 10 custom games', games_created: 10, points: 300 },
+        '🏗️ Prolific Creator': { category: 'Creator', rarity: 'rare', requirement: 'Create 50 custom games', games_created: 50, points: 1000 },
+        '👑 Master Creator': { category: 'Creator', rarity: 'epic', requirement: 'Create 100 custom games', games_created: 100, points: 3000 },
+        
+        // Popular Creations
+        '⭐ First Plays': { category: 'Creator', rarity: 'common', requirement: '10 plays on a game', game_plays: 10, points: 150 },
+        '� Popular Game': { category: 'Creator', rarity: 'uncommon', requirement: '100 plays on a game', game_plays: 100, points: 400 },
+        '🔥 Viral Game': { category: 'Creator', rarity: 'rare', requirement: '1000 plays on a game', game_plays: 1000, points: 1500 },
+        '💎 Legendary Creator': { category: 'Creator', rarity: 'legendary', requirement: '10K total plays', total_plays: 10000, points: 5000 },
+        
+        // Quality & Recognition
+        '⭐ Well Rated': { category: 'Creator', rarity: 'uncommon', requirement: '4+ star average on 10 games', rated_games: 10, points: 300 },
+        '🏆 Highly Rated': { category: 'Creator', rarity: 'rare', requirement: '4.5+ stars on 20 games', highly_rated: 20, points: 800 },
+        '💫 Perfect Score': { category: 'Creator', rarity: 'epic', requirement: '5 stars with 50+ ratings', perfect_rating: 1, points: 2000 },
+        '👑 Game of the Week': { category: 'Creator', rarity: 'legendary', requirement: 'Featured game', featured: 1, points: 3000 },
+        
+        // Innovation
+        '💡 Innovative Mechanic': { category: 'Creator', rarity: 'rare', requirement: 'Create unique mechanic', innovative: 1, points: 1000 },
+        '🎯 Balanced Designer': { category: 'Creator', rarity: 'epic', requirement: 'Game with <5% draw rate', balanced_game: 1, points: 2000 },
+        '🌟 Genre Creator': { category: 'Creator', rarity: 'legendary', requirement: 'Create new game category', genre_creator: 1, points: 5000 },
+        
+        // ===== 🏅 COMPETITIVE BADGES =====
+        // Rating Milestones
+        '🥉 Bronze Rank': { category: 'Competitive', rarity: 'common', requirement: 'Reach 1400 rating', rating: 1400, points: 100 },
+        '🥈 Silver Rank': { category: 'Competitive', rarity: 'uncommon', requirement: 'Reach 1600 rating', rating: 1600, points: 300 },
+        '🥇 Gold Rank': { category: 'Competitive', rarity: 'rare', requirement: 'Reach 1800 rating', rating: 1800, points: 750 },
+        '💎 Diamond Rank': { category: 'Competitive', rarity: 'epic', requirement: 'Reach 2000 rating', rating: 2000, points: 2000 },
+        '👑 Master Rank': { category: 'Competitive', rarity: 'legendary', requirement: 'Reach 2200 rating', rating: 2200, points: 5000 },
+        '🌟 Grandmaster': { category: 'Competitive', rarity: 'mythic', requirement: 'Reach 2400+ rating', rating: 2400, points: 10000 },
+        
+        // Tournament Achievements
+        '🏆 Tournament Participant': { category: 'Competitive', rarity: 'common', requirement: 'Join a tournament', tournaments: 1, points: 100 },
+        '🎖️ Tournament Winner': { category: 'Competitive', rarity: 'rare', requirement: 'Win a tournament', tournament_wins: 1, points: 1000 },
+        '🥇 Triple Crown': { category: 'Competitive', rarity: 'epic', requirement: 'Win 3 tournaments', tournament_wins: 3, points: 3000 },
+        '👑 Tournament Champion': { category: 'Competitive', rarity: 'legendary', requirement: 'Win 10 tournaments', tournament_wins: 10, points: 10000 },
+        
+        // Ranked Performance
+        '📈 Climber': { category: 'Competitive', rarity: 'uncommon', requirement: '+100 ELO in 30 days', rating_gain_month: 100, points: 200 },
+        '🚀 Rocket Rise': { category: 'Competitive', rarity: 'rare', requirement: '+200 ELO in 30 days', rating_gain_month: 200, points: 500 },
+        '⚡ Meteoric Rise': { category: 'Competitive', rarity: 'epic', requirement: '+300 ELO in 30 days', rating_gain_month: 300, points: 1500 },
+        '🏆 Top 10': { category: 'Competitive', rarity: 'legendary', requirement: 'Reach top 10 on leaderboard', leaderboard_rank: 10, points: 5000 },
+        '� #1 Player': { category: 'Competitive', rarity: 'mythic', requirement: 'Reach #1 global rank', leaderboard_rank: 1, points: 25000 },
+        
+        // ===== 🌟 RARE & SPECIAL BADGES =====
+        // Lucky Achievements
+        '🍀 Lucky Break': { category: 'Rare', rarity: 'rare', requirement: 'Win from forced move', lucky_win: 1, points: 500 },
+        '🎰 Against All Odds': { category: 'Rare', rarity: 'epic', requirement: 'Win with 10% probability', unlikely_win: 1, points: 1500 },
+        '✨ Miracle': { category: 'Rare', rarity: 'legendary', requirement: 'Win with 1% probability', miracle_win: 1, points: 5000 },
+        
+        // AI Achievements
+        '🤖 AI Challenger': { category: 'Rare', rarity: 'common', requirement: '50 games against AI', ai_games: 50, points: 100 },
+        '🧠 AI Destroyer': { category: 'Rare', rarity: 'rare', requirement: 'Beat AI max difficulty', ai_max_win: 1, points: 750 },
+        '💻 Machine Slayer': { category: 'Rare', rarity: 'epic', requirement: '100 wins vs max AI', ai_max_wins: 100, points: 2500 },
+        
+        // ChatGPT Mode
+        '🤖💬 AI Assisted': { category: 'Rare', rarity: 'common', requirement: 'Use ChatGPT mode 10 times', chatgpt_uses: 10, points: 50 },
+        '🧠 Learning with AI': { category: 'Rare', rarity: 'uncommon', requirement: 'Follow 50 AI suggestions', chatgpt_followed: 50, points: 200 },
+        '🎓 AI Graduate': { category: 'Rare', rarity: 'rare', requirement: 'Improve after AI training', ai_improvement: 1, points: 500 },
+        
+        // ===== 📊 ANALYTICS BADGES =====
+        '📊 Statistician': { category: 'Analytics', rarity: 'common', requirement: 'View dashboard 50 times', dashboard_views: 50, points: 50 },
+        '📈 Data Analyst': { category: 'Analytics', rarity: 'uncommon', requirement: 'Export data 10 times', data_exports: 10, points: 100 },
+        '🔍 Performance Tracker': { category: 'Analytics', rarity: 'rare', requirement: 'Review 100 replays', replays_viewed: 100, points: 300 },
+        '📝 Record Keeper': { category: 'Analytics', rarity: 'uncommon', requirement: 'Set 10 personal records', personal_records: 10, points: 200 },
+        '� Achievement Hunter': { category: 'Analytics', rarity: 'rare', requirement: 'Unlock 50 badges', badges_unlocked: 50, points: 500 },
+        '💎 Completionist': { category: 'Analytics', rarity: 'epic', requirement: 'Unlock 100 badges', badges_unlocked: 100, points: 2500 },
+        '🌟 Ultimate Collector': { category: 'Analytics', rarity: 'legendary', requirement: 'Unlock 200 badges', badges_unlocked: 200, points: 10000 },
+        
+        // ===== 🔥 LEGENDARY & MYTHIC BADGES =====
+        '🏆 Undefeated Streak': { category: 'Legendary', rarity: 'mythic', requirement: '50-game win streak', win_streak: 50, points: 10000 },
+        '👑 Perfect Season': { category: 'Legendary', rarity: 'mythic', requirement: '100 wins in a month (100%)', perfect_season: 1, points: 25000 },
+        '💎 Flawless Master': { category: 'Legendary', rarity: 'mythic', requirement: '100 perfect victories in a row', perfect_streak: 100, points: 50000 },
+        '⚡ Lightning God': { category: 'Legendary', rarity: 'mythic', requirement: '100 sub-10-move wins', lightning_wins: 100, points: 50000 },
+        '🌟 ROMGON Legend': { category: 'Legendary', rarity: 'mythic', requirement: 'Unlock all other badges', all_badges: 1, points: 100000 },
+        '👁️ The Architect': { category: 'Legendary', rarity: 'mythic', requirement: '10K plays on one game', architect: 1, points: 25000 },
+        '🔥 Hall of Fame': { category: 'Legendary', rarity: 'mythic', requirement: 'Top 100 all-time player', hall_of_fame: 1, points: 100000 }
     };
     
     // Populate Settings tab
@@ -2818,43 +3031,157 @@
         // Get user stats
         const stats = getUserStats(currentUser.username) || {};
         
+        // Group badges by category
+        const badgesByCategory = {};
         Object.entries(BADGE_SYSTEM).forEach(([badge, data]) => {
-            const isUnlocked = checkBadgeUnlocked(data, stats);
-            const isSelected = badge === currentUser.badge;
-            
-            const badgeBtn = document.createElement('button');
-            badgeBtn.className = 'badge-option';
-            
-            if (isUnlocked) {
-                badgeBtn.classList.add('unlocked');
-                if (isSelected) {
-                    badgeBtn.classList.add('selected');
-                }
-                badgeBtn.onclick = () => selectBadge(badge);
-            } else {
-                badgeBtn.classList.add('locked');
-                badgeBtn.disabled = true;
+            const category = data.category || 'Other';
+            if (!badgesByCategory[category]) {
+                badgesByCategory[category] = [];
             }
-            
-            badgeBtn.innerHTML = `
-                <div class="badge-emoji">${badge.split(' ')[0]}</div>
-                <div class="badge-name">${badge.split(' ').slice(1).join(' ')}</div>
-                <div class="badge-requirement">${isUnlocked ? '✓ Unlocked' : '🔒 ' + data.requirement}</div>
+            badgesByCategory[category].push({ name: badge, data: data });
+        });
+        
+        // Render each category
+        Object.entries(badgesByCategory).forEach(([category, badges]) => {
+            // Category header
+            const categoryHeader = document.createElement('div');
+            categoryHeader.style.cssText = `
+                grid-column: 1 / -1;
+                color: #4ecdc4;
+                font-weight: 700;
+                font-size: 14px;
+                margin-top: 20px;
+                margin-bottom: 10px;
+                padding-bottom: 5px;
+                border-bottom: 2px solid rgba(78, 205, 196, 0.3);
             `;
+            categoryHeader.textContent = `${getCategoryIcon(category)} ${category.toUpperCase()}`;
+            badgeGrid.appendChild(categoryHeader);
             
-            badgeGrid.appendChild(badgeBtn);
+            // Render badges in category
+            badges.forEach(({ name: badge, data }) => {
+                const isUnlocked = checkBadgeUnlocked(data, stats);
+                const isSelected = badge === currentUser.badge;
+                
+                const badgeBtn = document.createElement('button');
+                badgeBtn.className = `badge-option ${data.rarity}`;
+                
+                if (isUnlocked) {
+                    badgeBtn.classList.add('unlocked');
+                    if (isSelected) {
+                        badgeBtn.classList.add('selected');
+                    }
+                    badgeBtn.onclick = () => selectBadge(badge);
+                } else {
+                    badgeBtn.classList.add('locked');
+                    badgeBtn.disabled = true;
+                }
+                
+                const badgeIcon = badge.split(' ')[0];
+                const badgeName = badge.split(' ').slice(1).join(' ');
+                
+                badgeBtn.innerHTML = `
+                    <div class="badge-emoji">${badgeIcon}</div>
+                    <div class="badge-name">${badgeName}</div>
+                    <div class="badge-rarity-tag ${data.rarity}">${data.rarity}</div>
+                    <div class="badge-requirement">${isUnlocked ? '✓ Unlocked' : '🔒 ' + data.requirement}</div>
+                    <div class="badge-points">${data.points} pts</div>
+                `;
+                
+                badgeGrid.appendChild(badgeBtn);
+            });
         });
     }
     
-    // Check if badge is unlocked
+    // Get category icon
+    function getCategoryIcon(category) {
+        const icons = {
+            'Achievement': '🏆',
+            'Skill': '🎯',
+            'Strategic': '🧠',
+            'Piece Mastery': '♟️',
+            'Game Mode': '🎮',
+            'Social': '👥',
+            'Creator': '🎨',
+            'Competitive': '🏅',
+            'Rare': '🌟',
+            'Analytics': '📊',
+            'Legendary': '🔥'
+        };
+        return icons[category] || '📌';
+    }
+    
+    // Check if badge is unlocked (comprehensive)
     function checkBadgeUnlocked(badgeData, stats) {
         if (badgeData.unlocked) return true;
         
+        // Basic stats
         if (badgeData.games_won && stats.gamesWon >= badgeData.games_won) return true;
         if (badgeData.games_played && stats.gamesPlayed >= badgeData.games_played) return true;
         if (badgeData.win_streak && stats.longestWinStreak >= badgeData.win_streak) return true;
         if (badgeData.fastest_win && stats.fastestWin && stats.fastestWin <= badgeData.fastest_win) return true;
+        
+        // Win rate (must have min games)
+        if (badgeData.win_rate && badgeData.min_games) {
+            if (stats.gamesPlayed >= badgeData.min_games) {
+                const winRate = (stats.gamesWon / stats.gamesPlayed) * 100;
+                if (winRate >= badgeData.win_rate) return true;
+            }
+        }
+        
+        // Perfect games
+        if (badgeData.perfect_wins && stats.perfectWins >= badgeData.perfect_wins) return true;
         if (badgeData.perfect_win && stats.perfectWins >= badgeData.perfect_win) return true;
+        
+        // Comeback wins
+        if (badgeData.comeback_wins && stats.comebackWins >= badgeData.comeback_wins) return true;
+        if (badgeData.comeback_from_4 && stats.comebackFrom4 >= badgeData.comeback_from_4) return true;
+        
+        // Tactical stats
+        if (badgeData.forks && stats.forks >= badgeData.forks) return true;
+        if (badgeData.pins && stats.pins >= badgeData.pins) return true;
+        if (badgeData.discovered_attacks && stats.discoveredAttacks >= badgeData.discovered_attacks) return true;
+        
+        // Piece-specific stats
+        if (badgeData.hexagon_captures && stats.hexagonCaptures >= badgeData.hexagon_captures) return true;
+        if (badgeData.triangle_captures && stats.triangleCaptures >= badgeData.triangle_captures) return true;
+        if (badgeData.square_blocks && stats.squareBlocks >= badgeData.square_blocks) return true;
+        if (badgeData.circle_captures && stats.circleCaptures >= badgeData.circle_captures) return true;
+        if (badgeData.rhombus_captures && stats.rhombusCaptures >= badgeData.rhombus_captures) return true;
+        
+        // Game mode stats
+        if (badgeData.standard_games && stats.standardGames >= badgeData.standard_games) return true;
+        if (badgeData.standard_wins && stats.standardWins >= badgeData.standard_wins) return true;
+        if (badgeData.defense_games && stats.defenseGames >= badgeData.defense_games) return true;
+        if (badgeData.defense_wins && stats.defenseWins >= badgeData.defense_wins) return true;
+        
+        // Rating
+        if (badgeData.rating && stats.rating >= badgeData.rating) return true;
+        
+        // Tournament
+        if (badgeData.tournaments && stats.tournaments >= badgeData.tournaments) return true;
+        if (badgeData.tournament_wins && stats.tournamentWins >= badgeData.tournament_wins) return true;
+        
+        // Social
+        if (badgeData.friend_games && stats.friendGames >= badgeData.friend_games) return true;
+        if (badgeData.chat_messages && stats.chatMessages >= badgeData.chat_messages) return true;
+        if (badgeData.friends_count && stats.friendsCount >= badgeData.friends_count) return true;
+        
+        // Creator
+        if (badgeData.games_created && stats.gamesCreated >= badgeData.games_created) return true;
+        if (badgeData.game_plays && stats.maxGamePlays >= badgeData.game_plays) return true;
+        if (badgeData.total_plays && stats.totalCreatorPlays >= badgeData.total_plays) return true;
+        
+        // Analytics
+        if (badgeData.badges_unlocked && stats.badgesUnlocked >= badgeData.badges_unlocked) return true;
+        if (badgeData.dashboard_views && stats.dashboardViews >= badgeData.dashboard_views) return true;
+        
+        // AI stats
+        if (badgeData.ai_games && stats.aiGames >= badgeData.ai_games) return true;
+        if (badgeData.ai_max_win && stats.aiMaxWin >= badgeData.ai_max_win) return true;
+        if (badgeData.ai_max_wins && stats.aiMaxWins >= badgeData.ai_max_wins) return true;
+        
+        // Captures
         if (badgeData.total_captures && stats.totalCaptures >= badgeData.total_captures) return true;
         
         return false;
@@ -5504,12 +5831,63 @@
             cursor: pointer;
             transition: all 0.3s;
             text-align: center;
+            position: relative;
+        }
+        
+        /* Rarity-based badge borders */
+        .badge-option.common {
+            border-color: rgba(158, 158, 158, 0.5);
+        }
+        
+        .badge-option.uncommon {
+            border-color: rgba(30, 255, 0, 0.5);
+        }
+        
+        .badge-option.rare {
+            border-color: rgba(0, 112, 221, 0.5);
+        }
+        
+        .badge-option.epic {
+            border-color: rgba(163, 53, 238, 0.5);
+        }
+        
+        .badge-option.legendary {
+            border-color: rgba(255, 128, 0, 0.5);
+        }
+        
+        .badge-option.mythic {
+            border-color: rgba(255, 0, 220, 0.7);
+            box-shadow: 0 0 20px rgba(255, 0, 220, 0.3);
         }
         
         .badge-option:hover:not(.locked) {
             transform: translateY(-2px);
-            border-color: #4ecdc4;
             background: rgba(78, 205, 196, 0.1);
+        }
+        
+        .badge-option.uncommon:hover:not(.locked) {
+            border-color: rgba(30, 255, 0, 0.8);
+            box-shadow: 0 4px 15px rgba(30, 255, 0, 0.3);
+        }
+        
+        .badge-option.rare:hover:not(.locked) {
+            border-color: rgba(0, 112, 221, 0.8);
+            box-shadow: 0 4px 15px rgba(0, 112, 221, 0.3);
+        }
+        
+        .badge-option.epic:hover:not(.locked) {
+            border-color: rgba(163, 53, 238, 0.8);
+            box-shadow: 0 4px 15px rgba(163, 53, 238, 0.3);
+        }
+        
+        .badge-option.legendary:hover:not(.locked) {
+            border-color: rgba(255, 128, 0, 0.8);
+            box-shadow: 0 4px 15px rgba(255, 128, 0, 0.3);
+        }
+        
+        .badge-option.mythic:hover:not(.locked) {
+            border-color: rgba(255, 0, 220, 1);
+            box-shadow: 0 4px 20px rgba(255, 0, 220, 0.5);
         }
         
         .badge-option.selected {
@@ -5536,13 +5914,62 @@
             font-size: 13px;
         }
         
+        .badge-rarity-tag {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin: 4px auto;
+            display: inline-block;
+            letter-spacing: 0.5px;
+        }
+        
+        .badge-rarity-tag.common {
+            background: rgba(158, 158, 158, 0.3);
+            color: #9e9e9e;
+        }
+        
+        .badge-rarity-tag.uncommon {
+            background: rgba(30, 255, 0, 0.2);
+            color: #1eff00;
+        }
+        
+        .badge-rarity-tag.rare {
+            background: rgba(0, 112, 221, 0.2);
+            color: #0070dd;
+        }
+        
+        .badge-rarity-tag.epic {
+            background: rgba(163, 53, 238, 0.2);
+            color: #a335ee;
+        }
+        
+        .badge-rarity-tag.legendary {
+            background: rgba(255, 128, 0, 0.2);
+            color: #ff8000;
+        }
+        
+        .badge-rarity-tag.mythic {
+            background: rgba(255, 0, 220, 0.2);
+            color: #ff00dc;
+        }
+        
         .badge-requirement {
             font-size: 11px;
             color: #888;
+            margin-top: 4px;
         }
         
         .badge-option.unlocked .badge-requirement {
             color: #4ecdc4;
+        }
+        
+        .badge-points {
+            font-size: 10px;
+            color: #ffd700;
+            margin-top: 4px;
+            font-weight: 600;
         }
         
         /* Delete Account Button */
@@ -7037,6 +7464,22 @@
                         " onmouseover="this.style.color='#2ecc71'; this.style.textShadow='0 0 15px rgba(39, 174, 96, 0.5)'" onmouseout="this.style.color='#27ae60'; this.style.textShadow='none'">FAQ & TIPS</a>
                         <span style="color: #666; font-size: 0.75em; margin-left: auto;">Questions • Strategies</span>
                     </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <span style="color: #ffd700; font-size: 1.6em;">🏆</span>
+                        <a onclick="openBadgeSystem()" style="
+                            color: #ffd700;
+                            font-size: 0.95em;
+                            font-weight: 600;
+                            cursor: pointer;
+                            text-decoration: none;
+                            letter-spacing: 1px;
+                            transition: all 0.3s ease;
+                            display: inline-block;
+                            white-space: nowrap;
+                        " onmouseover="this.style.color='#ffed4e'; this.style.textShadow='0 0 15px rgba(255, 215, 0, 0.5)'" onmouseout="this.style.color='#ffd700'; this.style.textShadow='none'">BADGE SYSTEM</a>
+                        <span style="color: #666; font-size: 0.75em; margin-left: auto;">210+ Badges • Achievements</span>
+                    </div>
                 </div>
             </div>
             
@@ -7770,6 +8213,186 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     }
     function closeFaqModal() {
         document.getElementById('faq-modal').style.display = 'none';
+    }
+    </script>
+    
+    <!-- Badge System Browser Modal -->
+    <div id="badge-system-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.92); z-index:10001; justify-content:center; align-items:center; overflow-y:auto;">
+        <div style="background:#262421; border:3px solid #ffd700; border-radius:20px; padding:40px 30px; max-width:1200px; width:95vw; margin:40px auto; box-shadow:0 10px 50px rgba(255,215,0,0.3); position:relative; color:#fff;">
+            <h2 style="color:#ffd700; text-align:center; margin-bottom:24px; font-size:2em;">🏆 ROMGON Badge System</h2>
+            <p style="text-align:center; color:#aaa; margin-bottom:30px;">210+ Badges across 11 categories • Unlock achievements through gameplay</p>
+            
+            <!-- Badge Category Filter -->
+            <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-bottom:30px;">
+                <button onclick="filterBadges('all')" class="badge-filter-btn active" data-filter="all" style="padding:8px 16px; background:rgba(255,215,0,0.2); border:2px solid #ffd700; border-radius:6px; color:#ffd700; cursor:pointer; font-weight:600; transition:all 0.3s;">All Badges</button>
+                <button onclick="filterBadges('Achievement')" class="badge-filter-btn" data-filter="Achievement" style="padding:8px 16px; background:rgba(255,255,255,0.05); border:2px solid #666; border-radius:6px; color:#aaa; cursor:pointer; font-weight:600; transition:all 0.3s;">🏆 Achievement</button>
+                <button onclick="filterBadges('Skill')" class="badge-filter-btn" data-filter="Skill" style="padding:8px 16px; background:rgba(255,255,255,0.05); border:2px solid #666; border-radius:6px; color:#aaa; cursor:pointer; font-weight:600; transition:all 0.3s;">🎯 Skill</button>
+                <button onclick="filterBadges('Strategic')" class="badge-filter-btn" data-filter="Strategic" style="padding:8px 16px; background:rgba(255,255,255,0.05); border:2px solid #666; border-radius:6px; color:#aaa; cursor:pointer; font-weight:600; transition:all 0.3s;">🧠 Strategic</button>
+                <button onclick="filterBadges('Piece Mastery')" class="badge-filter-btn" data-filter="Piece Mastery" style="padding:8px 16px; background:rgba(255,255,255,0.05); border:2px solid #666; border-radius:6px; color:#aaa; cursor:pointer; font-weight:600; transition:all 0.3s;">♟️ Piece Mastery</button>
+                <button onclick="filterBadges('Game Mode')" class="badge-filter-btn" data-filter="Game Mode" style="padding:8px 16px; background:rgba(255,255,255,0.05); border:2px solid #666; border-radius:6px; color:#aaa; cursor:pointer; font-weight:600; transition:all 0.3s;">🎮 Game Mode</button>
+                <button onclick="filterBadges('Social')" class="badge-filter-btn" data-filter="Social" style="padding:8px 16px; background:rgba(255,255,255,0.05); border:2px solid #666; border-radius:6px; color:#aaa; cursor:pointer; font-weight:600; transition:all 0.3s;">👥 Social</button>
+                <button onclick="filterBadges('Creator')" class="badge-filter-btn" data-filter="Creator" style="padding:8px 16px; background:rgba(255,255,255,0.05); border:2px solid #666; border-radius:6px; color:#aaa; cursor:pointer; font-weight:600; transition:all 0.3s;">🎨 Creator</button>
+                <button onclick="filterBadges('Competitive')" class="badge-filter-btn" data-filter="Competitive" style="padding:8px 16px; background:rgba(255,255,255,0.05); border:2px solid #666; border-radius:6px; color:#aaa; cursor:pointer; font-weight:600; transition:all 0.3s;">🏅 Competitive</button>
+                <button onclick="filterBadges('Rare')" class="badge-filter-btn" data-filter="Rare" style="padding:8px 16px; background:rgba(255,255,255,0.05); border:2px solid #666; border-radius:6px; color:#aaa; cursor:pointer; font-weight:600; transition:all 0.3s;">🌟 Rare</button>
+                <button onclick="filterBadges('Legendary')" class="badge-filter-btn" data-filter="Legendary" style="padding:8px 16px; background:rgba(255,255,255,0.05); border:2px solid #666; border-radius:6px; color:#aaa; cursor:pointer; font-weight:600; transition:all 0.3s;">🔥 Legendary</button>
+            </div>
+            
+            <!-- Badge Grid -->
+            <div id="badge-browser-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:15px; max-height:60vh; overflow-y:auto; padding:20px; background:rgba(0,0,0,0.3); border-radius:12px; border:1px solid #444;"></div>
+            
+            <button onclick="closeBadgeSystem()" style="margin-top:28px; background:#ffd700; color:#1a1a1a; border:none; padding:12px 32px; border-radius:8px; font-size:1.1em; font-weight:600; cursor:pointer; width:100%; transition:all 0.2s;" onmouseover="this.style.background='#ffed4e'" onmouseout="this.style.background='#ffd700'">Close</button>
+        </div>
+    </div>
+    <script>
+    // BADGE SYSTEM BROWSER LOGIC
+    function openBadgeSystem() {
+        const modal = document.getElementById('badge-system-modal');
+        const gridDiv = document.getElementById('badge-browser-grid');
+        const currentUser = window.currentUser || JSON.parse(localStorage.getItem('romgon-user') || '{}');
+        const stats = getUserStats(currentUser.username) || {};
+        
+        // Render all badges
+        renderBadgeBrowser(stats, 'all');
+        
+        modal.style.display = 'flex';
+    }
+    
+    function closeBadgeSystem() {
+        document.getElementById('badge-system-modal').style.display = 'none';
+    }
+    
+    function filterBadges(category) {
+        const currentUser = window.currentUser || JSON.parse(localStorage.getItem('romgon-user') || '{}');
+        const stats = getUserStats(currentUser.username) || {};
+        
+        // Update filter button states
+        document.querySelectorAll('.badge-filter-btn').forEach(btn => {
+            if (btn.dataset.filter === category) {
+                btn.classList.add('active');
+                btn.style.background = 'rgba(255,215,0,0.2)';
+                btn.style.borderColor = '#ffd700';
+                btn.style.color = '#ffd700';
+            } else {
+                btn.classList.remove('active');
+                btn.style.background = 'rgba(255,255,255,0.05)';
+                btn.style.borderColor = '#666';
+                btn.style.color = '#aaa';
+            }
+        });
+        
+        renderBadgeBrowser(stats, category);
+    }
+    
+    function renderBadgeBrowser(stats, filterCategory) {
+        const gridDiv = document.getElementById('badge-browser-grid');
+        gridDiv.innerHTML = '';
+        
+        // Group badges by category
+        const badgesByCategory = {};
+        Object.entries(BADGE_SYSTEM).forEach(([badge, data]) => {
+            const category = data.category || 'Other';
+            if (filterCategory === 'all' || category === filterCategory) {
+                if (!badgesByCategory[category]) {
+                    badgesByCategory[category] = [];
+                }
+                badgesByCategory[category].push({ name: badge, data: data });
+            }
+        });
+        
+        // Render each category
+        Object.entries(badgesByCategory).forEach(([category, badges]) => {
+            // Category header (spans full width)
+            const categoryHeader = document.createElement('div');
+            categoryHeader.style.cssText = `
+                grid-column: 1 / -1;
+                color: #4ecdc4;
+                font-weight: 700;
+                font-size: 16px;
+                margin-top: 20px;
+                margin-bottom: 10px;
+                padding-bottom: 8px;
+                border-bottom: 2px solid rgba(78, 205, 196, 0.3);
+            `;
+            categoryHeader.textContent = `${getCategoryIcon(category)} ${category.toUpperCase()}`;
+            gridDiv.appendChild(categoryHeader);
+            
+            // Render badges in category
+            badges.forEach(({ name: badge, data }) => {
+                const isUnlocked = checkBadgeUnlocked(data, stats);
+                
+                const badgeCard = document.createElement('div');
+                badgeCard.className = `badge-browser-card ${data.rarity} ${isUnlocked ? 'unlocked' : 'locked'}`;
+                badgeCard.style.cssText = `
+                    background: rgba(255, 255, 255, 0.05);
+                    border: 2px solid ${getRarityColor(data.rarity)};
+                    border-radius: 12px;
+                    padding: 20px;
+                    text-align: center;
+                    transition: all 0.3s;
+                    ${!isUnlocked ? 'opacity: 0.5; filter: grayscale(1);' : ''}
+                    ${isUnlocked ? 'cursor: pointer;' : ''}
+                `;
+                
+                if (isUnlocked) {
+                    badgeCard.onmouseover = () => {
+                        badgeCard.style.transform = 'translateY(-4px)';
+                        badgeCard.style.boxShadow = `0 6px 20px ${getRarityColor(data.rarity)}40`;
+                    };
+                    badgeCard.onmouseout = () => {
+                        badgeCard.style.transform = 'translateY(0)';
+                        badgeCard.style.boxShadow = 'none';
+                    };
+                }
+                
+                const badgeIcon = badge.split(' ')[0];
+                const badgeName = badge.split(' ').slice(1).join(' ');
+                
+                badgeCard.innerHTML = `
+                    <div style="font-size: 48px; margin-bottom: 12px;">${badgeIcon}</div>
+                    <div style="font-weight: 700; color: #fff; font-size: 14px; margin-bottom: 6px;">${badgeName}</div>
+                    <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: ${getRarityColor(data.rarity)}; margin-bottom: 8px;">${data.rarity}</div>
+                    <div style="font-size: 11px; color: ${isUnlocked ? '#4ecdc4' : '#888'}; margin-bottom: 8px;">
+                        ${isUnlocked ? '✓ Unlocked' : '🔒 ' + data.requirement}
+                    </div>
+                    <div style="font-size: 12px; color: #ffd700; font-weight: 600;">${data.points} pts</div>
+                `;
+                
+                gridDiv.appendChild(badgeCard);
+            });
+        });
+        
+        // Show count
+        const totalBadges = Object.keys(BADGE_SYSTEM).length;
+        const unlockedCount = Object.entries(BADGE_SYSTEM).filter(([_, data]) => 
+            checkBadgeUnlocked(data, stats)
+        ).length;
+        
+        const countDisplay = document.createElement('div');
+        countDisplay.style.cssText = `
+            grid-column: 1 / -1;
+            text-align: center;
+            color: #ffd700;
+            font-weight: 700;
+            font-size: 18px;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 8px;
+        `;
+        countDisplay.textContent = `${unlockedCount} / ${totalBadges} Badges Unlocked (${Math.round(unlockedCount/totalBadges*100)}%)`;
+        gridDiv.appendChild(countDisplay);
+    }
+    
+    function getRarityColor(rarity) {
+        const colors = {
+            'common': '#9e9e9e',
+            'uncommon': '#1eff00',
+            'rare': '#0070dd',
+            'epic': '#a335ee',
+            'legendary': '#ff8000',
+            'mythic': '#ff00dc'
+        };
+        return colors[rarity] || '#4ecdc4';
     }
     </script>
                     
