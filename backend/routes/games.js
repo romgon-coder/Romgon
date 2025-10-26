@@ -595,5 +595,96 @@ function calculateGameDuration(startTime, endTime) {
     return `${minutes}:00`;
 }
 
+// ============================================
+// SUBMIT COMPLETED GAME RESULT (for local/AI games)
+// POST /api/games/submit-result
+// ============================================
+router.post('/submit-result',
+    authenticateToken,
+    [
+        body('opponent_type').isIn(['ai', 'local', 'human']).withMessage('Invalid opponent type'),
+        body('result').isIn(['win', 'loss', 'draw']).withMessage('Invalid result'),
+        body('winner').isString().notEmpty().withMessage('Winner is required'),
+        body('move_count').optional().isInt({ min: 0 }).withMessage('Invalid move count')
+    ],
+    async (req, res) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+
+            const { opponent_type, result, winner, move_count } = req.body;
+            const playerId = req.user.userId;
+            const gameId = uuidv4();
+
+            // Determine player color based on winner
+            const playerIsWhite = winner.toLowerCase() === 'white';
+            const whitePlayerId = playerIsWhite ? playerId : null;
+            const blackPlayerId = playerIsWhite ? null : playerId;
+
+            // Determine winner_id based on result
+            let winnerId = null;
+            if (result === 'win') {
+                winnerId = playerId;
+            } else if (result === 'loss') {
+                winnerId = null; // Opponent won (could be AI)
+            }
+
+            // Insert the game as finished
+            await dbPromise.run(
+                `INSERT INTO games (
+                    id, white_player_id, black_player_id, 
+                    status, winner_id, 
+                    moves, total_moves,
+                    start_time, end_time
+                ) VALUES (?, ?, ?, 'finished', ?, '[]', ?, datetime('now'), datetime('now'))`,
+                [gameId, whitePlayerId, blackPlayerId, winnerId, move_count || 0]
+            );
+
+            // Update user stats
+            const db = await dbPromise;
+            
+            if (result === 'win') {
+                await db.run(
+                    `UPDATE users 
+                     SET wins = wins + 1, 
+                         total_games = total_games + 1 
+                     WHERE id = ?`,
+                    [playerId]
+                );
+            } else if (result === 'loss') {
+                await db.run(
+                    `UPDATE users 
+                     SET losses = losses + 1, 
+                         total_games = total_games + 1 
+                     WHERE id = ?`,
+                    [playerId]
+                );
+            } else {
+                await db.run(
+                    `UPDATE users 
+                     SET draws = draws + 1, 
+                         total_games = total_games + 1 
+                     WHERE id = ?`,
+                    [playerId]
+                );
+            }
+
+            console.log(`✅ Game result submitted for user ${playerId}: ${result} vs ${opponent_type}`);
+
+            res.status(201).json({
+                success: true,
+                gameId,
+                message: 'Game result submitted successfully'
+            });
+
+        } catch (error) {
+            console.error('Error submitting game result:', error);
+            res.status(500).json({ error: error.message });
+        }
+    }
+);
+
 module.exports = router;
 
