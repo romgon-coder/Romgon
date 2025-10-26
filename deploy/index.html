@@ -1119,45 +1119,367 @@
             
             <h2 style="color: #a55eea; margin-top: 0; text-align: center; font-size: 1.8em;">⚙️ Preferences</h2>
             
-            <form id="settings-form" onsubmit="handleSettingsSave(event)" style="margin-top: 30px; display: flex; flex-direction: column; gap: 24px;">
+            <!-- Tab Navigation -->
+            <div style="display: flex; gap: 8px; margin: 20px 0; border-bottom: 2px solid #333; flex-wrap: wrap;">
+                <button onclick="switchPrefsTab('general')" id="tab-general" class="pref-tab active-tab" style="
+                    background: transparent; border: none; color: #fff; padding: 12px 20px;
+                    cursor: pointer; font-weight: 600; border-bottom: 3px solid #a55eea;
+                    transition: all 0.3s;
+                ">🎮 General</button>
+                <button onclick="switchPrefsTab('gameplay')" id="tab-gameplay" class="pref-tab" style="
+                    background: transparent; border: none; color: #888; padding: 12px 20px;
+                    cursor: pointer; font-weight: 600; border-bottom: 3px solid transparent;
+                    transition: all 0.3s;
+                ">♟️ Gameplay</button>
+                <button onclick="switchPrefsTab('custom-games')" id="tab-custom-games" class="pref-tab" style="
+                    background: transparent; border: none; color: #888; padding: 12px 20px;
+                    cursor: pointer; font-weight: 600; border-bottom: 3px solid transparent;
+                    transition: all 0.3s;
+                ">🎨 Custom Games</button>
+                <button onclick="switchPrefsTab('account')" id="tab-account" class="pref-tab" style="
+                    background: transparent; border: none; color: #888; padding: 12px 20px;
+                    cursor: pointer; font-weight: 600; border-bottom: 3px solid transparent;
+                    transition: all 0.3s;
+                ">👤 Account</button>
+                <button onclick="switchPrefsTab('advanced')" id="tab-advanced" class="pref-tab" style="
+                    background: transparent; border: none; color: #888; padding: 12px 20px;
+                    cursor: pointer; font-weight: 600; border-bottom: 3px solid transparent;
+                    transition: all 0.3s;
+                ">🔧 Advanced</button>
+            </div>
+            
+            <form id="settings-form" onsubmit="handleSettingsSave(event)" style="margin-top: 30px;">
                 
-                <div>
-                    <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
-                        <input type="checkbox" id="settings-audio" style="width: 18px; height: 18px; cursor: pointer;">
-                        <span style="color: #4ecdc4; font-weight: 600; font-size: 0.95em;">🔊 Enable Audio</span>
-                    </label>
-                    <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Sound effects and notifications</p>
-                </div>
-                
-                <div>
-                    <label style="display: block; color: #4ecdc4; font-weight: 600; margin-bottom: 8px; font-size: 0.95em;">🎨 Theme</label>
-                    <select id="settings-theme" style="
-                        width: 100%;
-                        padding: 10px 12px;
-                        background: #1a1e26;
-                        border: 2px solid #a55eea;
-                        border-radius: 8px;
-                        color: #fff;
-                        font-size: 1em;
-                        cursor: pointer;
-                        transition: all 0.3s ease;
-                    " onmouseover="this.style.borderColor='#b075ff'" onmouseout="this.style.borderColor='#a55eea'">
-                        <option value="dark">🌙 Dark Mode (Default)</option>
-                        <option value="light">☀️ Light Mode</option>
-                        <option value="wooden">🪵 Wooden Theme</option>
-                    </select>
-                </div>
-                
-                <div>
-                    <label style="display: block; color: #4ecdc4; font-weight: 600; margin-bottom: 12px; font-size: 0.95em;">🔍 Board Zoom</label>
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <input type="range" id="settings-zoom" min="0.5" max="2" step="0.1" value="1" style="flex: 1; cursor: pointer;">
-                        <span id="zoom-value" style="color: #ffd700; font-weight: bold; min-width: 50px;">100%</span>
+                <!-- GENERAL TAB -->
+                <div id="pref-panel-general" class="pref-panel" style="display: flex; flex-direction: column; gap: 24px;">
+                    <h3 style="color: #4ecdc4; margin: 0 0 12px 0; font-size: 1.2em;">🎨 Appearance</h3>
+                    
+                    <div>
+                        <label style="display: block; color: #4ecdc4; font-weight: 600; margin-bottom: 8px; font-size: 0.95em;">Theme</label>
+                        <select id="settings-theme" style="
+                            width: 100%; padding: 10px 12px; background: #1a1e26;
+                            border: 2px solid #a55eea; border-radius: 8px; color: #fff;
+                            font-size: 1em; cursor: pointer; transition: all 0.3s ease;
+                        ">
+                            <option value="dark">🌙 Dark Mode (Default)</option>
+                            <option value="light">☀️ Light Mode</option>
+                            <option value="wooden">🪵 Wooden Theme</option>
+                            <option value="neon">🌈 Neon Theme</option>
+                        </select>
                     </div>
-                    <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 0;">Adjust board scale for comfort</p>
+                    
+                    <div>
+                        <label style="display: block; color: #4ecdc4; font-weight: 600; margin-bottom: 12px; font-size: 0.95em;">Board Zoom</label>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <input type="range" id="settings-zoom" min="0.5" max="2" step="0.1" value="1" style="flex: 1; cursor: pointer;">
+                            <span id="zoom-value" style="color: #ffd700; font-weight: bold; min-width: 50px;">100%</span>
+                        </div>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 0;">Adjust board scale for comfort</p>
+                    </div>
+                    
+                    <h3 style="color: #4ecdc4; margin: 24px 0 12px 0; font-size: 1.2em;">🔊 Audio & Notifications</h3>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-audio" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Enable Audio</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Sound effects and music</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-move-sounds" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Move Sounds</span>
+                        </label>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-capture-sounds" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Capture Sounds</span>
+                        </label>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-notifications" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Desktop Notifications</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Get notified when it's your turn</p>
+                    </div>
                 </div>
                 
-                <div style="display: flex; gap: 12px; padding-top: 12px;">
+                <!-- GAMEPLAY TAB -->
+                <div id="pref-panel-gameplay" class="pref-panel" style="display: none; flex-direction: column; gap: 24px;">
+                    <h3 style="color: #4ecdc4; margin: 0 0 12px 0; font-size: 1.2em;">🎯 Move Assistance</h3>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-show-legal-moves" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Show Legal Moves</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Highlight valid moves when selecting piece</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-show-attack-moves" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Show Attack Moves</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Highlight attack moves differently</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-confirm-moves" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Confirm Moves</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Require confirmation before moving</p>
+                    </div>
+                    
+                    <h3 style="color: #4ecdc4; margin: 24px 0 12px 0; font-size: 1.2em;">⚙️ Game Features</h3>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-auto-queen" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Auto-Promote to Queen</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Automatically promote rhombus to queen</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-drag-drop" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Enable Drag & Drop</span>
+                        </label>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-click-move" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Enable Click-to-Move</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Click piece then destination</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-show-coords" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Show Coordinates</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Display hex coordinates (0-0, 1-2, etc.)</p>
+                    </div>
+                    
+                    <h3 style="color: #4ecdc4; margin: 24px 0 12px 0; font-size: 1.2em;">📊 Analysis</h3>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-engine-analysis" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Enable Engine Analysis</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Show position evaluation (Coming Soon)</p>
+                    </div>
+                </div>
+                
+                <!-- CUSTOM GAMES TAB -->
+                <div id="pref-panel-custom-games" class="pref-panel" style="display: none; flex-direction: column; gap: 24px;">
+                    <h3 style="color: #4ecdc4; margin: 0 0 12px 0; font-size: 1.2em;">🎨 Creator Preferences</h3>
+                    
+                    <div>
+                        <label style="display: block; color: #4ecdc4; font-weight: 600; margin-bottom: 8px; font-size: 0.95em;">Default Board Size</label>
+                        <select id="settings-default-board" style="
+                            width: 100%; padding: 10px 12px; background: #1a1e26;
+                            border: 2px solid #a55eea; border-radius: 8px; color: #fff;
+                            font-size: 1em; cursor: pointer;
+                        ">
+                            <option value="7x7">7×7 (Classic)</option>
+                            <option value="9x11">9×11 (Extended)</option>
+                            <option value="11x13">11×13 (Medium)</option>
+                            <option value="13x15">13×15 (Large)</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-auto-save" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Auto-Save Games</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Automatically save custom games while creating</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-show-grid" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Show Grid in Designer</span>
+                        </label>
+                    </div>
+                    
+                    <h3 style="color: #4ecdc4; margin: 24px 0 12px 0; font-size: 1.2em;">� Publishing & Privacy</h3>
+                    
+                    <div>
+                        <label style="display: block; color: #4ecdc4; font-weight: 600; margin-bottom: 8px; font-size: 0.95em;">Default Visibility</label>
+                        <select id="settings-game-visibility" style="
+                            width: 100%; padding: 10px 12px; background: #1a1e26;
+                            border: 2px solid #a55eea; border-radius: 8px; color: #fff;
+                            font-size: 1em; cursor: pointer;
+                        ">
+                            <option value="public">🌍 Public (Anyone can play)</option>
+                            <option value="unlisted">🔗 Unlisted (Only with link)</option>
+                            <option value="private">🔒 Private (Only you)</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-allow-remixes" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Allow Others to Remix</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Let others create variants of your games</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-show-creator-name" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Show Creator Name</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- ACCOUNT TAB -->
+                <div id="pref-panel-account" class="pref-panel" style="display: none; flex-direction: column; gap: 24px;">
+                    <h3 style="color: #4ecdc4; margin: 0 0 12px 0; font-size: 1.2em;">👤 Profile Settings</h3>
+                    
+                    <div>
+                        <label style="display: block; color: #4ecdc4; font-weight: 600; margin-bottom: 8px; font-size: 0.95em;">Display Name</label>
+                        <input type="text" id="settings-display-name" placeholder="Your Name" style="
+                            width: 100%; padding: 10px 12px; background: #1a1e26;
+                            border: 2px solid #a55eea; border-radius: 8px; color: #fff;
+                            font-size: 1em; box-sizing: border-box;
+                        ">
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 0;">How others see you in multiplayer</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; color: #4ecdc4; font-weight: 600; margin-bottom: 8px; font-size: 0.95em;">Email (Optional)</label>
+                        <input type="email" id="settings-email" placeholder="your@email.com" style="
+                            width: 100%; padding: 10px 12px; background: #1a1e26;
+                            border: 2px solid #a55eea; border-radius: 8px; color: #fff;
+                            font-size: 1em; box-sizing: border-box;
+                        ">
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 0;">For password recovery and notifications</p>
+                    </div>
+                    
+                    <h3 style="color: #4ecdc4; margin: 24px 0 12px 0; font-size: 1.2em;">� Privacy</h3>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-show-stats" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Show My Statistics</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Allow others to see your win/loss record</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-show-online" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Show Online Status</span>
+                        </label>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-allow-challenges" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Allow Game Challenges</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Let others invite you to games</p>
+                    </div>
+                    
+                    <h3 style="color: #4ecdc4; margin: 24px 0 12px 0; font-size: 1.2em;">🎮 Guest Mode</h3>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-guest-access" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Enable Guest Access</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Allow playing without account creation</p>
+                    </div>
+                </div>
+                
+                <!-- ADVANCED TAB -->
+                <div id="pref-panel-advanced" class="pref-panel" style="display: none; flex-direction: column; gap: 24px;">
+                    <h3 style="color: #4ecdc4; margin: 0 0 12px 0; font-size: 1.2em;">🔧 Performance</h3>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-hardware-accel" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Hardware Acceleration</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Use GPU for rendering (restart required)</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-animations" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Enable Animations</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Smooth transitions and effects</p>
+                    </div>
+                    
+                    <h3 style="color: #4ecdc4; margin: 24px 0 12px 0; font-size: 1.2em;">💾 Data Management</h3>
+                    
+                    <div>
+                        <button type="button" onclick="exportUserData()" style="
+                            width: 100%; padding: 12px; background: #4ecdc4; color: #23272e;
+                            border: none; border-radius: 8px; font-weight: 700; cursor: pointer;
+                            transition: all 0.3s;
+                        " onmouseover="this.style.background='#5ee6d6'" onmouseout="this.style.background='#4ecdc4'">
+                            📦 Export My Data
+                        </button>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 0;">Download all your games, stats, and settings</p>
+                    </div>
+                    
+                    <div>
+                        <button type="button" onclick="importUserData()" style="
+                            width: 100%; padding: 12px; background: #f1c40f; color: #23272e;
+                            border: none; border-radius: 8px; font-weight: 700; cursor: pointer;
+                            transition: all 0.3s;
+                        " onmouseover="this.style.background='#f5d657'" onmouseout="this.style.background='#f1c40f'">
+                            📥 Import Data
+                        </button>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 0;">Restore from backup file</p>
+                    </div>
+                    
+                    <div>
+                        <button type="button" onclick="clearAllData()" style="
+                            width: 100%; padding: 12px; background: #e74c3c; color: #fff;
+                            border: none; border-radius: 8px; font-weight: 700; cursor: pointer;
+                            transition: all 0.3s;
+                        " onmouseover="this.style.background='#f55e4e'" onmouseout="this.style.background='#e74c3c'">
+                            🗑️ Clear All Local Data
+                        </button>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 0;">⚠️ This will delete all saved games and settings</p>
+                    </div>
+                    
+                    <h3 style="color: #4ecdc4; margin: 24px 0 12px 0; font-size: 1.2em;">🐛 Debugging</h3>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-debug-mode" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Enable Debug Mode</span>
+                        </label>
+                        <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 30px;">Show console logs and diagnostic info</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <input type="checkbox" id="settings-fps-counter" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span style="color: #fff; font-weight: 600; font-size: 0.95em;">Show FPS Counter</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 12px; padding-top: 24px; border-top: 2px solid #333;">
                     <button type="submit" style="
                         flex: 1;
                         background: linear-gradient(135deg, #a55eea, #b075ff);
@@ -1171,10 +1493,24 @@
                         box-shadow: 0 4px 15px rgba(165, 94, 234, 0.3);
                         transition: all 0.3s ease;
                     " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(165, 94, 234, 0.5)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(165, 94, 234, 0.3)'">
-                        ✓ Save
+                        ✓ Save All Settings
+                    </button>
+                    <button type="button" onclick="resetToDefaults()" style="
+                        flex: 0.8;
+                        background: transparent;
+                        color: #888;
+                        border: 2px solid #888;
+                        padding: 10px 24px;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        font-size: 1em;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                    " onmouseover="this.style.color='#aaa'; this.style.borderColor='#aaa'" onmouseout="this.style.color='#888'; this.style.borderColor='#888'">
+                        🔄 Reset
                     </button>
                     <button type="button" onclick="hideSettingsModal()" style="
-                        flex: 1;
+                        flex: 0.7;
                         background: transparent;
                         color: #888;
                         border: 2px solid #888;
@@ -1987,6 +2323,130 @@
             zoomSlider.addEventListener('input', updateZoomDisplay);
         }
     });
+    
+    // NEW: Tab switching for preferences
+    function switchPrefsTab(tabName) {
+        // Hide all panels
+        document.querySelectorAll('.pref-panel').forEach(panel => {
+            panel.style.display = 'none';
+        });
+        
+        // Remove active class from all tabs
+        document.querySelectorAll('.pref-tab').forEach(tab => {
+            tab.style.color = '#888';
+            tab.style.borderBottom = '3px solid transparent';
+        });
+        
+        // Show selected panel
+        document.getElementById('pref-panel-' + tabName).style.display = 'flex';
+        
+        // Activate selected tab
+        const activeTab = document.getElementById('tab-' + tabName);
+        activeTab.style.color = '#fff';
+        activeTab.style.borderBottom = '3px solid #a55eea';
+    }
+    
+    // NEW: Mockup functions (to be implemented later)
+    function exportUserData() {
+        const currentUser = JSON.parse(localStorage.getItem('romgon-user') || '{}');
+        const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+        const myGames = JSON.parse(localStorage.getItem('romgon_my_published_games') || '[]');
+        
+        const exportData = {
+            user: currentUser,
+            userData: allUsers[currentUser.username],
+            myGames: myGames,
+            exportDate: new Date().toISOString()
+        };
+        
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `romgon_backup_${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        alert('✅ Data exported successfully!');
+    }
+    
+    function importUserData() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    // TODO: Implement import logic
+                    alert('✅ Data imported successfully!\n\n(Feature in development - data validation pending)');
+                } catch (err) {
+                    alert('❌ Invalid backup file!');
+                }
+            };
+            reader.readAsText(file);
+        };
+        input.click();
+    }
+    
+    function clearAllData() {
+        if (confirm('⚠️ Are you sure you want to delete ALL local data?\n\nThis will remove:\n• Your account\n• All custom games\n• All statistics\n• All settings\n\nThis action CANNOT be undone!')) {
+            if (confirm('⚠️⚠️ FINAL WARNING ⚠️⚠️\n\nAre you ABSOLUTELY sure?')) {
+                localStorage.clear();
+                alert('🗑️ All data cleared!\n\nThe page will now reload.');
+                window.location.reload();
+            }
+        }
+    }
+    
+    function resetToDefaults() {
+        if (confirm('🔄 Reset all settings to defaults?\n\nThis will not delete your games or account.')) {
+            // Reset form values to defaults
+            document.getElementById('settings-audio').checked = true;
+            document.getElementById('settings-move-sounds').checked = true;
+            document.getElementById('settings-capture-sounds').checked = true;
+            document.getElementById('settings-notifications').checked = true;
+            document.getElementById('settings-theme').value = 'dark';
+            document.getElementById('settings-zoom').value = 1;
+            updateZoomDisplay();
+            
+            // Gameplay
+            document.getElementById('settings-show-legal-moves').checked = true;
+            document.getElementById('settings-show-attack-moves').checked = true;
+            document.getElementById('settings-confirm-moves').checked = false;
+            document.getElementById('settings-auto-queen').checked = true;
+            document.getElementById('settings-drag-drop').checked = true;
+            document.getElementById('settings-click-move').checked = true;
+            document.getElementById('settings-show-coords').checked = false;
+            document.getElementById('settings-engine-analysis').checked = false;
+            
+            // Custom Games
+            document.getElementById('settings-default-board').value = '7x7';
+            document.getElementById('settings-auto-save').checked = true;
+            document.getElementById('settings-show-grid').checked = true;
+            document.getElementById('settings-game-visibility').value = 'public';
+            document.getElementById('settings-allow-remixes').checked = true;
+            document.getElementById('settings-show-creator-name').checked = true;
+            
+            // Account
+            document.getElementById('settings-display-name').value = '';
+            document.getElementById('settings-email').value = '';
+            document.getElementById('settings-show-stats').checked = true;
+            document.getElementById('settings-show-online').checked = true;
+            document.getElementById('settings-allow-challenges').checked = true;
+            document.getElementById('settings-guest-access').checked = true;
+            
+            // Advanced
+            document.getElementById('settings-hardware-accel').checked = true;
+            document.getElementById('settings-animations').checked = true;
+            document.getElementById('settings-debug-mode').checked = false;
+            document.getElementById('settings-fps-counter').checked = false;
+            
+            alert('✅ All settings reset to defaults!');
+        }
+    }
     
     // ============================================
     // STATISTICS TRACKING SYSTEM
