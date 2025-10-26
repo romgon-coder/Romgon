@@ -50,7 +50,8 @@ function initializeTables() {
             }
         });
         
-        db.run('ALTER TABLE users ADD COLUMN google_id TEXT UNIQUE', (err) => {
+        // Add google_id column without UNIQUE constraint (will add constraint later if needed)
+        db.run('ALTER TABLE users ADD COLUMN google_id TEXT', (err) => {
             if (err && !err.message.includes('duplicate column')) {
                 console.error('Warning: Could not add google_id column:', err.message);
             } else if (!err) {
