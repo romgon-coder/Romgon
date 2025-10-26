@@ -4,7 +4,9 @@
 
 const express = require('express');
 const router = express.Router();
-const { db } = require('../config/database');
+const { db, dbPromise } = require('../config/database');
+const fs = require('fs');
+const path = require('path');
 
 // ============================================
 // ENGINE HEALTH CHECK
@@ -20,11 +22,11 @@ router.get('/health', async (req, res) => {
 
         // Database connectivity
         try {
-            const result = db.prepare('SELECT 1 as test').get();
+            const result = await dbPromise.get('SELECT 1 as test');
             checks.checks.database = {
                 status: 'ok',
                 responsive: true,
-                latency: 0 // Sync query, instant
+                latency: 0
             };
         } catch (err) {
             checks.checks.database = {
@@ -36,10 +38,10 @@ router.get('/health', async (req, res) => {
 
         // Check tables exist
         try {
-            const tables = db.prepare(`
+            const tables = await dbPromise.all(`
                 SELECT name FROM sqlite_master 
                 WHERE type='table' AND name NOT LIKE 'sqlite_%'
-            `).all();
+            `);
             
             checks.checks.schema = {
                 status: 'ok',
@@ -89,15 +91,15 @@ router.get('/stats', async (req, res) => {
         const stats = {};
 
         // Total games
-        const gamesCount = db.prepare('SELECT COUNT(*) as count FROM games').get();
-        stats.totalGames = gamesCount.count;
+        const gamesCount = await dbPromise.get('SELECT COUNT(*) as count FROM games');
+        stats.totalGames = gamesCount ? gamesCount.count : 0;
 
         // Games by status
-        const gamesByStatus = db.prepare(`
+        const gamesByStatus = await dbPromise.all(`
             SELECT status, COUNT(*) as count 
             FROM games 
             GROUP BY status
-        `).all();
+        `);
         stats.gamesByStatus = {};
         if (Array.isArray(gamesByStatus)) {
             gamesByStatus.forEach(row => {
@@ -106,49 +108,53 @@ router.get('/stats', async (req, res) => {
         }
 
         // Total users
-        const usersCount = db.prepare('SELECT COUNT(*) as count FROM users').get();
-        stats.totalUsers = usersCount.count;
+        const usersCount = await dbPromise.get('SELECT COUNT(*) as count FROM users');
+        stats.totalUsers = usersCount ? usersCount.count : 0;
 
         // Active users (played in last 7 days)
-        const activeUsers = db.prepare(`
+        const activeUsers = await dbPromise.get(`
             SELECT COUNT(DISTINCT 
                 CASE 
-                    WHEN white_id IS NOT NULL THEN white_id 
-                    ELSE black_id 
+                    WHEN white_player_id IS NOT NULL THEN white_player_id 
+                    ELSE black_player_id 
                 END
             ) as count
             FROM games
-            WHERE created_at >= datetime('now', '-7 days')
-        `).get();
-        stats.activeUsers = activeUsers.count;
+            WHERE start_time >= datetime('now', '-7 days')
+        `);
+        stats.activeUsers = activeUsers ? activeUsers.count : 0;
 
-        // Custom games
-        const customGamesCount = db.prepare('SELECT COUNT(*) as count FROM custom_games').get();
-        stats.totalCustomGames = customGamesCount.count;
-
-        // Published custom games
-        const publishedCustom = db.prepare(`
-            SELECT COUNT(*) as count 
-            FROM custom_games 
-            WHERE is_public = 1
-        `).get();
-        stats.publishedCustomGames = publishedCustom.count;
+        // Custom games (table may not exist yet)
+        try {
+            const customGamesCount = await dbPromise.get('SELECT COUNT(*) as count FROM custom_games');
+            stats.totalCustomGames = customGamesCount ? customGamesCount.count : 0;
+            
+            const publishedCustom = await dbPromise.get(`
+                SELECT COUNT(*) as count 
+                FROM custom_games 
+                WHERE is_public = 1
+            `);
+            stats.publishedCustomGames = publishedCustom ? publishedCustom.count : 0;
+        } catch (err) {
+            stats.totalCustomGames = 0;
+            stats.publishedCustomGames = 0;
+        }
 
         // Average moves per game
-        const avgMoves = db.prepare(`
-            SELECT AVG(move_count) as avg 
+        const avgMoves = await dbPromise.get(`
+            SELECT AVG(total_moves) as avg 
             FROM games 
             WHERE status = 'completed'
-        `).get();
-        stats.avgMovesPerGame = Math.round(avgMoves.avg || 0);
+        `);
+        stats.avgMovesPerGame = Math.round((avgMoves && avgMoves.avg) ? avgMoves.avg : 0);
 
         // Games last 24h
-        const recentGames = db.prepare(`
+        const recentGames = await dbPromise.get(`
             SELECT COUNT(*) as count 
             FROM games 
-            WHERE created_at >= datetime('now', '-1 day')
-        `).get();
-        stats.gamesLast24h = recentGames.count;
+            WHERE start_time >= datetime('now', '-1 day')
+        `);
+        stats.gamesLast24h = recentGames ? recentGames.count : 0;
 
         res.json(stats);
     } catch (error) {
@@ -166,27 +172,51 @@ router.get('/performance', async (req, res) => {
         const metrics = {
             timestamp: new Date().toISOString(),
             database: {},
-            queries: {}
+            queries: {},
+            tables: {}
         };
 
-        // Database size
+        // Database size using fs
         try {
-            const dbSize = db.prepare('SELECT page_count * page_size as size FROM pragma_page_count(), pragma_page_size()').get();
-            metrics.database.size = Math.round(dbSize.size / 1024 / 1024 * 100) / 100 + ' MB';
+            const dbPath = path.join(__dirname, '../config/romgon.db');
+            if (fs.existsSync(dbPath)) {
+                const stats = fs.statSync(dbPath);
+                metrics.database.size = (stats.size / (1024 * 1024)).toFixed(2) + ' MB';
+                metrics.database.sizeBytes = stats.size;
+            } else {
+                metrics.database.size = '0 MB';
+                metrics.database.sizeBytes = 0;
+            }
         } catch (err) {
             metrics.database.size = 'unknown';
+            metrics.database.error = err.message;
         }
 
         // Index info
         try {
-            const indexes = db.prepare(`
+            const indexes = await dbPromise.all(`
                 SELECT COUNT(*) as count 
                 FROM sqlite_master 
                 WHERE type='index' AND name NOT LIKE 'sqlite_%'
-            `).get();
-            metrics.database.indexes = indexes.count;
+            `);
+            metrics.database.indexes = indexes[0] ? indexes[0].count : 0;
         } catch (err) {
-            metrics.database.indexes = 'unknown';
+            metrics.database.indexes = 0;
+        }
+
+        // Table row counts
+        try {
+            const tables = ['users', 'games', 'rating_changes', 'friends', 'messages', 'achievements'];
+            for (const table of tables) {
+                try {
+                    const count = await dbPromise.get(`SELECT COUNT(*) as count FROM ${table}`);
+                    metrics.tables[table] = count ? count.count : 0;
+                } catch {
+                    metrics.tables[table] = 0;
+                }
+            }
+        } catch (err) {
+            metrics.tables.error = err.message;
         }
 
         // Query performance tests
@@ -200,8 +230,8 @@ router.get('/performance', async (req, res) => {
                 name: 'join_query',
                 query: `SELECT g.*, u1.username as white_name, u2.username as black_name 
                         FROM games g 
-                        LEFT JOIN users u1 ON g.white_id = u1.id 
-                        LEFT JOIN users u2 ON g.black_id = u2.id 
+                        LEFT JOIN users u1 ON g.white_player_id = u1.id 
+                        LEFT JOIN users u2 ON g.black_player_id = u2.id 
                         LIMIT 10`,
                 description: 'JOIN with users table'
             },
@@ -215,8 +245,42 @@ router.get('/performance', async (req, res) => {
         for (const queryTest of queries) {
             try {
                 const start = Date.now();
-                db.prepare(queryTest.query).all();
+                await dbPromise.all(queryTest.query);
                 const duration = Date.now() - start;
+                
+                metrics.queries[queryTest.name] = {
+                    description: queryTest.description,
+                    duration_ms: duration,
+                    status: duration < 10 ? 'excellent' : duration < 50 ? 'good' : 'slow'
+                };
+            } catch (err) {
+                metrics.queries[queryTest.name] = {
+                    description: queryTest.description,
+                    status: 'error',
+                    error: err.message
+                };
+            }
+        }
+
+        // Node.js metrics
+        metrics.nodejs = {
+            version: process.version,
+            platform: process.platform,
+            arch: process.arch,
+            memoryUsage: {
+                heapUsed: Math.round(process.memoryUsage().heapUsed / 1024 / 1024) + ' MB',
+                heapTotal: Math.round(process.memoryUsage().heapTotal / 1024 / 1024) + ' MB',
+                rss: Math.round(process.memoryUsage().rss / 1024 / 1024) + ' MB'
+            },
+            uptime: Math.round(process.uptime()) + 's'
+        };
+
+        res.json(metrics);
+    } catch (error) {
+        console.error('Performance metrics error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
                 
                 metrics.queries[queryTest.name] = {
                     description: queryTest.description,
@@ -261,37 +325,37 @@ router.get('/connections', async (req, res) => {
 
         // Check custom games integration
         try {
-            const customGames = db.prepare('SELECT COUNT(*) as count FROM custom_games').get();
-            const recentCustom = db.prepare(`
+            const customGames = await dbPromise.get('SELECT COUNT(*) as count FROM custom_games');
+            const recentCustom = await dbPromise.get(`
                 SELECT COUNT(*) as count 
                 FROM custom_games 
                 WHERE created_at >= datetime('now', '-7 days')
-            `).get();
+            `);
             
             connections.services.customGames = {
                 status: 'connected',
-                total: customGames.count,
-                recent: recentCustom.count,
+                total: customGames ? customGames.count : 0,
+                recent: recentCustom ? recentCustom.count : 0,
                 integration: 'active'
             };
         } catch (err) {
             connections.services.customGames = {
-                status: 'error',
-                error: err.message
+                status: 'not_configured',
+                note: 'Custom games table not created yet'
             };
         }
 
         // Check game engine integration (via games table)
         try {
-            const activeGames = db.prepare(`
+            const activeGames = await dbPromise.get(`
                 SELECT COUNT(*) as count 
                 FROM games 
                 WHERE status = 'active'
-            `).get();
+            `);
             
             connections.services.gameEngine = {
                 status: 'connected',
-                activeGames: activeGames.count,
+                activeGames: activeGames ? activeGames.count : 0,
                 integration: 'active'
             };
         } catch (err) {
@@ -303,10 +367,10 @@ router.get('/connections', async (req, res) => {
 
         // Check user authentication system
         try {
-            const users = db.prepare('SELECT COUNT(*) as count FROM users').get();
+            const users = await dbPromise.get('SELECT COUNT(*) as count FROM users');
             connections.services.authentication = {
                 status: 'connected',
-                totalUsers: users.count,
+                totalUsers: users ? users.count : 0,
                 integration: 'active'
             };
         } catch (err) {
@@ -318,10 +382,10 @@ router.get('/connections', async (req, res) => {
 
         // Check rating system
         try {
-            const ratings = db.prepare('SELECT COUNT(*) as count FROM ratings').get();
+            const ratings = await dbPromise.get('SELECT COUNT(*) as count FROM rating_changes');
             connections.services.ratingSystem = {
                 status: 'connected',
-                totalRatings: ratings.count,
+                totalRatings: ratings ? ratings.count : 0,
                 integration: 'active'
             };
         } catch (err) {
@@ -376,7 +440,7 @@ router.get('/diagnostics', async (req, res) => {
 
         // Test 1: Database integrity
         try {
-            db.prepare('PRAGMA integrity_check').get();
+            await dbPromise.get('PRAGMA integrity_check');
             diagnostics.tests.push({
                 name: 'Database Integrity',
                 status: 'passed',
@@ -392,7 +456,7 @@ router.get('/diagnostics', async (req, res) => {
 
         // Test 2: Foreign key constraints
         try {
-            const fkCheck = db.prepare('PRAGMA foreign_key_check').all();
+            const fkCheck = await dbPromise.all('PRAGMA foreign_key_check');
             if (fkCheck.length === 0) {
                 diagnostics.tests.push({
                     name: 'Foreign Key Constraints',
@@ -417,14 +481,14 @@ router.get('/diagnostics', async (req, res) => {
 
         // Test 3: Orphaned records
         try {
-            const orphanedGames = db.prepare(`
+            const orphanedGames = await dbPromise.get(`
                 SELECT COUNT(*) as count 
                 FROM games 
-                WHERE white_id IS NOT NULL 
-                AND white_id NOT IN (SELECT id FROM users)
-            `).get();
+                WHERE white_player_id IS NOT NULL 
+                AND white_player_id NOT IN (SELECT id FROM users)
+            `);
             
-            if (orphanedGames.count === 0) {
+            if (!orphanedGames || orphanedGames.count === 0) {
                 diagnostics.tests.push({
                     name: 'Orphaned Game Records',
                     status: 'passed',
@@ -448,13 +512,13 @@ router.get('/diagnostics', async (req, res) => {
 
         // Test 4: Invalid game states
         try {
-            const invalidGames = db.prepare(`
+            const invalidGames = await dbPromise.get(`
                 SELECT COUNT(*) as count 
                 FROM games 
                 WHERE status NOT IN ('active', 'completed', 'abandoned')
-            `).get();
+            `);
             
-            if (invalidGames.count === 0) {
+            if (!invalidGames || invalidGames.count === 0) {
                 diagnostics.tests.push({
                     name: 'Game State Validity',
                     status: 'passed',
@@ -502,12 +566,12 @@ router.get('/optimize', async (req, res) => {
 
         // Check for missing indexes
         try {
-            const gamesTableInfo = db.prepare(`
+            const gamesTableInfo = await dbPromise.get(`
                 SELECT sql FROM sqlite_master 
                 WHERE type='table' AND name='games'
-            `).get();
+            `);
             
-            if (!gamesTableInfo.sql.includes('INDEX')) {
+            if (gamesTableInfo && !gamesTableInfo.sql.includes('INDEX')) {
                 suggestions.recommendations.push({
                     category: 'indexing',
                     priority: 'high',
@@ -523,8 +587,8 @@ router.get('/optimize', async (req, res) => {
 
         // Check for large games table
         try {
-            const gamesCount = db.prepare('SELECT COUNT(*) as count FROM games').get();
-            if (gamesCount.count > 10000) {
+            const gamesCount = await dbPromise.get('SELECT COUNT(*) as count FROM games');
+            if (gamesCount && gamesCount.count > 10000) {
                 suggestions.recommendations.push({
                     category: 'archival',
                     priority: 'medium',
@@ -553,8 +617,8 @@ router.get('/optimize', async (req, res) => {
 
         // Check for vacuum needs
         try {
-            const freelistCount = db.prepare('PRAGMA freelist_count').get();
-            if (freelistCount['freelist_count'] > 1000) {
+            const freelistCount = await dbPromise.get('PRAGMA freelist_count');
+            if (freelistCount && freelistCount['freelist_count'] > 1000) {
                 suggestions.recommendations.push({
                     category: 'maintenance',
                     priority: 'medium',
