@@ -9,12 +9,45 @@ const { authenticateToken, optionalAuth } = require('../utils/auth');
 const router = express.Router();
 
 // ============================================
+// DEBUG: LIST ALL USERS (remove in production)
+// ============================================
+
+router.get('/debug/list', async (req, res) => {
+    try {
+        const users = await dbPromise.all(
+            `SELECT id, username, email, rating, is_guest, google_id, created_at 
+             FROM users 
+             ORDER BY id DESC 
+             LIMIT 20`
+        );
+        
+        res.json({
+            total: users.length,
+            users: users.map(u => ({
+                id: u.id,
+                username: u.username,
+                email: u.email,
+                rating: u.rating,
+                isGuest: u.is_guest === 1,
+                hasGoogleId: !!u.google_id,
+                createdAt: u.created_at
+            }))
+        });
+    } catch (err) {
+        console.error('❌ Error listing users:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ============================================
 // GET CURRENT USER STATS (for frontend Player Hub)
 // ============================================
 
 router.get('/stats', authenticateToken, async (req, res) => {
     try {
         const { userId } = req.user;
+        
+        console.log(`📊 Fetching stats for user ID: ${userId}`);
 
         const user = await dbPromise.get(
             `SELECT id, username, email, rating, wins, losses, total_games, 
@@ -24,10 +57,15 @@ router.get('/stats', authenticateToken, async (req, res) => {
         );
 
         if (!user) {
+            console.error(`❌ User ID ${userId} not found in database`);
             return res.status(404).json({
-                error: 'User not found'
+                error: 'User not found',
+                userId: userId,
+                message: `No user exists with ID ${userId}. The user may need to be created or re-authenticated.`
             });
         }
+        
+        console.log(`✅ User found: ${user.username} (${user.email})`);
 
         // Calculate win rate
         const winRate = user.total_games > 0 
