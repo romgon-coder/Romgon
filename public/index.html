@@ -5037,14 +5037,14 @@
         top: 0;
         left: 0;
         right: 0;
-        height: 60px;
+        height: 45px;
         background: rgba(20, 24, 32, 0.95);
         backdrop-filter: blur(10px);
         border-bottom: 2px solid rgba(245, 125, 45, 0.3);
         display: none;
         align-items: center;
         justify-content: space-between;
-        padding: 0 30px;
+        padding: 0 25px;
         z-index: 9997;
         box-sizing: border-box;
     ">
@@ -5052,7 +5052,7 @@
         <div style="display: flex; align-items: center; gap: 15px;">
             <h1 style="
                 margin: 0;
-                font-size: 1.5em;
+                font-size: 1.3em;
                 background: linear-gradient(135deg, #f57d2d 0%, #fcc49c 100%);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
@@ -5068,41 +5068,41 @@
             <div onclick="showAccountModal()" style="
                 display: flex;
                 align-items: center;
-                gap: 12px;
-                padding: 8px 16px;
+                gap: 10px;
+                padding: 6px 14px;
                 background: rgba(78, 205, 196, 0.15);
                 border: 1px solid rgba(78, 205, 196, 0.3);
-                border-radius: 12px;
+                border-radius: 10px;
                 cursor: pointer;
                 transition: all 0.3s ease;
             " onmouseover="this.style.background='rgba(78, 205, 196, 0.25)'; this.style.borderColor='rgba(78, 205, 196, 0.5)'" onmouseout="this.style.background='rgba(78, 205, 196, 0.15)'; this.style.borderColor='rgba(78, 205, 196, 0.3)'">
                 <div id="global-avatar" style="
-                    width: 36px;
-                    height: 36px;
+                    width: 30px;
+                    height: 30px;
                     border-radius: 50%;
                     background: linear-gradient(135deg, #4ecdc4, #a55eea);
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-size: 16px;
+                    font-size: 14px;
                     font-weight: bold;
                     color: #fff;
                     border: 2px solid rgba(255, 255, 255, 0.3);
                 ">G</div>
-                <div style="display: flex; flex-direction: column; gap: 2px;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span id="global-username" style="font-weight: 600; color: #fff; font-size: 0.9em;">Player</span>
+                <div style="display: flex; flex-direction: column; gap: 1px;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span id="global-username" style="font-weight: 600; color: #fff; font-size: 0.85em;">Player</span>
                         <span id="global-account-type" style="
-                            font-size: 0.65em;
-                            padding: 2px 6px;
+                            font-size: 0.6em;
+                            padding: 1px 5px;
                             background: rgba(255, 215, 0, 0.2);
                             color: #ffd700;
-                            border-radius: 6px;
+                            border-radius: 5px;
                             font-weight: 600;
                             text-transform: uppercase;
                         ">Guest</span>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 8px; font-size: 0.7em; color: #aaa;">
+                    <div style="display: flex; align-items: center; gap: 6px; font-size: 0.7em; color: #aaa;">
                         <span><span style="color: #26de81;" id="global-wins">0</span>W</span>
                         <span style="color: #555;">•</span>
                         <span><span style="color: #ff6b6b;" id="global-losses">0</span>L</span>
@@ -5117,9 +5117,9 @@
                 background: transparent;
                 border: none;
                 color: #aaa;
-                font-size: 1.2em;
+                font-size: 1.1em;
                 cursor: pointer;
-                padding: 8px;
+                padding: 6px;
                 transition: color 0.3s;
             " onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#aaa'" title="Settings">
                 ⚙️
@@ -5410,10 +5410,10 @@
     <!-- User Home Page (shown after login) -->
     <div id="user-home" style="
         position: fixed;
-        top: 60px;
+        top: 45px;
         left: 0;
         width: 100%;
-        height: calc(100% - 60px);
+        height: calc(100% - 45px);
         background: linear-gradient(135deg, #0f1923 0%, #1a2332 50%, #0f1923 100%);
         display: none;
         flex-direction: column;
@@ -5423,119 +5423,6 @@
         overflow-y: auto;
         box-sizing: border-box;
     ">
-        <!-- Top Navigation Bar -->
-        <div style="
-            background: rgba(0, 0, 0, 0.3);
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid rgba(245, 125, 45, 0.3);
-        ">
-            <div style="display: flex; align-items: center; gap: 25px;">
-                <button onclick="document.getElementById('user-home').style.display='none'; document.getElementById('start-menu').style.display='flex';" style="
-                    background: transparent;
-                    border: none;
-                    color: #4ecdc4;
-                    font-size: 1.5em;
-                    cursor: pointer;
-                    padding: 5px 10px;
-                    transition: all 0.3s;
-                " onmouseover="this.style.color='#5eddd4'" onmouseout="this.style.color='#4ecdc4'">☰</button>
-                <h1 style="
-                    margin: 0;
-                    font-size: 2em;
-                    background: linear-gradient(135deg, #f57d2d 0%, #fcc49c 100%);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    background-clip: text;
-                    letter-spacing: 3px;
-                ">ROMGON</h1>
-            </div>
-            
-            <div style="display: flex; align-items: center; gap: 20px;">
-                <!-- Account Status Bar -->
-                <div onclick="openPlayerHubFromTopBar()" style="
-                    display: flex;
-                    align-items: center;
-                    gap: 15px;
-                    padding: 8px 16px;
-                    background: rgba(78, 205, 196, 0.15);
-                    border: 1px solid rgba(78, 205, 196, 0.3);
-                    border-radius: 12px;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                " onmouseover="this.style.background='rgba(78, 205, 196, 0.25)'; this.style.borderColor='rgba(78, 205, 196, 0.5)'" onmouseout="this.style.background='rgba(78, 205, 196, 0.15)'; this.style.borderColor='rgba(78, 205, 196, 0.3)'">
-                    <div id="user-home-avatar-small" style="
-                        width: 42px;
-                        height: 42px;
-                        border-radius: 50%;
-                        background: linear-gradient(135deg, #4ecdc4, #a55eea);
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        font-size: 18px;
-                        font-weight: bold;
-                        color: #fff;
-                        border: 2px solid rgba(255, 255, 255, 0.3);
-                    ">G</div>
-                    <div style="display: flex; flex-direction: column; gap: 2px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <span id="user-home-name-small" style="font-weight: 600; color: #fff; font-size: 0.95em;">Player</span>
-                            <span id="user-home-account-type" style="
-                                font-size: 0.7em;
-                                padding: 2px 8px;
-                                background: rgba(255, 215, 0, 0.2);
-                                color: #ffd700;
-                                border-radius: 8px;
-                                font-weight: 600;
-                                text-transform: uppercase;
-                            ">Guest</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 10px; font-size: 0.75em; color: #aaa;">
-                            <span><span style="color: #26de81;" id="user-home-wins-mini">0</span>W</span>
-                            <span style="color: #555;">•</span>
-                            <span><span style="color: #ff6b6b;" id="user-home-losses-mini">0</span>L</span>
-                            <span style="color: #555;">•</span>
-                            <span id="user-home-winrate-mini" style="color: #4ecdc4;">0%</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Quick Icons -->
-                <button onclick="alert('Notifications coming soon!');" style="
-                    background: transparent;
-                    border: none;
-                    color: #aaa;
-                    font-size: 1.3em;
-                    cursor: pointer;
-                    position: relative;
-                " title="Notifications">
-                    🔔
-                </button>
-                
-                <button onclick="showSettingsModal();" style="
-                    background: transparent;
-                    border: none;
-                    color: #aaa;
-                    font-size: 1.3em;
-                    cursor: pointer;
-                " title="Settings">
-                    ⚙️
-                </button>
-                
-                <button onclick="quitAndLogout();" style="
-                    background: transparent;
-                    border: none;
-                    color: #ff6b6b;
-                    font-size: 1.3em;
-                    cursor: pointer;
-                " title="Log Out">
-                    🚪
-                </button>
-            </div>
-        </div>
-
         <!-- Main Content Area -->
         <div style="
             padding: 30px;
@@ -17193,6 +17080,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             // Hide start menu
             document.getElementById('start-menu').style.display = 'none';
             
+            // Hide global account bar during gameplay
+            hideGlobalAccountBar();
+            
             // Show game board
             document.getElementById('board-display-container').style.display = 'block';
             
@@ -17732,6 +17622,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 gameOverOverlay.remove();
             }
             
+            // Show global account bar when returning to menu
+            const currentUser = localStorage.getItem('romgon-user');
+            if (currentUser) {
+                showGlobalAccountBar();
+            }
+            
             // If we're in an active game, don't reset the game state
             if (!gameInProgress) {
                 // Stop and reset timers
@@ -17776,6 +17672,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         
         // Function to return to active game
         function returnToGame() {
+            // Hide global account bar when returning to gameplay
+            hideGlobalAccountBar();
+            
             // Hide start menu
             const startMenuEl = document.getElementById('start-menu');
             if (startMenuEl) startMenuEl.style.display = 'none';
