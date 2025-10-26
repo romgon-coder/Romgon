@@ -24109,19 +24109,22 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 const jwtToken = localStorage.getItem('romgon-jwt');
                 if (jwtToken && currentUser.id) {
                     console.log('🔄 Submitting game result to backend...');
+                    console.log('   User ID:', currentUser.id);
+                    console.log('   Result:', playerWon ? 'win' : 'loss');
+                    console.log('   Winner:', winner);
+                    console.log('   Move count:', moveCount);
                     
                     // For local/AI games, we need to submit as a completed game
-                    // Since we don't have a gameId, we'll need to create a simple result submission
                     try {
                         const gameData = {
                             opponent_type: 'ai', // or 'local' for PvP
                             result: playerWon ? 'win' : 'loss',
                             winner: winner.toLowerCase(),
                             move_count: moveCount,
-                            // The backend will use the authenticated user from JWT
                         };
                         
-                        // Note: This endpoint doesn't exist yet, but we'll handle it gracefully
+                        console.log('📤 Sending game data:', gameData);
+                        
                         const response = await fetch(`${BACKEND_API_URL || 'https://api.romgon.net'}/api/games/submit-result`, {
                             method: 'POST',
                             headers: {
@@ -24131,16 +24134,23 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                             body: JSON.stringify(gameData)
                         });
                         
+                        console.log('📥 Backend response status:', response.status);
+                        
                         if (response.ok) {
-                            console.log('✅ Game result submitted to backend successfully');
+                            const result = await response.json();
+                            console.log('✅ Game result submitted to backend successfully:', result);
                         } else {
-                            console.warn('⚠️ Backend game submission failed:', response.status, response.statusText);
+                            const errorText = await response.text();
+                            console.error('❌ Backend game submission failed:', response.status, response.statusText);
+                            console.error('   Error details:', errorText);
                         }
                     } catch (error) {
-                        console.warn('⚠️ Could not submit game to backend (endpoint may not exist yet):', error.message);
+                        console.error('❌ Error submitting game to backend:', error);
                     }
                 } else {
                     console.log('ℹ️ No JWT token or user ID - skipping backend sync');
+                    console.log('   JWT token exists:', !!jwtToken);
+                    console.log('   User ID:', currentUser.id);
                 }
             } else {
                 console.log('👤 Guest user - no stats saved');
