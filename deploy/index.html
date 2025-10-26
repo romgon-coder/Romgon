@@ -3327,7 +3327,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>ROMGON</title>
-    <!-- Version: 2025-10-26-PREFS-FIX-v3 -->
+    <!-- Version: 2025-10-26-PREFS-FIX-v4-DUPEBOOK -->
     <!-- Keyboard Navigation Systems -->
     <script src="keyboard-navigation-v2.js"></script>
     <script src="keyboard-general-navigation.js"></script>
@@ -9688,69 +9688,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         document.getElementById('zoom-value').textContent = Math.round(zoomValue * 100) + '%';
     }
     
-    // Opening Book data
-    const OPENING_BOOK = [
-        {
-            name: 'Triangle Coop (Black)',
-            moves: ['t5-6>5-5', 't1-6>2-6'],
-            description: 'Both black triangles advance cooperatively.'
-        },
-        {
-            name: 'Triangle Coop (White)',
-            moves: ['T1-0>1-1', 'T5-0>4-1'],
-            description: 'Both white triangles advance cooperatively.'
-        },
-        {
-            name: '2 Square Advance (Black)',
-            moves: ['s6-5>5-5', 's0-5>1-5'],
-            description: 'Both black squares advance aggressively.'
-        },
-        {
-            name: '2 Square Advance (White)',
-            moves: ['S0-0>1-1', 'S6-0>5-1'],
-            description: 'Both white squares advance aggressively.'
-        },
-        {
-            name: 'Rhombus Roster (Black)',
-            moves: ['r3-8>3-6', 'c4-7>4-6'],
-            description: 'Black rhombus and circle both advance.'
-        },
-        {
-            name: 'Rhombus Roster (White)',
-            moves: ['R3-0>3-2', 'C2-0>2-1'],
-            description: 'White rhombus and circle both advance.'
-        },
-        {
-            name: 'Hexagon Push (Black)',
-            moves: ['s6-5>5-5', 'h2-7>3-6'],
-            description: 'Black square and hexagon push forward.'
-        },
-        {
-            name: 'Hexagon Push (White)',
-            moves: ['S0-0>1-1', 'H4-0>3-2'],
-            description: 'White square and hexagon push forward.'
-        },
-        {
-            name: 'Rhombus Straw (Black)',
-            moves: ['r3-8>3-6', 'r3-6>3-4'],
-            description: 'Black rhombus advances twice down the center.'
-        },
-        {
-            name: 'Rhombus Straw (White)',
-            moves: ['R3-0>3-2', 'R3-2>3-4'],
-            description: 'White rhombus advances twice up the center.'
-        },
-        {
-            name: 'Triangle Gateway Attack',
-            moves: ['T2-1>3-2', 's5-0>5-1'],
-            description: 'Triangle advances through the gateway.'
-        },
-        {
-            name: 'Central Hexagon Push',
-            moves: ['H3-2>3-3', 't4-1>4-2'],
-            description: 'Hexagon pushes to the center.'
-        }
-    ];
+    // OPENING_BOOK is defined earlier in the file (line ~3087) with complete rpn data
+    // This duplicate declaration has been removed
     
     function renderOpeningBook() {
         const content = document.getElementById('opening-book-content');
