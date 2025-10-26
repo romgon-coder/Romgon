@@ -2552,6 +2552,11 @@
         updateTopBarStats(wins, losses, winRate);
         
         // Try to fetch from backend if registered user (non-blocking)
+        console.log('🔍 Checking if should fetch backend data...');
+        console.log('  currentUser.id:', currentUser.id);
+        console.log('  currentUser.type:', currentUser.type);
+        console.log('  Full currentUser:', currentUser);
+        
         if (currentUser.id && currentUser.type !== 'guest') {
             try {
                 console.log('🔄 Fetching backend data...');
