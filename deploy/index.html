@@ -25238,31 +25238,22 @@ ${moveHistory || '(No moves played yet - starting position)'}
             try {
                 console.log('🔄 Initiating Google OAuth flow...');
                 
-                // Use BACKEND_API_URL if available, otherwise default
-                const apiUrl = (typeof BACKEND_API_URL !== 'undefined' ? BACKEND_API_URL : 'https://api.romgon.net').replace('/api', '');
+                // Get backend URL - ensure it's a full URL
+                let apiUrl = typeof BACKEND_API_URL !== 'undefined' ? BACKEND_API_URL : 'https://api.romgon.net';
                 
-                // Check if backend OAuth is configured
-                try {
-                    const checkResponse = await fetch(`${apiUrl}/api/auth/google`, {
-                        method: 'GET',
-                        redirect: 'manual'
-                    });
-                    
-                    // If we get an error response (503 = not configured), show it
-                    if (checkResponse.status === 503 || checkResponse.status === 500) {
-                        const errorData = await checkResponse.json();
-                        alert(`Google sign-in not available: ${errorData.message || 'Not configured'}\n\nPlease use Email/Password registration or Guest mode.`);
-                        console.error('Google OAuth not configured:', errorData);
-                        return;
-                    }
-                } catch (fetchError) {
-                    // If fetch fails with CORS/network error, it might be a redirect (which is good!)
-                    console.log('OAuth pre-check complete (or redirecting)');
+                // Remove trailing /api if present
+                apiUrl = apiUrl.replace(/\/api$/, '');
+                
+                // Ensure it starts with https://
+                if (!apiUrl.startsWith('http')) {
+                    apiUrl = 'https://' + apiUrl;
                 }
                 
+                const fullUrl = `${apiUrl}/api/auth/google`;
+                console.log(`🔄 Redirecting to: ${fullUrl}`);
+                
                 // Redirect to backend OAuth endpoint
-                console.log(`🔄 Redirecting to: ${apiUrl}/api/auth/google`);
-                window.location.href = `${apiUrl}/api/auth/google`;
+                window.location.href = fullUrl;
                 
             } catch (e) {
                 console.error('handleGoogleLogin error', e);
