@@ -23,6 +23,7 @@ const gameRoutes = require('./routes/games');
 const ratingRoutes = require('./routes/ratings');
 const statsRoutes = require('./routes/stats');
 const { router: customGamesRoutes, initCustomGames } = require('./routes/custom-games');
+const engineAnalysisRoutes = require('./routes/engine-analysis');
 
 // Import WebSocket handlers
 const setupSocketHandlers = require('./websocket/gameSocket');
@@ -114,6 +115,9 @@ app.use('/api/stats', statsRoutes);
 
 // Custom Games routes (Game Creator Platform)
 app.use('/api/custom-games', customGamesRoutes);
+
+// Engine Analysis routes
+app.use('/api/engine', engineAnalysisRoutes);
 
 // Initialize custom games with database
 initCustomGames(dbPromise);
