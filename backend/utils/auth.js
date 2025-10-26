@@ -73,6 +73,7 @@ function authenticateToken(req, res, next) {
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
     if (!token) {
+        console.warn('⚠️ No token provided in request');
         return res.status(401).json({
             error: 'Access token required',
             message: 'No authorization token provided'
@@ -81,9 +82,12 @@ function authenticateToken(req, res, next) {
 
     try {
         const decoded = verifyToken(token);
+        console.log('✅ Token verified for user:', decoded.username);
         req.user = decoded;
         next();
     } catch (err) {
+        console.error('❌ Token verification failed:', err.message);
+        console.error('❌ Token (first 50 chars):', token.substring(0, 50));
         return res.status(403).json({
             error: 'Invalid token',
             message: err.message
