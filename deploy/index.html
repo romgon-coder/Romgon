@@ -2564,26 +2564,43 @@
                 console.log('📊 Backend data:', { profile, stats, games });
                 
                 // Update with backend data if available
-                if (stats) {
-                    const backendWins = stats.wins || 0;
-                    const backendLosses = stats.losses || 0;
-                    const backendTotal = backendWins + backendLosses;
-                    const backendWinRate = backendTotal > 0 ? Math.round((backendWins / backendTotal) * 100) : 0;
+                if (stats && stats.stats) {
+                    // Backend returns { stats: { wins, losses, totalGames, ... } }
+                    const backendStats = stats.stats;
+                    const backendWins = backendStats.wins || 0;
+                    const backendLosses = backendStats.losses || 0;
+                    const backendTotal = backendStats.totalGames || 0;
+                    const backendWinRate = backendStats.winRate || 0;
+                    
+                    console.log('✅ Using backend stats:', backendStats);
                     
                     document.getElementById('account-wins').textContent = backendWins;
                     document.getElementById('account-losses').textContent = backendLosses;
                     document.getElementById('account-games').textContent = backendTotal;
                     document.getElementById('account-total-games').textContent = backendTotal;
                     
-                    if (winRateEl) winRateEl.textContent = backendWinRate + '%';
+                    if (winRateEl) winRateEl.textContent = Math.round(backendWinRate) + '%';
                     
-                    if (memberLevelEl) {
+                    // Update member level from backend
+                    if (memberLevelEl && stats.memberLevel) {
+                        memberLevelEl.textContent = stats.memberLevel;
+                    } else if (memberLevelEl) {
                         if (backendTotal >= 100) memberLevelEl.textContent = 'Gold';
                         else if (backendTotal >= 50) memberLevelEl.textContent = 'Silver';
                         else memberLevelEl.textContent = 'Bronze';
                     }
                     
-                    updateTopBarStats(backendWins, backendLosses, backendWinRate);
+                    // Update moves and captures
+                    if (backendStats.totalMoves) {
+                        document.getElementById('account-total-moves').textContent = backendStats.totalMoves;
+                    }
+                    if (backendStats.totalCaptures) {
+                        document.getElementById('account-total-captures').textContent = backendStats.totalCaptures;
+                    }
+                    
+                    updateTopBarStats(backendWins, backendLosses, Math.round(backendWinRate));
+                } else {
+                    console.warn('⚠️ Backend stats not in expected format:', stats);
                 }
                 
                 console.log('✅ Backend data loaded');
