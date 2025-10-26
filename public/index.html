@@ -26493,6 +26493,8 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     
                     const user = {
                         name: payload.username,
+                        username: payload.username,  // Add username field for Player Hub
+                        email: payload.email || null,
                         type: 'registered',
                         id: payload.userId,
                         token: token
