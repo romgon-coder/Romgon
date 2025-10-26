@@ -542,6 +542,16 @@
     <script>
         const API_BASE = 'https://api.romgon.net/api/keys';
         
+        // Helper function to get auth token from any storage location
+        function getAuthToken() {
+            // Check multiple possible token storage locations
+            return localStorage.getItem('romgon_token') || 
+                   localStorage.getItem('token') || 
+                   localStorage.getItem('romgon_auth_token') ||
+                   sessionStorage.getItem('romgon_token') ||
+                   sessionStorage.getItem('token');
+        }
+        
         // Load API keys on page load
         document.addEventListener('DOMContentLoaded', () => {
             loadApiKeys();
@@ -566,7 +576,7 @@
             }
 
             try {
-                const token = localStorage.getItem('romgon_auth_token');
+                const token = getAuthToken();
                 if (!token) {
                     alert('Please log in first');
                     window.location.href = 'index.html';
@@ -612,7 +622,7 @@
             container.innerHTML = '<div class="loading">Loading API keys...</div>';
 
             try {
-                const token = localStorage.getItem('romgon_auth_token');
+                const token = getAuthToken();
                 if (!token) {
                     container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔒</div><p>Please log in to manage API keys</p></div>';
                     return;
@@ -705,7 +715,7 @@
             }
 
             try {
-                const token = localStorage.getItem('romgon_auth_token');
+                const token = getAuthToken();
                 const response = await fetch(`${API_BASE}/${keyId}`, {
                     method: 'DELETE',
                     headers: {
