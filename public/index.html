@@ -14670,6 +14670,60 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             });
         }
 
+        function showTypingIndicator(data) {
+            const { userId, username, chatType, targetUserId } = data;
+            
+            if (chatType === 'global') {
+                // Show typing indicator in global chat
+                const chatContainer = document.getElementById('global-chat-messages');
+                if (!chatContainer) return;
+                
+                // Remove existing typing indicator for this user
+                const existingIndicator = document.getElementById(`typing-${userId}`);
+                if (existingIndicator) return; // Already showing
+                
+                // Create typing indicator
+                const indicator = document.createElement('div');
+                indicator.id = `typing-${userId}`;
+                indicator.style.cssText = 'padding: 8px; color: #8be9fd; font-style: italic; opacity: 0.8;';
+                indicator.textContent = `${username} is typing...`;
+                
+                chatContainer.appendChild(indicator);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            } else if (chatType === 'direct') {
+                // Show typing indicator in direct messages (if viewing that conversation)
+                if (romgonChat.currentChatWith === userId) {
+                    const dmContainer = document.getElementById('direct-messages-container');
+                    if (!dmContainer) return;
+                    
+                    const existingIndicator = document.getElementById(`typing-dm-${userId}`);
+                    if (existingIndicator) return;
+                    
+                    const indicator = document.createElement('div');
+                    indicator.id = `typing-dm-${userId}`;
+                    indicator.style.cssText = 'padding: 8px; color: #8be9fd; font-style: italic; opacity: 0.8;';
+                    indicator.textContent = `${username} is typing...`;
+                    
+                    dmContainer.appendChild(indicator);
+                    dmContainer.scrollTop = dmContainer.scrollHeight;
+                }
+            }
+        }
+
+        function hideTypingIndicator(userId) {
+            // Remove typing indicator from global chat
+            const globalIndicator = document.getElementById(`typing-${userId}`);
+            if (globalIndicator) {
+                globalIndicator.remove();
+            }
+            
+            // Remove typing indicator from direct messages
+            const dmIndicator = document.getElementById(`typing-dm-${userId}`);
+            if (dmIndicator) {
+                dmIndicator.remove();
+            }
+        }
+
         function switchChatTab(tab) {
             const globalTab = document.getElementById('global-chat-tab');
             const friendsTab = document.getElementById('friends-chat-tab');
