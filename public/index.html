@@ -15121,6 +15121,18 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             }, 500);
         }
         
+        function updateUserOnlineStatus(userId, isOnline) {
+            if (isOnline) {
+                // User came online - they should already be in the list from playerJoined event
+                console.log(`👤 User ${userId} is now online`);
+            } else {
+                // User went offline - remove from list
+                console.log(`👋 User ${userId} went offline`);
+                onlinePlayers.delete(userId);
+                renderOnlinePlayers();
+            }
+        }
+        
         function updateOnlinePlayersList(players) {
             onlinePlayers.clear();
             players.forEach(player => {
