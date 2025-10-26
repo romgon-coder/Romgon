@@ -290,13 +290,19 @@ class RoomClient {
     async listPublicRooms() {
         try {
             const token = localStorage.getItem('romgon-jwt');
-            const response = await fetch(`${getBackendAPIURL()}/api/rooms/list/public`, {
+            const url = `${getBackendAPIURL()}/api/rooms/list/public`;
+            console.log('📋 Fetching public rooms from:', url);
+            
+            const response = await fetch(url, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
             });
 
+            console.log('📋 Response status:', response.status);
             const data = await response.json();
+            console.log('📋 Response data:', data);
+            
             return data.success ? data.rooms : [];
         } catch (error) {
             console.error('❌ Error listing rooms:', error);
