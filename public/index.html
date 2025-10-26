@@ -16426,7 +16426,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 });
                 
                 if (!response.ok) {
-                    console.warn('⚠️ Failed to fetch user stats from backend, using local data');
+                    const errorText = await response.text();
+                    console.error('❌ Failed to fetch user stats from backend:', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        error: errorText
+                    });
                     return null;
                 }
                 
@@ -16434,7 +16439,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 console.log('✅ Fetched user stats from backend:', data);
                 return data;
             } catch (error) {
-                console.warn('⚠️ Error fetching user stats from backend, using local data:', error.message);
+                console.error('❌ Error fetching user stats from backend:', error);
                 return null;
             }
         }
@@ -16450,7 +16455,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 });
                 
                 if (!response.ok) {
-                    console.warn('⚠️ Failed to fetch game history from backend, using local data');
+                    const errorText = await response.text();
+                    console.error('❌ Failed to fetch game history from backend:', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        error: errorText
+                    });
                     return [];
                 }
                 
@@ -16458,7 +16468,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 console.log('✅ Fetched game history from backend:', data);
                 return data;
             } catch (error) {
-                console.warn('⚠️ Error fetching game history from backend, using local data:', error.message);
+                console.error('❌ Error fetching game history from backend:', error);
                 return [];
             }
         }
