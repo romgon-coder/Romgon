@@ -169,7 +169,14 @@ class RoomClient {
 
             if (data.success) {
                 this.currentRoom = data.room;
-                this.socket.emit('room:join', { roomCode: data.room.code });
+                
+                // Only emit WebSocket event if connected
+                if (this.socket && this.socket.connected) {
+                    this.socket.emit('room:join', { roomCode: data.room.code });
+                } else {
+                    console.log('⚠️ WebSocket not connected, room created via HTTP only');
+                }
+                
                 console.log('✅ Room created:', data.room.code);
                 return data.room;
             } else {
@@ -197,7 +204,14 @@ class RoomClient {
 
             if (data.success) {
                 this.currentRoom = data.room;
-                this.socket.emit('room:join', { roomCode: data.room.code });
+                
+                // Only emit WebSocket event if connected
+                if (this.socket && this.socket.connected) {
+                    this.socket.emit('room:join', { roomCode: data.room.code });
+                } else {
+                    console.log('⚠️ WebSocket not connected, room joined via HTTP only');
+                }
+                
                 console.log('✅ Joined room:', data.room.code);
                 return data.room;
             } else {

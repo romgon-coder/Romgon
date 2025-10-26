@@ -18893,25 +18893,20 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     errorElement.style.display = 'none';
                 }
 
-                // Connect to WebSocket
-                if (!roomClient.socket || !roomClient.socket.connected) {
-                    roomClient.connect();
-                    // Wait a bit for connection
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                    
-                    // Check if connection succeeded
-                    if (!roomClient.socket || !roomClient.socket.connected) {
-                        throw new Error('Failed to connect to multiplayer server. Please try again.');
-                    }
-                }
-
                 showView('mp-create-room');
                 document.getElementById('room-code-display').textContent = 'Creating...';
 
+                // Create room via HTTP API (don't wait for WebSocket)
                 const room = await roomClient.createRoom({ isPrivate: false });
                 
                 document.getElementById('room-code-display').textContent = room.code;
                 console.log('✅ Room created:', room);
+
+                // Try to connect WebSocket in background (non-blocking)
+                if (!roomClient.socket || !roomClient.socket.connected) {
+                    console.log('🔌 Connecting to WebSocket in background...');
+                    roomClient.connect();
+                }
 
                 // Setup room event handlers
                 roomClient.onPlayerJoinedRoom = (data) => {
