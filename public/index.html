@@ -2440,14 +2440,14 @@
                 const jwtPayload = JSON.parse(atob(jwtToken.split('.')[1]));
                 console.log('🔑 JWT payload:', jwtPayload);
                 
-                // Update currentUser with JWT data
-                if (jwtPayload.email) {
+                // Update currentUser with JWT data (handle both old and new JWT formats)
+                if (jwtPayload.userId || jwtPayload.username) {
                     currentUser = {
-                        id: jwtPayload.id || jwtPayload.userId,
-                        username: jwtPayload.name || jwtPayload.username || jwtPayload.email.split('@')[0],
-                        email: jwtPayload.email,
-                        name: jwtPayload.name,
-                        picture: jwtPayload.picture,
+                        id: jwtPayload.userId || jwtPayload.id,
+                        username: jwtPayload.username || jwtPayload.name || jwtPayload.email?.split('@')[0] || 'Player',
+                        email: jwtPayload.email || currentUser.email || null,
+                        name: jwtPayload.name || jwtPayload.username,
+                        picture: jwtPayload.picture || currentUser.picture,
                         type: 'registered',
                         google_id: jwtPayload.google_id
                     };
