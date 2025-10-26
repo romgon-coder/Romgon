@@ -2434,8 +2434,8 @@
         
         let currentUser = window.currentUser || (storedUser ? JSON.parse(storedUser) : {});
         
-        // If we have a JWT but user data looks like guest, try to decode JWT
-        if (jwtToken && (!currentUser.email || currentUser.username === 'Guest Player')) {
+        // If we have a JWT but user data is missing/incomplete, try to decode JWT
+        if (jwtToken && (!currentUser.id || !currentUser.username || currentUser.username === 'Guest Player')) {
             try {
                 const jwtPayload = JSON.parse(atob(jwtToken.split('.')[1]));
                 console.log('🔑 JWT payload:', jwtPayload);
