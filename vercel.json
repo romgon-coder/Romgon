@@ -1,10 +1,11 @@
 {
+  "version": 2,
   "framework": null,
   "installCommand": "npm install",
   "buildCommand": "node build-frontend.js",
   "outputDirectory": "public",
   "rewrites": [
-    { "source": "/", "destination": "/index.html" }
+    { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
     {
