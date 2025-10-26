@@ -303,6 +303,15 @@ class RoomClient {
             const data = await response.json();
             console.log('📋 Response data:', data);
             
+            // Handle authentication errors
+            if (response.status === 401 || response.status === 403) {
+                console.error('❌ Authentication error - please log in again');
+                if (typeof alert !== 'undefined') {
+                    alert('Your session has expired. Please log out and log in again.');
+                }
+                return [];
+            }
+            
             return data.success ? data.rooms : [];
         } catch (error) {
             console.error('❌ Error listing rooms:', error);
