@@ -2870,10 +2870,12 @@
             tab.style.borderBottom = '3px solid transparent';
         });
         
-        // Show selected panel
+        // Show selected panel with proper flex settings
         const panel = document.getElementById('pref-panel-' + tabName);
         if (panel) {
             panel.style.display = 'flex';
+            panel.style.flexDirection = 'column';
+            panel.style.gap = '24px';
             console.log('Panel shown:', 'pref-panel-' + tabName);
         } else {
             console.error('Panel not found:', 'pref-panel-' + tabName);
