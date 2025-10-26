@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Key Management - ROMGON</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1f2e 0%, #2d1b3d 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            text-decoration: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            border: none;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            cursor: pointer;
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 20px 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #a0a0a0;
+            font-size: 1.1rem;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #b0b0b0;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #667eea;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .checkbox-item label {
+            margin: 0;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.5);
+        }
+
+        .api-key-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .api-key-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .key-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .key-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-active {
+            background: rgba(46, 213, 115, 0.2);
+            color: #2ed573;
+            border: 1px solid #2ed573;
+        }
+
+        .status-revoked {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+        }
+
+        .status-expired {
+            background: rgba(255, 159, 67, 0.2);
+            color: #ff9f43;
+            border: 1px solid #ff9f43;
+        }
+
+        .key-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .info-label {
+            color: #888;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            color: #e0e0e0;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .key-display {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #4ecdc4;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .copy-btn {
+            background: rgba(78, 205, 196, 0.2);
+            border: 1px solid #4ecdc4;
+            color: #4ecdc4;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: rgba(78, 205, 196, 0.4);
+        }
+
+        .permissions-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .permission-tag {
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid #667eea;
+            color: #667eea;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1f2e 0%, #2d1b3d 100%);
+            border: 2px solid #667eea;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-header h3 {
+            font-size: 1.8rem;
+            color: #667eea;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #e0e0e0;
+            font-size: 2rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .warning-box {
+            background: rgba(255, 159, 67, 0.1);
+            border: 2px solid #ff9f43;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #ff9f43;
+        }
+
+        .warning-box strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .secret-display {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #4ecdc4;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+            color: #4ecdc4;
+            margin: 15px 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 768px) {
+            .key-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .key-info {
+                grid-template-columns: 1fr;
+            }
+
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="back-button" onclick="window.location.href='index.html'">← Back to Game</button>
+
+    <div class="container">
+        <header>
+            <h1>🔑 API Key Management</h1>
+            <p class="subtitle">Securely manage your ROMGON API keys</p>
+        </header>
+
+        <!-- Generate New API Key Section -->
+        <div class="section">
+            <h2>Generate New API Key</h2>
+            <form id="generateForm">
+                <div class="form-group">
+                    <label for="keyName">API Key Name *</label>
+                    <input 
+                        type="text" 
+                        id="keyName" 
+                        placeholder="e.g., My Chess Bot, Analytics Tool, Mobile App" 
+                        required
+                        minlength="3"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="expiresIn">Expiration</label>
+                    <select id="expiresIn">
+                        <option value="never">Never expires</option>
+                        <option value="7">7 days</option>
+                        <option value="30" selected>30 days</option>
+                        <option value="90">90 days</option>
+                        <option value="365">1 year</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Permissions *</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="perm-read-games" value="read:games" checked>
+                            <label for="perm-read-games">Read Games</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="perm-read-moves" value="read:moves" checked>
+                            <label for="perm-read-moves">Read Moves</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="perm-write-games" value="write:games">
+                            <label for="perm-write-games">Create Games</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="perm-write-moves" value="write:moves">
+                            <label for="perm-write-moves">Submit Moves</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="perm-read-users" value="read:users">
+                            <label for="perm-read-users">Read User Data</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="perm-read-stats" value="read:stats">
+                            <label for="perm-read-stats">Read Statistics</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="perm-custom-games" value="read:custom_games">
+                            <label for="perm-custom-games">Access Custom Games</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="perm-analysis" value="read:analysis">
+                            <label for="perm-analysis">Engine Analysis</label>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">🔑 Generate API Key</button>
+            </form>
+        </div>
+
+        <!-- Existing API Keys Section -->
+        <div class="section">
+            <h2>Your API Keys</h2>
+            <div id="apiKeysList" class="loading">
+                Loading API keys...
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>✅ API Key Generated!</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            
+            <div class="warning-box">
+                <strong>⚠️ IMPORTANT - Save These Credentials Now!</strong>
+                <p>The API secret will only be shown ONCE. Copy it now and store it securely.</p>
+            </div>
+
+            <div class="form-group">
+                <label>API Key</label>
+                <div class="key-display">
+                    <span id="modalApiKey"></span>
+                    <button class="copy-btn" onclick="copyToClipboard('modalApiKey')">Copy</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>API Secret</label>
+                <div class="secret-display" id="modalApiSecret"></div>
+                <button class="copy-btn" style="width: 100%; margin-top: 10px;" onclick="copyToClipboard('modalApiSecret')">
+                    📋 Copy Secret
+                </button>
+            </div>
+
+            <p style="margin-top: 20px; color: #888; font-size: 0.9rem;">
+                Use these credentials to authenticate API requests. Never share your secret publicly.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://api.romgon.net/api/keys';
+        
+        // Load API keys on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadApiKeys();
+        });
+
+        // Generate API Key Form
+        document.getElementById('generateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('keyName').value.trim();
+            const expiresIn = document.getElementById('expiresIn').value;
+            
+            // Get selected permissions
+            const permissions = [];
+            document.querySelectorAll('.checkbox-item input:checked').forEach(checkbox => {
+                permissions.push(checkbox.value);
+            });
+
+            if (permissions.length === 0) {
+                alert('Please select at least one permission.');
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('romgon_auth_token');
+                if (!token) {
+                    alert('Please log in first');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE}/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ name, expiresIn, permissions })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Show success modal with credentials
+                    document.getElementById('modalApiKey').textContent = data.apiKey.key;
+                    document.getElementById('modalApiSecret').textContent = data.apiKey.secret;
+                    document.getElementById('successModal').classList.add('active');
+
+                    // Reset form
+                    document.getElementById('generateForm').reset();
+                    document.getElementById('perm-read-games').checked = true;
+                    document.getElementById('perm-read-moves').checked = true;
+
+                    // Reload keys list
+                    loadApiKeys();
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to generate API key'));
+                }
+            } catch (error) {
+                console.error('Generate error:', error);
+                alert('Failed to generate API key. Please try again.');
+            }
+        });
+
+        // Load API Keys
+        async function loadApiKeys() {
+            const container = document.getElementById('apiKeysList');
+            container.innerHTML = '<div class="loading">Loading API keys...</div>';
+
+            try {
+                const token = localStorage.getItem('romgon_auth_token');
+                if (!token) {
+                    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔒</div><p>Please log in to manage API keys</p></div>';
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE}/list`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.keys.length > 0) {
+                    container.innerHTML = data.keys.map(key => renderApiKeyCard(key)).join('');
+                } else {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🔑</div>
+                            <p>No API keys yet. Generate your first key above!</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Load keys error:', error);
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">❌</div><p>Failed to load API keys</p></div>';
+            }
+        }
+
+        // Render API Key Card
+        function renderApiKeyCard(key) {
+            const statusClass = key.status === 'active' ? 'status-active' : 
+                               key.status === 'expired' ? 'status-expired' : 'status-revoked';
+            
+            const createdDate = new Date(key.created_at).toLocaleDateString();
+            const lastUsed = key.last_used_at ? new Date(key.last_used_at).toLocaleString() : 'Never';
+            const expires = key.expires_at ? new Date(key.expires_at).toLocaleDateString() : 'Never';
+
+            return `
+                <div class="api-key-card">
+                    <div class="key-header">
+                        <div class="key-name">${escapeHtml(key.name)}</div>
+                        <span class="status-badge ${statusClass}">${key.status}</span>
+                    </div>
+
+                    <div class="key-display">
+                        <span>${key.apiKey}</span>
+                        <button class="copy-btn" onclick="copyText('${key.apiKey}')">Copy</button>
+                    </div>
+
+                    <div class="key-info">
+                        <div class="info-item">
+                            <span class="info-label">Created</span>
+                            <span class="info-value">${createdDate}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Last Used</span>
+                            <span class="info-value">${lastUsed}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Expires</span>
+                            <span class="info-value">${expires}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Requests</span>
+                            <span class="info-value">${key.usage_count || 0}</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <span class="info-label">Permissions:</span>
+                        <div class="permissions-list">
+                            ${key.permissions.map(p => `<span class="permission-tag">${p}</span>`).join('')}
+                        </div>
+                    </div>
+
+                    ${key.status === 'active' ? `
+                        <button class="btn btn-danger" onclick="revokeKey(${key.id}, '${escapeHtml(key.name)}')" style="margin-top: 15px;">
+                            🗑️ Revoke Key
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        // Revoke API Key
+        async function revokeKey(keyId, keyName) {
+            if (!confirm(`Are you sure you want to revoke "${keyName}"?\n\nThis action cannot be undone and will immediately invalidate this API key.`)) {
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('romgon_auth_token');
+                const response = await fetch(`${API_BASE}/${keyId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('API key revoked successfully');
+                    loadApiKeys();
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to revoke key'));
+                }
+            } catch (error) {
+                console.error('Revoke error:', error);
+                alert('Failed to revoke API key');
+            }
+        }
+
+        // Copy to Clipboard
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            copyText(text);
+        }
+
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard!');
+            }).catch(() => {
+                // Fallback
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('Copied to clipboard!');
+            });
+        }
+
+        // Close Modal
+        function closeModal() {
+            document.getElementById('successModal').classList.remove('active');
+        }
+
+        // HTML Escape
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
