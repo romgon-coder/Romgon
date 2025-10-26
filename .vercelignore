@@ -4,7 +4,6 @@ node_modules
 .git
 .env
 frontend
-deploy
 /index.html
 /board.HTML
 /live-romgon.html
