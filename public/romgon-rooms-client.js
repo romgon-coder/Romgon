@@ -292,6 +292,7 @@ class RoomClient {
             const token = localStorage.getItem('romgon-jwt');
             const url = `${getBackendAPIURL()}/api/rooms/list/public`;
             console.log('📋 Fetching public rooms from:', url);
+            console.log('📋 Token:', token ? token.substring(0, 50) + '...' : 'NO TOKEN');
             
             const response = await fetch(url, {
                 headers: {
@@ -301,13 +302,13 @@ class RoomClient {
 
             console.log('📋 Response status:', response.status);
             const data = await response.json();
-            console.log('📋 Response data:', data);
+            console.log('📋 Response data:', JSON.stringify(data, null, 2));
             
             // Handle authentication errors
             if (response.status === 401 || response.status === 403) {
-                console.error('❌ Authentication error - please log in again');
+                console.error('❌ Authentication error:', data.error, data.message);
                 if (typeof alert !== 'undefined') {
-                    alert('Your session has expired. Please log out and log in again.');
+                    alert('Authentication error: ' + (data.message || 'Please log in again'));
                 }
                 return [];
             }
