@@ -135,6 +135,14 @@ setupChatHandlers(io); // Chat namespace
 const activeUsers = new Map();
 const activeGames = new Map();
 
+// Expose WebSocket stats globally for engine analysis
+global.getWebSocketStats = () => ({
+    totalConnections: io.engine.clientsCount || 0,
+    activeUsers: activeUsers.size,
+    activeGames: activeGames.size,
+    connectedSockets: Array.from(io.sockets.sockets.keys()).length
+});
+
 // WebSocket connection handler
 io.on('connection', (socket) => {
     console.log(`✅ User connected: ${socket.id}`);

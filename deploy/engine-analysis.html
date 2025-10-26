@@ -786,10 +786,40 @@
                                     <span class="stat-value">${service.totalRatings}</span>
                                 </div>
                             ` : ''}
-                            ${service.activeConnections !== undefined ? `
+                            ${service.totalConnections !== undefined ? `
+                                <div class="stat-row">
+                                    <span class="stat-label">Total Connections</span>
+                                    <span class="stat-value">${service.totalConnections}</span>
+                                </div>
+                            ` : ''}
+                            ${service.activeUsers !== undefined && name === 'websocket' ? `
+                                <div class="stat-row">
+                                    <span class="stat-label">Active Users</span>
+                                    <span class="stat-value">${service.activeUsers}</span>
+                                </div>
+                            ` : ''}
+                            ${service.activeGames !== undefined && name === 'websocket' ? `
+                                <div class="stat-row">
+                                    <span class="stat-label">Active Games (WS)</span>
+                                    <span class="stat-value">${service.activeGames}</span>
+                                </div>
+                            ` : ''}
+                            ${service.connectedSockets !== undefined ? `
+                                <div class="stat-row">
+                                    <span class="stat-label">Connected Sockets</span>
+                                    <span class="stat-value">${service.connectedSockets}</span>
+                                </div>
+                            ` : ''}
+                            ${service.activeConnections !== undefined && name !== 'websocket' ? `
                                 <div class="stat-row">
                                     <span class="stat-label">Active Connections</span>
                                     <span class="stat-value">${service.activeConnections}</span>
+                                </div>
+                            ` : ''}
+                            ${service.note ? `
+                                <div class="stat-row">
+                                    <span class="stat-label">Note</span>
+                                    <span class="stat-value" style="font-size: 0.85em; color: #a0a0a0;">${service.note}</span>
                                 </div>
                             ` : ''}
                             <div class="stat-row">

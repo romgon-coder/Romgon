@@ -329,17 +329,28 @@ router.get('/connections', async (req, res) => {
             };
         }
 
-        // WebSocket status (if available via global)
-        if (global.socketIOConnections !== undefined) {
+        // WebSocket status
+        try {
+            if (typeof global.getWebSocketStats === 'function') {
+                const wsStats = global.getWebSocketStats();
+                connections.services.websocket = {
+                    status: 'connected',
+                    totalConnections: wsStats.totalConnections,
+                    activeUsers: wsStats.activeUsers,
+                    activeGames: wsStats.activeGames,
+                    connectedSockets: wsStats.connectedSockets,
+                    integration: 'active'
+                };
+            } else {
+                connections.services.websocket = {
+                    status: 'initializing',
+                    note: 'WebSocket system starting up'
+                };
+            }
+        } catch (err) {
             connections.services.websocket = {
-                status: 'connected',
-                activeConnections: global.socketIOConnections,
-                integration: 'active'
-            };
-        } else {
-            connections.services.websocket = {
-                status: 'unknown',
-                note: 'WebSocket metrics not tracked'
+                status: 'error',
+                error: err.message
             };
         }
 
