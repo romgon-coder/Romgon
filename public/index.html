@@ -2487,10 +2487,12 @@
         // Set initial values from local data
         const username = currentUser.username || currentUser.name || currentUser.email?.split('@')[0] || 'Player';
         const email = currentUser.email || 'No email';
-        const accountType = currentUser.type === 'guest' ? 'Guest' : 'Registered';
+        // Determine account type: if has JWT token or email, it's registered
+        const hasJWT = !!localStorage.getItem('romgon-jwt');
+        const accountType = (currentUser.type === 'guest' && !hasJWT && !currentUser.email) ? 'Guest' : 'Registered';
         const avatar = currentUser.avatar || currentUser.picture || '👤';
         
-        console.log('📊 Displaying - Username:', username, 'Email:', email, 'Type:', accountType);
+        console.log('📊 Displaying - Username:', username, 'Email:', email, 'Type:', accountType, 'Has JWT:', hasJWT);
         
         // Update sidebar immediately with local data
         document.getElementById('account-sidebar-name').textContent = username;
@@ -2555,9 +2557,14 @@
         console.log('🔍 Checking if should fetch backend data...');
         console.log('  currentUser.id:', currentUser.id);
         console.log('  currentUser.type:', currentUser.type);
+        console.log('  Has JWT token:', !!localStorage.getItem('romgon-jwt'));
         console.log('  Full currentUser:', currentUser);
         
-        if (currentUser.id && currentUser.type !== 'guest') {
+        // Fetch backend data if: has ID AND (is registered OR has JWT token)
+        const shouldFetchBackend = currentUser.id && (currentUser.type !== 'guest' || localStorage.getItem('romgon-jwt'));
+        console.log('  Should fetch backend?', shouldFetchBackend);
+        
+        if (shouldFetchBackend) {
             try {
                 console.log('🔄 Fetching backend data...');
                 const [profile, stats, games] = await Promise.all([
