@@ -5,9 +5,9 @@
 const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
-const { body, param, validationResult } = require('express-validator');
+const { body, param, query, validationResult } = require('express-validator');
 const { authenticateToken } = require('../utils/auth');
-const db = require('../config/database');
+const { db, dbPromise } = require('../config/database');
 
 /**
  * Create a new game
@@ -84,7 +84,7 @@ router.post('/:gameId/join',
             const playerId = req.user.id;
 
             // Get game
-            const game = await db.get('SELECT * FROM games WHERE id = ?', [gameId]);
+            const game = await dbPromise.get('SELECT * FROM games WHERE id = ?', [gameId]);
             if (!game) {
                 return res.status(404).json({ error: 'Game not found' });
             }
@@ -106,7 +106,7 @@ router.post('/:gameId/join',
 
             await db.run(updateQuery, [playerId, gameId]);
 
-            const updatedGame = await db.get('SELECT * FROM games WHERE id = ?', [gameId]);
+            const updatedGame = await dbPromise.get('SELECT * FROM games WHERE id = ?', [gameId]);
             res.json({
                 gameId,
                 whitePlayerId: updatedGame.white_player_id,
@@ -136,7 +136,7 @@ router.get('/:gameId',
 
             const { gameId } = req.params;
 
-            const game = await db.get('SELECT * FROM games WHERE id = ?', [gameId]);
+            const game = await dbPromise.get('SELECT * FROM games WHERE id = ?', [gameId]);
             if (!game) {
                 return res.status(404).json({ error: 'Game not found' });
             }
@@ -187,7 +187,7 @@ router.post('/:gameId/move',
             const { move } = req.body;
             const playerId = req.user.id;
 
-            const game = await db.get('SELECT * FROM games WHERE id = ?', [gameId]);
+            const game = await dbPromise.get('SELECT * FROM games WHERE id = ?', [gameId]);
             if (!game) {
                 return res.status(404).json({ error: 'Game not found' });
             }
@@ -256,7 +256,7 @@ router.post('/:gameId/end',
             const { reason, winner } = req.body;
             const playerId = req.user.id;
 
-            const game = await db.get('SELECT * FROM games WHERE id = ?', [gameId]);
+            const game = await dbPromise.get('SELECT * FROM games WHERE id = ?', [gameId]);
             if (!game) {
                 return res.status(404).json({ error: 'Game not found' });
             }
@@ -314,7 +314,7 @@ router.get('/player/:playerId',
             const { playerId } = req.params;
             const limit = req.query.limit || 20;
 
-            const games = await db.all(
+            const games = await dbPromise.all(
                 `SELECT * FROM games 
                  WHERE white_player_id = ? OR black_player_id = ? 
                  ORDER BY updated_at DESC 
@@ -359,7 +359,7 @@ router.get('/active/:playerId',
             const { playerId } = req.params;
 
             // Get active games where player is involved
-            const games = await db.all(
+            const games = await dbPromise.all(
                 `SELECT 
                     g.*,
                     w.username as white_username,
@@ -431,8 +431,8 @@ router.get('/active/:playerId',
 router.get('/history/:playerId',
     [
         param('playerId').isString(),
-        body('limit').optional().isInt({ min: 1, max: 100 }),
-        body('offset').optional().isInt({ min: 0 })
+        query('limit').optional().isInt({ min: 1, max: 100 }),
+        query('offset').optional().isInt({ min: 0 })
     ],
     async (req, res) => {
         try {
@@ -446,7 +446,7 @@ router.get('/history/:playerId',
             const offset = parseInt(req.query.offset) || 0;
 
             // Get finished games
-            const games = await db.all(
+            const games = await dbPromise.all(
                 `SELECT 
                     g.*,
                     w.username as white_username,
@@ -464,7 +464,7 @@ router.get('/history/:playerId',
             );
 
             // Get total count
-            const countResult = await db.get(
+            const countResult = await dbPromise.get(
                 `SELECT COUNT(*) as total FROM games 
                  WHERE (white_player_id = ? OR black_player_id = ?) 
                  AND status = 'finished'`,
@@ -531,3 +531,4 @@ function calculateGameDuration(startTime, endTime) {
 }
 
 module.exports = router;
+

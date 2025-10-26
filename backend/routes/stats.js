@@ -6,7 +6,7 @@ const express = require('express');
 const router = express.Router();
 const { param, query, validationResult } = require('express-validator');
 const { getRatingTier } = require('../utils/rating');
-const db = require('../config/database');
+const { db, dbPromise } = require('../config/database');
 
 // In-memory store for active sessions (for production, use Redis)
 const activeSessions = new Map(); // userId -> lastActivity timestamp
@@ -43,7 +43,7 @@ setInterval(cleanupSessions, 60 * 1000);
  */
 router.get('/total-users', async (req, res) => {
     try {
-        const result = await db.get('SELECT COUNT(*) as count FROM users WHERE is_guest = 0');
+        const result = await dbPromise.get('SELECT COUNT(*) as count FROM users WHERE is_guest = 0');
         
         res.json({
             totalUsers: result.count,
@@ -119,8 +119,8 @@ router.get('/player-counts', async (req, res) => {
     try {
         cleanupSessions();
         
-        const totalUsers = await db.get('SELECT COUNT(*) as count FROM users WHERE is_guest = 0');
-        const totalGuests = await db.get('SELECT COUNT(*) as count FROM users WHERE is_guest = 1');
+        const totalUsers = await dbPromise.get('SELECT COUNT(*) as count FROM users WHERE is_guest = 0');
+        const totalGuests = await dbPromise.get('SELECT COUNT(*) as count FROM users WHERE is_guest = 1');
         
         res.json({
             totalRegistered: totalUsers.count,
@@ -148,7 +148,7 @@ module.exports.updateActiveSession = updateActiveSession;
  */
 router.get('/global', async (req, res) => {
     try {
-        const stats = await db.get(`
+        const stats = await dbPromise.get(`
             SELECT 
                 COUNT(*) as totalPlayers,
                 AVG(rating) as avgRating,
@@ -161,7 +161,7 @@ router.get('/global', async (req, res) => {
             FROM users
         `);
 
-        const gameStats = await db.get(`
+        const gameStats = await dbPromise.get(`
             SELECT 
                 COUNT(*) as totalGames,
                 SUM(total_moves) as totalMoves
@@ -216,7 +216,7 @@ router.get('/player/:userId',
             const { userId } = req.params;
 
             // Get user
-            const user = await db.get('SELECT * FROM users WHERE id = ?', [userId]);
+            const user = await dbPromise.get('SELECT * FROM users WHERE id = ?', [userId]);
             if (!user) {
                 return res.status(404).json({ error: 'User not found' });
             }
@@ -227,7 +227,7 @@ router.get('/player/:userId',
             const avgCapturesPerGame = user.total_games > 0 ? (user.total_captures / user.total_games).toFixed(2) : 0;
 
             // Get detailed game stats
-            const gameStats = await db.all(`
+            const gameStats = await dbPromise.all(`
                 SELECT 
                     CASE WHEN white_player_id = ? THEN winner_color ELSE NULL END as white_result,
                     CASE WHEN black_player_id = ? THEN winner_color ELSE NULL END as black_result,
@@ -256,7 +256,7 @@ router.get('/player/:userId',
             const tier = getRatingTier(user.rating);
 
             // Get recent games
-            const recentGames = await db.all(`
+            const recentGames = await dbPromise.all(`
                 SELECT 
                     id, white_player_id, black_player_id, winner_id, winner_color, 
                     reason, total_moves, updated_at
@@ -328,14 +328,14 @@ router.get('/leaderboard',
             const limit = req.query.limit || 100;
             const offset = req.query.offset || 0;
 
-            const leaderboard = await db.all(`
+            const leaderboard = await dbPromise.all(`
                 SELECT id, username, rating, wins, losses, total_games, member_level
                 FROM users
                 ORDER BY rating DESC
                 LIMIT ? OFFSET ?
             `, [limit, offset]);
 
-            const total = await db.get('SELECT COUNT(*) as count FROM users');
+            const total = await dbPromise.get('SELECT COUNT(*) as count FROM users');
 
             const formattedLeaderboard = leaderboard.map((user, index) => {
                 const tier = getRatingTier(user.rating);
@@ -396,7 +396,7 @@ router.get('/ratings/:minRating/:maxRating',
                 return res.status(400).json({ error: 'minRating must be less than maxRating' });
             }
 
-            const players = await db.all(`
+            const players = await dbPromise.all(`
                 SELECT id, username, rating, wins, losses, total_games, member_level
                 FROM users
                 WHERE rating >= ? AND rating <= ?
@@ -404,7 +404,7 @@ router.get('/ratings/:minRating/:maxRating',
                 LIMIT ?
             `, [minRating, maxRating, limit]);
 
-            const count = await db.get(`
+            const count = await dbPromise.get(`
                 SELECT COUNT(*) as count FROM users
                 WHERE rating >= ? AND rating <= ?
             `, [minRating, maxRating]);
@@ -463,7 +463,7 @@ router.get('/h2h/:userId1/:userId2',
             const { userId1, userId2 } = req.params;
 
             // Get mutual games
-            const games = await db.all(`
+            const games = await dbPromise.all(`
                 SELECT id, white_player_id, black_player_id, winner_id, winner_color, reason, total_moves, updated_at
                 FROM games
                 WHERE (white_player_id = ? AND black_player_id = ?) 
@@ -486,8 +486,8 @@ router.get('/h2h/:userId1/:userId2',
             });
 
             // Get player info
-            const user1 = await db.get('SELECT username, rating FROM users WHERE id = ?', [userId1]);
-            const user2 = await db.get('SELECT username, rating FROM users WHERE id = ?', [userId2]);
+            const user1 = await dbPromise.get('SELECT username, rating FROM users WHERE id = ?', [userId1]);
+            const user2 = await dbPromise.get('SELECT username, rating FROM users WHERE id = ?', [userId2]);
 
             res.json({
                 player1: {
@@ -514,3 +514,4 @@ router.get('/h2h/:userId1/:userId2',
 );
 
 module.exports = router;
+
