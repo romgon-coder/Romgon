@@ -281,36 +281,6 @@ router.get('/performance', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
-                
-                metrics.queries[queryTest.name] = {
-                    description: queryTest.description,
-                    duration_ms: duration,
-                    status: duration < 10 ? 'excellent' : duration < 50 ? 'good' : 'slow'
-                };
-            } catch (err) {
-                metrics.queries[queryTest.name] = {
-                    description: queryTest.description,
-                    status: 'error',
-                    error: err.message
-                };
-            }
-        }
-
-        // Node.js metrics
-        metrics.nodejs = {
-            version: process.version,
-            platform: process.platform,
-            arch: process.arch,
-            memoryUsage: process.memoryUsage(),
-            uptime: process.uptime()
-        };
-
-        res.json(metrics);
-    } catch (error) {
-        console.error('Performance metrics error:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
 
 // ============================================
 // ENGINE CONNECTIONS CHECK
