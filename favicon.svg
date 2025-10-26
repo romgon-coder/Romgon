@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1f2e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2d1b3d;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="hex" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="100" height="100" fill="url(#bg)" rx="15"/>
+  
+  <!-- Hexagon -->
+  <polygon points="50,15 75,30 75,60 50,75 25,60 25,30" 
+           fill="url(#hex)" 
+           stroke="#4ecdc4" 
+           stroke-width="3"/>
+  
+  <!-- Inner rhombus -->
+  <polygon points="50,35 60,45 50,55 40,45" 
+           fill="#f57d2d" 
+           stroke="#ffd700" 
+           stroke-width="2"/>
+  
+  <!-- Glow effect -->
+  <circle cx="50" cy="45" r="20" fill="none" stroke="#00d2ff" stroke-width="1" opacity="0.3"/>
+</svg>
