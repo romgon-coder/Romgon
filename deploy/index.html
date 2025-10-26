@@ -11539,13 +11539,18 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
     }
 
     function getOpeningNameForPlayer(player) {
+        // Check if rpnMoveHistory exists
+        if (!window.rpnMoveHistory || !Array.isArray(window.rpnMoveHistory)) {
+            return '';
+        }
+
         // Get the first two moves played in the game (regardless of player)
-    // Get first two moves by the specified player
-    const playerMoves = window.rpnMoveHistory.filter(m => m.player === player).slice(0,2);
-    const rawMoves = playerMoves.map(m => m.notation);
-    const moves = rawMoves.map(m => normalizeMoveNotation(m));
-    // Also get the first two moves in the game (for backward compatibility)
-    const firstTwoMoves = window.rpnMoveHistory.slice(0,2).map(m => normalizeMoveNotation(m.notation));
+        // Get first two moves by the specified player
+        const playerMoves = window.rpnMoveHistory.filter(m => m.player === player).slice(0,2);
+        const rawMoves = playerMoves.map(m => m.notation);
+        const moves = rawMoves.map(m => normalizeMoveNotation(m));
+        // Also get the first two moves in the game (for backward compatibility)
+        const firstTwoMoves = window.rpnMoveHistory.slice(0,2).map(m => normalizeMoveNotation(m.notation));
         // Prefer 4-move opening only if all 4 moves match
         for (const opening of ROMGON_OPENINGS) {
             if (opening.moves.length === 4) {
@@ -19155,18 +19160,6 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             }
             if (document.getElementById('room-info')) {
                 document.getElementById('room-info').style.display = 'none';
-            }
-        }
-            if (!socket || !socket.connected) {
-                document.getElementById('mp-error-message').textContent = 'Connecting to server...';
-                setTimeout(() => {
-                    if (socket && socket.connected) {
-                        createMultiplayerRoom();
-                    } else {
-                        document.getElementById('mp-error-message').textContent = 'Failed to connect to server';
-                    }
-                }, 2000);
-                return;
             }
         }
         
