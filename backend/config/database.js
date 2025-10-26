@@ -160,6 +160,28 @@ function initializeTables() {
         if (err) console.error('❌ Error creating achievements table:', err);
         else console.log('✅ Achievements table ready');
     });
+
+    // API Keys table
+    db.run(`
+        CREATE TABLE IF NOT EXISTS api_keys (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            api_key TEXT UNIQUE NOT NULL,
+            secret_hash TEXT NOT NULL,
+            permissions TEXT DEFAULT '["read:games"]',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            last_used_at DATETIME,
+            expires_at DATETIME,
+            revoked_at DATETIME,
+            is_active INTEGER DEFAULT 1,
+            usage_count INTEGER DEFAULT 0,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    `, (err) => {
+        if (err) console.error('❌ Error creating api_keys table:', err);
+        else console.log('✅ API keys table ready');
+    });
 }
 
 // Promise-based database wrapper
