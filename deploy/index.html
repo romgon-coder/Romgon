@@ -6228,8 +6228,24 @@
                     </div>
                     
                     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                        <span style="color: #ff6b6b; font-size: 1.8em;">🎨</span>
-                        <a onclick="window.location.href='game-creator.html'" style="
+                        <span style="color: #00d2ff; font-size: 1.8em;">🧠</span>
+                        <a id="start-llm-mode-btn" onclick="openGameVariantsModal('llm')" style="
+                            color: #00d2ff;
+                            font-size: 0.95em;
+                            font-weight: 600;
+                            cursor: pointer;
+                            text-decoration: none;
+                            letter-spacing: 1px;
+                            transition: all 0.3s ease;
+                            display: inline-block;
+                            white-space: nowrap;
+                        " onmouseover="this.style.color='#00ffff'; this.style.textShadow='0 0 15px rgba(0, 210, 255, 0.5)'" onmouseout="this.style.color='#00d2ff'; this.style.textShadow='none'">AI REASONING</a>
+                        <span style="color: #666; font-size: 0.8em; margin-left: auto;">AI • Explanations</span>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <span style="color: #ff6b6b; font-size: 1.8em;">🎯</span>
+                        <a id="start-game-modes-btn" onclick="openGameModesModal()" style="
                             color: #ff6b6b;
                             font-size: 0.95em;
                             font-weight: 600;
@@ -6239,8 +6255,8 @@
                             transition: all 0.3s ease;
                             display: inline-block;
                             white-space: nowrap;
-                        " onmouseover="this.style.color='#ff8787'; this.style.textShadow='0 0 15px rgba(255, 107, 107, 0.5)'" onmouseout="this.style.color='#ff6b6b'; this.style.textShadow='none'">GAME CREATOR</a>
-                        <span style="color: #666; font-size: 0.8em; margin-left: auto;">Design games • Create</span>
+                        " onmouseover="this.style.color='#ff8a8a'; this.style.textShadow='0 0 15px rgba(255, 107, 107, 0.5)'" onmouseout="this.style.color='#ff6b6b'; this.style.textShadow='none'">VARIANTS</a>
+                        <span style="color: #666; font-size: 0.8em; margin-left: auto;">Alt • Modes</span>
                     </div>
                 </div>
             </div>
@@ -6410,6 +6426,22 @@
                     </div>
                     
                     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <span style="color: #ff6b6b; font-size: 1.6em;">🎨</span>
+                        <a onclick="window.location.href='game-creator.html'" style="
+                            color: #ff6b6b;
+                            font-size: 0.95em;
+                            font-weight: 600;
+                            cursor: pointer;
+                            text-decoration: none;
+                            letter-spacing: 1px;
+                            transition: all 0.3s ease;
+                            display: inline-block;
+                            white-space: nowrap;
+                        " onmouseover="this.style.color='#ff8787'; this.style.textShadow='0 0 15px rgba(255, 107, 107, 0.5)'" onmouseout="this.style.color='#ff6b6b'; this.style.textShadow='none'">GAME CREATOR</a>
+                        <span style="color: #666; font-size: 0.75em; margin-left: auto;">Design games • Create</span>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                         <span style="color: #ff6b6b; font-size: 1.6em;">🚪</span>
                         <a onclick="quitAndLogout()" style="
                             color: #ff6b6b;
@@ -6445,9 +6477,9 @@
                     gap: 15px;
                 ">
                     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                        <span style="color: #00d2ff; font-size: 1.6em;">🧠</span>
-                        <a id="start-llm-mode-btn" onclick="openGameVariantsModal('llm')" style="
-                            color: #00d2ff;
+                        <span style="color: #667eea; font-size: 1.6em;">🔧</span>
+                        <a onclick="window.open('engine-analysis.html', '_blank')" style="
+                            color: #667eea;
                             font-size: 0.95em;
                             font-weight: 600;
                             cursor: pointer;
@@ -6456,24 +6488,8 @@
                             transition: all 0.3s ease;
                             display: inline-block;
                             white-space: nowrap;
-                        " onmouseover="this.style.color='#00ffff'; this.style.textShadow='0 0 15px rgba(0, 210, 255, 0.5)'" onmouseout="this.style.color='#00d2ff'; this.style.textShadow='none'">AI REASONING</a>
-                        <span style="color: #666; font-size: 0.75em; margin-left: auto;">AI • Explanations</span>
-                    </div>
-                    
-                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                        <span style="color: #ff6b6b; font-size: 1.6em;">🎯</span>
-                        <a id="start-game-modes-btn" onclick="openGameModesModal()" style="
-                            color: #ff6b6b;
-                            font-size: 0.95em;
-                            font-weight: 600;
-                            cursor: pointer;
-                            text-decoration: none;
-                            letter-spacing: 1px;
-                            transition: all 0.3s ease;
-                            display: inline-block;
-                            white-space: nowrap;
-                        " onmouseover="this.style.color='#ff8a8a'; this.style.textShadow='0 0 15px rgba(255, 107, 107, 0.5)'" onmouseout="this.style.color='#ff6b6b'; this.style.textShadow='none'">VARIANTS</a>
-                        <span style="color: #666; font-size: 0.75em; margin-left: auto;">Alt • Modes</span>
+                        " onmouseover="this.style.color='#7c8ef5'; this.style.textShadow='0 0 15px rgba(102, 126, 234, 0.5)'" onmouseout="this.style.color='#667eea'; this.style.textShadow='none'">ENGINE ANALYSIS</a>
+                        <span style="color: #666; font-size: 0.75em; margin-left: auto;">Monitor • Optimize</span>
                     </div>
                     
                     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
