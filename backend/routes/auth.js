@@ -255,7 +255,7 @@ router.post('/guest', async (req, res) => {
             [username, `${username}@guest.romgon.net`, 'guest']
         );
 
-        const userId = result.lastID;
+        const userId = result.id;  // Fixed: use result.id instead of result.lastID
 
         // Generate token
         const token = generateToken(userId, username);
@@ -358,7 +358,7 @@ router.get('/google/callback', async (req, res) => {
             );
 
             user = {
-                id: result.lastID,
+                id: result.id,  // Fixed: use result.id instead of result.lastID
                 username,
                 email: googleUser.email,
                 rating: 1600
