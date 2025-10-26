@@ -425,6 +425,71 @@ router.get('/active/:playerId',
 );
 
 /**
+ * Get current user's game history (simplified for frontend)
+ * GET /api/games/history
+ */
+router.get('/history',
+    authenticateToken,
+    [query('limit').optional().isInt({ min: 1, max: 100 })],
+    async (req, res) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+
+            const playerId = req.user.userId; // Get from JWT token
+            const limit = parseInt(req.query.limit) || 10;
+
+            // Get finished games
+            const games = await dbPromise.all(
+                `SELECT 
+                    g.*,
+                    w.username as white_username,
+                    w.rating as white_rating,
+                    b.username as black_username,
+                    b.rating as black_rating
+                 FROM games g
+                 LEFT JOIN users w ON g.white_player_id = w.id
+                 LEFT JOIN users b ON g.black_player_id = b.id
+                 WHERE (g.white_player_id = ? OR g.black_player_id = ?)
+                 AND g.status = 'finished'
+                 ORDER BY g.updated_at DESC
+                 LIMIT ?`,
+                [playerId, playerId, limit]
+            );
+
+            const history = games.map(game => {
+                const playerIsWhite = game.white_player_id === playerId;
+                const opponentName = playerIsWhite ? game.black_username : game.white_username;
+                const opponentRating = playerIsWhite ? game.black_rating : game.white_rating;
+
+                const result = game.winner_id === playerId ? 'win' : 'loss';
+
+                return {
+                    gameId: game.id,
+                    date: game.updated_at,
+                    opponent: {
+                        name: opponentName || 'Unknown',
+                        rating: opponentRating || 1600
+                    },
+                    yourColor: playerIsWhite ? 'white' : 'black',
+                    result,
+                    reason: game.reason,
+                    moves: game.total_moves,
+                    duration: calculateGameDuration(game.created_at, game.updated_at)
+                };
+            });
+
+            res.json(history);
+        } catch (error) {
+            console.error('Error getting game history:', error);
+            res.status(500).json({ error: error.message });
+        }
+    }
+);
+
+/**
  * Get player's game history (for match history display)
  * GET /api/games/history/:playerId
  */

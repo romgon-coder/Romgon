@@ -74,6 +74,89 @@ router.get('/:userId', optionalAuth, async (req, res) => {
 });
 
 // ============================================
+// GET CURRENT USER STATS (for frontend Player Hub)
+// ============================================
+
+router.get('/stats', authenticateToken, async (req, res) => {
+    try {
+        const { userId } = req.user;
+
+        const user = await dbPromise.get(
+            `SELECT id, username, email, rating, wins, losses, total_games, 
+                    total_moves, total_captures, member_level, created_at 
+             FROM users WHERE id = ?`,
+            [userId]
+        );
+
+        if (!user) {
+            return res.status(404).json({
+                error: 'User not found'
+            });
+        }
+
+        // Calculate win rate
+        const winRate = user.total_games > 0 
+            ? ((user.wins / user.total_games) * 100).toFixed(1)
+            : 0;
+
+        // Calculate averages
+        const avgMovesPerGame = user.total_games > 0
+            ? (user.total_moves / user.total_games).toFixed(1)
+            : 0;
+
+        const avgCapturesPerGame = user.total_games > 0
+            ? (user.total_captures / user.total_games).toFixed(1)
+            : 0;
+
+        // Get recent performance (last 10 games)
+        const recentGames = await dbPromise.all(
+            `SELECT winner_id, white_player_id, black_player_id, total_moves, 
+                    reason, updated_at
+             FROM games 
+             WHERE (white_player_id = ? OR black_player_id = ?) AND status = 'finished'
+             ORDER BY updated_at DESC LIMIT 10`,
+            [userId, userId]
+        );
+
+        let recentWins = 0;
+        recentGames.forEach(game => {
+            if (game.winner_id === userId) recentWins++;
+        });
+
+        const recentWinRate = recentGames.length > 0
+            ? ((recentWins / recentGames.length) * 100).toFixed(1)
+            : 0;
+
+        res.json({
+            username: user.username,
+            email: user.email,
+            rating: user.rating,
+            memberLevel: user.member_level,
+            stats: {
+                totalGames: user.total_games,
+                wins: user.wins,
+                losses: user.losses,
+                winRate: parseFloat(winRate),
+                totalMoves: user.total_moves,
+                avgMovesPerGame: parseFloat(avgMovesPerGame),
+                totalCaptures: user.total_captures,
+                avgCapturesPerGame: parseFloat(avgCapturesPerGame),
+                recentWinRate: parseFloat(recentWinRate),
+                recentGamesCount: recentGames.length
+            },
+            createdAt: user.created_at
+        });
+
+    } catch (err) {
+        console.error('❌ Error fetching user stats:', err);
+        res.status(500).json({
+            error: 'Error fetching user stats',
+            message: err.message
+        });
+    }
+});
+
+// ============================================
 // GET CURRENT USER PROFILE
 // ============================================
 

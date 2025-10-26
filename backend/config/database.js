@@ -74,6 +74,8 @@ function initializeTables() {
             start_time DATETIME DEFAULT CURRENT_TIMESTAMP,
             end_time DATETIME,
             total_moves INTEGER DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (white_player_id) REFERENCES users(id),
             FOREIGN KEY (black_player_id) REFERENCES users(id),
             FOREIGN KEY (winner_id) REFERENCES users(id)
@@ -81,6 +83,19 @@ function initializeTables() {
     `, (err) => {
         if (err) console.error('❌ Error creating games table:', err);
         else console.log('✅ Games table ready');
+        
+        // Add columns if they don't exist (for existing databases)
+        db.run('ALTER TABLE games ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP', (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Warning: Could not add created_at column to games:', err.message);
+            }
+        });
+        
+        db.run('ALTER TABLE games ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP', (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Warning: Could not add updated_at column to games:', err.message);
+            }
+        });
     });
 
     // Rating history table
