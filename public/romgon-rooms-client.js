@@ -54,8 +54,8 @@ class RoomClient {
             },
             transports: ['websocket', 'polling'],
             reconnection: true,
-            reconnectionDelay: 1000,
-            reconnectionAttempts: 5
+            reconnectionDelay: 2000,
+            reconnectionAttempts: 2  // Reduced - we work without WS anyway
         });
 
         this.setupEventHandlers();
@@ -79,21 +79,11 @@ class RoomClient {
         });
 
         this.socket.on('connect_error', (error) => {
-            console.error('❌ Connection error:', error);
+            console.warn('⚠️ WebSocket connection unavailable:', error.message);
+            console.log('ℹ️ Rooms will work via HTTP API (real-time updates disabled)');
             
-            // Show user-friendly error message
-            const errorMsg = 'Unable to connect to multiplayer server. The server may be starting up or temporarily unavailable. Please try again in a moment.';
-            
-            if (typeof showMultiplayerConnectionStatus === 'function') {
-                showMultiplayerConnectionStatus('error', errorMsg);
-            }
-            
-            // Also show in UI if we're in the multiplayer modal
-            const errorElement = document.getElementById('mp-error-message');
-            if (errorElement && errorElement.offsetParent !== null) {
-                errorElement.textContent = errorMsg;
-                errorElement.style.display = 'block';
-            }
+            // Don't show error UI - system works without WebSocket
+            // Just log for debugging purposes
         });
 
         this.socket.on('reconnect_attempt', (attemptNumber) => {
@@ -101,12 +91,8 @@ class RoomClient {
         });
 
         this.socket.on('reconnect_failed', () => {
-            console.error('❌ Failed to reconnect to server');
-            const errorMsg = 'Failed to connect to multiplayer server after multiple attempts. Please try again later.';
-            
-            if (typeof showMultiplayerConnectionStatus === 'function') {
-                showMultiplayerConnectionStatus('error', errorMsg);
-            }
+            console.warn('⚠️ WebSocket reconnection failed - continuing with HTTP API');
+            // System works without WebSocket, so don't show error to user
         });
 
         // Room events
