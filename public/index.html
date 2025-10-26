@@ -11313,6 +11313,25 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         quitAndLogout();
     }
 
+    // --- Resign Game ---
+    function resignGame() {
+        console.log('🏳️ Player resigned!');
+        console.log('🔍 Current player:', currentPlayer);
+        
+        // Confirm resignation
+        if (!confirm('Are you sure you want to resign? This will count as a loss.')) {
+            console.log('❌ Resignation cancelled');
+            return;
+        }
+        
+        // Determine the winner (opponent of current player)
+        const winner = currentPlayer === 'white' ? 'black' : 'white';
+        console.log('🏆 Winner by resignation:', winner);
+        
+        // End the game with resignation reason
+        showGameOver(winner, 'resignation');
+    }
+
     // --- Quit Game And Logout ---
     function quitAndLogout() {
         // Hide board container and all its children (including buttons)
@@ -11552,6 +11571,19 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     flex: 0 0 auto;
                     white-space: nowrap;
                 ">🪵 Wood</button>
+                
+                <button onclick="resignGame()" style="
+                    background: rgba(231, 76, 60, 0.2);
+                    border: 2px solid #e74c3c;
+                    border-radius: 4px;
+                    padding: 5px 8px;
+                    color: white;
+                    font-size: 0.65em;
+                    font-weight: bold;
+                    cursor: pointer;
+                    flex: 0 0 auto;
+                    white-space: nowrap;
+                ">🏳️ Resign</button>
                 
                 <!-- Rotation controls inline -->
                 <div id="mobile-rotation-controls" style="display: none; flex-direction: row; gap: 3px; align-items: center;">
@@ -22516,6 +22548,15 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             undoButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             undoButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
 
+            // Create resign button
+            const resignButton = document.createElement('button');
+            resignButton.innerHTML = '<span class="game-menu-button-emoji">🏳️</span><span class="game-menu-button-label">Resign<br>Game</span>';
+            resignButton.className = 'game-menu-button';
+            resignButton.title = '';
+            resignButton.onclick = resignGame;
+            resignButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
+            resignButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
+
             // Create keyboard help toggle button
             const kbHelpButton = document.createElement('button');
             kbHelpButton.innerHTML = '<span class="game-menu-button-emoji">⌨️</span><span class="game-menu-button-label">Keys<br>Help</span>';
@@ -22666,6 +22707,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             gameButtonsPanel.appendChild(fogButton);
             gameButtonsPanel.appendChild(musicButton);
             gameButtonsPanel.appendChild(undoButton);
+            gameButtonsPanel.appendChild(resignButton);
             gameButtonsPanel.appendChild(kbHelpButton);
             gameButtonsPanel.appendChild(toggleLastMoveButton);
             gameButtonsPanel.appendChild(showAllMovesButton);
