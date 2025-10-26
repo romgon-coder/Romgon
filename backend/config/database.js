@@ -44,8 +44,19 @@ function initializeTables() {
         else console.log('✅ Users table ready');
         
         // Add columns if they don't exist (for existing databases)
-        db.run('ALTER TABLE users ADD COLUMN is_guest INTEGER DEFAULT 0', () => {});
-        db.run('ALTER TABLE users ADD COLUMN google_id TEXT UNIQUE', () => {});
+        db.run('ALTER TABLE users ADD COLUMN is_guest INTEGER DEFAULT 0', (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Warning: Could not add is_guest column:', err.message);
+            }
+        });
+        
+        db.run('ALTER TABLE users ADD COLUMN google_id TEXT UNIQUE', (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Warning: Could not add google_id column:', err.message);
+            } else if (!err) {
+                console.log('✅ Added google_id column');
+            }
+        });
     });
 
     // Games table
