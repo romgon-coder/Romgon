@@ -3648,12 +3648,15 @@
     }
     
     // Modified showAccountModal to use new Player Hub
+    // COMMENTED OUT - Using backend-integrated version at line 2424
+    /*
     const originalShowAccountModal = showAccountModal;
     showAccountModal = function() {
         updatePlayerHubData();
         switchAccountTab('overview');
         document.getElementById('account-modal').style.display = 'block';
     };
+    */
     
     function deleteAccount() {
         const confirmed = confirm('Are you sure? This will permanently delete your account and all progress.');
