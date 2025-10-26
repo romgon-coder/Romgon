@@ -512,6 +512,21 @@
                 " data-tab="ratings" onmouseover="this.style.color='#fff'" onmouseout="this.style.color=this.classList.contains('active') ? '#fff' : '#999'">
                     ⭐ Ratings
                 </button>
+                <button onclick="switchAccountTab('settings')" class="account-tab-btn" style="
+                    flex: 1;
+                    padding: 16px 20px;
+                    background: transparent;
+                    border: none;
+                    color: #999;
+                    font-size: 0.95em;
+                    font-weight: 600;
+                    cursor: pointer;
+                    border-bottom: 3px solid transparent;
+                    transition: all 0.3s ease;
+                    white-space: nowrap;
+                " data-tab="settings" onmouseover="this.style.color='#fff'" onmouseout="this.style.color=this.classList.contains('active') ? '#fff' : '#999'">
+                    ⚙️ Settings
+                </button>
             </div>
 
             <!-- Main Content Area -->
@@ -1080,6 +1095,109 @@
                             <div id="hub-rating-history" style="display: flex; flex-direction: column; gap: 12px; max-height: 300px; overflow-y: auto;">
                                 <p style="color: #999; text-align: center; padding: 20px;">No rating changes yet. Play a game to start!</p>
                             </div>
+                        </div>
+                    </div>
+                    
+                    <!-- SETTINGS TAB -->
+                    <div id="account-tab-settings" class="account-tab-content" style="display: none;">
+                        <h3 style="color: #667eea; margin-top: 0; margin-bottom: 24px; font-size: 1.4em;">⚙️ Profile Settings</h3>
+                        
+                        <!-- Display Name Section -->
+                        <div style="
+                            background: rgba(102, 126, 234, 0.1);
+                            padding: 24px;
+                            border-radius: 12px;
+                            border-left: 4px solid #667eea;
+                            margin-bottom: 24px;
+                        ">
+                            <h4 style="color: #667eea; margin: 0 0 16px 0; font-size: 1.1em;">✏️ Display Name</h4>
+                            <div style="display: flex; gap: 12px; align-items: flex-start;">
+                                <input type="text" id="hub-username-input" placeholder="Enter new username" style="
+                                    flex: 1;
+                                    padding: 12px 16px;
+                                    background: #1a1e26;
+                                    border: 2px solid #667eea;
+                                    border-radius: 8px;
+                                    color: #fff;
+                                    font-size: 1em;
+                                " />
+                                <button onclick="saveUsername()" style="
+                                    background: linear-gradient(135deg, #667eea, #764ba2);
+                                    color: white;
+                                    border: none;
+                                    padding: 12px 24px;
+                                    border-radius: 8px;
+                                    cursor: pointer;
+                                    font-weight: 600;
+                                    transition: all 0.3s;
+                                " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                                    Save
+                                </button>
+                            </div>
+                            <p style="color: #999; font-size: 0.85em; margin: 8px 0 0 0;">This is how other players will see you</p>
+                        </div>
+                        
+                        <!-- Avatar Selection -->
+                        <div style="
+                            background: rgba(78, 205, 196, 0.1);
+                            padding: 24px;
+                            border-radius: 12px;
+                            border-left: 4px solid #4ecdc4;
+                            margin-bottom: 24px;
+                        ">
+                            <h4 style="color: #4ecdc4; margin: 0 0 16px 0; font-size: 1.1em;">🎨 Avatar</h4>
+                            <div id="avatar-grid" style="
+                                display: grid;
+                                grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+                                gap: 12px;
+                                margin-bottom: 16px;
+                            ">
+                                <!-- Avatar options will be populated here -->
+                            </div>
+                            <p style="color: #999; font-size: 0.85em; margin: 0;">Click an avatar to select it</p>
+                        </div>
+                        
+                        <!-- Badge Selection -->
+                        <div style="
+                            background: rgba(255, 215, 0, 0.1);
+                            padding: 24px;
+                            border-radius: 12px;
+                            border-left: 4px solid #ffd700;
+                            margin-bottom: 24px;
+                        ">
+                            <h4 style="color: #ffd700; margin: 0 0 16px 0; font-size: 1.1em;">🏅 Badge</h4>
+                            <div id="badge-grid" style="
+                                display: grid;
+                                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                                gap: 12px;
+                                margin-bottom: 16px;
+                            ">
+                                <!-- Badge options will be populated here -->
+                            </div>
+                            <p style="color: #999; font-size: 0.85em; margin: 0;">Badges are earned through achievements and milestones</p>
+                        </div>
+                        
+                        <!-- Account Actions -->
+                        <div style="
+                            background: rgba(255, 107, 107, 0.1);
+                            padding: 24px;
+                            border-radius: 12px;
+                            border-left: 4px solid #ff6b6b;
+                        ">
+                            <h4 style="color: #ff6b6b; margin: 0 0 16px 0; font-size: 1.1em;">⚠️ Account Actions</h4>
+                            <button onclick="confirmDeleteAccount()" style="
+                                background: transparent;
+                                color: #ff6b6b;
+                                border: 2px solid #ff6b6b;
+                                padding: 12px 24px;
+                                border-radius: 8px;
+                                cursor: pointer;
+                                font-weight: 600;
+                                transition: all 0.3s;
+                            " onmouseover="this.style.background='rgba(255, 107, 107, 0.2)'" onmouseout="this.style.background='transparent'">
+                                Delete Account
+                            </button>
+                            <p style="color: #999; font-size: 0.85em; margin: 8px 0 0 0;">This action cannot be undone</p>
                         </div>
                     </div>
                 </div>
@@ -2538,6 +2656,10 @@
         if (tabName === 'analytics' && currentUser.username && allUsers[currentUser.username]) {
             populateAnalyticsTab(currentUser.username);
         }
+        
+        if (tabName === 'settings') {
+            populateSettingsTab();
+        }
     }
     
     // Populate Analytics tab with detailed stats
@@ -2623,6 +2745,271 @@
             openGameModesModal();
         }
     }
+    
+    // ===== SETTINGS TAB FUNCTIONS =====
+    
+    // Avatar options
+    const AVATAR_OPTIONS = [
+        '😀', '😎', '😊', '🤩', '😇', '🥳', '🤓', '🧐',
+        '🤖', '👽', '🎃', '🦊', '🐶', '🐱', '🐼', '🦁',
+        '🐸', '🦄', '🐉', '🦖', '🌟', '⚡', '🔥', '💎',
+        '🎮', '🎯', '🏆', '👑', '⚔️', '🛡️', '🎲', '🃏'
+    ];
+    
+    // Badge system with unlock requirements
+    const BADGE_SYSTEM = {
+        '🆕 Newcomer': { requirement: 'Default badge', unlocked: true },
+        '🎯 First Victory': { requirement: 'Win 1 game', games_won: 1 },
+        '🔥 Hot Streak': { requirement: 'Win 5 games in a row', win_streak: 5 },
+        '⚔️ Warrior': { requirement: 'Win 10 games', games_won: 10 },
+        '🏆 Champion': { requirement: 'Win 25 games', games_won: 25 },
+        '👑 Legend': { requirement: 'Win 50 games', games_won: 50 },
+        '💎 Master': { requirement: 'Win 100 games', games_won: 100 },
+        '🎓 Scholar': { requirement: 'Play 50 games', games_played: 50 },
+        '🎮 Veteran': { requirement: 'Play 100 games', games_played: 100 },
+        '⚡ Speed Demon': { requirement: 'Win in under 10 moves', fastest_win: 10 },
+        '🛡️ Defender': { requirement: 'Win without losing a piece', perfect_win: 1 },
+        '🎯 Sharpshooter': { requirement: 'Capture 100 pieces total', total_captures: 100 }
+    };
+    
+    // Populate Settings tab
+    function populateSettingsTab() {
+        const currentUser = window.currentUser || JSON.parse(localStorage.getItem('romgon-user') || '{}');
+        
+        // Set current username in input
+        const usernameInput = document.getElementById('settings-username-input');
+        if (usernameInput && currentUser.username) {
+            usernameInput.value = currentUser.username;
+        }
+        
+        // Populate avatar grid
+        populateAvatarGrid(currentUser.avatar || '😀');
+        
+        // Populate badge grid
+        populateBadgeGrid(currentUser);
+    }
+    
+    // Populate avatar selection grid
+    function populateAvatarGrid(currentAvatar) {
+        const avatarGrid = document.getElementById('avatar-selection-grid');
+        if (!avatarGrid) return;
+        
+        avatarGrid.innerHTML = '';
+        
+        AVATAR_OPTIONS.forEach(emoji => {
+            const avatarBtn = document.createElement('button');
+            avatarBtn.className = 'avatar-option';
+            if (emoji === currentAvatar) {
+                avatarBtn.classList.add('selected');
+            }
+            avatarBtn.textContent = emoji;
+            avatarBtn.onclick = () => selectAvatar(emoji);
+            avatarGrid.appendChild(avatarBtn);
+        });
+    }
+    
+    // Populate badge selection grid
+    function populateBadgeGrid(currentUser) {
+        const badgeGrid = document.getElementById('badge-selection-grid');
+        if (!badgeGrid) return;
+        
+        badgeGrid.innerHTML = '';
+        
+        // Get user stats
+        const stats = getUserStats(currentUser.username) || {};
+        
+        Object.entries(BADGE_SYSTEM).forEach(([badge, data]) => {
+            const isUnlocked = checkBadgeUnlocked(data, stats);
+            const isSelected = badge === currentUser.badge;
+            
+            const badgeBtn = document.createElement('button');
+            badgeBtn.className = 'badge-option';
+            
+            if (isUnlocked) {
+                badgeBtn.classList.add('unlocked');
+                if (isSelected) {
+                    badgeBtn.classList.add('selected');
+                }
+                badgeBtn.onclick = () => selectBadge(badge);
+            } else {
+                badgeBtn.classList.add('locked');
+                badgeBtn.disabled = true;
+            }
+            
+            badgeBtn.innerHTML = `
+                <div class="badge-emoji">${badge.split(' ')[0]}</div>
+                <div class="badge-name">${badge.split(' ').slice(1).join(' ')}</div>
+                <div class="badge-requirement">${isUnlocked ? '✓ Unlocked' : '🔒 ' + data.requirement}</div>
+            `;
+            
+            badgeGrid.appendChild(badgeBtn);
+        });
+    }
+    
+    // Check if badge is unlocked
+    function checkBadgeUnlocked(badgeData, stats) {
+        if (badgeData.unlocked) return true;
+        
+        if (badgeData.games_won && stats.gamesWon >= badgeData.games_won) return true;
+        if (badgeData.games_played && stats.gamesPlayed >= badgeData.games_played) return true;
+        if (badgeData.win_streak && stats.longestWinStreak >= badgeData.win_streak) return true;
+        if (badgeData.fastest_win && stats.fastestWin && stats.fastestWin <= badgeData.fastest_win) return true;
+        if (badgeData.perfect_win && stats.perfectWins >= badgeData.perfect_win) return true;
+        if (badgeData.total_captures && stats.totalCaptures >= badgeData.total_captures) return true;
+        
+        return false;
+    }
+    
+    // Select avatar
+    async function selectAvatar(emoji) {
+        const currentUser = window.currentUser || JSON.parse(localStorage.getItem('romgon-user') || '{}');
+        
+        // Update local user data
+        currentUser.avatar = emoji;
+        localStorage.setItem('romgon-user', JSON.stringify(currentUser));
+        window.currentUser = currentUser;
+        
+        // Update UI
+        populateAvatarGrid(emoji);
+        updateGlobalAccountBar();
+        
+        // Update backend if registered user
+        if (currentUser.id && currentUser.type !== 'guest') {
+            try {
+                await updateUserProfile({ avatar: emoji });
+                showNotification('✅ Avatar updated!', 'success');
+            } catch (error) {
+                console.error('Failed to update avatar on backend:', error);
+                showNotification('⚠️ Avatar saved locally only', 'warning');
+            }
+        } else {
+            showNotification('✅ Avatar updated!', 'success');
+        }
+    }
+    
+    // Select badge
+    async function selectBadge(badge) {
+        const currentUser = window.currentUser || JSON.parse(localStorage.getItem('romgon-user') || '{}');
+        
+        // Update local user data
+        currentUser.badge = badge;
+        localStorage.setItem('romgon-user', JSON.stringify(currentUser));
+        window.currentUser = currentUser;
+        
+        // Update UI
+        populateBadgeGrid(currentUser);
+        updateGlobalAccountBar();
+        
+        // Update backend if registered user
+        if (currentUser.id && currentUser.type !== 'guest') {
+            try {
+                await updateUserProfile({ badge: badge });
+                showNotification('✅ Badge equipped!', 'success');
+            } catch (error) {
+                console.error('Failed to update badge on backend:', error);
+                showNotification('⚠️ Badge saved locally only', 'warning');
+            }
+        } else {
+            showNotification('✅ Badge equipped!', 'success');
+        }
+    }
+    
+    // Save username
+    async function saveUsername() {
+        const usernameInput = document.getElementById('settings-username-input');
+        const newUsername = usernameInput.value.trim();
+        
+        if (!newUsername) {
+            showNotification('❌ Username cannot be empty', 'error');
+            return;
+        }
+        
+        if (newUsername.length < 3 || newUsername.length > 20) {
+            showNotification('❌ Username must be 3-20 characters', 'error');
+            return;
+        }
+        
+        const currentUser = window.currentUser || JSON.parse(localStorage.getItem('romgon-user') || '{}');
+        
+        if (newUsername === currentUser.username) {
+            showNotification('⚠️ Username unchanged', 'warning');
+            return;
+        }
+        
+        // Update local user data
+        currentUser.username = newUsername;
+        localStorage.setItem('romgon-user', JSON.stringify(currentUser));
+        window.currentUser = currentUser;
+        
+        // Update UI
+        updateGlobalAccountBar();
+        
+        // Update backend if registered user
+        if (currentUser.id && currentUser.type !== 'guest') {
+            try {
+                await updateUserProfile({ username: newUsername });
+                showNotification('✅ Username updated!', 'success');
+            } catch (error) {
+                console.error('Failed to update username on backend:', error);
+                showNotification('⚠️ Username saved locally only', 'warning');
+            }
+        } else {
+            showNotification('✅ Username updated!', 'success');
+        }
+    }
+    
+    // Confirm account deletion
+    function confirmDeleteAccount() {
+        if (confirm('⚠️ Are you sure you want to delete your account? This action cannot be undone.\n\nAll your stats, games, and progress will be permanently deleted.')) {
+            deleteAccount();
+        }
+    }
+    
+    // Delete account
+    async function deleteAccount() {
+        const currentUser = window.currentUser || JSON.parse(localStorage.getItem('romgon-user') || '{}');
+        
+        if (currentUser.id && currentUser.type !== 'guest') {
+            try {
+                const response = await fetch('https://api.romgon.net/api/users/delete', {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('romgon-jwt')}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    // Clear all data
+                    localStorage.removeItem('romgon-user');
+                    localStorage.removeItem('romgon-jwt');
+                    window.currentUser = null;
+                    
+                    showNotification('✅ Account deleted', 'success');
+                    
+                    // Return to splash page
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    showNotification('❌ Failed to delete account', 'error');
+                }
+            } catch (error) {
+                console.error('Failed to delete account:', error);
+                showNotification('❌ Connection error', 'error');
+            }
+        } else {
+            // Guest account - just clear local data
+            localStorage.removeItem('romgon-user');
+            window.currentUser = null;
+            showNotification('✅ Guest data cleared', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        }
+    }
+    
+    // ===== END SETTINGS TAB FUNCTIONS =====
     
     // Update Player Hub on modal show with real backend data
     async function updatePlayerHubData() {
@@ -5026,6 +5413,157 @@
         .kb-active-control {
             border: 2px solid #ffd700 !important;
         }
+        
+        /* ===== SETTINGS TAB STYLES ===== */
+        
+        /* Settings input fields */
+        .settings-input-group {
+            margin-bottom: 25px;
+        }
+        
+        .settings-input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4ecdc4;
+        }
+        
+        #settings-username-input {
+            width: calc(100% - 100px);
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+        }
+        
+        #settings-username-input:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            box-shadow: 0 0 0 2px rgba(78, 205, 196, 0.2);
+        }
+        
+        .save-button {
+            margin-left: 10px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .save-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(78, 205, 196, 0.4);
+        }
+        
+        /* Avatar & Badge Grids */
+        #avatar-selection-grid,
+        #badge-selection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .avatar-option {
+            width: 60px;
+            height: 60px;
+            font-size: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(78, 205, 196, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .avatar-option:hover {
+            transform: scale(1.1);
+            border-color: #4ecdc4;
+            background: rgba(78, 205, 196, 0.1);
+        }
+        
+        .avatar-option.selected {
+            border-color: #ffd700;
+            background: rgba(255, 215, 0, 0.15);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+        }
+        
+        .badge-option {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(78, 205, 196, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .badge-option:hover:not(.locked) {
+            transform: translateY(-2px);
+            border-color: #4ecdc4;
+            background: rgba(78, 205, 196, 0.1);
+        }
+        
+        .badge-option.selected {
+            border-color: #ffd700;
+            background: rgba(255, 215, 0, 0.15);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+        }
+        
+        .badge-option.locked {
+            opacity: 0.4;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+        
+        .badge-emoji {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        
+        .badge-name {
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+        
+        .badge-requirement {
+            font-size: 11px;
+            color: #888;
+        }
+        
+        .badge-option.unlocked .badge-requirement {
+            color: #4ecdc4;
+        }
+        
+        /* Delete Account Button */
+        .danger-button {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        
+        .danger-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+        }
+        
+        /* ===== END SETTINGS TAB STYLES ===== */
 
     </style>
 </head>
