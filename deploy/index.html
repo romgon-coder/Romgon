@@ -26622,17 +26622,23 @@ ${moveHistory || '(No moves played yet - starting position)'}
             if (currentUser.type !== 'guest' && currentUser.token) {
                 try {
                     const stats = await fetchUserStats();
-                    if (stats) {
-                        const wins = stats.wins || 0;
-                        const losses = stats.losses || 0;
-                        const totalGames = wins + losses;
-                        const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
+                    if (stats && stats.stats) {
+                        // Backend returns { stats: { wins, losses, ... } }
+                        const backendStats = stats.stats;
+                        const wins = backendStats.wins || 0;
+                        const losses = backendStats.losses || 0;
+                        const totalGames = backendStats.totalGames || 0;
+                        const winRate = Math.round(backendStats.winRate || 0);
                         
                         updateTopBarStats(wins, losses, winRate);
-                        console.log('✅ User stats loaded:', {wins, losses, winRate});
+                        console.log('✅ User stats loaded from backend:', {wins, losses, totalGames, winRate});
+                    } else {
+                        console.warn('⚠️ Stats not in expected format, using zeros');
+                        updateTopBarStats(0, 0, 0);
                     }
                 } catch (error) {
                     console.error('❌ Failed to load user stats:', error);
+                    updateTopBarStats(0, 0, 0);
                 }
             } else {
                 // Guest user - show zeros
