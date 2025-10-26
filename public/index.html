@@ -25248,54 +25248,59 @@ ${moveHistory || '(No moves played yet - starting position)'}
             }
         }
 
-        function handleGoogleCredentialResponse(response) {
+        async function handleGoogleCredentialResponse(response) {
             const payload = parseJwt(response.credential);
             if (!payload) {
                 alert('Google sign-in failed to parse credentials.');
                 return;
             }
             
-            // First, try to find if this email has a registered account
-            const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
-            
-            let registeredUsername = null;
-            for (let username in allUsers) {
-                const storedEmail = allUsers[username].email;
-                if (storedEmail && storedEmail.toLowerCase() === payload.email.toLowerCase()) {
-                    registeredUsername = username;
-                    break;
+            try {
+                // Send Google credential to backend for authentication
+                const backendResponse = await fetch(`${BACKEND_API_URL}/api/auth/google`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        credential: response.credential
+                    })
+                });
+                
+                if (!backendResponse.ok) {
+                    const errorData = await backendResponse.json();
+                    alert('Google sign-in failed: ' + (errorData.error || 'Unknown error'));
+                    return;
                 }
+                
+                const data = await backendResponse.json();
+                
+                // Store the JWT token and userId from backend
+                localStorage.setItem('romgon_token', data.token);
+                localStorage.setItem('userId', data.user.id.toString());
+                
+                // Create user object for UI
+                const user = {
+                    provider: 'google',
+                    id: payload.sub, // Google sub ID for profile display
+                    name: payload.name || data.user.username || payload.email,
+                    email: payload.email,
+                    picture: payload.picture || null,
+                    username: data.user.username,
+                    rating: data.user.rating,
+                    dbUserId: data.user.id // Database user ID for API calls
+                };
+                
+                // Persist the user and update UI
+                try { persistCurrentUser(user); } catch (e) { window.currentUser = user; }
+                // Close modal if open
+                try { closeAccountModal(); } catch (e) {}
+                console.info('✅ Signed in as', user.email);
+                console.info('🔑 Database userId:', data.user.id);
+            } catch (error) {
+                console.error('Google sign-in error:', error);
+                alert('Google sign-in failed. Please try again.');
             }
-            
-            if (!registeredUsername) {
-                // Ask if they want to link to an existing account
-                const linkUsername = prompt('No account found for ' + payload.email + '\n\nDo you have an existing account? Enter your username to link it, or leave blank to create new:\n(Your first account was "nick1")');
-                if (linkUsername && allUsers[linkUsername]) {
-                    // Update the registered account with Google email
-                    allUsers[linkUsername].email = payload.email;
-                    localStorage.setItem('romgon-users', JSON.stringify(allUsers));
-                    registeredUsername = linkUsername;
-                }
-            }
-            
-            const user = {
-                provider: 'google',
-                id: payload.sub,
-                name: payload.name || payload.email,
-                email: payload.email,
-                picture: payload.picture || null,
-            };
-            
-            // If user is registered, add their username
-            if (registeredUsername) {
-                user.username = registeredUsername;
-            }
-            
-            // Persist the user and update UI
-            try { persistCurrentUser(user); } catch (e) { window.currentUser = user; }
-            // Close modal if open
-            try { closeAccountModal(); } catch (e) {}
-            console.info('✅ Signed in as', user.email);
         }
 
         async function handleGoogleLogin() {
