@@ -2752,7 +2752,7 @@
         updatePlayerHubData();
         switchAccountTab('overview');
         document.getElementById('account-modal').style.display = 'block';
-    }
+    };
     
     function deleteAccount() {
         const confirmed = confirm('Are you sure? This will permanently delete your account and all progress.');
@@ -2838,7 +2838,7 @@
             document.body.classList.remove('wooden-theme');
         }
         
-        console.log('✅ Settings saved:', allUsers[currentUser.username].settings);
+        console.log('✅ Settings saved');
         hideSettingsModal();
     }
     
