@@ -2424,23 +2424,51 @@
     async function showAccountModal() {
         console.log('🔓 Opening Player Hub...');
         
-        const currentUser = JSON.parse(localStorage.getItem('romgon-user') || '{}');
+        const currentUser = window.currentUser || JSON.parse(localStorage.getItem('romgon-user') || '{}');
+        
+        console.log('📋 Current user data:', currentUser);
         
         // Check if user is logged in
-        if (!currentUser.id) {
+        if (!currentUser.id && !currentUser.username) {
             alert('📝 Please sign in to access Player Hub!');
             return;
         }
         
-        // Show modal immediately with loading state
+        // Show modal immediately
         document.getElementById('account-modal').style.display = 'block';
         
-        // Show loading indicators
-        document.getElementById('account-sidebar-name').textContent = 'Loading...';
-        document.getElementById('account-username').textContent = 'Loading...';
+        // Get local stats as fallback
+        const localStats = getUserStats(currentUser.username) || {
+            gamesWon: 0,
+            gamesLost: 0,
+            gamesPlayed: 0,
+            totalMoves: 0,
+            totalCaptures: 0,
+            fastestWin: null
+        };
         
-        // Determine account type and display badge
+        // Set initial values from local data
+        const username = currentUser.username || currentUser.name || 'Player';
+        const email = currentUser.email || 'No email';
         const accountType = currentUser.type === 'guest' ? 'Guest' : 'Registered';
+        const avatar = currentUser.avatar || '👤';
+        
+        // Update sidebar immediately with local data
+        document.getElementById('account-sidebar-name').textContent = username;
+        document.getElementById('account-username').textContent = username;
+        document.getElementById('account-sidebar-email').textContent = email;
+        document.getElementById('account-email').textContent = email;
+        
+        // Set avatar
+        const avatarEl = document.getElementById('account-avatar');
+        if (currentUser.picture) {
+            avatarEl.innerHTML = `<img src="${currentUser.picture}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />`;
+        } else {
+            avatarEl.textContent = avatar;
+            avatarEl.style.fontSize = '3em';
+        }
+        
+        // Update account type badge
         const accountTypeEl = document.getElementById('user-home-account-type');
         if (accountTypeEl) {
             accountTypeEl.textContent = accountType;
@@ -2450,98 +2478,89 @@
             }
         }
         
-        try {
-            // Fetch data from backend
-            const [profile, stats, games] = await Promise.all([
-                fetchUserProfile(),
-                fetchUserStats(),
-                fetchUserGames(10)
-            ]);
-            
-            console.log('📊 Fetched data:', { profile, stats, games });
-            
-            // Update sidebar with user info
-            if (profile) {
-                const username = profile.username || currentUser.name || 'Player';
-                document.getElementById('account-sidebar-name').textContent = username;
-                document.getElementById('account-username').textContent = username;
-                
-                if (profile.email) {
-                    document.getElementById('account-sidebar-email').textContent = profile.email;
-                    document.getElementById('account-email').textContent = profile.email;
-                } else {
-                    document.getElementById('account-sidebar-email').textContent = 'No email';
-                    document.getElementById('account-email').textContent = 'No email';
-                }
-                
-                // Set registration date
-                if (profile.created_at) {
-                    const regDate = new Date(profile.created_at);
-                    document.getElementById('account-sidebar-date').textContent = regDate.toLocaleDateString();
-                } else {
-                    document.getElementById('account-sidebar-date').textContent = 'Unknown';
-                }
-                
-                // Set avatar
-                const avatarEl = document.getElementById('account-avatar');
-                if (profile.picture) {
-                    avatarEl.innerHTML = `<img src="${profile.picture}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />`;
-                } else {
-                    const initials = (username || 'U').charAt(0).toUpperCase();
-                    avatarEl.textContent = initials;
-                    avatarEl.style.background = 'linear-gradient(135deg, #4ecdc4, #a55eea)';
-                }
-            }
-            
-            // Update stats
-            if (stats) {
-                const wins = stats.wins || 0;
-                const losses = stats.losses || 0;
-                const totalGames = wins + losses;
-                const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
-                
-                // Update modal stats
-                document.getElementById('account-wins').textContent = wins;
-                document.getElementById('account-losses').textContent = losses;
-                document.getElementById('account-games').textContent = totalGames;
-                document.getElementById('account-total-games').textContent = totalGames;
-                
-                // Update win rate if element exists
-                const winRateEl = document.getElementById('account-winrate');
-                if (winRateEl) winRateEl.textContent = winRate + '%';
-                
-                // Update member level based on games played
-                const memberLevelEl = document.getElementById('account-member-level');
-                if (memberLevelEl) {
-                    if (totalGames >= 100) memberLevelEl.textContent = 'Gold';
-                    else if (totalGames >= 50) memberLevelEl.textContent = 'Silver';
-                    else memberLevelEl.textContent = 'Bronze';
-                }
-                
-                // Update top bar stats
-                updateTopBarStats(wins, losses, winRate);
-            } else {
-                // No stats found - show zeros
-                document.getElementById('account-wins').textContent = '0';
-                document.getElementById('account-losses').textContent = '0';
-                document.getElementById('account-games').textContent = '0';
-                document.getElementById('account-total-games').textContent = '0';
-                updateTopBarStats(0, 0, 0);
-            }
-            
-            // Show delete account button only for registered users
-            const deleteBtn = document.querySelector('button[onclick="deleteAccount()"]');
-            if (deleteBtn) {
-                deleteBtn.style.display = currentUser.type === 'guest' ? 'none' : 'block';
-            }
-            
-            console.log('✅ Player Hub loaded successfully');
-            
-        } catch (error) {
-            console.error('❌ Failed to load Player Hub data:', error);
-            alert('⚠️ Failed to load account data. Please try again.');
-            hideAccountModal();
+        // Update stats with local data
+        const wins = localStats.gamesWon || 0;
+        const losses = localStats.gamesLost || 0;
+        const totalGames = wins + losses;
+        const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
+        
+        document.getElementById('account-wins').textContent = wins;
+        document.getElementById('account-losses').textContent = losses;
+        document.getElementById('account-games').textContent = totalGames;
+        document.getElementById('account-total-games').textContent = totalGames;
+        
+        const winRateEl = document.getElementById('account-winrate');
+        if (winRateEl) winRateEl.textContent = winRate + '%';
+        
+        // Update member level
+        const memberLevelEl = document.getElementById('account-member-level');
+        if (memberLevelEl) {
+            if (totalGames >= 100) memberLevelEl.textContent = 'Gold';
+            else if (totalGames >= 50) memberLevelEl.textContent = 'Silver';
+            else memberLevelEl.textContent = 'Bronze';
         }
+        
+        // Update registration date
+        const regDate = currentUser.created_at ? new Date(currentUser.created_at) : new Date();
+        document.getElementById('account-sidebar-date').textContent = regDate.toLocaleDateString();
+        
+        // Update activity
+        document.getElementById('account-last-login').textContent = accountType === 'Guest' ? 'Session only' : 'Today';
+        document.getElementById('account-saved-games').textContent = accountType === 'Guest' ? '0 (session)' : totalGames;
+        document.getElementById('account-total-moves').textContent = localStats.totalMoves || 0;
+        document.getElementById('account-total-captures').textContent = localStats.totalCaptures || 0;
+        
+        updateTopBarStats(wins, losses, winRate);
+        
+        // Try to fetch from backend if registered user (non-blocking)
+        if (currentUser.id && currentUser.type !== 'guest') {
+            try {
+                console.log('🔄 Fetching backend data...');
+                const [profile, stats, games] = await Promise.all([
+                    fetchUserProfile(),
+                    fetchUserStats(),
+                    fetchUserGames(10)
+                ]);
+                
+                console.log('📊 Backend data:', { profile, stats, games });
+                
+                // Update with backend data if available
+                if (stats) {
+                    const backendWins = stats.wins || 0;
+                    const backendLosses = stats.losses || 0;
+                    const backendTotal = backendWins + backendLosses;
+                    const backendWinRate = backendTotal > 0 ? Math.round((backendWins / backendTotal) * 100) : 0;
+                    
+                    document.getElementById('account-wins').textContent = backendWins;
+                    document.getElementById('account-losses').textContent = backendLosses;
+                    document.getElementById('account-games').textContent = backendTotal;
+                    document.getElementById('account-total-games').textContent = backendTotal;
+                    
+                    if (winRateEl) winRateEl.textContent = backendWinRate + '%';
+                    
+                    if (memberLevelEl) {
+                        if (backendTotal >= 100) memberLevelEl.textContent = 'Gold';
+                        else if (backendTotal >= 50) memberLevelEl.textContent = 'Silver';
+                        else memberLevelEl.textContent = 'Bronze';
+                    }
+                    
+                    updateTopBarStats(backendWins, backendLosses, backendWinRate);
+                }
+                
+                console.log('✅ Backend data loaded');
+            } catch (error) {
+                console.warn('⚠️ Backend data fetch failed, using local data:', error);
+                // Local data already shown, just log the error
+            }
+        }
+        
+        // Show/hide delete button
+        const deleteBtn = document.querySelector('button[onclick="deleteAccount()"]');
+        if (deleteBtn) {
+            deleteBtn.style.display = currentUser.type === 'guest' ? 'none' : 'block';
+        }
+        
+        console.log('✅ Player Hub opened');
     }
     
     function updateTopBarStats(wins, losses, winRate) {
