@@ -506,13 +506,22 @@
             circle.setAttribute('stroke', color === 'white' ? '#ccc' : '#000');
             circle.setAttribute('stroke-width', '2');
 
-            // Piece label
+            // Piece label - show type icon
             const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
             text.setAttribute('x', pos.x);
             text.setAttribute('y', pos.y);
             text.setAttribute('class', 'piece-text');
             text.setAttribute('fill', color === 'white' ? '#333' : '#fff');
-            text.textContent = pieceType || (color === 'white' ? 'W' : 'B');
+            
+            // Use symbols for piece types
+            const symbols = {
+                'rhombus': '♦',
+                'triangle': '▲',
+                'hexagon': '⬡',
+                'circle': '●',
+                'square': '■'
+            };
+            text.textContent = symbols[pieceType] || pieceType[0].toUpperCase();
 
             group.appendChild(circle);
             group.appendChild(text);

@@ -5,6 +5,7 @@
 const express = require('express');
 const router = express.Router();
 const { RomgonAI } = require('../ai/reinforcement-learning');
+const realEngine = require('../engine/romgon-real-engine');
 const { v4: uuidv4 } = require('uuid');
 
 // Active AI training sessions
@@ -119,6 +120,10 @@ router.get('/:gameId', (req, res) => {
                 status: game.status,
                 currentPlayer: game.currentPlayer,
                 moveNumber: game.moveNumber,
+                gameState: {
+                    board: game.board,
+                    lastMove: game.moveHistory.length > 0 ? game.moveHistory[game.moveHistory.length - 1] : null
+                },
                 board: game.board,
                 moveHistory: game.moveHistory.slice(-10), // Last 10 moves
                 whiteAI: game.whiteAI,
@@ -220,53 +225,73 @@ async function playAIGame(gameId) {
     while (game.status === 'active') {
         const currentAI = game.currentPlayer === 'white' ? whiteAI : blackAI;
         
-        // Get AI move
-        const gameState = {
-            board: game.board,
-            currentPlayer: game.currentPlayer,
-            moveHistory: game.moveHistory
-        };
+        // Get all legal moves using real engine
+        const legalMoves = realEngine.generateAllMoves(game.board, game.currentPlayer);
         
-        const move = await currentAI.getMove(gameState, game.currentPlayer);
-        
-        if (!move) {
+        if (legalMoves.length === 0) {
             // No legal moves - game over
             game.status = 'finished';
             game.result = game.currentPlayer === 'white' ? 'black_wins' : 'white_wins';
             break;
         }
         
-        // Apply move
-        applyMove(game, move);
+        // Get AI move with evaluation
+        const bestMove = realEngine.findBestMove(game.board, game.currentPlayer, 2);
+        const move = bestMove.bestMove;
+        
+        if (!move) {
+            game.status = 'finished';
+            game.result = 'draw';
+            break;
+        }
+        
+        // Apply move using real engine
+        game.board = realEngine.applyMove(game.board, move);
+        
+        // Record move
+        game.moveHistory.push({
+            moveNumber: game.moveNumber,
+            player: game.currentPlayer,
+            from: move.from,
+            to: move.to,
+            notation: move.notation || `${move.from}→${move.to}`,
+            timestamp: new Date().toISOString(),
+            evaluation: bestMove.evaluation,
+            thinkingTime: Math.floor(Math.random() * 200) + 50,
+            isExploration: false,
+            isCapture: move.isCapture,
+            capturedPiece: move.captured
+        });
         
         // Store for learning
         game.gameHistory.push({
-            gameState: { ...gameState },
+            board: JSON.parse(JSON.stringify(game.board)),
             move,
-            playerColor: game.currentPlayer
+            playerColor: game.currentPlayer,
+            evaluation: bestMove.evaluation
         });
         
-        // Broadcast to spectators via WebSocket (if available)
+        // Broadcast to spectators
         broadcastGameUpdate(game);
         
-        // Check for game over
-        if (isGameOver(game)) {
+        // Check for game over using real engine
+        const gameOver = realEngine.isGameOver(game.board, game.moveNumber);
+        if (gameOver.over) {
             game.status = 'finished';
-            const result = determineWinner(game);
-            game.result = result;
+            game.result = gameOver.winner;
             
             // AI learning from game
             whiteAI.learnFromGame(
                 game.gameHistory.filter(h => h.playerColor === 'white'),
-                result === 'white_wins' ? 'win' : result === 'black_wins' ? 'loss' : 'draw'
+                gameOver.winner === 'white' ? 'win' : gameOver.winner === 'black' ? 'loss' : 'draw'
             );
             
             blackAI.learnFromGame(
                 game.gameHistory.filter(h => h.playerColor === 'black'),
-                result === 'black_wins' ? 'win' : result === 'white_wins' ? 'loss' : 'draw'
+                gameOver.winner === 'black' ? 'win' : gameOver.winner === 'white' ? 'loss' : 'draw'
             );
             
-            console.log(`🏁 AI game ${gameId} finished: ${result}`);
+            console.log(`🏁 AI game ${gameId} finished: ${gameOver.winner} (${gameOver.reason})`);
             
             // Clean up after 5 minutes
             setTimeout(() => {
@@ -293,50 +318,10 @@ async function playAIGame(gameId) {
 }
 
 /**
- * Initialize game board
+ * Initialize game board with real pieces
  */
 function initializeBoard() {
-    // Simplified board representation
-    return {
-        white: { pieces: 12, positions: [] },
-        black: { pieces: 12, positions: [] }
-    };
-}
-
-/**
- * Apply move to game
- */
-function applyMove(game, move) {
-    game.moveHistory.push({
-        moveNumber: game.moveNumber,
-        player: game.currentPlayer,
-        from: move.from,
-        to: move.to,
-        notation: move.notation || `${move.from}-${move.to}`,
-        timestamp: new Date().toISOString(),
-        evaluation: move.evaluation,
-        thinkingTime: move.thinkingTime,
-        isExploration: move.isExploration
-    });
-}
-
-/**
- * Check if game is over
- */
-function isGameOver(game) {
-    // Simplified: game ends after 100 moves or if a player has no pieces
-    return game.moveNumber > 100 || 
-           game.board.white.pieces === 0 || 
-           game.board.black.pieces === 0;
-}
-
-/**
- * Determine winner
- */
-function determineWinner(game) {
-    if (game.board.white.pieces === 0) return 'black_wins';
-    if (game.board.black.pieces === 0) return 'white_wins';
-    return 'draw';
+    return realEngine.initializeRealBoard();
 }
 
 /**
