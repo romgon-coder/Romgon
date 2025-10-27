@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI vs AI Training - Spectator Mode | ROMGON</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1.1em;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+        }
+
+        .game-board-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .card h2 {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            color: #00d4ff;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .stat-item {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .ai-player {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .ai-player.active {
+            border: 2px solid #00d4ff;
+            box-shadow: 0 0 20px rgba(0,212,255,0.3);
+        }
+
+        .ai-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .ai-stats {
+            font-size: 0.9em;
+            color: #aaa;
+        }
+
+        .move-list {
+            max-height: 300px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .move-item {
+            padding: 8px;
+            margin-bottom: 5px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .move-item.exploration {
+            border-left: 3px solid #ffa500;
+        }
+
+        .move-item.exploitation {
+            border-left: 3px solid #00d4ff;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #00d4ff, #7b2cbf);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,212,255,0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-indicator.active {
+            background: #00d4ff;
+            box-shadow: 0 0 10px #00d4ff;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.finished {
+            background: #888;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .board-placeholder {
+            width: 100%;
+            aspect-ratio: 1;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            color: #555;
+        }
+
+        .game-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .game-item {
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 5px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .game-item:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+        }
+
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 AI vs AI Training Arena</h1>
+            <p class="subtitle">Watch artificial intelligence learn and improve through reinforcement learning</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Game Board Section -->
+            <div class="game-board-section">
+                <h2>
+                    <span class="status-indicator active"></span>
+                    Live Game Board
+                </h2>
+                <div id="game-board" class="board-placeholder">
+                    No active game
+                </div>
+                <div class="controls">
+                    <button class="btn btn-primary" onclick="startNewGame()">▶️ Start New AI Game</button>
+                    <button class="btn btn-secondary" onclick="stopGame()">⏹️ Stop Game</button>
+                    <select id="speed-select" class="btn btn-secondary">
+                        <option value="slow">🐢 Slow (2s)</option>
+                        <option value="normal" selected>⚡ Normal (1s)</option>
+                        <option value="fast">🚀 Fast (0.5s)</option>
+                        <option value="instant">💨 Instant</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- AI Players -->
+                <div class="card">
+                    <h2>AI Players</h2>
+                    <div class="ai-player active" id="white-ai">
+                        <div class="ai-name">⚪ White AI - Level 5</div>
+                        <div class="ai-stats">
+                            Games: <span id="white-games">0</span> | 
+                            Win Rate: <span id="white-winrate">0%</span>
+                        </div>
+                    </div>
+                    <div class="ai-player" id="black-ai">
+                        <div class="ai-name">⚫ Black AI - Level 5</div>
+                        <div class="ai-stats">
+                            Games: <span id="black-games">0</span> | 
+                            Win Rate: <span id="black-winrate">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Game Stats -->
+                <div class="card">
+                    <h2>Current Game</h2>
+                    <div class="stat-grid">
+                        <div class="stat-item">
+                            <div class="stat-label">Move #</div>
+                            <div class="stat-value" id="move-number">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Spectators</div>
+                            <div class="stat-value" id="spectator-count">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Moves -->
+                <div class="card">
+                    <h2>Recent Moves</h2>
+                    <div class="move-list" id="move-list">
+                        <p style="text-align: center; color: #666;">No moves yet</p>
+                    </div>
+                </div>
+
+                <!-- Training Stats -->
+                <div class="card">
+                    <h2>Training Statistics</h2>
+                    <div class="stat-grid">
+                        <div class="stat-item">
+                            <div class="stat-label">Total Games</div>
+                            <div class="stat-value" id="total-games">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Uptime</div>
+                            <div class="stat-value" id="uptime">0h</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BACKEND_API_URL = 'https://api.romgon.net';
+        let currentGameId = null;
+        let updateInterval = null;
+
+        // Start a new AI training game
+        async function startNewGame() {
+            try {
+                const speed = document.getElementById('speed-select').value;
+                const response = await fetch(`${BACKEND_API_URL}/api/ai-training/start`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ spectate: true, speed })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    currentGameId = data.gameId;
+                    console.log('✅ Started new AI game:', data.gameId);
+                    startWatching();
+                }
+            } catch (error) {
+                console.error('❌ Error starting game:', error);
+                alert('Failed to start AI game');
+            }
+        }
+
+        // Start watching current game
+        function startWatching() {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
+
+            updateGame();
+            updateInterval = setInterval(updateGame, 1000); // Update every second
+        }
+
+        // Stop current game
+        function stopGame() {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+                updateInterval = null;
+            }
+            currentGameId = null;
+        }
+
+        // Update game display
+        async function updateGame() {
+            if (!currentGameId) return;
+
+            try {
+                const response = await fetch(`${BACKEND_API_URL}/api/ai-training/${currentGameId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const game = data.game;
+                    
+                    // Update move number
+                    document.getElementById('move-number').textContent = game.moveNumber;
+                    document.getElementById('spectator-count').textContent = game.spectatorCount;
+
+                    // Update AI players
+                    document.getElementById('white-games').textContent = game.whiteAI.stats.gamesPlayed;
+                    document.getElementById('white-winrate').textContent = game.whiteAI.stats.winRate + '%';
+                    document.getElementById('black-games').textContent = game.blackAI.stats.gamesPlayed;
+                    document.getElementById('black-winrate').textContent = game.blackAI.stats.winRate + '%';
+
+                    // Highlight current player
+                    document.getElementById('white-ai').classList.toggle('active', game.currentPlayer === 'white');
+                    document.getElementById('black-ai').classList.toggle('active', game.currentPlayer === 'black');
+
+                    // Update move list
+                    if (game.moveHistory && game.moveHistory.length > 0) {
+                        const moveList = document.getElementById('move-list');
+                        moveList.innerHTML = game.moveHistory.slice(-10).reverse().map(move => `
+                            <div class="move-item ${move.isExploration ? 'exploration' : 'exploitation'}">
+                                <span>${move.moveNumber}. ${move.notation}</span>
+                                <span style="font-size: 0.85em; color: #888;">${move.thinkingTime}ms</span>
+                            </div>
+                        `).join('');
+                    }
+
+                    // Update status
+                    const statusIndicator = document.querySelector('.status-indicator');
+                    if (game.status === 'finished') {
+                        statusIndicator.classList.remove('active');
+                        statusIndicator.classList.add('finished');
+                        stopGame();
+                        alert(`Game finished! Result: ${game.result}`);
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error updating game:', error);
+            }
+        }
+
+        // Update training stats
+        async function updateTrainingStats() {
+            try {
+                const response = await fetch(`${BACKEND_API_URL}/api/ai-training/stats/overall`);
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('total-games').textContent = data.stats.totalGames;
+                    document.getElementById('uptime').textContent = data.stats.uptimeHours + 'h';
+                }
+            } catch (error) {
+                console.error('❌ Error updating stats:', error);
+            }
+        }
+
+        // Initialize
+        updateTrainingStats();
+        setInterval(updateTrainingStats, 10000); // Update stats every 10s
+    </script>
+</body>
+</html>
