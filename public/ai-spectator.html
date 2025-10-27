@@ -407,10 +407,10 @@
             }
         }
 
-        // Hexagon board rendering
+        // Hexagon board rendering - FLAT TOP orientation (rotated 90 deg)
         const HEX_SIZE = 30;
-        const HEX_WIDTH = HEX_SIZE * 2;
-        const HEX_HEIGHT = Math.sqrt(3) * HEX_SIZE;
+        const HEX_WIDTH = Math.sqrt(3) * HEX_SIZE;  // Width for flat-top
+        const HEX_HEIGHT = HEX_SIZE * 2;             // Height for flat-top
         const CENTER_X = 400;
         const CENTER_Y = 400;
 
@@ -433,11 +433,11 @@
             '4-2', '4-3', '4-4', '4-5'
         ];
 
-        // Generate hexagon points
+        // Generate hexagon points for FLAT TOP orientation
         function hexPoints(x, y, size) {
             const points = [];
             for (let i = 0; i < 6; i++) {
-                const angle = (Math.PI / 3) * i - Math.PI / 2;
+                const angle = (Math.PI / 3) * i; // Start at 0 for flat-top
                 points.push([
                     x + size * Math.cos(angle),
                     y + size * Math.sin(angle)
@@ -447,19 +447,24 @@
         }
 
         // Calculate hex position from row,col coordinates matching Romgon layout
+        // Board is rotated 90 degrees, so rows become columns visually
         function hexToPixel(row, col) {
             const layout = BOARD_LAYOUT[row];
             if (!layout) return { x: CENTER_X, y: CENTER_Y };
             
-            // Calculate vertical position
+            // For flat-top hex grid rotated 90deg:
+            // - Rows go left-to-right
+            // - Cols go top-to-bottom
+            const horizontalSpacing = HEX_WIDTH;
             const verticalSpacing = HEX_HEIGHT * 0.75;
-            const y = CENTER_Y - (3 * verticalSpacing) + (row * verticalSpacing);
             
-            // Calculate horizontal position
-            const horizontalSpacing = HEX_WIDTH * 0.75;
-            const rowOffset = layout.offset ? horizontalSpacing * 0.5 : 0;
-            const centerOffset = (8 - layout.cols) * horizontalSpacing * 0.5; // Center the row
-            const x = CENTER_X - (layout.cols * horizontalSpacing * 0.5) + (col * horizontalSpacing) + rowOffset + centerOffset;
+            // X position (row determines horizontal)
+            const x = CENTER_X - (3 * horizontalSpacing) + (row * horizontalSpacing);
+            
+            // Y position (col determines vertical)
+            const rowOffset = layout.offset ? verticalSpacing * 0.5 : 0;
+            const centerOffset = (8 - layout.cols) * verticalSpacing * 0.5; // Center the row
+            const y = CENTER_Y - (layout.cols * verticalSpacing * 0.5) + (col * verticalSpacing) + rowOffset + centerOffset;
             
             return { x, y };
         }
