@@ -20,7 +20,7 @@ function getPieceLetter(piece) {
         'triangle': 'T',
         'rhombus': 'R',
         'circle': 'C',
-        'hexagon': 'H'
+        'hexgon': 'H'
     };
     
     const letter = letters[piece.type] || '';
@@ -110,7 +110,7 @@ function parseRPN(rpnString) {
             'T': 'triangle', 't': 'triangle',
             'R': 'rhombus', 'r': 'rhombus',
             'C': 'circle', 'c': 'circle',
-            'H': 'hexagon', 'h': 'hexagon'
+            'H': 'hexgon', 'h': 'hexgon'
         };
         
         return {
@@ -136,8 +136,8 @@ function analyzeRPN(rpnString) {
         whiteMoves: moves.filter((_, i) => i % 2 === 0).length,
         blackMoves: moves.filter((_, i) => i % 2 === 1).length,
         pieceActivity: {
-            white: { square: 0, triangle: 0, rhombus: 0, circle: 0, hexagon: 0 },
-            black: { square: 0, triangle: 0, rhombus: 0, circle: 0, hexagon: 0 }
+            white: { square: 0, triangle: 0, rhombus: 0, circle: 0, hexgon: 0 },
+            black: { square: 0, triangle: 0, rhombus: 0, circle: 0, hexgon: 0 }
         }
     };
     

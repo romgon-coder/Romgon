@@ -15,14 +15,14 @@ function initializeRealBoard() {
     board['1-0'] = { color: 'white', type: 'triangle', id: 'wt1', rotation: 0 };
     board['2-0'] = { color: 'white', type: 'circle', id: 'wc1' };
     board['3-0'] = { color: 'white', type: 'rhombus', id: 'wr1' };
-    board['4-0'] = { color: 'white', type: 'hexagon', id: 'wh1', rotation: 0 };
+    board['4-0'] = { color: 'white', type: 'hexgon', id: 'wh1', rotation: 0 };
     board['5-0'] = { color: 'white', type: 'triangle', id: 'wt2', rotation: 0 };
     board['6-0'] = { color: 'white', type: 'square', id: 'ws2' };
     
     // Black pieces (starting positions from actual game)
     board['0-5'] = { color: 'black', type: 'square', id: 'bs1' };
     board['1-6'] = { color: 'black', type: 'triangle', id: 'bt1', rotation: 0 };
-    board['2-7'] = { color: 'black', type: 'hexagon', id: 'bh1', rotation: 0 };
+    board['2-7'] = { color: 'black', type: 'hexgon', id: 'bh1', rotation: 0 };
     board['3-8'] = { color: 'black', type: 'rhombus', id: 'br1' };
     board['4-7'] = { color: 'black', type: 'circle', id: 'bc1' };
     board['5-6'] = { color: 'black', type: 'triangle', id: 'bt2', rotation: 0 };
@@ -50,7 +50,7 @@ function getLegalMoves(board, fromPos, playerColor) {
         targets = getRhombusTargets(row, col);
     } else if (piece.type === 'circle') {
         targets = getCircleTargets(row, col, board);
-    } else if (piece.type === 'hexagon') {
+    } else if (piece.type === 'hexgon') {
         targets = getHexagonTargets(row, col, piece.rotation || 0);
     }
     
@@ -135,7 +135,7 @@ function evaluatePosition(board, playerColor) {
     const pieceValues = {
         'rhombus': 1000,
         'triangle': 6,
-        'hexagon': 5,
+        'hexgon': 5,
         'circle': 4,
         'square': 3
     };
