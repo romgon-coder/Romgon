@@ -375,6 +375,48 @@ router.get('/list/public', authenticateToken, async (req, res) => {
     }
 });
 
+/**
+ * GET /api/rooms/list/guest
+ * Get list of public rooms (no auth required - for guests)
+ */
+router.get('/list/guest', async (req, res) => {
+    try {
+        const publicRooms = Array.from(activeRooms.values())
+            .filter(room => !room.isPrivate && room.status === 'waiting')
+            .map(room => ({
+                code: room.code,
+                id: room.id,
+                name: room.name || null,
+                description: room.description || null,
+                isPermanent: room.isPermanent || false,
+                hostUsername: room.hostUsername,
+                playerCount: room.players.length,
+                maxPlayers: 2,
+                variant: room.variant,
+                timeControl: room.timeControl,
+                createdAt: room.createdAt
+            }))
+            .sort((a, b) => {
+                // Permanent rooms first
+                if (a.isPermanent && !b.isPermanent) return -1;
+                if (!a.isPermanent && b.isPermanent) return 1;
+                return new Date(b.createdAt) - new Date(a.createdAt);
+            });
+
+        res.json({
+            success: true,
+            rooms: publicRooms,
+            message: 'Log in to join rooms'
+        });
+    } catch (error) {
+        console.error('❌ Error listing rooms:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 // ============================================
 // DEBUG ENDPOINT (No Auth Required)
 // ============================================
