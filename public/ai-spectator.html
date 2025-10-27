@@ -219,6 +219,46 @@
             justify-content: center;
             font-size: 1.5em;
             color: #555;
+            position: relative;
+        }
+
+        /* Hexagonal Board Styles */
+        #game-board-canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        .hex {
+            fill: rgba(100, 100, 100, 0.3);
+            stroke: rgba(255, 255, 255, 0.3);
+            stroke-width: 2;
+            transition: fill 0.3s;
+        }
+
+        .hex.zone-dead { fill: rgba(139, 69, 19, 0.3); }
+        .hex.zone-outer { fill: rgba(70, 130, 180, 0.3); }
+        .hex.zone-middle { fill: rgba(60, 179, 113, 0.3); }
+        .hex.zone-inner { fill: rgba(218, 165, 32, 0.3); }
+        
+        .hex.last-move {
+            fill: rgba(255, 215, 0, 0.4) !important;
+            stroke: gold;
+            stroke-width: 3;
+        }
+
+        .piece-circle {
+            transition: all 0.3s;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5));
+        }
+
+        .piece-text {
+            font-size: 24px;
+            font-weight: bold;
+            fill: white;
+            text-anchor: middle;
+            dominant-baseline: central;
+            pointer-events: none;
         }
 
         .game-list {
@@ -262,7 +302,9 @@
                     Live Game Board
                 </h2>
                 <div id="game-board" class="board-placeholder">
-                    No active game
+                    <svg id="game-board-canvas" viewBox="0 0 800 800">
+                        <!-- Board will be drawn here -->
+                    </svg>
                 </div>
                 <div class="controls">
                     <button class="btn btn-primary" onclick="startNewGame()">▶️ Start New AI Game</button>
@@ -365,6 +407,118 @@
             }
         }
 
+        // Hexagon board rendering
+        const HEX_SIZE = 40;
+        const HEX_WIDTH = HEX_SIZE * 2;
+        const HEX_HEIGHT = Math.sqrt(3) * HEX_SIZE;
+        const CENTER_X = 400;
+        const CENTER_Y = 400;
+
+        // Generate hexagon points
+        function hexPoints(x, y, size) {
+            const points = [];
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI / 3) * i - Math.PI / 2;
+                points.push([
+                    x + size * Math.cos(angle),
+                    y + size * Math.sin(angle)
+                ]);
+            }
+            return points.map(p => p.join(',')).join(' ');
+        }
+
+        // Calculate hex position from q,r coordinates
+        function hexToPixel(q, r) {
+            const x = CENTER_X + HEX_SIZE * (3/2 * q);
+            const y = CENTER_Y + HEX_SIZE * (Math.sqrt(3)/2 * q + Math.sqrt(3) * r);
+            return { x, y };
+        }
+
+        // Get zone color for position
+        function getZoneClass(q, r) {
+            const distance = Math.abs(q) + Math.abs(r) + Math.abs(-q-r);
+            if (distance <= 2) return 'zone-inner';
+            if (distance <= 4) return 'zone-middle';
+            if (distance <= 6) return 'zone-outer';
+            return 'zone-dead';
+        }
+
+        // Render the hexagonal board
+        function renderBoard(gameState) {
+            const svg = document.getElementById('game-board-canvas');
+            svg.innerHTML = ''; // Clear previous
+
+            // Draw hex grid
+            for (let q = -6; q <= 6; q++) {
+                for (let r = -6; r <= 6; r++) {
+                    const s = -q - r;
+                    if (Math.abs(q) + Math.abs(r) + Math.abs(s) <= 12) {
+                        const pos = hexToPixel(q, r);
+                        const zoneClass = getZoneClass(q, r);
+                        
+                        const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                        polygon.setAttribute('points', hexPoints(pos.x, pos.y, HEX_SIZE - 2));
+                        polygon.setAttribute('class', `hex ${zoneClass}`);
+                        polygon.setAttribute('data-q', q);
+                        polygon.setAttribute('data-r', r);
+                        svg.appendChild(polygon);
+                    }
+                }
+            }
+
+            // Draw pieces if game state exists
+            if (gameState && gameState.board) {
+                Object.keys(gameState.board).forEach(position => {
+                    const piece = gameState.board[position];
+                    if (piece) {
+                        const [q, r] = position.split(',').map(Number);
+                        drawPiece(q, r, piece.color, piece.type);
+                    }
+                });
+            }
+
+            // Highlight last move
+            if (gameState && gameState.lastMove) {
+                const [toQ, toR] = gameState.lastMove.to.split(',').map(Number);
+                const lastHex = svg.querySelector(`[data-q="${toQ}"][data-r="${toR}"]`);
+                if (lastHex) {
+                    lastHex.classList.add('last-move');
+                }
+            }
+        }
+
+        // Draw a piece on the board
+        function drawPiece(q, r, color, pieceType) {
+            const svg = document.getElementById('game-board-canvas');
+            const pos = hexToPixel(q, r);
+
+            // Create piece group
+            const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            group.setAttribute('class', 'piece-group');
+
+            // Piece circle
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', pos.x);
+            circle.setAttribute('cy', pos.y);
+            circle.setAttribute('r', HEX_SIZE * 0.6);
+            circle.setAttribute('class', 'piece-circle');
+            circle.setAttribute('fill', color === 'white' ? '#f0f0f0' : '#333');
+            circle.setAttribute('stroke', color === 'white' ? '#ccc' : '#000');
+            circle.setAttribute('stroke-width', '2');
+
+            // Piece label
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', pos.x);
+            text.setAttribute('y', pos.y);
+            text.setAttribute('class', 'piece-text');
+            text.setAttribute('fill', color === 'white' ? '#333' : '#fff');
+            text.textContent = pieceType || (color === 'white' ? 'W' : 'B');
+
+            group.appendChild(circle);
+            group.appendChild(text);
+            svg.appendChild(group);
+        }
+
         // Start watching current game
         function startWatching() {
             if (updateInterval) {
@@ -394,6 +548,9 @@
 
                 if (data.success) {
                     const game = data.game;
+                    
+                    // Render the board
+                    renderBoard(game.gameState);
                     
                     // Update move number
                     document.getElementById('move-number').textContent = game.moveNumber;
