@@ -10,23 +10,23 @@
 function initializeRealBoard() {
     const board = {};
     
-    // White pieces (starting positions)
+    // White pieces (starting positions from actual game)
+    board['0-0'] = { color: 'white', type: 'square', id: 'ws1' };
+    board['1-0'] = { color: 'white', type: 'triangle', id: 'wt1', rotation: 0 };
     board['2-0'] = { color: 'white', type: 'circle', id: 'wc1' };
     board['3-0'] = { color: 'white', type: 'rhombus', id: 'wr1' };
     board['4-0'] = { color: 'white', type: 'hexagon', id: 'wh1', rotation: 0 };
-    board['0-1'] = { color: 'white', type: 'triangle', id: 'wt1', rotation: 0 };
-    board['6-0'] = { color: 'white', type: 'square', id: 'ws1' };
-    board['6-2'] = { color: 'white', type: 'square', id: 'ws2' };
-    board['1-0'] = { color: 'white', type: 'triangle', id: 'wt2', rotation: 0 };
+    board['5-0'] = { color: 'white', type: 'triangle', id: 'wt2', rotation: 0 };
+    board['6-0'] = { color: 'white', type: 'square', id: 'ws2' };
     
-    // Black pieces (starting positions)
-    board['5-7'] = { color: 'black', type: 'circle', id: 'bc1' };
-    board['3-8'] = { color: 'black', type: 'rhombus', id: 'br1' };
-    board['4-7'] = { color: 'black', type: 'hexagon', id: 'bh1', rotation: 0 };
+    // Black pieces (starting positions from actual game)
+    board['0-5'] = { color: 'black', type: 'square', id: 'bs1' };
     board['1-6'] = { color: 'black', type: 'triangle', id: 'bt1', rotation: 0 };
-    board['6-6'] = { color: 'black', type: 'square', id: 'bs1' };
-    board['6-5'] = { color: 'black', type: 'square', id: 'bs2' };
+    board['2-7'] = { color: 'black', type: 'hexagon', id: 'bh1', rotation: 0 };
+    board['3-8'] = { color: 'black', type: 'rhombus', id: 'br1' };
+    board['4-7'] = { color: 'black', type: 'circle', id: 'bc1' };
     board['5-6'] = { color: 'black', type: 'triangle', id: 'bt2', rotation: 0 };
+    board['6-5'] = { color: 'black', type: 'square', id: 'bs2' };
     
     return board;
 }
