@@ -228,7 +228,7 @@ async function playAIGame(gameId) {
     while (game.status === 'active') {
         const currentAI = game.currentPlayer === 'white' ? whiteAI : blackAI;
         
-        // Get all legal moves using real engine
+        // Get all legal moves using real engine with hardcoded patterns
         const legalMoves = realEngine.generateAllMoves(game.board, game.currentPlayer);
         
         if (legalMoves.length === 0) {
@@ -238,15 +238,17 @@ async function playAIGame(gameId) {
             break;
         }
         
-        // Get AI move with evaluation
-        const bestMove = realEngine.findBestMove(game.board, game.currentPlayer, 2);
-        const move = bestMove.bestMove;
+        // AI picks a random move from legal moves (using hardcoded patterns only)
+        const move = legalMoves[Math.floor(Math.random() * legalMoves.length)];
         
         if (!move) {
             game.status = 'finished';
             game.result = 'draw';
             break;
         }
+        
+        // Store piece info before applying move
+        const movingPiece = game.board[move.from];
         
         // Apply move using real engine
         game.board = realEngine.applyMove(game.board, move);
@@ -257,12 +259,12 @@ async function playAIGame(gameId) {
             player: game.currentPlayer,
             from: move.from,
             to: move.to,
-            piece: game.board[move.from],
+            piece: movingPiece,
             notation: move.notation || `${move.from}→${move.to}`,
             timestamp: new Date().toISOString(),
-            evaluation: bestMove.evaluation,
-            thinkingTime: Math.floor(Math.random() * 200) + 50,
-            isExploration: false,
+            evaluation: 0, // No evaluation - random moves only
+            thinkingTime: Math.floor(Math.random() * 100) + 20, // Faster thinking
+            isExploration: true, // All moves are exploration
             isCapture: move.isCapture,
             capturedPiece: move.captured
         });
@@ -275,7 +277,7 @@ async function playAIGame(gameId) {
             board: JSON.parse(JSON.stringify(game.board)),
             move,
             playerColor: game.currentPlayer,
-            evaluation: bestMove.evaluation
+            evaluation: 0
         });
         
         // Broadcast to spectators
