@@ -174,121 +174,111 @@ function evaluatePosition(board, playerColor) {
 
 // ============================================
 // HARDCODED MOVEMENT PATTERNS
+// Simplified hexagon-aware patterns for AI training
 // ============================================
 
-function getSquareTargets(row, col) {
-    let offsets = [];
+/**
+ * Get 6 adjacent hexagons for any piece at position
+ * Hexagon grid has 6 neighbors for each hex
+ */
+function getAdjacentHexagons(row, col) {
+    // For even rows (0, 2, 4, 6) - shift-down rows
+    // For odd rows (1, 3, 5) - normal rows
+    const isEvenRow = row % 2 === 0;
     
-    if (row === 0) offsets = [[1, 0], [1, 1], [-1, 1], [-1, 0]];
-    else if (row === 1) offsets = [[1, 0], [1, 1], [-1, -1], [-1, 0]];
-    else if (row === 2) offsets = [[1, 0], [1, 1], [-1, -1], [-1, 0]];
-    else if (row === 3) offsets = [[1, -1], [1, 0], [-1, 0], [-1, -1]];
-    else if (row === 4) offsets = [[-1, 0], [-1, 1], [1, -1], [1, 0]];
-    else if (row === 5) offsets = [[1, 0], [1, 1], [-1, -1], [-1, 0]];
-    else if (row === 6) offsets = [[1, 0], [1, 1], [-1, 1], [-1, 0]];
-    
-    return offsets.map(([dr, dc]) => [row + dr, col + dc]);
-}
-
-function getTriangleTargets(row, col, rotation, isWhite) {
-    // Triangles have 6 orientations (rotation 0-5)
-    // Different movement patterns for white/black
-    if (isWhite) {
-        return getWhiteTriangleTargets(row, col, rotation);
+    if (isEvenRow) {
+        // Even rows: neighbors shifted
+        return [
+            [row - 1, col - 1], // top-left
+            [row - 1, col],     // top-right
+            [row, col + 1],     // right
+            [row + 1, col],     // bottom-right
+            [row + 1, col - 1], // bottom-left
+            [row, col - 1]      // left
+        ];
     } else {
-        return getBlackTriangleTargets(row, col, rotation);
+        // Odd rows: standard neighbors
+        return [
+            [row - 1, col],     // top-left
+            [row - 1, col + 1], // top-right
+            [row, col + 1],     // right
+            [row + 1, col + 1], // bottom-right
+            [row + 1, col],     // bottom-left
+            [row, col - 1]      // left
+        ];
     }
 }
 
+function getSquareTargets(row, col) {
+    // Square: L-shaped movement (like knight in chess but adapted)
+    // Can move 2 hexes in one direction, then 1 hex perpendicular
+    const isEvenRow = row % 2 === 0;
+    
+    if (isEvenRow) {
+        return [
+            [row - 2, col - 1], [row - 2, col], [row - 2, col + 1],
+            [row + 2, col - 1], [row + 2, col], [row + 2, col + 1],
+            [row - 1, col - 2], [row - 1, col + 2],
+            [row + 1, col - 2], [row + 1, col + 2]
+        ];
+    } else {
+        return [
+            [row - 2, col - 1], [row - 2, col], [row - 2, col + 1],
+            [row + 2, col - 1], [row + 2, col], [row + 2, col + 1],
+            [row - 1, col - 2], [row - 1, col + 2],
+            [row + 1, col - 2], [row + 1, col + 2]
+        ];
+    }
+}
+
+function getTriangleTargets(row, col, rotation, isWhite) {
+    // Triangle: Moves to 3-4 adjacent hexagons based on direction
+    // Simplified: use adjacent hexagons
+    return getAdjacentHexagons(row, col).slice(0, 4); // 4 directions
+}
+
 function getWhiteTriangleTargets(row, col, rotation) {
-    // Simplified: orientation 0 points right
-    let offsets = [];
-    
-    if (row === 0) offsets = [[1, 1], [-1, 1], [0, 1]];
-    else if (row === 1) offsets = [[1, 1], [-1, 0], [0, 1]];
-    else if (row === 2) offsets = [[1, 1], [-1, 0], [0, 1]];
-    else if (row === 3) offsets = [[1, 0], [0, 1], [-1, 0]];
-    else if (row === 4) offsets = [[1, 0], [0, 1], [-1, 1]];
-    else if (row === 5) offsets = [[1, 0], [0, 1], [-1, 1]];
-    else if (row === 6) offsets = [[1, 1], [-1, 1], [0, 1]];
-    
-    return offsets.map(([dr, dc]) => [row + dr, col + dc]);
+    return getAdjacentHexagons(row, col).slice(0, 4);
 }
 
 function getBlackTriangleTargets(row, col, rotation) {
-    // Black triangles point opposite direction
-    let offsets = [];
-    
-    if (row === 0) offsets = [[1, 0], [-1, 0], [0, -1]];
-    else if (row === 1) offsets = [[1, 0], [-1, -1], [0, -1]];
-    else if (row === 2) offsets = [[1, 0], [-1, -1], [0, -1]];
-    else if (row === 3) offsets = [[1, -1], [0, -1], [-1, -1]];
-    else if (row === 4) offsets = [[1, -1], [0, -1], [-1, 0]];
-    else if (row === 5) offsets = [[1, -1], [0, -1], [-1, 0]];
-    else if (row === 6) offsets = [[1, 0], [-1, 0], [0, -1]];
-    
-    return offsets.map(([dr, dc]) => [row + dr, col + dc]);
+    return getAdjacentHexagons(row, col).slice(2, 6);
 }
 
 function getRhombusTargets(row, col) {
-    // Rhombus moves in 4 diagonal directions
-    const offsets = [
-        [-1, -1], [-1, 1], [1, -1], [1, 1]
-    ];
+    // Rhombus: Diagonal movement
+    const isEvenRow = row % 2 === 0;
     
-    return offsets.map(([dr, dc]) => [row + dr, col + dc]);
+    if (isEvenRow) {
+        return [
+            [row - 1, col - 1], // top-left diagonal
+            [row - 1, col],     // top-right diagonal
+            [row + 1, col - 1], // bottom-left diagonal
+            [row + 1, col]      // bottom-right diagonal
+        ];
+    } else {
+        return [
+            [row - 1, col],     // top-left diagonal
+            [row - 1, col + 1], // top-right diagonal
+            [row + 1, col],     // bottom-left diagonal
+            [row + 1, col + 1]  // bottom-right diagonal
+        ];
+    }
 }
 
 function getCircleTargets(row, col, board) {
-    // Circle moves within zones - simplified for AI
-    // Moves to adjacent hexes in same zone
-    const targets = [];
-    
-    // Get zone level
-    const zone = getZoneLevel(row, col);
-    
-    // Check all 6 adjacent hexes
-    const adjacent = [
-        [row - 1, col], [row + 1, col],
-        [row, col - 1], [row, col + 1],
-        [row - 1, col - 1], [row + 1, col + 1]
+    // Circle: Cross pattern (4 cardinal directions)
+    return [
+        [row - 1, col],     // up
+        [row + 1, col],     // down
+        [row, col - 1],     // left
+        [row, col + 1]      // right
     ];
-    
-    adjacent.forEach(([r, c]) => {
-        if (getZoneLevel(r, c) === zone || Math.abs(getZoneLevel(r, c) - zone) === 1) {
-            targets.push([r, c]);
-        }
-    });
-    
-    return targets;
-}
-
-function getZoneLevel(row, col) {
-    // Dead zone (inner): row 3, cols 2-6
-    if (row === 3 && col >= 2 && col <= 6) return 0;
-    // Inner perimeter
-    if (row >= 2 && row <= 4 && col >= 1 && col <= 7) return 1;
-    // Middle perimeter
-    if (row >= 1 && row <= 5 && col >= 0 && col <= 8) return 2;
-    // Outer perimeter
-    return 3;
 }
 
 function getHexagonTargets(row, col, rotation) {
-    // Hexagons have 3 unique movement patterns (rotation 0, 1, 2)
-    // Patterns repeat at rotations 3, 4, 5
-    const pattern = rotation % 3;
-    
-    let offsets = [];
-    
-    // Simplified hexagon movement (attacks all 6 adjacent)
-    offsets = [
-        [row - 1, col], [row + 1, col],
-        [row, col - 1], [row, col + 1],
-        [row - 1, col - 1], [row + 1, col + 1]
-    ];
-    
-    return offsets;
+    // Hexagon: All 6 adjacent hexagons
+    return getAdjacentHexagons(row, col);
 }
 
 /**
