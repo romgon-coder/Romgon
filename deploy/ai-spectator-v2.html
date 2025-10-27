@@ -255,6 +255,11 @@
                 <div class="controls">
                     <button class="btn btn-start" onclick="startNewGame()">▶ Start New Game</button>
                 </div>
+                <div class="controls">
+                    <button class="btn" style="background: #444; color: white;" onclick="downloadRPN()" id="download-rpn-btn" disabled>
+                        📥 Download RPN
+                    </button>
+                </div>
             </div>
 
             <div class="card">
@@ -311,6 +316,10 @@
                 <div style="font-size: 0.85em; color: #aaa;">
                     <div style="margin: 8px 0;">Move: <strong id="move-number">-</strong></div>
                     <div style="margin: 8px 0;">Status: <strong id="game-status">No game</strong></div>
+                    <div style="margin: 8px 0; word-break: break-all;">
+                        <div style="color: #888; font-size: 0.8em;">RPN Preview:</div>
+                        <div id="rpn-preview" style="font-family: monospace; font-size: 0.7em; color: #00d4ff; max-height: 60px; overflow: hidden;">-</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -413,6 +422,7 @@
                 const data = await response.json();
                 if (data.success) {
                     currentGameId = data.gameId;
+                    document.getElementById('download-rpn-btn').disabled = false;
                     console.log('✅ Started new AI game:', data.gameId);
                     startWatching();
                 }
@@ -468,6 +478,13 @@
                         `).join('');
                     }
                     
+                    // Update RPN preview
+                    if (game.rpn) {
+                        const rpnPreview = document.getElementById('rpn-preview');
+                        const shortRPN = game.rpn.length > 100 ? game.rpn.substring(0, 100) + '...' : game.rpn;
+                        rpnPreview.textContent = shortRPN;
+                    }
+                    
                     // Check if game finished
                     if (game.status === 'finished') {
                         clearInterval(updateInterval);
@@ -491,6 +508,35 @@
                 }
             } catch (error) {
                 console.error('❌ Error updating stats:', error);
+            }
+        }
+
+        // Download RPN notation
+        async function downloadRPN() {
+            if (!currentGameId) {
+                alert('No active game to download');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${BACKEND_API_URL}/api/ai-training/${currentGameId}/export`);
+                const rpnText = await response.text();
+
+                // Create download link
+                const blob = new Blob([rpnText], { type: 'text/plain' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `romgon-ai-game-${currentGameId.substring(0, 8)}.rpn`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+                console.log('✅ Downloaded RPN notation');
+            } catch (error) {
+                console.error('❌ Error downloading RPN:', error);
+                alert('Failed to download RPN');
             }
         }
 

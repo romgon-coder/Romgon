@@ -7,6 +7,7 @@ const router = express.Router();
 const { RomgonAI } = require('../ai/reinforcement-learning');
 const realEngine = require('../engine/romgon-real-engine');
 const { v4: uuidv4 } = require('uuid');
+const { generateRPN, generateGameRPN } = require('../utils/rpn-generator');
 
 // Active AI training sessions
 const trainingGames = new Map();
@@ -55,6 +56,7 @@ router.post('/start', async (req, res) => {
             startTime: new Date().toISOString(),
             spectators: new Set(),
             speed: speed, // slow (2s), normal (1s), fast (500ms), instant (0ms)
+            rpn: '', // RPN notation of the game
             whiteAI: {
                 level: whiteAI.level,
                 stats: whiteAI.getStats()
@@ -126,6 +128,7 @@ router.get('/:gameId', (req, res) => {
                 },
                 board: game.board,
                 moveHistory: game.moveHistory.slice(-10), // Last 10 moves
+                rpn: game.rpn || '', // Current RPN notation
                 whiteAI: game.whiteAI,
                 blackAI: game.blackAI,
                 spectatorCount: game.spectators.size
@@ -254,6 +257,7 @@ async function playAIGame(gameId) {
             player: game.currentPlayer,
             from: move.from,
             to: move.to,
+            piece: game.board[move.from],
             notation: move.notation || `${move.from}→${move.to}`,
             timestamp: new Date().toISOString(),
             evaluation: bestMove.evaluation,
@@ -262,6 +266,9 @@ async function playAIGame(gameId) {
             isCapture: move.isCapture,
             capturedPiece: move.captured
         });
+        
+        // Update RPN notation
+        game.rpn = generateRPN(game.moveHistory);
         
         // Store for learning
         game.gameHistory.push({
@@ -279,6 +286,20 @@ async function playAIGame(gameId) {
         if (gameOver.over) {
             game.status = 'finished';
             game.result = gameOver.winner;
+            game.endTime = new Date().toISOString();
+            
+            // Generate full game RPN with metadata
+            game.fullRPN = generateGameRPN({
+                moveHistory: game.moveHistory,
+                result: gameOver.winner,
+                whiteAI: game.whiteAI,
+                blackAI: game.blackAI,
+                startTime: game.startTime,
+                endTime: game.endTime,
+                moveNumber: game.moveNumber
+            });
+            
+            console.log(`📝 Game RPN: ${game.fullRPN.substring(0, 100)}...`);
             
             // AI learning from game
             whiteAI.learnFromGame(
@@ -332,6 +353,91 @@ function broadcastGameUpdate(game) {
     // For now, just update the game object
     game.lastUpdate = new Date().toISOString();
 }
+
+// ============================================
+// RPN EXPORT ROUTES
+// ============================================
+
+/**
+ * GET /api/ai-training/:gameId/rpn
+ * Get RPN notation for a game
+ */
+router.get('/:gameId/rpn', (req, res) => {
+    try {
+        const { gameId } = req.params;
+        const game = trainingGames.get(gameId);
+        
+        if (!game) {
+            return res.status(404).json({
+                success: false,
+                error: 'Training game not found'
+            });
+        }
+        
+        const rpn = game.status === 'finished' && game.fullRPN ? 
+            game.fullRPN : 
+            generateRPN(game.moveHistory);
+        
+        res.json({
+            success: true,
+            gameId: game.id,
+            rpn: rpn,
+            moveCount: game.moveHistory.length,
+            status: game.status,
+            result: game.result
+        });
+        
+    } catch (error) {
+        console.error('❌ Error getting RPN:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+/**
+ * GET /api/ai-training/:gameId/export
+ * Download game as RPN file
+ */
+router.get('/:gameId/export', (req, res) => {
+    try {
+        const { gameId } = req.params;
+        const game = trainingGames.get(gameId);
+        
+        if (!game) {
+            return res.status(404).json({
+                success: false,
+                error: 'Training game not found'
+            });
+        }
+        
+        const rpn = game.status === 'finished' && game.fullRPN ? 
+            game.fullRPN : 
+            generateGameRPN({
+                moveHistory: game.moveHistory,
+                result: game.result,
+                whiteAI: game.whiteAI,
+                blackAI: game.blackAI,
+                startTime: game.startTime,
+                endTime: game.endTime,
+                moveNumber: game.moveNumber
+            });
+        
+        const filename = `romgon-ai-game-${gameId.substring(0, 8)}.rpn`;
+        
+        res.setHeader('Content-Type', 'text/plain');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.send(rpn);
+        
+    } catch (error) {
+        console.error('❌ Error exporting RPN:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
 
 // Export for WebSocket integration
 module.exports = {
