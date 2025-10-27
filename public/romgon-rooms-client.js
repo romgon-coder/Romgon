@@ -290,22 +290,27 @@ class RoomClient {
     async listPublicRooms() {
         try {
             const token = localStorage.getItem('romgon-jwt');
-            const url = `${getBackendAPIURL()}/api/rooms/list/public`;
-            console.log('📋 Fetching public rooms from:', url);
-            console.log('📋 Token:', token ? token.substring(0, 50) + '...' : 'NO TOKEN');
             
-            const response = await fetch(url, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+            // Use guest endpoint if no token (for guests/incognito)
+            const endpoint = token ? '/api/rooms/list/public' : '/api/rooms/list/guest';
+            const url = `${getBackendAPIURL()}${endpoint}`;
+            
+            console.log('📋 Fetching public rooms from:', url);
+            console.log('📋 Token:', token ? token.substring(0, 50) + '...' : 'NO TOKEN (guest mode)');
+            
+            const headers = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            const response = await fetch(url, { headers });
 
             console.log('📋 Response status:', response.status);
             const data = await response.json();
             console.log('📋 Response data:', JSON.stringify(data, null, 2));
             
-            // Handle authentication errors
-            if (response.status === 401 || response.status === 403) {
+            // Handle authentication errors (only for authenticated endpoint)
+            if (token && (response.status === 401 || response.status === 403)) {
                 console.error('❌ Authentication error:', data.error, data.message);
                 if (typeof alert !== 'undefined') {
                     alert('Authentication error: ' + (data.message || 'Please log in again'));

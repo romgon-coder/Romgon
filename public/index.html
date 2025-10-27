@@ -19039,6 +19039,13 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
 
         async function joinPublicRoom(roomCode) {
             try {
+                // Check if user is logged in
+                const token = localStorage.getItem('romgon-jwt');
+                if (!token) {
+                    alert('Please log in to join a room. Guests can browse but not join.');
+                    return;
+                }
+                
                 await joinMultiplayerRoomByCode(roomCode);
             } catch (error) {
                 console.error('❌ Error joining public room:', error);
