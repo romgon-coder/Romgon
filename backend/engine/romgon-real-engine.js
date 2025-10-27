@@ -3,6 +3,8 @@
 // Exact Romgon rules with hardcoded patterns
 // ============================================
 
+const hardcodedPatterns = require('./romgon-patterns');
+
 /**
  * Initialize a standard Romgon board
  * 7 pieces per player (2 triangles, 2 squares, 1 rhombus, 1 circle, 1 hexagon)
@@ -41,17 +43,21 @@ function getLegalMoves(board, fromPos, playerColor) {
     const [row, col] = fromPos.split('-').map(Number);
     let targets = [];
     
-    // Get movement pattern based on piece type
+    // Get movement pattern based on piece type (using exact hardcoded patterns)
     if (piece.type === 'square') {
-        targets = getSquareTargets(row, col);
+        targets = hardcodedPatterns.getSquareTargets(row, col);
     } else if (piece.type === 'triangle') {
-        targets = getTriangleTargets(row, col, piece.rotation || 0, piece.color === 'white');
+        if (piece.color === 'white') {
+            targets = hardcodedPatterns.getWhiteTriangleTargets(row, col);
+        } else {
+            targets = hardcodedPatterns.getBlackTriangleTargets(row, col);
+        }
     } else if (piece.type === 'rhombus') {
-        targets = getRhombusTargets(row, col);
+        targets = hardcodedPatterns.getRhombusTargets(row, col);
     } else if (piece.type === 'circle') {
-        targets = getCircleTargets(row, col, board);
+        targets = hardcodedPatterns.getCircleTargets(row, col);
     } else if (piece.type === 'hexgon') {
-        targets = getHexagonTargets(row, col, piece.rotation || 0);
+        targets = hardcodedPatterns.getHexagonTargets(row, col);
     }
     
     // Filter valid moves
@@ -170,115 +176,6 @@ function evaluatePosition(board, playerColor) {
     }
     
     return score;
-}
-
-// ============================================
-// HARDCODED MOVEMENT PATTERNS
-// Simplified hexagon-aware patterns for AI training
-// ============================================
-
-/**
- * Get 6 adjacent hexagons for any piece at position
- * Hexagon grid has 6 neighbors for each hex
- */
-function getAdjacentHexagons(row, col) {
-    // For even rows (0, 2, 4, 6) - shift-down rows
-    // For odd rows (1, 3, 5) - normal rows
-    const isEvenRow = row % 2 === 0;
-    
-    if (isEvenRow) {
-        // Even rows: neighbors shifted
-        return [
-            [row - 1, col - 1], // top-left
-            [row - 1, col],     // top-right
-            [row, col + 1],     // right
-            [row + 1, col],     // bottom-right
-            [row + 1, col - 1], // bottom-left
-            [row, col - 1]      // left
-        ];
-    } else {
-        // Odd rows: standard neighbors
-        return [
-            [row - 1, col],     // top-left
-            [row - 1, col + 1], // top-right
-            [row, col + 1],     // right
-            [row + 1, col + 1], // bottom-right
-            [row + 1, col],     // bottom-left
-            [row, col - 1]      // left
-        ];
-    }
-}
-
-function getSquareTargets(row, col) {
-    // Square: L-shaped movement (like knight in chess but adapted)
-    // Can move 2 hexes in one direction, then 1 hex perpendicular
-    const isEvenRow = row % 2 === 0;
-    
-    if (isEvenRow) {
-        return [
-            [row - 2, col - 1], [row - 2, col], [row - 2, col + 1],
-            [row + 2, col - 1], [row + 2, col], [row + 2, col + 1],
-            [row - 1, col - 2], [row - 1, col + 2],
-            [row + 1, col - 2], [row + 1, col + 2]
-        ];
-    } else {
-        return [
-            [row - 2, col - 1], [row - 2, col], [row - 2, col + 1],
-            [row + 2, col - 1], [row + 2, col], [row + 2, col + 1],
-            [row - 1, col - 2], [row - 1, col + 2],
-            [row + 1, col - 2], [row + 1, col + 2]
-        ];
-    }
-}
-
-function getTriangleTargets(row, col, rotation, isWhite) {
-    // Triangle: Moves to 3-4 adjacent hexagons based on direction
-    // Simplified: use adjacent hexagons
-    return getAdjacentHexagons(row, col).slice(0, 4); // 4 directions
-}
-
-function getWhiteTriangleTargets(row, col, rotation) {
-    return getAdjacentHexagons(row, col).slice(0, 4);
-}
-
-function getBlackTriangleTargets(row, col, rotation) {
-    return getAdjacentHexagons(row, col).slice(2, 6);
-}
-
-function getRhombusTargets(row, col) {
-    // Rhombus: Diagonal movement
-    const isEvenRow = row % 2 === 0;
-    
-    if (isEvenRow) {
-        return [
-            [row - 1, col - 1], // top-left diagonal
-            [row - 1, col],     // top-right diagonal
-            [row + 1, col - 1], // bottom-left diagonal
-            [row + 1, col]      // bottom-right diagonal
-        ];
-    } else {
-        return [
-            [row - 1, col],     // top-left diagonal
-            [row - 1, col + 1], // top-right diagonal
-            [row + 1, col],     // bottom-left diagonal
-            [row + 1, col + 1]  // bottom-right diagonal
-        ];
-    }
-}
-
-function getCircleTargets(row, col, board) {
-    // Circle: Cross pattern (4 cardinal directions)
-    return [
-        [row - 1, col],     // up
-        [row + 1, col],     // down
-        [row, col - 1],     // left
-        [row, col + 1]      // right
-    ];
-}
-
-function getHexagonTargets(row, col, rotation) {
-    // Hexagon: All 6 adjacent hexagons
-    return getAdjacentHexagons(row, col);
 }
 
 /**
