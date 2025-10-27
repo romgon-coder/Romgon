@@ -383,12 +383,18 @@
             
             if (!board) return;
             
+            console.log('📋 Updating board with pieces:', Object.keys(board).length, 'pieces');
+            console.log('Board data:', board);
+            
             Object.keys(board).forEach(position => {
                 const piece = board[position];
                 if (!piece) return;
                 
                 const hex = document.getElementById(`hex-${position}`);
-                if (!hex) return;
+                if (!hex) {
+                    console.warn(`⚠️ Hex not found: hex-${position}`);
+                    return;
+                }
                 
                 const pieceDiv = document.createElement('div');
                 const isWhite = piece.color === 'white';
@@ -405,6 +411,7 @@
                     pieceDiv.className = 'hexgon-piece' + (isWhite ? ' white-hexgon' : '');
                 }
                 
+                console.log(`✅ Added ${piece.color} ${piece.type} at ${position}`);
                 hex.appendChild(pieceDiv);
             });
         }
