@@ -57,7 +57,12 @@ function getLegalMoves(board, fromPos, playerColor) {
     // Filter valid moves
     const moves = [];
     targets.forEach(([targetRow, targetCol]) => {
-        if (targetRow < 0 || targetRow > 6 || targetCol < 0) return;
+        // Check row bounds
+        if (targetRow < 0 || targetRow > 6) return;
+        
+        // Check column bounds based on row
+        const maxCols = [6, 7, 8, 9, 8, 7, 6]; // Columns per row
+        if (targetCol < 0 || targetCol >= maxCols[targetRow]) return;
         
         const targetPos = `${targetRow}-${targetCol}`;
         const targetPiece = board[targetPos];
