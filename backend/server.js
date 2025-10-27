@@ -26,6 +26,7 @@ const { router: customGamesRoutes, initCustomGames } = require('./routes/custom-
 const engineAnalysisRoutes = require('./routes/engine-analysis');
 const apiKeysRoutes = require('./routes/api-keys');
 const { router: roomsRoutes } = require('./routes/rooms');
+const { router: aiTrainingRoutes } = require('./routes/ai-training');
 
 // Import WebSocket handlers
 const setupSocketHandlers = require('./websocket/gameSocket');
@@ -127,9 +128,13 @@ app.use('/api/keys', apiKeysRoutes);
 // Rooms and matchmaking routes
 app.use('/api/rooms', roomsRoutes);
 
+// AI Training and spectator routes
+app.use('/api/ai-training', aiTrainingRoutes);
+
 // Initialize custom games with database
 initCustomGames(dbPromise);
 console.log('✅ Custom games routes initialized with database');
+console.log('🤖 AI training system initialized');
 
 // ============================================
 // WEBSOCKET SETUP
