@@ -19023,6 +19023,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                                         margin-left: 8px;
                                     ">${room.code}</span>
                                     ${room.isPermanent ? '<span style="background: rgba(241,196,15,0.3); color: #f1c40f; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 4px;">ALWAYS OPEN</span>' : ''}
+                                    ${room.allowGuests ? '<span style="background: rgba(46,204,113,0.3); color: #2ecc71; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 4px;">✓ GUESTS OK</span>' : ''}
                                 </div>
                                 <div style="font-size: 14px; color: #888;">
                                     ${room.playerCount}/${room.maxPlayers} players
@@ -19039,10 +19040,19 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
 
         async function joinPublicRoom(roomCode) {
             try {
-                // Check if user is logged in
                 const token = localStorage.getItem('romgon-jwt');
-                if (!token) {
-                    alert('Please log in to join a room. Guests can browse but not join.');
+                const room = (await roomClient.listPublicRooms()).find(r => r.code === roomCode);
+                
+                // Check if room allows guests
+                if (!token && room && !room.allowGuests) {
+                    alert('Please log in to join this room. Only "🎭 Guest Arena" allows guest players.');
+                    return;
+                }
+                
+                // If guest and room allows guests, join as guest
+                if (!token && room && room.allowGuests) {
+                    const guestName = prompt('Enter your guest name (optional):') || '';
+                    await joinAsGuest(roomCode, guestName);
                     return;
                 }
                 
@@ -19050,6 +19060,37 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             } catch (error) {
                 console.error('❌ Error joining public room:', error);
                 alert('Failed to join room: ' + error.message);
+            }
+        }
+        
+        async function joinAsGuest(roomCode, guestName) {
+            try {
+                const response = await fetch(`${BACKEND_API_URL}/api/rooms/join/guest`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ roomCode, guestName })
+                });
+                
+                const data = await response.json();
+                if (!data.success) {
+                    alert('Failed to join: ' + data.error);
+                    return;
+                }
+                
+                console.log('✅ Joined as guest:', data.guestInfo);
+                
+                // Store guest info temporarily
+                localStorage.setItem('romgon-guest-info', JSON.stringify(data.guestInfo));
+                
+                // Show waiting room
+                showView('mp-waiting-room');
+                document.getElementById('waiting-room-code').textContent = data.room.code;
+                updateWaitingRoomPlayers(data.room.players);
+                
+                alert('Joined as ' + data.guestInfo.guestUsername + '! Waiting for opponent...');
+            } catch (error) {
+                console.error('❌ Error joining as guest:', error);
+                alert('Failed to join as guest: ' + error.message);
             }
         }
         
