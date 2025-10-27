@@ -7,7 +7,7 @@ const router = express.Router();
 const { RomgonAI } = require('../ai/reinforcement-learning');
 const realEngine = require('../engine/romgon-real-engine');
 const { v4: uuidv4 } = require('uuid');
-const { generateRPN, generateGameRPN } = require('../utils/rpn-generator');
+const { generateRPN, generateGameRPN, parseRPN } = require('../utils/rpn-generator');
 
 // Active AI training sessions
 const trainingGames = new Map();
@@ -356,6 +356,85 @@ function broadcastGameUpdate(game) {
     game.lastUpdate = new Date().toISOString();
 }
 
+/**
+ * Replay RPN game move by move
+ */
+async function replayRPNGame(gameId) {
+    const game = trainingGames.get(gameId);
+    if (!game || !game.isReplay) return;
+    
+    console.log(`📼 Starting replay of ${game.replayMoves.length} moves...`);
+    
+    while (game.replayIndex < game.replayMoves.length && game.status === 'replaying') {
+        const rpnMove = game.replayMoves[game.replayIndex];
+        
+        // Validate move exists in current position
+        const piece = game.board[rpnMove.from];
+        if (!piece) {
+            console.warn(`⚠️ Piece not found at ${rpnMove.from}, skipping move`);
+            game.replayIndex++;
+            continue;
+        }
+        
+        // Apply move
+        const move = {
+            from: rpnMove.from,
+            to: rpnMove.to,
+            isCapture: game.board[rpnMove.to] ? true : false,
+            captured: game.board[rpnMove.to]?.type
+        };
+        
+        const movingPiece = game.board[move.from];
+        game.board = realEngine.applyMove(game.board, move);
+        
+        // Record move
+        game.moveHistory.push({
+            moveNumber: game.moveNumber,
+            player: game.currentPlayer,
+            from: move.from,
+            to: move.to,
+            piece: movingPiece,
+            notation: rpnMove.notation || `${move.from}→${move.to}`,
+            timestamp: new Date().toISOString(),
+            evaluation: 0,
+            thinkingTime: 0,
+            isExploration: false,
+            isCapture: move.isCapture,
+            capturedPiece: move.captured
+        });
+        
+        // Broadcast update
+        broadcastGameUpdate(game);
+        
+        // Switch player
+        game.currentPlayer = game.currentPlayer === 'white' ? 'black' : 'white';
+        if (game.currentPlayer === 'white') {
+            game.moveNumber++;
+        }
+        
+        game.replayIndex++;
+        
+        // Delay based on speed
+        const delays = { slow: 2000, normal: 1000, fast: 500, instant: 0 };
+        const delay = delays[game.speed] || 1000;
+        
+        if (delay > 0) {
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+    
+    // Mark as finished
+    game.status = 'finished';
+    game.result = 'replay_complete';
+    console.log(`✅ Replay finished: ${game.moveHistory.length} moves played`);
+    
+    // Clean up after 5 minutes
+    setTimeout(() => {
+        trainingGames.delete(gameId);
+        console.log(`🧹 Cleaned up replay game: ${gameId}`);
+    }, 300000);
+}
+
 // ============================================
 // RPN EXPORT ROUTES
 // ============================================
@@ -434,6 +513,77 @@ router.get('/:gameId/export', (req, res) => {
         
     } catch (error) {
         console.error('❌ Error exporting RPN:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+/**
+ * POST /api/ai-training/import
+ * Import and replay RPN game
+ */
+router.post('/import', async (req, res) => {
+    try {
+        const { rpn, speed = 'normal', autoPlay = true } = req.body;
+        
+        if (!rpn || typeof rpn !== 'string') {
+            return res.status(400).json({
+                success: false,
+                error: 'RPN string is required'
+            });
+        }
+        
+        // Parse RPN to moves
+        const moves = parseRPN(rpn);
+        
+        if (moves.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid RPN format or empty game'
+            });
+        }
+        
+        // Create replay game
+        const gameId = uuidv4();
+        const replayGame = {
+            id: gameId,
+            status: 'replaying',
+            currentPlayer: 'white',
+            moveHistory: [],
+            gameHistory: [],
+            board: initializeBoard(),
+            moveNumber: 1,
+            startTime: new Date().toISOString(),
+            spectators: new Set(),
+            speed: speed,
+            rpn: rpn,
+            isReplay: true,
+            replayMoves: moves,
+            replayIndex: 0,
+            whiteAI: { level: 0, stats: { gamesPlayed: 0, wins: 0, losses: 0, winRate: 0 } },
+            blackAI: { level: 0, stats: { gamesPlayed: 0, wins: 0, losses: 0, winRate: 0 } }
+        };
+        
+        trainingGames.set(gameId, replayGame);
+        
+        // Start replaying if autoPlay
+        if (autoPlay) {
+            replayRPNGame(gameId);
+        }
+        
+        console.log(`📼 Started RPN replay: ${gameId} (${moves.length} moves)`);
+        
+        res.json({
+            success: true,
+            gameId,
+            moveCount: moves.length,
+            message: 'RPN game imported and replay started'
+        });
+        
+    } catch (error) {
+        console.error('❌ Error importing RPN:', error);
         res.status(500).json({
             success: false,
             error: error.message

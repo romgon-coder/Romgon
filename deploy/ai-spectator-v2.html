@@ -260,6 +260,12 @@
                         📥 Download RPN
                     </button>
                 </div>
+                <div class="controls">
+                    <button class="btn" style="background: #7b2cbf; color: white;" onclick="document.getElementById('rpn-file-input').click()">
+                        📤 Load RPN File
+                    </button>
+                    <input type="file" id="rpn-file-input" accept=".rpn,.txt" style="display: none;" onchange="loadRPNFile(event)">
+                </div>
             </div>
 
             <div class="card">
@@ -545,6 +551,48 @@
                 console.error('❌ Error downloading RPN:', error);
                 alert('Failed to download RPN');
             }
+        }
+
+        // Load RPN file
+        async function loadRPNFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                const rpnText = await file.text();
+                console.log('📤 Loaded RPN file:', file.name);
+                console.log('RPN content:', rpnText.substring(0, 100) + '...');
+
+                // Upload to backend for replay
+                const speed = document.getElementById('speed-select').value;
+                const response = await fetch(`${BACKEND_API_URL}/api/ai-training/import`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        rpn: rpnText,
+                        speed: speed,
+                        autoPlay: true
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    currentGameId = data.gameId;
+                    document.getElementById('download-rpn-btn').disabled = false;
+                    console.log(`✅ Started RPN replay: ${data.moveCount} moves`);
+                    alert(`RPN loaded! Replaying ${data.moveCount} moves...`);
+                    startWatching();
+                } else {
+                    alert(`Failed to load RPN: ${data.error}`);
+                }
+
+            } catch (error) {
+                console.error('❌ Error loading RPN file:', error);
+                alert('Failed to load RPN file');
+            }
+
+            // Reset file input
+            event.target.value = '';
         }
 
         // Initialize
