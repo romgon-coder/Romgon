@@ -26763,9 +26763,11 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     
                     // Save to localStorage
                     localStorage.setItem('romgon-user', JSON.stringify(user));
+                    localStorage.setItem('romgon-jwt', token); // ⚠️ CRITICAL: Save JWT token separately
                     window.currentUser = user;
                     
                     console.log('✅ Google OAuth login successful:', user.name);
+                    console.log('✅ JWT token saved to localStorage');
                     
                     // Clean URL and redirect to lobby
                     window.history.replaceState({}, '', window.location.pathname);
