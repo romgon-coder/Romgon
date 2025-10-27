@@ -160,6 +160,99 @@ router.post('/join', authenticateToken, async (req, res) => {
     }
 });
 
+/**
+ * POST /api/rooms/join/guest
+ * Join a guest-friendly room without authentication
+ */
+router.post('/join/guest', async (req, res) => {
+    try {
+        const { roomCode, guestName } = req.body;
+
+        if (!roomCode) {
+            return res.status(400).json({
+                success: false,
+                error: 'Room code is required'
+            });
+        }
+
+        const room = activeRooms.get(roomCode.toUpperCase());
+
+        if (!room) {
+            return res.status(404).json({
+                success: false,
+                error: 'Room not found'
+            });
+        }
+
+        if (!room.allowGuests) {
+            return res.status(403).json({
+                success: false,
+                error: 'This room does not allow guest players. Please log in.'
+            });
+        }
+
+        if (room.status !== 'waiting') {
+            return res.status(400).json({
+                success: false,
+                error: 'Room is not available'
+            });
+        }
+
+        if (room.players.length >= 2) {
+            return res.status(400).json({
+                success: false,
+                error: 'Room is full'
+            });
+        }
+
+        // Generate guest user ID and username
+        const guestId = 'guest_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+        const guestUsername = guestName || ('Guest_' + Math.random().toString(36).substring(2, 6).toUpperCase());
+
+        // Assign color based on join order
+        let playerColor;
+        if (room.players.length === 0) {
+            playerColor = 'white';
+            room.hostId = guestId;
+            room.hostUsername = guestUsername;
+        } else {
+            playerColor = 'black';
+        }
+
+        // Add guest player
+        room.players.push({
+            userId: guestId,
+            username: guestUsername,
+            color: playerColor,
+            ready: false,
+            isGuest: true
+        });
+
+        console.log(`👤 Guest ${guestUsername} joined room ${roomCode} as ${playerColor}`);
+
+        res.json({
+            success: true,
+            room: {
+                code: roomCode,
+                id: room.id,
+                hostUsername: room.hostUsername,
+                players: room.players,
+                status: room.status
+            },
+            guestInfo: {
+                guestId,
+                guestUsername
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error joining room as guest:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 // ============================================
 // GET ROOM INFO
 // ============================================
@@ -348,6 +441,7 @@ router.get('/list/public', authenticateToken, async (req, res) => {
                 name: room.name || null,
                 description: room.description || null,
                 isPermanent: room.isPermanent || false,
+                allowGuests: room.allowGuests || false,
                 hostUsername: room.hostUsername,
                 playerCount: room.players.length,
                 maxPlayers: 2,
@@ -389,6 +483,7 @@ router.get('/list/guest', async (req, res) => {
                 name: room.name || null,
                 description: room.description || null,
                 isPermanent: room.isPermanent || false,
+                allowGuests: room.allowGuests || false,
                 hostUsername: room.hostUsername,
                 playerCount: room.players.length,
                 maxPlayers: 2,
@@ -406,7 +501,7 @@ router.get('/list/guest', async (req, res) => {
         res.json({
             success: true,
             rooms: publicRooms,
-            message: 'Log in to join rooms'
+            message: 'Rooms marked with 🎭 allow guest players'
         });
     } catch (error) {
         console.error('❌ Error listing rooms:', error);
@@ -667,7 +762,7 @@ function findMatch(userId, player) {
 // PERMANENT PUBLIC ROOMS
 // ============================================
 
-// Initialize 3 permanent public rooms on server start
+// Initialize 4 permanent public rooms on server start
 function initializePermanentRooms() {
     const permanentRooms = [
         {
@@ -684,6 +779,12 @@ function initializePermanentRooms() {
             code: 'ROOM03',
             name: 'Masters Hall',
             description: 'Competitive play for experienced players.'
+        },
+        {
+            code: 'GUEST1',
+            name: '🎭 Guest Arena',
+            description: 'Open to all! No login required.',
+            allowGuests: true
         }
     ];
 
@@ -699,6 +800,7 @@ function initializePermanentRooms() {
                 players: [],
                 isPrivate: false,
                 isPermanent: true, // Mark as permanent so it's not cleaned up
+                allowGuests: config.allowGuests || false, // Allow guests to join
                 timeControl: null,
                 variant: 'standard',
                 status: 'waiting',
