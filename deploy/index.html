@@ -10048,6 +10048,9 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             <button onclick="openPositionAnalyzer()" style="background: rgba(255, 206, 86, 0.3); color: #fff; border: 2px solid rgba(255, 206, 86, 0.5); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.background='rgba(255, 206, 86, 0.4)'" onmouseout="this.style.background='rgba(255, 206, 86, 0.3)'">
                 🔍 Analyze Position
             </button>
+            <button onclick="openPuzzleCreator()" style="background: rgba(230, 126, 34, 0.3); color: #fff; border: 2px solid rgba(230, 126, 34, 0.5); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.background='rgba(230, 126, 34, 0.4)'" onmouseout="this.style.background='rgba(230, 126, 34, 0.3)'">
+                🧩 Create Puzzle
+            </button>
             <button onclick="exitSandboxMode()" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%); color: #fff; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 700; box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(255, 107, 107, 0.5)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(255, 107, 107, 0.3)'">
                 ❌ Exit Sandbox
             </button>
@@ -10091,6 +10094,73 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 <button onclick="exportAnalysis()" style="flex: 1; background: rgba(255, 206, 86, 0.3); color: #fff; border: 2px solid rgba(255, 206, 86, 0.5); padding: 15px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 1.1em; transition: all 0.3s;" onmouseover="this.style.background='rgba(255, 206, 86, 0.4)'" onmouseout="this.style.background='rgba(255, 206, 86, 0.3)'">
                     📤 Export
                 </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Puzzle Creator Modal -->
+    <div id="puzzle-creator-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.95); z-index: 100003; overflow-y: auto;">
+        <div style="max-width: 700px; margin: 40px auto; background: linear-gradient(135deg, #e67e22 0%, #d35400 100%); border-radius: 18px; box-shadow: 0 8px 40px rgba(230, 126, 34, 0.5); padding: 40px; color: #fff; position: relative;">
+            <button onclick="closePuzzleCreator()" style="position: absolute; top: 18px; right: 18px; background: #ff6b6b; color: #fff; border: none; border-radius: 8px; font-size: 1.2em; font-weight: bold; padding: 6px 16px; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">✖️</button>
+            
+            <div style="text-align: center; margin-bottom: 30px;">
+                <div style="font-size: 3em; margin-bottom: 10px;">🧩✨</div>
+                <h2 style="margin: 0; font-size: 2em;">Puzzle Creator</h2>
+                <p style="opacity: 0.9; margin: 10px 0 0 0;">Design custom puzzles from the current position</p>
+            </div>
+            
+            <!-- Puzzle Settings Form -->
+            <div style="background: rgba(0, 0, 0, 0.3); border-radius: 12px; padding: 25px; margin-bottom: 20px;">
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">📝 Puzzle Title:</label>
+                    <input type="text" id="puzzle-title" placeholder="e.g., Checkmate in 3 Moves" style="width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.9); border: none; border-radius: 6px; font-size: 1em; color: #333;">
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">🎯 Objective:</label>
+                    <select id="puzzle-objective" style="width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.9); border: none; border-radius: 6px; font-size: 1em; color: #333;">
+                        <option value="capture">Capture specific piece</option>
+                        <option value="checkmate">Achieve checkmate/victory</option>
+                        <option value="defense">Defend position</option>
+                        <option value="tactical">Find tactical move</option>
+                        <option value="custom">Custom objective</option>
+                    </select>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">⭐ Difficulty:</label>
+                    <select id="puzzle-difficulty" style="width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.9); border: none; border-radius: 6px; font-size: 1em; color: #333;">
+                        <option value="beginner">🟢 Beginner</option>
+                        <option value="intermediate">🟡 Intermediate</option>
+                        <option value="advanced">🟠 Advanced</option>
+                        <option value="expert">🔴 Expert</option>
+                    </select>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">💡 Hint (Optional):</label>
+                    <textarea id="puzzle-hint" placeholder="e.g., Look for a forcing move..." style="width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.9); border: none; border-radius: 6px; font-size: 1em; color: #333; min-height: 80px; font-family: inherit;"></textarea>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">📋 Description:</label>
+                    <textarea id="puzzle-description" placeholder="Describe the puzzle scenario..." style="width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.9); border: none; border-radius: 6px; font-size: 1em; color: #333; min-height: 100px; font-family: inherit;"></textarea>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 15px;">
+                <button onclick="generatePuzzle()" style="flex: 1; background: rgba(78, 205, 196, 0.3); color: #fff; border: 2px solid rgba(78, 205, 196, 0.5); padding: 15px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 1.1em; transition: all 0.3s;" onmouseover="this.style.background='rgba(78, 205, 196, 0.4)'" onmouseout="this.style.background='rgba(78, 205, 196, 0.3)'">
+                    ✨ Generate Puzzle
+                </button>
+                <button onclick="exportPuzzle()" style="flex: 1; background: rgba(255, 206, 86, 0.3); color: #fff; border: 2px solid rgba(255, 206, 86, 0.5); padding: 15px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 1.1em; transition: all 0.3s;" onmouseover="this.style.background='rgba(255, 206, 86, 0.4)'" onmouseout="this.style.background='rgba(255, 206, 86, 0.3)'">
+                    📤 Export JSON
+                </button>
+            </div>
+            
+            <!-- Puzzle Preview -->
+            <div id="puzzle-preview" style="display: none; background: rgba(0, 0, 0, 0.3); border-radius: 12px; padding: 20px; margin-top: 20px;">
+                <h3 style="margin: 0 0 15px 0; font-size: 1.2em;">📋 Puzzle Preview</h3>
+                <pre id="puzzle-json" style="background: rgba(0, 0, 0, 0.5); padding: 15px; border-radius: 6px; overflow-x: auto; font-size: 0.9em; max-height: 300px; overflow-y: auto;"></pre>
             </div>
         </div>
     </div>
@@ -16397,6 +16467,104 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             }).catch(err => {
                 console.error('Export failed:', err);
                 alert('❌ Export failed');
+            });
+        }
+        
+        // Puzzle Creator Functions
+        function openPuzzleCreator() {
+            console.log('🧩 Opening Puzzle Creator...');
+            document.getElementById('puzzle-creator-modal').style.display = 'block';
+            document.getElementById('puzzle-preview').style.display = 'none';
+        }
+        
+        function closePuzzleCreator() {
+            document.getElementById('puzzle-creator-modal').style.display = 'none';
+        }
+        
+        function generatePuzzle() {
+            const title = document.getElementById('puzzle-title').value || 'Untitled Puzzle';
+            const objective = document.getElementById('puzzle-objective').value;
+            const difficulty = document.getElementById('puzzle-difficulty').value;
+            const hint = document.getElementById('puzzle-hint').value;
+            const description = document.getElementById('puzzle-description').value;
+            
+            // Get current board position
+            const pieces = [];
+            document.querySelectorAll('.hexagon').forEach(hex => {
+                const piece = hex.querySelector('[class*="-piece"]');
+                if (piece) {
+                    const hexId = hex.id;
+                    const parts = hexId.split('-');
+                    const row = parseInt(parts[1]);
+                    const col = parseInt(parts[2]);
+                    
+                    const isWhite = piece.classList.contains('white-piece') || 
+                                    piece.classList.contains('white-triangle') ||
+                                    piece.classList.contains('white-rhombus') ||
+                                    piece.classList.contains('white-circle') ||
+                                    piece.classList.contains('white-hexagon');
+                    
+                    let shape = 'square';
+                    if (piece.classList.contains('triangle-piece')) shape = 'triangle';
+                    else if (piece.classList.contains('rhombus-piece')) shape = 'rhombus';
+                    else if (piece.classList.contains('circle-piece')) shape = 'circle';
+                    else if (piece.classList.contains('hexagon-piece')) shape = 'hexagon';
+                    
+                    pieces.push({
+                        row, col,
+                        color: isWhite ? 'white' : 'black',
+                        shape
+                    });
+                }
+            });
+            
+            const puzzle = {
+                title,
+                objective,
+                difficulty,
+                hint: hint || null,
+                description: description || null,
+                currentTurn: currentPlayer,
+                position: {
+                    pieces
+                },
+                created: new Date().toISOString(),
+                creator: 'Sandbox Mode'
+            };
+            
+            // Display preview
+            document.getElementById('puzzle-preview').style.display = 'block';
+            document.getElementById('puzzle-json').textContent = JSON.stringify(puzzle, null, 2);
+            
+            console.log('✨ Puzzle generated:', puzzle);
+            alert(`✅ Puzzle "${title}" generated!\n\nDifficulty: ${difficulty}\nPieces: ${pieces.length}`);
+        }
+        
+        function exportPuzzle() {
+            const previewDiv = document.getElementById('puzzle-preview');
+            const jsonText = document.getElementById('puzzle-json').textContent;
+            
+            if (!jsonText || previewDiv.style.display === 'none') {
+                alert('⚠️ Please generate a puzzle first!');
+                return;
+            }
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(jsonText).then(() => {
+                alert('✅ Puzzle JSON exported to clipboard!\n\nYou can save this to share or load later.');
+            }).catch(err => {
+                console.error('Export failed:', err);
+                
+                // Fallback: Download as file
+                const blob = new Blob([jsonText], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'romgon-puzzle.json';
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                alert('✅ Puzzle JSON downloaded as file!');
             });
         }
         
