@@ -1146,6 +1146,48 @@
                             margin-bottom: 24px;
                         ">
                             <h4 style="color: #4ecdc4; margin: 0 0 16px 0; font-size: 1.1em;">🎨 Avatar</h4>
+                            
+                            <!-- Custom Avatar Upload -->
+                            <div style="margin-bottom: 20px; padding: 16px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 12px;">
+                                    <div id="avatar-preview" style="
+                                        width: 80px;
+                                        height: 80px;
+                                        border-radius: 50%;
+                                        background: #1a1e26;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        font-size: 40px;
+                                        border: 3px solid #4ecdc4;
+                                        overflow: hidden;
+                                    ">
+                                        😀
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <input type="file" id="avatar-file-input" accept="image/*" style="display: none;" onchange="handleAvatarUpload(event)" />
+                                        <button onclick="document.getElementById('avatar-file-input').click()" style="
+                                            background: linear-gradient(135deg, #4ecdc4, #44a3a0);
+                                            color: white;
+                                            border: none;
+                                            padding: 12px 24px;
+                                            border-radius: 8px;
+                                            cursor: pointer;
+                                            font-weight: 600;
+                                            transition: all 0.3s;
+                                            width: 100%;
+                                        " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                                            📤 Upload Your Picture
+                                        </button>
+                                        <p style="color: #999; font-size: 0.85em; margin: 8px 0 0 0;">Max 2MB • JPG, PNG, GIF</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Emoji Avatars -->
+                            <div style="margin-bottom: 12px;">
+                                <h5 style="color: #4ecdc4; margin: 0 0 12px 0; font-size: 0.95em;">Or choose an emoji:</h5>
+                            </div>
                             <div id="avatar-grid" style="
                                 display: grid;
                                 grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
@@ -3144,6 +3186,18 @@
             usernameInput.value = currentUser.username;
         }
         
+        // Update avatar preview
+        const avatarPreview = document.getElementById('avatar-preview');
+        if (avatarPreview && currentUser.avatar) {
+            if (currentUser.avatarType === 'custom') {
+                // Show custom uploaded image
+                avatarPreview.innerHTML = `<img src="${currentUser.avatar}" style="width: 100%; height: 100%; object-fit: cover;" />`;
+            } else {
+                // Show emoji
+                avatarPreview.textContent = currentUser.avatar;
+            }
+        }
+        
         // Populate avatar grid
         populateAvatarGrid(currentUser.avatar || '😀');
         
@@ -3336,14 +3390,86 @@
         return false;
     }
     
+    // Handle avatar file upload
+    async function handleAvatarUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            showNotification('❌ Please select an image file', 'error');
+            return;
+        }
+        
+        // Validate file size (2MB max)
+        if (file.size > 2 * 1024 * 1024) {
+            showNotification('❌ Image must be less than 2MB', 'error');
+            return;
+        }
+        
+        try {
+            // Read file as base64
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const base64Image = e.target.result;
+                
+                // Update preview
+                const preview = document.getElementById('avatar-preview');
+                if (preview) {
+                    preview.innerHTML = `<img src="${base64Image}" style="width: 100%; height: 100%; object-fit: cover;" />`;
+                }
+                
+                // Update user data
+                const currentUser = window.currentUser || JSON.parse(localStorage.getItem('romgon-user') || '{}');
+                currentUser.avatar = base64Image;
+                currentUser.avatarType = 'custom'; // Mark as custom image
+                localStorage.setItem('romgon-user', JSON.stringify(currentUser));
+                window.currentUser = currentUser;
+                
+                // Update global UI
+                updateGlobalAccountBar();
+                
+                // Update backend if registered user
+                if (currentUser.id && currentUser.type !== 'guest') {
+                    try {
+                        await updateUserProfile({ avatar: base64Image, avatarType: 'custom' });
+                        showNotification('✅ Custom avatar uploaded!', 'success');
+                    } catch (error) {
+                        console.error('Failed to upload avatar to backend:', error);
+                        showNotification('⚠️ Avatar saved locally only', 'warning');
+                    }
+                } else {
+                    showNotification('✅ Custom avatar set!', 'success');
+                }
+            };
+            
+            reader.onerror = function() {
+                showNotification('❌ Failed to read image file', 'error');
+            };
+            
+            reader.readAsDataURL(file);
+            
+        } catch (error) {
+            console.error('Error uploading avatar:', error);
+            showNotification('❌ Failed to upload avatar', 'error');
+        }
+    }
+    
     // Select avatar
     async function selectAvatar(emoji) {
         const currentUser = window.currentUser || JSON.parse(localStorage.getItem('romgon-user') || '{}');
         
         // Update local user data
         currentUser.avatar = emoji;
+        currentUser.avatarType = 'emoji'; // Mark as emoji
         localStorage.setItem('romgon-user', JSON.stringify(currentUser));
         window.currentUser = currentUser;
+        
+        // Update preview
+        const preview = document.getElementById('avatar-preview');
+        if (preview) {
+            preview.textContent = emoji;
+        }
         
         // Update UI
         populateAvatarGrid(emoji);
@@ -17215,24 +17341,24 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
          */
         async function updateUserProfile(updates) {
             try {
-                const response = await fetch(`${BACKEND_API_URL}/api/users/profile`, {
+                const response = await fetch(`${BACKEND_API_URL}/api/users/profile/me`, {
                     method: 'PUT',
                     headers: getAuthHeaders(),
                     body: JSON.stringify(updates)
                 });
                 
                 if (!response.ok) {
-                    // Backend endpoint may not exist yet
-                    console.warn('⚠️ Profile update endpoint not available');
-                    return null;
+                    const error = await response.json();
+                    console.error('❌ Profile update failed:', error);
+                    throw new Error(error.error || 'Failed to update profile');
                 }
                 
                 const data = await response.json();
                 console.log('✅ User profile updated:', data);
                 return data;
             } catch (error) {
-                console.warn('⚠️ Failed to update user profile on backend (using local only):', error.message);
-                return null;
+                console.error('❌ Failed to update user profile:', error.message);
+                throw error;
             }
         }
         

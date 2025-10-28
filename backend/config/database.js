@@ -58,6 +58,33 @@ function initializeTables() {
                 console.log('✅ Added google_id column');
             }
         });
+        
+        // Add avatar column for custom profile pictures
+        db.run('ALTER TABLE users ADD COLUMN avatar TEXT DEFAULT "😀"', (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Warning: Could not add avatar column:', err.message);
+            } else if (!err) {
+                console.log('✅ Added avatar column');
+            }
+        });
+        
+        // Add avatar_type column to distinguish emoji vs custom image
+        db.run('ALTER TABLE users ADD COLUMN avatar_type TEXT DEFAULT "emoji"', (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Warning: Could not add avatar_type column:', err.message);
+            } else if (!err) {
+                console.log('✅ Added avatar_type column');
+            }
+        });
+        
+        // Add badge column for user achievements
+        db.run('ALTER TABLE users ADD COLUMN badge TEXT', (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Warning: Could not add badge column:', err.message);
+            } else if (!err) {
+                console.log('✅ Added badge column');
+            }
+        });
     });
 
     // Games table

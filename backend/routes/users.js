@@ -264,45 +264,81 @@ router.get('/profile/me', authenticateToken, async (req, res) => {
 router.put('/profile/me', authenticateToken, async (req, res) => {
     try {
         const { userId } = req.user;
-        const { email, username } = req.body;
+        const { email, username, avatar, avatarType, badge } = req.body;
 
-        // Can only update email (username is permanent)
-        if (!email) {
+        // Build update fields dynamically
+        const updates = [];
+        const params = [];
+
+        // Email update (if provided)
+        if (email) {
+            // Check if new email is taken (if different)
+            const currentUser = await dbPromise.get(
+                'SELECT email FROM users WHERE id = ?',
+                [userId]
+            );
+
+            if (email !== currentUser.email) {
+                const existingEmail = await dbPromise.get(
+                    'SELECT id FROM users WHERE email = ? AND id != ?',
+                    [email, userId]
+                );
+
+                if (existingEmail) {
+                    return res.status(409).json({
+                        error: 'Email already in use'
+                    });
+                }
+            }
+            
+            updates.push('email = ?');
+            params.push(email);
+        }
+
+        // Avatar update (if provided)
+        if (avatar !== undefined) {
+            updates.push('avatar = ?');
+            params.push(avatar);
+        }
+
+        // Avatar type update (if provided)
+        if (avatarType !== undefined) {
+            updates.push('avatar_type = ?');
+            params.push(avatarType);
+        }
+
+        // Badge update (if provided)
+        if (badge !== undefined) {
+            updates.push('badge = ?');
+            params.push(badge);
+        }
+
+        // If no updates, return error
+        if (updates.length === 0) {
             return res.status(400).json({
-                error: 'Email is required'
+                error: 'No fields to update'
             });
         }
 
-        // Check if new email is taken (if different)
-        const currentUser = await dbPromise.get(
-            'SELECT email FROM users WHERE id = ?',
-            [userId]
+        // Add updated_at timestamp
+        updates.push('updated_at = CURRENT_TIMESTAMP');
+        params.push(userId); // For WHERE clause
+
+        // Execute update
+        await dbPromise.run(
+            `UPDATE users SET ${updates.join(', ')} WHERE id = ?`,
+            params
         );
 
-        if (email !== currentUser.email) {
-            const existingEmail = await dbPromise.get(
-                'SELECT id FROM users WHERE email = ? AND id != ?',
-                [email, userId]
-            );
-
-            if (existingEmail) {
-                return res.status(409).json({
-                    error: 'Email already in use'
-                });
-            }
-        }
-
-        await dbPromise.run(
-            'UPDATE users SET email = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-            [email, userId]
+        // Fetch updated user data
+        const updatedUser = await dbPromise.get(
+            'SELECT id, username, email, avatar, avatar_type, badge FROM users WHERE id = ?',
+            [userId]
         );
 
         res.json({
             message: 'Profile updated successfully',
-            user: {
-                id: userId,
-                email
-            }
+            user: updatedUser
         });
 
     } catch (err) {
