@@ -26135,17 +26135,31 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 // CRITICAL: Check if this move would put own rhombus in checkmate
                 // Extract ONLY the core piece classes (type + color) to avoid carrying over temporary classes
                 let pieceClasses = '';
+                console.log('🔧 SANITIZING PIECE CLASSES:');
+                console.log('  - draggedPiece.className:', draggedPiece.className);
+                console.log('  - isDraggedWhite:', isDraggedWhite);
+                console.log('  - has triangle-piece?', draggedPiece.classList.contains('triangle-piece'));
+                console.log('  - has hexgon-piece?', draggedPiece.classList.contains('hexgon-piece'));
+                
                 if (draggedPiece.classList.contains('triangle-piece')) {
                     pieceClasses = isDraggedWhite ? 'triangle-piece white-triangle' : 'triangle-piece';
+                    console.log('  ✅ TRIANGLE detected, sanitized to:', pieceClasses);
                 } else if (draggedPiece.classList.contains('hexgon-piece')) {
                     pieceClasses = isDraggedWhite ? 'hexgon-piece white-hexgon' : 'hexgon-piece';
+                    console.log('  ✅ HEXAGON detected, sanitized to:', pieceClasses);
                 } else if (draggedPiece.classList.contains('rhombus-piece')) {
                     pieceClasses = isDraggedWhite ? 'rhombus-piece white-rhombus' : 'rhombus-piece';
+                    console.log('  ✅ RHOMBUS detected, sanitized to:', pieceClasses);
                 } else if (draggedPiece.classList.contains('circle-piece')) {
                     pieceClasses = isDraggedWhite ? 'circle-piece white-circle' : 'circle-piece';
+                    console.log('  ✅ CIRCLE detected, sanitized to:', pieceClasses);
                 } else if (draggedPiece.classList.contains('square-piece')) {
                     pieceClasses = isDraggedWhite ? 'square-piece white-piece' : 'square-piece';
+                    console.log('  ✅ SQUARE detected, sanitized to:', pieceClasses);
+                } else {
+                    console.log('  ❌ NO PIECE TYPE DETECTED!');
                 }
+                console.log('  🎯 FINAL pieceClasses:', pieceClasses);
                 // --- PATCH: Allow rhombus to win by skipping checkmate check when moving from base to opponent's base ---
                 const isDraggedRhombus = draggedPiece.classList.contains('rhombus-piece');
                 // Patch: Use full hex ID format for base hexes
