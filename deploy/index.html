@@ -16094,8 +16094,17 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         function clearSandboxBoard() {
             if (confirm('Clear all pieces from the board?')) {
                 console.log('🗑️ Clearing Sandbox board...');
-                state.pieces = [];
-                renderBoard();
+                
+                // Clear all pieces from DOM
+                document.querySelectorAll('.hexagon [class*="-piece"]').forEach(piece => {
+                    piece.remove();
+                });
+                
+                // Clear state
+                if (typeof state !== 'undefined' && state.pieces) {
+                    state.pieces = [];
+                }
+                
                 console.log('✅ Board cleared');
             }
         }
