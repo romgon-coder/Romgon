@@ -393,20 +393,43 @@ router.get('/google/callback', async (req, res) => {
                 const baseUsername = googleUser.email.split('@')[0];
                 const username = baseUsername + '_' + Math.random().toString(36).substring(2, 6);
                 console.log('🎲 Generated random username:', username);
-                const result = await dbPromise.run(
-                    `INSERT INTO users (username, email, password_hash, rating, google_id) 
-                     VALUES (?, ?, ?, 1600, ?)`,
-                    [username, googleUser.email, 'google_oauth', googleUser.id]
-                );
+                
+                try {
+                    const result = await dbPromise.run(
+                        `INSERT INTO users (username, email, password_hash, rating, google_id) 
+                         VALUES (?, ?, ?, 1600, ?)`,
+                        [username, googleUser.email, 'google_oauth', googleUser.id]
+                    );
 
-                user = {
-                    id: result.lastID,
-                    username,
-                    email: googleUser.email,
-                    rating: 1600,
-                    google_id: googleUser.id
-                };
-                console.log('✅ New user created with ID:', user.id);
+                    user = {
+                        id: result.lastID,
+                        username,
+                        email: googleUser.email,
+                        rating: 1600,
+                        google_id: googleUser.id
+                    };
+                    console.log('✅ New user created with ID:', user.id);
+                } catch (insertErr) {
+                    console.error('❌ Failed to insert new user:', insertErr.message);
+                    // Try one more lookup - maybe race condition
+                    user = await dbPromise.get(
+                        'SELECT * FROM users WHERE email = ? OR google_id = ?',
+                        [googleUser.email, googleUser.id]
+                    );
+                    if (user) {
+                        console.log('✅ Found user after failed insert:', user.username);
+                        // Update with google_id if missing
+                        if (!user.google_id) {
+                            await dbPromise.run(
+                                'UPDATE users SET google_id = ? WHERE id = ?',
+                                [googleUser.id, user.id]
+                            );
+                            user.google_id = googleUser.id;
+                        }
+                    } else {
+                        throw new Error('Failed to create or find user: ' + insertErr.message);
+                    }
+                }
             }
         } else {
             console.log('✅ Existing user found:', user.username);
