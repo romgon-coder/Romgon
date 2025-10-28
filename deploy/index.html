@@ -26159,11 +26159,24 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 draggedPiece.remove();
                     
                 const newPiece = document.createElement('div');
+                // CRITICAL: Set className to sanitized pieceClasses to ensure no contamination
                 newPiece.className = pieceClasses;
                 newPiece.draggable = true;
+                
+                // EXTRA SAFETY: Explicitly remove any wrong piece-type classes
+                newPiece.classList.remove('square-piece', 'triangle-piece', 'rhombus-piece', 'circle-piece', 'hexgon-piece');
+                newPiece.classList.remove('white-piece', 'white-triangle', 'white-rhombus', 'white-circle', 'white-hexgon');
+                
+                // Re-add only the correct classes from pieceClasses
+                pieceClasses.split(' ').forEach(cls => {
+                    if (cls.trim()) newPiece.classList.add(cls.trim());
+                });
+                
                 targetHex.appendChild(newPiece);
                 
                 console.log('🎯 Player piece created at:', targetHex.id, 'Classes:', newPiece.className);
+                console.log('🎯 Has triangle-piece?', newPiece.classList.contains('triangle-piece'));
+                console.log('🎯 Has hexgon-piece?', newPiece.classList.contains('hexgon-piece'));
                 console.log('🎯 Immediately after player move - white rhombuses:', document.querySelectorAll('.rhombus-piece.white-rhombus').length);
                 
                 // Restore triangle or hexgon orientation if it was preserved
