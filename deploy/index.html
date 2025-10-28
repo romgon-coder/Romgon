@@ -10981,22 +10981,22 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         const currentUser = JSON.parse(localStorage.getItem('romgon-user'));
         const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
         
+        // Default settings
+        const defaultSettings = {
+            audioEnabled: true,
+            theme: 'dark',
+            boardZoom: 1
+        };
+        
         // Allow both registered and guest users to access settings
-        let userSettings = {};
+        let userSettings = defaultSettings;
         
         if (currentUser && currentUser.username && allUsers[currentUser.username]) {
-            // Registered user - load their settings
-            userSettings = allUsers[currentUser.username].settings;
-        } else {
-            // Guest user - use default settings
-            userSettings = {
-                audioEnabled: true,
-                theme: 'dark',
-                boardZoom: 1
-            };
+            // Registered user - load their settings (or use defaults if not set)
+            userSettings = allUsers[currentUser.username].settings || defaultSettings;
         }
         
-        // Load current settings
+        // Load current settings (with fallbacks)
         document.getElementById('settings-audio').checked = userSettings.audioEnabled !== false;
         document.getElementById('settings-theme').value = userSettings.theme || 'dark';
         document.getElementById('settings-zoom').value = userSettings.boardZoom || 1;
