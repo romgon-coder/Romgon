@@ -13271,6 +13271,17 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         
         // Check if a piece can actually attack using the real movement patterns
         function canPieceActuallyAttack(pieceRow, pieceCol, targetRow, targetCol, piece) {
+            // DEBUG: Log piece info to diagnose triangle/hexgon confusion
+            console.log(`🔬 canPieceActuallyAttack: piece at ${pieceRow}-${pieceCol} checking if can attack ${targetRow}-${targetCol}`);
+            console.log(`🔬 Piece classes:`, piece.className);
+            console.log(`🔬 Type checks:`, {
+                square: piece.classList.contains('square-piece'),
+                triangle: piece.classList.contains('triangle-piece'),
+                rhombus: piece.classList.contains('rhombus-piece'),
+                circle: piece.classList.contains('circle-piece'),
+                hexgon: piece.classList.contains('hexgon-piece')
+            });
+            
             // Get the piece type and determine which movement function to use
             if (piece.classList.contains('square-piece')) {
                 const canAttack = canSquareAttack(pieceRow, pieceCol, targetRow, targetCol);
@@ -25633,13 +25644,13 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     if (this.classList.contains('circle-piece')) {
                         console.log('📞 Calling showCircleMovementPattern');
                         showCircleMovementPattern(parseInt(row), parseInt(col));
-                    } else if (this.classList.contains('hexgon-piece')) {
-                        console.log('📞 Calling showHexgonMovementPattern');
-                        showHexgonMovementPattern(parseInt(row), parseInt(col));
                     } else if (this.classList.contains('triangle-piece')) {
                         console.log('📞 Calling showTriangleMovementPattern');
                         // Both white and black triangles use the same rotation-aware movement system
                         showTriangleMovementPattern(parseInt(row), parseInt(col));
+                    } else if (this.classList.contains('hexgon-piece')) {
+                        console.log('📞 Calling showHexgonMovementPattern');
+                        showHexgonMovementPattern(parseInt(row), parseInt(col));
                     } else if (this.classList.contains('rhombus-piece')) {
                         showRhombusMovementPattern(parseInt(row), parseInt(col));
                     } else {
@@ -26134,13 +26145,13 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     if (this.classList.contains('circle-piece')) {
                         console.log(`🎬 Calling showCircleMovementPattern`);
                         showCircleMovementPattern(parseInt(row), parseInt(col));
-                    } else if (this.classList.contains('hexgon-piece')) {
-                        console.log(`🎬 Calling showHexgonMovementPattern`);
-                        showHexgonMovementPattern(parseInt(row), parseInt(col));
                     } else if (this.classList.contains('triangle-piece')) {
                         console.log(`🎬 Calling showTriangleMovementPattern`);
                         // Both white and black triangles use the same rotation-aware movement system
                         showTriangleMovementPattern(parseInt(row), parseInt(col));
+                    } else if (this.classList.contains('hexgon-piece')) {
+                        console.log(`🎬 Calling showHexgonMovementPattern`);
+                        showHexgonMovementPattern(parseInt(row), parseInt(col));
                     } else if (this.classList.contains('rhombus-piece')) {
                         console.log(`🎬 Calling showRhombusMovementPattern`);
                         showRhombusMovementPattern(parseInt(row), parseInt(col));
