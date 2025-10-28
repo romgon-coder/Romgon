@@ -2297,6 +2297,87 @@
         </div>
     </div>
     <script>
+    // ============================================
+    // RATING MANAGER - MUST BE FIRST!
+    // Centralized rating system - single source of truth
+    // ============================================
+    const INITIAL_RATING = 1600;
+    
+    const RatingManager = {
+        // Get current rating from all possible sources
+        getCurrentRating(username) {
+            // Priority order:
+            // 1. Simple localStorage 'rating' key (used by lobby and backend sync)
+            const simpleRating = localStorage.getItem('rating');
+            if (simpleRating) {
+                const rating = parseInt(simpleRating);
+                console.log('📊 Rating from localStorage["rating"]:', rating);
+                return rating;
+            }
+            
+            // 2. romgon-users object
+            const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+            if (allUsers[username]?.rating) {
+                console.log('📊 Rating from romgon-users:', allUsers[username].rating);
+                return allUsers[username].rating;
+            }
+            
+            // 3. currentUser object
+            const currentUser = window.currentUser || JSON.parse(localStorage.getItem('romgon-user') || '{}');
+            if (currentUser.rating) {
+                console.log('📊 Rating from currentUser:', currentUser.rating);
+                return currentUser.rating;
+            }
+            
+            // 4. Default
+            console.log('📊 Rating defaulting to:', INITIAL_RATING);
+            return INITIAL_RATING;
+        },
+        
+        // Save rating to ALL storage locations
+        saveRating(username, newRating) {
+            console.log(`💾 RatingManager: Saving rating ${newRating} for ${username}`);
+            
+            // 1. Simple localStorage 'rating' key (PRIMARY - used by lobby)
+            localStorage.setItem('rating', newRating.toString());
+            console.log('  ✓ Saved to localStorage["rating"]');
+            
+            // 2. romgon-users object
+            const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+            if (allUsers[username]) {
+                allUsers[username].rating = newRating;
+                localStorage.setItem('romgon-users', JSON.stringify(allUsers));
+                console.log('  ✓ Saved to romgon-users');
+            }
+            
+            // 3. currentUser object
+            const currentUserStr = localStorage.getItem('romgon-user');
+            if (currentUserStr) {
+                const currentUser = JSON.parse(currentUserStr);
+                currentUser.rating = newRating;
+                localStorage.setItem('romgon-user', JSON.stringify(currentUser));
+                window.currentUser = currentUser;
+                console.log('  ✓ Saved to currentUser');
+            }
+            
+            console.log('✅ Rating saved to all storage locations');
+        },
+        
+        // Initialize rating for new user
+        initializeRating(username) {
+            const currentRating = this.getCurrentRating(username);
+            if (currentRating === INITIAL_RATING) {
+                this.saveRating(username, INITIAL_RATING);
+                console.log(`✅ Initialized rating for ${username}: ${INITIAL_RATING}`);
+            }
+            return currentRating;
+        }
+    };
+    
+    // ============================================
+    // STATISTICS & DASHBOARD FUNCTIONS
+    // ============================================
+    
     // Show/hide Statistics Dashboard modal
     function showStatsDashboard() {
         document.getElementById('stats-dashboard-modal').style.display = 'block';
@@ -2599,6 +2680,10 @@
         // ============================================
         // UPDATE RATING DISPLAY (LOCAL DATA)
         // ============================================
+        // Get userAccount for rating history
+        const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+        const userAccount = allUsers[currentUser.username];
+        
         // Use centralized RatingManager to get rating
         const localRating = RatingManager.getCurrentRating(currentUser.username);
         
@@ -24965,84 +25050,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         // ============================================
         // RATING SYSTEM - ELO & SKILL TRACKING
         // ============================================
+        // Note: INITIAL_RATING and RatingManager are defined at the top of the file
 
-        const INITIAL_RATING = 1600;
         const K_FACTOR = 32; // Standard K-factor for rating calculation
-        
-        /**
-         * CENTRALIZED RATING MANAGER
-         * Single source of truth for all rating operations
-         */
-        const RatingManager = {
-            // Get current rating from all possible sources
-            getCurrentRating(username) {
-                // Priority order:
-                // 1. Simple localStorage 'rating' key (used by lobby and backend sync)
-                const simpleRating = localStorage.getItem('rating');
-                if (simpleRating) {
-                    const rating = parseInt(simpleRating);
-                    console.log('📊 Rating from localStorage["rating"]:', rating);
-                    return rating;
-                }
-                
-                // 2. romgon-users object
-                const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
-                if (allUsers[username]?.rating) {
-                    console.log('📊 Rating from romgon-users:', allUsers[username].rating);
-                    return allUsers[username].rating;
-                }
-                
-                // 3. currentUser object
-                const currentUser = window.currentUser || JSON.parse(localStorage.getItem('romgon-user') || '{}');
-                if (currentUser.rating) {
-                    console.log('📊 Rating from currentUser:', currentUser.rating);
-                    return currentUser.rating;
-                }
-                
-                // 4. Default
-                console.log('📊 Rating defaulting to:', INITIAL_RATING);
-                return INITIAL_RATING;
-            },
-            
-            // Save rating to ALL storage locations
-            saveRating(username, newRating) {
-                console.log(`💾 RatingManager: Saving rating ${newRating} for ${username}`);
-                
-                // 1. Simple localStorage 'rating' key (PRIMARY - used by lobby)
-                localStorage.setItem('rating', newRating.toString());
-                console.log('  ✓ Saved to localStorage["rating"]');
-                
-                // 2. romgon-users object
-                const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
-                if (allUsers[username]) {
-                    allUsers[username].rating = newRating;
-                    localStorage.setItem('romgon-users', JSON.stringify(allUsers));
-                    console.log('  ✓ Saved to romgon-users');
-                }
-                
-                // 3. currentUser object
-                const currentUserStr = localStorage.getItem('romgon-user');
-                if (currentUserStr) {
-                    const currentUser = JSON.parse(currentUserStr);
-                    currentUser.rating = newRating;
-                    localStorage.setItem('romgon-user', JSON.stringify(currentUser));
-                    window.currentUser = currentUser;
-                    console.log('  ✓ Saved to currentUser');
-                }
-                
-                console.log('✅ Rating saved to all storage locations');
-            },
-            
-            // Initialize rating for new user
-            initializeRating(username) {
-                const currentRating = this.getCurrentRating(username);
-                if (currentRating === INITIAL_RATING) {
-                    this.saveRating(username, INITIAL_RATING);
-                    console.log(`✅ Initialized rating for ${username}: ${INITIAL_RATING}`);
-                }
-                return currentRating;
-            }
-        };
         
         /**
          * Calculate new ELO rating based on game result
