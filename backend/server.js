@@ -131,6 +131,10 @@ app.use('/api/rooms', roomsRoutes);
 // AI Training and spectator routes
 app.use('/api/ai-training', aiTrainingRoutes);
 
+// Global Chat routes
+const chatRoutes = require('./routes/chat');
+app.use('/api/chat', chatRoutes);
+
 // Initialize custom games with database
 initCustomGames(dbPromise);
 console.log('✅ Custom games routes initialized with database');

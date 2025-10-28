@@ -27,7 +27,7 @@ module.exports = (io) => {
         // ============================================
 
         socket.on('chat:userConnected', (data) => {
-            const { userId, displayName, avatar } = data;
+            const { userId, displayName, avatar, avatarType } = data;
             
             // Store user mapping
             userSockets.set(userId, socket.id);
@@ -36,7 +36,8 @@ module.exports = (io) => {
             // Store user info on socket
             socket.userId = userId;
             socket.displayName = displayName;
-            socket.avatar = avatar;
+            socket.avatar = avatar || '😀';
+            socket.avatarType = avatarType || 'emoji';
             
             // Join global chat room
             socket.join('global-chat');
@@ -48,6 +49,7 @@ module.exports = (io) => {
                 userId,
                 displayName,
                 avatar,
+                avatarType,
                 timestamp: new Date().toISOString()
             });
             
@@ -55,6 +57,11 @@ module.exports = (io) => {
             socket.emit('chat:onlineCount', {
                 count: onlineUsers.size,
                 users: Array.from(onlineUsers)
+            });
+            
+            // Broadcast updated count to all
+            chatNamespace.emit('chat:onlineCount', {
+                count: onlineUsers.size
             });
             
             // Load user's friends list
@@ -80,25 +87,34 @@ module.exports = (io) => {
             const userId = socket.userId;
             const displayName = socket.displayName;
             const avatar = socket.avatar;
+            const avatarType = socket.avatarType || 'emoji';
             
             if (!message || !message.trim()) {
                 return socket.emit('chat:error', { error: 'Message cannot be empty' });
             }
             
+            if (message.trim().length > 500) {
+                return socket.emit('chat:error', { error: 'Message too long (max 500 characters)' });
+            }
+            
             try {
+                const isPostgres = !!process.env.DATABASE_URL;
+                
                 // Save to database
                 const result = await dbPromise.run(
-                    'INSERT INTO global_messages (user_id, display_name, avatar, message, created_at) VALUES (?, ?, ?, ?, ?)',
-                    [userId, displayName, avatar, message.trim(), new Date().toISOString()]
+                    `INSERT INTO chat_messages (user_id, username, message, avatar, avatar_type, created_at) 
+                     VALUES (?, ?, ?, ?, ?, ${isPostgres ? 'CURRENT_TIMESTAMP' : "datetime('now')"})`,
+                    [userId, displayName, message.trim(), avatar, avatarType]
                 );
                 
                 const messageData = {
                     id: result.id,
-                    userId,
-                    displayName,
+                    user_id: userId,
+                    username: displayName,
                     avatar,
+                    avatar_type: avatarType,
                     message: message.trim(),
-                    timestamp: new Date().toISOString(),
+                    created_at: new Date().toISOString(),
                     type: 'global'
                 };
                 
@@ -107,11 +123,12 @@ module.exports = (io) => {
                 // Broadcast to all users in global chat
                 chatNamespace.to('global-chat').emit('chat:globalMessage', messageData);
                 
-                // Clean up old messages (keep last 100)
-                await dbPromise.run(
-                    'DELETE FROM global_messages WHERE id NOT IN (SELECT id FROM global_messages ORDER BY created_at DESC LIMIT ?)',
-                    [MAX_HISTORY_SIZE]
-                );
+                // Clean up old messages (keep last 200)
+                const deleteQuery = isPostgres
+                    ? 'DELETE FROM chat_messages WHERE id NOT IN (SELECT id FROM chat_messages ORDER BY id DESC LIMIT $1)'
+                    : 'DELETE FROM chat_messages WHERE id NOT IN (SELECT id FROM chat_messages ORDER BY id DESC LIMIT ?)';
+                
+                await dbPromise.run(deleteQuery, [200]);
             } catch (error) {
                 console.error('❌ Error saving global message:', error);
                 socket.emit('chat:error', { error: 'Failed to send message' });
@@ -120,9 +137,16 @@ module.exports = (io) => {
 
         socket.on('chat:loadGlobalHistory', async () => {
             try {
+                const isPostgres = !!process.env.DATABASE_URL;
+                const orderClause = isPostgres 
+                    ? 'ORDER BY id DESC LIMIT $1'
+                    : 'ORDER BY id DESC LIMIT ?';
+                
                 // Load last 100 messages from database
                 const messages = await dbPromise.all(
-                    'SELECT id, user_id as userId, display_name as displayName, avatar, message, created_at as timestamp FROM global_messages ORDER BY created_at DESC LIMIT ?',
+                    `SELECT id, user_id, username, avatar, avatar_type, message, created_at 
+                     FROM chat_messages 
+                     ${orderClause}`,
                     [MAX_HISTORY_SIZE]
                 );
                 

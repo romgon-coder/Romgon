@@ -194,6 +194,26 @@ async function initializeTables() {
         console.error('❌ Error creating games table:', err);
     }
 
+    // Chat messages table for global chat
+    const createChatMessagesTable = `
+        CREATE TABLE IF NOT EXISTS chat_messages (
+            id ${isPostgres ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT'},
+            user_id INTEGER,
+            username TEXT NOT NULL,
+            message TEXT NOT NULL,
+            avatar TEXT DEFAULT '😀',
+            avatar_type TEXT DEFAULT 'emoji',
+            created_at TIMESTAMP DEFAULT ${isPostgres ? 'CURRENT_TIMESTAMP' : "CURRENT_TIMESTAMP"}
+        )
+    `;
+    
+    try {
+        await executeSql(createChatMessagesTable);
+        console.log('✅ Chat messages table ready');
+    } catch (err) {
+        console.error('❌ Error creating chat_messages table:', err);
+    }
+
     // TODO: Add remaining tables (rating_changes, friends, messages, etc.)
     // For now, these will be created on-demand or can be added later
     console.log('✅ Core tables initialized');

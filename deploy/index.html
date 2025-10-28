@@ -16805,14 +16805,11 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
 
             console.log('💬 Initializing chat for', displayName, 'ID:', userId);
 
-            // Connect to chat server
-            romgonChat.connect(userId, displayName, avatar);
+            // Load chat history from backend
+            loadChatHistory();
 
-            // Setup event handlers
+            // Setup event handlers (for WebSocket if available)
             setupChatEventHandlers();
-
-            // Load initial data
-            romgonChat.loadGlobalHistory();
 
             chatConnected = true;
         }
@@ -16975,7 +16972,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 globalPanel.style.display = 'block';
                 friendsPanel.style.display = 'none';
                 
-                romgonChat.stopTyping('direct', romgonChat.currentChatWith);
+                // Load chat history
+                loadChatHistory();
                 
                 console.log('💬 Switched to Global Chat');
             } else if (tab === 'friends') {
@@ -16994,7 +16992,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             }
         }
 
-        function sendGlobalMessage() {
+        async function sendGlobalMessage() {
             const input = document.getElementById('global-chat-input');
             const message = input.value.trim();
             
@@ -17002,27 +17000,60 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 return;
             }
 
-            // Send via backend
-            if (chatConnected && romgonChat.isConnected) {
-                romgonChat.sendGlobalMessage(message);
-                input.value = '';
-                romgonChat.stopTyping('global');
-            } else {
-                // Fallback to local-only
-                const user = JSON.parse(localStorage.getItem('romgon-user') || '{}');
-                const userName = user.displayName || user.email?.split('@')[0] || 'Guest';
-                const userInitial = userName.charAt(0).toUpperCase();
-                
-                addGlobalMessageToUI({
-                    userId: user.userId || 'local',
-                    displayName: userName,
-                    avatar: userInitial,
-                    message: message,
-                    timestamp: new Date().toISOString()
+            // Get user info
+            const user = JSON.parse(localStorage.getItem('romgon-user') || '{}');
+            const token = user.token || localStorage.getItem('romgon-token');
+
+            if (!token) {
+                showNotification('⚠️ Please log in to send messages', 'warning');
+                return;
+            }
+
+            // Clear input immediately for better UX
+            input.value = '';
+
+            try {
+                // Send to backend API
+                const response = await fetch(`${API_URL}/api/chat/send`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ message })
                 });
-                
-                input.value = '';
-                showNotification('💬 Offline mode - message not sent to server', 'warning');
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    if (response.status === 429) {
+                        showNotification(`⏱️ Slow down! Wait ${data.retryAfter}s before sending more messages`, 'warning');
+                    } else if (data.filtered) {
+                        showNotification('🚫 Message contains inappropriate language', 'error');
+                    } else {
+                        showNotification(data.error || 'Failed to send message', 'error');
+                    }
+                    input.value = message; // Restore message on error
+                    return;
+                }
+
+                // Add message to UI immediately
+                const messageData = data.message;
+                addGlobalMessageToUI({
+                    id: messageData.id,
+                    user_id: messageData.user_id,
+                    username: messageData.username,
+                    avatar: messageData.avatar,
+                    avatar_type: messageData.avatar_type,
+                    message: messageData.message,
+                    created_at: messageData.created_at
+                });
+
+                console.log('✅ Message sent successfully');
+            } catch (error) {
+                console.error('❌ Error sending message:', error);
+                showNotification('❌ Failed to send message', 'error');
+                input.value = message; // Restore message on error
             }
         }
 
@@ -17040,7 +17071,19 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             messageDiv.style.marginBottom = '12px';
             messageDiv.setAttribute('data-message-id', data.id);
             
-            const timeAgo = getTimeAgo(new Date(data.timestamp));
+            const timestamp = data.created_at || data.timestamp;
+            const timeAgo = getTimeAgo(new Date(timestamp));
+            const displayName = data.username || data.displayName;
+            const avatar = data.avatar || displayName.charAt(0);
+            const avatarType = data.avatar_type || 'emoji';
+            
+            // Render avatar based on type
+            let avatarHtml;
+            if (avatarType === 'custom' && avatar.startsWith('data:image')) {
+                avatarHtml = `<img src="${avatar}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />`;
+            } else {
+                avatarHtml = avatar; // Emoji
+            }
             
             messageDiv.innerHTML = `
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
@@ -17048,15 +17091,16 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         width: 24px;
                         height: 24px;
                         border-radius: 50%;
-                        background: linear-gradient(135deg, #f57d2d, #fcc49c);
+                        background: linear-gradient(135deg, #ff79c6, #bd93f9);
                         display: flex;
                         align-items: center;
                         justify-content: center;
                         font-size: 12px;
                         font-weight: bold;
                         color: #fff;
-                    ">${data.avatar || data.displayName.charAt(0)}</div>
-                    <span style="color: #f57d2d; font-weight: 600; font-size: 0.9em;">${escapeHtml(data.displayName)}</span>
+                        overflow: hidden;
+                    ">${avatarHtml}</div>
+                    <span style="color: #ff79c6; font-weight: 600; font-size: 0.9em;">${escapeHtml(displayName)}</span>
                     <span style="color: #666; font-size: 0.75em;">${timeAgo}</span>
                 </div>
                 <div style="color: #ccc; font-size: 0.9em; padding-left: 32px;">
@@ -17068,6 +17112,29 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             if (scrollToBottom) {
                 chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        }
+
+        // Load chat history from backend
+        async function loadChatHistory() {
+            try {
+                const response = await fetch(`${API_URL}/api/chat/history?limit=100`);
+                const data = await response.json();
+
+                if (data.success && data.messages) {
+                    const chatContainer = document.getElementById('global-chat-messages');
+                    if (chatContainer) {
+                        chatContainer.innerHTML = ''; // Clear existing
+                        data.messages.forEach(msg => {
+                            addGlobalMessageToUI(msg, false);
+                        });
+                        chatContainer.scrollTop = chatContainer.scrollHeight;
+                        console.log(`✅ Loaded ${data.messages.length} chat messages`);
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error loading chat history:', error);
+                // Don't show error to user, just log it
             }
         }
 
