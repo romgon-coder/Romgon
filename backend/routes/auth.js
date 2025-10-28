@@ -402,7 +402,7 @@ router.get('/google/callback', async (req, res) => {
                     );
 
                     user = {
-                        id: result.lastID,
+                        id: result.id, // ← FIX: Use result.id instead of result.lastID
                         username,
                         email: googleUser.email,
                         rating: 1600,
