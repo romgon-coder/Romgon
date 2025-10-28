@@ -10009,14 +10009,14 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     <option value="white-triangle">△ White Triangle</option>
                     <option value="white-square">□ White Square</option>
                     <option value="white-circle">○ White Circle</option>
-                    <option value="white-hexagon">⬡ White Hexagon</option>
+                    <option value="white-hexgon">⬡ White Hexgon</option>
                     <option value="white-rhombus">◇ White Rhombus</option>
                 </optgroup>
                 <optgroup label="Black Pieces">
                     <option value="black-triangle">▲ Black Triangle</option>
                     <option value="black-square">■ Black Square</option>
                     <option value="black-circle">● Black Circle</option>
-                    <option value="black-hexagon">⬢ Black Hexagon</option>
+                    <option value="black-hexgon">⬢ Black Hexgon</option>
                     <option value="black-rhombus">◆ Black Rhombus</option>
                 </optgroup>
             </select>
@@ -16190,10 +16190,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     if (color === 'white') {
                         pieceDiv.classList.add('white-circle');
                     }
-                } else if (shape === 'hexagon') {
-                    pieceDiv.className = 'hexagon-piece';
+                } else if (shape === 'hexgon') {
+                    pieceDiv.className = 'hexgon-piece';
                     if (color === 'white') {
-                        pieceDiv.classList.add('white-hexagon');
+                        pieceDiv.classList.add('white-hexgon');
                     }
                 }
                 
@@ -16384,13 +16384,13 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                                     piece.classList.contains('white-triangle') ||
                                     piece.classList.contains('white-rhombus') ||
                                     piece.classList.contains('white-circle') ||
-                                    piece.classList.contains('white-hexagon');
+                                    piece.classList.contains('white-hexgon');
                     
                     let shape = 'square';
                     if (piece.classList.contains('triangle-piece')) shape = 'triangle';
                     else if (piece.classList.contains('rhombus-piece')) shape = 'rhombus';
                     else if (piece.classList.contains('circle-piece')) shape = 'circle';
-                    else if (piece.classList.contains('hexagon-piece')) shape = 'hexagon';
+                    else if (piece.classList.contains('hexgon-piece')) shape = 'hexgon';
                     
                     pieces.push({
                         row, col,
@@ -16502,13 +16502,13 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                                     piece.classList.contains('white-triangle') ||
                                     piece.classList.contains('white-rhombus') ||
                                     piece.classList.contains('white-circle') ||
-                                    piece.classList.contains('white-hexagon');
+                                    piece.classList.contains('white-hexgon');
                     
                     let shape = 'square';
                     if (piece.classList.contains('triangle-piece')) shape = 'triangle';
                     else if (piece.classList.contains('rhombus-piece')) shape = 'rhombus';
                     else if (piece.classList.contains('circle-piece')) shape = 'circle';
-                    else if (piece.classList.contains('hexagon-piece')) shape = 'hexagon';
+                    else if (piece.classList.contains('hexgon-piece')) shape = 'hexgon';
                     
                     pieces.push({
                         row, col,
