@@ -359,6 +359,7 @@ router.get('/google/callback', async (req, res) => {
 
         const googleUser = await userInfoResponse.json();
         console.log('✅ Google user info received:', googleUser.email);
+        console.log('🔑 Google ID from Google:', googleUser.id);
 
         // Check if user exists by google_id (most reliable)
         let user = await dbPromise.get(
@@ -366,12 +367,16 @@ router.get('/google/callback', async (req, res) => {
             [googleUser.id]
         );
 
+        console.log('🔍 Lookup by google_id result:', user ? `FOUND user: ${user.username}` : 'NOT FOUND');
+
         if (!user) {
             // Check if user exists by email (for migration of old accounts)
             user = await dbPromise.get(
                 'SELECT * FROM users WHERE email = ?',
                 [googleUser.email]
             );
+
+            console.log('🔍 Lookup by email result:', user ? `FOUND user: ${user.username}, google_id in DB: ${user.google_id || 'NULL'}` : 'NOT FOUND');
 
             if (user) {
                 // Update existing user with google_id
@@ -381,11 +386,13 @@ router.get('/google/callback', async (req, res) => {
                     [googleUser.id, user.id]
                 );
                 user.google_id = googleUser.id;
+                console.log('✅ Updated existing user with Google ID');
             } else {
                 // Create new user (only if truly doesn't exist)
-                console.log('📝 Creating new user for:', googleUser.email);
+                console.log('📝 Creating NEW user for email:', googleUser.email);
                 const baseUsername = googleUser.email.split('@')[0];
                 const username = baseUsername + '_' + Math.random().toString(36).substring(2, 6);
+                console.log('🎲 Generated random username:', username);
                 const result = await dbPromise.run(
                     `INSERT INTO users (username, email, password_hash, rating, google_id) 
                      VALUES (?, ?, ?, 1600, ?)`,
