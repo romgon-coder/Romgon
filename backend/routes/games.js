@@ -633,13 +633,17 @@ router.post('/submit-result',
             }
 
             // Insert the game as finished
+            // Use CURRENT_TIMESTAMP for PostgreSQL, datetime('now') for SQLite
+            const isPostgres = !!process.env.DATABASE_URL;
+            const nowFunc = isPostgres ? 'CURRENT_TIMESTAMP' : "datetime('now')";
+            
             await dbPromise.run(
                 `INSERT INTO games (
                     id, white_player_id, black_player_id, 
                     status, winner_id, 
                     moves, total_moves,
                     start_time, end_time
-                ) VALUES (?, ?, ?, 'finished', ?, '[]', ?, datetime('now'), datetime('now'))`,
+                ) VALUES (?, ?, ?, 'finished', ?, '[]', ?, ${nowFunc}, ${nowFunc})`,
                 [gameId, whitePlayerId, blackPlayerId, winnerId, move_count || 0]
             );
 
