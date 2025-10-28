@@ -404,11 +404,19 @@ router.get('/google/callback', async (req, res) => {
                 console.log('🎲 Generated random username:', username);
                 
                 try {
+                    console.log('🔄 Attempting INSERT with:', {
+                        username,
+                        email: googleUser.email,
+                        google_id: googleUser.id
+                    });
+                    
                     const result = await dbPromise.run(
                         `INSERT INTO users (username, email, password_hash, rating, google_id) 
                          VALUES (?, ?, ?, 1600, ?)`,
                         [username, googleUser.email, 'google_oauth', googleUser.id]
                     );
+
+                    console.log('✅ INSERT successful, result:', JSON.stringify(result));
 
                     user = {
                         id: result.id, // ← FIX: Use result.id instead of result.lastID
@@ -418,6 +426,14 @@ router.get('/google/callback', async (req, res) => {
                         google_id: googleUser.id
                     };
                     console.log('✅ New user created with ID:', user.id);
+                    
+                    // Verify the user was actually saved with google_id
+                    const verifyUser = await dbPromise.get(
+                        'SELECT id, username, email, google_id FROM users WHERE id = ?',
+                        [result.id]
+                    );
+                    console.log('🔍 Verification query result:', JSON.stringify(verifyUser));
+                    
                 } catch (insertErr) {
                     console.error('❌ Failed to insert new user:', insertErr.message);
                     // Try one more lookup - maybe race condition
