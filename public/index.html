@@ -25107,12 +25107,19 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             // Create user entry if it doesn't exist
             if (!allUsers[username]) {
                 console.log(`🆕 Creating new user entry for ${username}`);
+                
+                // Check if there's already a rating in localStorage (from previous sessions)
+                const existingRating = localStorage.getItem('rating');
+                const initialRating = existingRating ? parseInt(existingRating) : INITIAL_RATING;
+                
+                console.log(`   Using rating: ${initialRating} (existing: ${existingRating}, default: ${INITIAL_RATING})`);
+                
                 allUsers[username] = {
                     username: username,
-                    rating: INITIAL_RATING,
+                    rating: initialRating,
                     ratingHistory: [{
                         date: new Date().toISOString(),
-                        rating: INITIAL_RATING,
+                        rating: initialRating,
                         change: 0,
                         opponent: 'Game Start',
                         result: 'start'
@@ -25127,22 +25134,34 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     games: []
                 };
                 localStorage.setItem('romgon-users', JSON.stringify(allUsers));
-                localStorage.setItem('rating', INITIAL_RATING.toString());
-                console.log(`✅ Created user entry with initial rating ${INITIAL_RATING}`);
+                
+                // Only set rating if it doesn't already exist
+                if (!existingRating) {
+                    localStorage.setItem('rating', INITIAL_RATING.toString());
+                    console.log(`✅ Created user entry with initial rating ${INITIAL_RATING}`);
+                } else {
+                    console.log(`✅ Created user entry with existing rating ${initialRating}`);
+                }
                 return;
             }
             
             // Initialize rating if user exists but has no rating
             if (!allUsers[username].rating) {
-                allUsers[username].rating = INITIAL_RATING;
-                // ALSO set the simple 'rating' key used by lobby
-                localStorage.setItem('rating', INITIAL_RATING.toString());
-                console.log(`💾 Initialized rating to ${INITIAL_RATING} in both storage keys`);
+                // Check localStorage first before defaulting
+                const existingRating = localStorage.getItem('rating');
+                const initialRating = existingRating ? parseInt(existingRating) : INITIAL_RATING;
+                
+                allUsers[username].rating = initialRating;
+                // Only set the simple 'rating' key if it doesn't exist
+                if (!existingRating) {
+                    localStorage.setItem('rating', INITIAL_RATING.toString());
+                }
+                console.log(`💾 Initialized rating to ${initialRating} in romgon-users`);
             }
             if (!allUsers[username].ratingHistory) {
                 allUsers[username].ratingHistory = [{
                     date: new Date().toISOString(),
-                    rating: INITIAL_RATING,
+                    rating: allUsers[username].rating,
                     change: 0,
                     opponent: 'Game Start',
                     result: 'start'
