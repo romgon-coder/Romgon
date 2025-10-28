@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI vs AI Training - Live Board | ROMGON</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <style>
+        :root {
+            --hex-size: 35px;
+            --hex-gap: 1px;
+            --hex-height: calc(var(--hex-size) * 2);
+            --hex-width: calc(var(--hex-size) * 1.73205);
+            --hex-margin-top: calc(var(--hex-height) * -0.1 - var(--hex-gap) * 0.5);
+            --hex-row-offset: calc(var(--hex-width) / 2 + var(--hex-gap) * 0.866 / 2);
+            --hex-horizontal-spacing: calc(var(--hex-gap) * 3.866 / 1);
+            --vertical-shift: 18px;
+            --color-dark-brown: #6d3a13;
+            --color-orange-med: #f57d2d;
+            --color-orange-light: #fcc49c;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+        }
+
+        h1 {
+            font-size: 2em;
+            background: linear-gradient(45deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .subtitle { color: #888; font-size: 0.9em; }
+
+        .game-container {
+            display: flex;
+            flex: 1;
+            gap: 20px;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .sidebar-left { order: 1; }
+        .board-section { flex: 1; order: 2; display: flex; justify-content: center; align-items: center; }
+        .sidebar-right { order: 3; }
+
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .card h2 {
+            font-size: 1.1em;
+            margin-bottom: 12px;
+            color: #00d4ff;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 8px;
+        }
+
+        .ai-player {
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .ai-player.active {
+            border: 2px solid #00d4ff;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(0,212,255,0.5); }
+            50% { box-shadow: 0 0 20px rgba(0,212,255,0.8); }
+        }
+
+        .ai-player h3 {
+            font-size: 1em;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .ai-stats { font-size: 0.85em; color: #aaa; }
+        .ai-stats div { margin: 4px 0; }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            color: white;
+        }
+
+        .btn-start:hover { transform: scale(1.05); }
+
+        .move-list {
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 0.85em;
+        }
+
+        .move-item {
+            background: rgba(0,0,0,0.3);
+            padding: 8px;
+            margin: 4px 0;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Board Styles */
+        .board {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform: rotate(90deg) scale(0.7);
+            transform-origin: center center;
+        }
+
+        .row {
+            display: flex;
+            margin-top: var(--hex-margin-top);
+            justify-content: center;
+        }
+
+        .row:first-child { margin-top: 0; }
+        .row:nth-child(even) { margin-left: var(--hex-row-offset); }
+
+        .hexagon {
+            position: relative;
+            width: var(--hex-width);
+            height: var(--hex-height);
+            background-color: var(--color-orange-med);
+            margin-left: var(--hex-horizontal-spacing);
+            margin-right: var(--hex-horizontal-spacing);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.5);
+        }
+
+        .hexagon.shift-down { transform: translateX(var(--vertical-shift)); }
+        .color-dark-brown { background-color: var(--color-dark-brown); }
+        .color-orange-med { background-color: var(--color-orange-med); }
+        .color-orange-light { background-color: var(--color-orange-light); }
+
+        /* Piece Styles */
+        .square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece {
+            position: absolute;
+            width: 56px;
+            height: 56px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(90deg);
+            z-index: 2;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .square-piece:not(.white-piece) { background-image: url('ASSETS/square black front.png'); }
+        .square-piece.white-piece { background-image: url('ASSETS/square white Front.png'); }
+        .triangle-piece:not(.white-triangle) { background-image: url('ASSETS/Triangle black front.png'); }
+        .triangle-piece.white-triangle { background-image: url('ASSETS/Triangle white front.png'); }
+        .rhombus-piece:not(.white-rhombus) { background-image: url('ASSETS/Rhombus black front.png'); }
+        .rhombus-piece.white-rhombus { background-image: url('ASSETS/Rhombus white front.png'); }
+        .circle-piece:not(.white-circle) { background-image: url('ASSETS/circle black front.png'); }
+        .circle-piece.white-circle { background-image: url('ASSETS/circle white front.png'); }
+        .hexgon-piece:not(.white-hexgon) { background-image: url('ASSETS/hexagon black front.png'); }
+        .hexgon-piece.white-hexgon { background-image: url('ASSETS/hexagon white front.png'); }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .stat-box {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-label { font-size: 0.75em; color: #888; margin-bottom: 4px; }
+        .stat-value { font-size: 1.5em; font-weight: bold; color: #00d4ff; }
+
+        select {
+            padding: 8px;
+            border-radius: 6px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            width: 100%;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🤖 AI vs AI Training - Live Board</h1>
+        <p class="subtitle">Watch AI agents learn Romgon in real-time</p>
+    </header>
+
+    <div class="game-container">
+        <!-- Left Sidebar -->
+        <div class="sidebar sidebar-left">
+            <div class="card">
+                <h2>⚙️ Controls</h2>
+                <select id="speed-select">
+                    <option value="slow">🐌 Slow (2s/move)</option>
+                    <option value="normal" selected>⚡ Normal (1s/move)</option>
+                    <option value="fast">🚀 Fast (0.5s/move)</option>
+                    <option value="instant">💨 Instant</option>
+                </select>
+                <div class="controls">
+                    <button class="btn btn-start" onclick="startNewGame()">▶ Start New Game</button>
+                </div>
+                <div class="controls">
+                    <button class="btn" style="background: #444; color: white;" onclick="downloadRPN()" id="download-rpn-btn" disabled>
+                        📥 Download RPN
+                    </button>
+                </div>
+                <div class="controls">
+                    <button class="btn" style="background: #7b2cbf; color: white;" onclick="document.getElementById('rpn-file-input').click()">
+                        📤 Load RPN File
+                    </button>
+                    <input type="file" id="rpn-file-input" accept=".rpn,.txt" style="display: none;" onchange="loadRPNFile(event)">
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📊 Training Stats</h2>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">Total Games</div>
+                        <div class="stat-value" id="total-games">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Uptime</div>
+                        <div class="stat-value" id="uptime">0h</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📜 Recent Moves</h2>
+                <div class="move-list" id="move-list">
+                    <div style="text-align: center; color: #666; padding: 20px;">No game active</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Board -->
+        <div class="board-section">
+            <div class="board" id="game-board">
+                <!-- Board will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="sidebar sidebar-right">
+            <div class="card">
+                <h2>🤖 AI Players</h2>
+                <div class="ai-player" id="white-ai">
+                    <h3>⚪ White AI</h3>
+                    <div class="ai-stats">
+                        <div>Games: <span id="white-games">0</span></div>
+                        <div>Win Rate: <span id="white-winrate">0</span>%</div>
+                    </div>
+                </div>
+                <div class="ai-player" id="black-ai">
+                    <h3>⚫ Black AI</h3>
+                    <div class="ai-stats">
+                        <div>Games: <span id="black-games">0</span></div>
+                        <div>Win Rate: <span id="black-winrate">0</span>%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>ℹ️ Game Info</h2>
+                <div style="font-size: 0.85em; color: #aaa;">
+                    <div style="margin: 8px 0;">Move: <strong id="move-number">-</strong></div>
+                    <div style="margin: 8px 0;">Status: <strong id="game-status">No game</strong></div>
+                    <div style="margin: 8px 0; word-break: break-all;">
+                        <div style="color: #888; font-size: 0.8em;">RPN Preview:</div>
+                        <div id="rpn-preview" style="font-family: monospace; font-size: 0.7em; color: #00d4ff; max-height: 60px; overflow: hidden;">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BACKEND_API_URL = 'https://api.romgon.net';
+        let currentGameId = null;
+        let updateInterval = null;
+
+        // Initialize empty board HTML
+        function initializeBoard() {
+            const board = document.getElementById('game-board');
+            const rows = [
+                { id: 0, cols: 6, offset: true },
+                { id: 1, cols: 7, offset: false },
+                { id: 2, cols: 8, offset: true },
+                { id: 3, cols: 9, offset: false },
+                { id: 4, cols: 8, offset: true },
+                { id: 5, cols: 7, offset: false },
+                { id: 6, cols: 6, offset: true }
+            ];
+
+            board.innerHTML = '';
+            rows.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'row';
+                rowDiv.id = `row-${row.id}`;
+                
+                for (let col = 0; col < row.cols; col++) {
+                    const hex = document.createElement('div');
+                    const hexId = `hex-${row.id}-${col}`;
+                    hex.id = hexId;
+                    hex.className = 'hexagon' + (row.offset ? ' shift-down' : '');
+                    
+                    // Apply zone colors
+                    if (row.id === 3 && col >= 3 && col <= 5) {
+                        hex.classList.add('color-dark-brown');
+                    } else if ((row.id === 1 || row.id === 5) && col >= 1 && col <= row.cols - 2) {
+                        hex.classList.add('color-orange-light');
+                    } else if ((row.id === 2 || row.id === 4) && (col === 1 || col === row.cols - 2)) {
+                        hex.classList.add('color-orange-light');
+                    } else if (row.id === 3 && (col === 0 || col === 8)) {
+                        hex.classList.add('color-dark-brown');
+                    } else if (row.id === 3 && (col === 1 || col === 7)) {
+                        hex.classList.add('color-orange-light');
+                    } else {
+                        hex.classList.add('color-orange-med');
+                    }
+                    
+                    rowDiv.appendChild(hex);
+                }
+                board.appendChild(rowDiv);
+            });
+        }
+
+        // Update board with pieces from game state
+        function updateBoard(board) {
+            // Clear all pieces first
+            document.querySelectorAll('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece').forEach(p => p.remove());
+            
+            if (!board) return;
+            
+            console.log('📋 Updating board with pieces:', Object.keys(board).length, 'pieces');
+            console.log('Board data:', board);
+            
+            Object.keys(board).forEach(position => {
+                const piece = board[position];
+                if (!piece) return;
+                
+                const hex = document.getElementById(`hex-${position}`);
+                if (!hex) {
+                    console.warn(`⚠️ Hex not found: hex-${position}`);
+                    return;
+                }
+                
+                const pieceDiv = document.createElement('div');
+                const isWhite = piece.color === 'white';
+                
+                if (piece.type === 'square') {
+                    pieceDiv.className = 'square-piece' + (isWhite ? ' white-piece' : '');
+                } else if (piece.type === 'triangle') {
+                    pieceDiv.className = 'triangle-piece' + (isWhite ? ' white-triangle' : '');
+                } else if (piece.type === 'rhombus') {
+                    pieceDiv.className = 'rhombus-piece' + (isWhite ? ' white-rhombus' : '');
+                } else if (piece.type === 'circle') {
+                    pieceDiv.className = 'circle-piece' + (isWhite ? ' white-circle' : '');
+                } else if (piece.type === 'hexgon') {
+                    pieceDiv.className = 'hexgon-piece' + (isWhite ? ' white-hexgon' : '');
+                }
+                
+                console.log(`✅ Added ${piece.color} ${piece.type} at ${position}`);
+                hex.appendChild(pieceDiv);
+            });
+        }
+
+        // Start a new AI training game
+        async function startNewGame() {
+            try {
+                const speed = document.getElementById('speed-select').value;
+                const response = await fetch(`${BACKEND_API_URL}/api/ai-training/start`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ speed })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    currentGameId = data.gameId;
+                    document.getElementById('download-rpn-btn').disabled = false;
+                    console.log('✅ Started new AI game:', data.gameId);
+                    startWatching();
+                }
+            } catch (error) {
+                console.error('❌ Error starting game:', error);
+                alert('Failed to start AI game');
+            }
+        }
+
+        // Start watching current game
+        function startWatching() {
+            if (updateInterval) clearInterval(updateInterval);
+            updateGame();
+            updateInterval = setInterval(updateGame, 1000);
+        }
+
+        // Update game display
+        async function updateGame() {
+            if (!currentGameId) return;
+
+            try {
+                const response = await fetch(`${BACKEND_API_URL}/api/ai-training/${currentGameId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const game = data.game;
+                    
+                    // Update board
+                    updateBoard(game.board);
+                    
+                    // Update game info
+                    document.getElementById('move-number').textContent = game.moveNumber;
+                    document.getElementById('game-status').textContent = game.status === 'active' ? '🟢 Playing' : '🏁 Finished';
+                    
+                    // Update AI players
+                    document.getElementById('white-games').textContent = game.whiteAI.stats.gamesPlayed;
+                    document.getElementById('white-winrate').textContent = game.whiteAI.stats.winRate;
+                    document.getElementById('black-games').textContent = game.blackAI.stats.gamesPlayed;
+                    document.getElementById('black-winrate').textContent = game.blackAI.stats.winRate;
+                    
+                    // Highlight current player
+                    document.getElementById('white-ai').classList.toggle('active', game.currentPlayer === 'white');
+                    document.getElementById('black-ai').classList.toggle('active', game.currentPlayer === 'black');
+                    
+                    // Update move list
+                    if (game.moveHistory && game.moveHistory.length > 0) {
+                        const moveList = document.getElementById('move-list');
+                        moveList.innerHTML = game.moveHistory.slice(-10).reverse().map(move => `
+                            <div class="move-item">
+                                <span>${move.moveNumber}. ${move.notation}</span>
+                                <span style="color: #888;">${move.thinkingTime}ms</span>
+                            </div>
+                        `).join('');
+                    }
+                    
+                    // Update RPN preview
+                    if (game.rpn) {
+                        const rpnPreview = document.getElementById('rpn-preview');
+                        const shortRPN = game.rpn.length > 100 ? game.rpn.substring(0, 100) + '...' : game.rpn;
+                        rpnPreview.textContent = shortRPN;
+                    }
+                    
+                    // Check if game finished
+                    if (game.status === 'finished') {
+                        clearInterval(updateInterval);
+                        alert(`Game finished! Result: ${game.result}`);
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error updating game:', error);
+            }
+        }
+
+        // Update training stats
+        async function updateTrainingStats() {
+            try {
+                const response = await fetch(`${BACKEND_API_URL}/api/ai-training/stats/overall`);
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('total-games').textContent = data.stats.totalGames;
+                    document.getElementById('uptime').textContent = data.stats.uptimeHours + 'h';
+                }
+            } catch (error) {
+                console.error('❌ Error updating stats:', error);
+            }
+        }
+
+        // Download RPN notation
+        async function downloadRPN() {
+            if (!currentGameId) {
+                alert('No active game to download');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${BACKEND_API_URL}/api/ai-training/${currentGameId}/export`);
+                const rpnText = await response.text();
+
+                // Create download link
+                const blob = new Blob([rpnText], { type: 'text/plain' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `romgon-ai-game-${currentGameId.substring(0, 8)}.rpn`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+                console.log('✅ Downloaded RPN notation');
+            } catch (error) {
+                console.error('❌ Error downloading RPN:', error);
+                alert('Failed to download RPN');
+            }
+        }
+
+        // Load RPN file
+        async function loadRPNFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                const rpnText = await file.text();
+                console.log('📤 Loaded RPN file:', file.name);
+                console.log('RPN content:', rpnText.substring(0, 100) + '...');
+
+                // Upload to backend for replay
+                const speed = document.getElementById('speed-select').value;
+                const response = await fetch(`${BACKEND_API_URL}/api/ai-training/import`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        rpn: rpnText,
+                        speed: speed,
+                        autoPlay: true
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    currentGameId = data.gameId;
+                    document.getElementById('download-rpn-btn').disabled = false;
+                    console.log(`✅ Started RPN replay: ${data.moveCount} moves`);
+                    alert(`RPN loaded! Replaying ${data.moveCount} moves...`);
+                    startWatching();
+                } else {
+                    alert(`Failed to load RPN: ${data.error}`);
+                }
+
+            } catch (error) {
+                console.error('❌ Error loading RPN file:', error);
+                alert('Failed to load RPN file');
+            }
+
+            // Reset file input
+            event.target.value = '';
+        }
+
+        // Initialize
+        initializeBoard();
+        updateTrainingStats();
+        setInterval(updateTrainingStats, 10000);
+    </script>
+</body>
+</html>
