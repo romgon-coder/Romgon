@@ -25104,24 +25104,51 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         function initializeUserRating(username) {
             const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
             
-            if (allUsers[username]) {
-                if (!allUsers[username].rating) {
-                    allUsers[username].rating = INITIAL_RATING;
-                    // ALSO set the simple 'rating' key used by lobby
-                    localStorage.setItem('rating', INITIAL_RATING.toString());
-                    console.log(`💾 Initialized rating to ${INITIAL_RATING} in both storage keys`);
-                }
-                if (!allUsers[username].ratingHistory) {
-                    allUsers[username].ratingHistory = [{
+            // Create user entry if it doesn't exist
+            if (!allUsers[username]) {
+                console.log(`🆕 Creating new user entry for ${username}`);
+                allUsers[username] = {
+                    username: username,
+                    rating: INITIAL_RATING,
+                    ratingHistory: [{
                         date: new Date().toISOString(),
                         rating: INITIAL_RATING,
                         change: 0,
                         opponent: 'Game Start',
                         result: 'start'
-                    }];
-                }
+                    }],
+                    stats: {
+                        wins: 0,
+                        losses: 0,
+                        totalGames: 0,
+                        totalMoves: 0,
+                        totalCaptures: 0
+                    },
+                    games: []
+                };
                 localStorage.setItem('romgon-users', JSON.stringify(allUsers));
+                localStorage.setItem('rating', INITIAL_RATING.toString());
+                console.log(`✅ Created user entry with initial rating ${INITIAL_RATING}`);
+                return;
             }
+            
+            // Initialize rating if user exists but has no rating
+            if (!allUsers[username].rating) {
+                allUsers[username].rating = INITIAL_RATING;
+                // ALSO set the simple 'rating' key used by lobby
+                localStorage.setItem('rating', INITIAL_RATING.toString());
+                console.log(`💾 Initialized rating to ${INITIAL_RATING} in both storage keys`);
+            }
+            if (!allUsers[username].ratingHistory) {
+                allUsers[username].ratingHistory = [{
+                    date: new Date().toISOString(),
+                    rating: INITIAL_RATING,
+                    change: 0,
+                    opponent: 'Game Start',
+                    result: 'start'
+                }];
+            }
+            localStorage.setItem('romgon-users', JSON.stringify(allUsers));
         }
 
         /**
@@ -25455,11 +25482,17 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 // RATING SYSTEM - Update player rating
                 // ============================================
                 
+                console.log('🎯 Starting rating update for:', currentUser.username);
+                console.log('   Current localStorage rating:', localStorage.getItem('rating'));
+                
                 // Initialize rating if not exists
                 initializeUserRating(currentUser.username);
                 
                 // Update rating based on game result
                 const ratingUpdate = updatePlayerRating(currentUser.username, playerWon, 'AI');
+                
+                console.log('💾 Rating update result:', ratingUpdate);
+                console.log('   localStorage rating after update:', localStorage.getItem('rating'));
                 
                 // Store rating update info in gameRecord
                 gameRecord.ratingChange = ratingUpdate.ratingChange;
@@ -25474,13 +25507,14 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 
                 // ALSO update the currentUser in localStorage with new stats and rating
                 currentUser.stats = allUsers[currentUser.username].stats;
-                currentUser.rating = allUsers[currentUser.username].rating;
+                // Get the updated rating from RatingManager (single source of truth)
+                currentUser.rating = RatingManager.getCurrentRating(currentUser.username);
                 currentUser.gameHistory = allUsers[currentUser.username].games;
                 localStorage.setItem('romgon-user', JSON.stringify(currentUser));
                 
                 console.log('✅ Game result saved to user stats:', gameRecord);
                 console.log('📊 Updated user stats:', allUsers[currentUser.username].stats);
-                console.log('⭐ Updated user rating:', allUsers[currentUser.username].rating);
+                console.log('⭐ Updated user rating:', currentUser.rating);
                 console.log('💾 Updated currentUser in localStorage');
                 
                 // ============================================
