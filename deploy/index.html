@@ -2729,6 +2729,17 @@
                         document.getElementById('account-username').textContent = stats.username;
                     }
                     
+                    // Update rating from backend if available
+                    if (stats.rating !== undefined && stats.rating !== null) {
+                        console.log('✅ Updating rating from backend:', stats.rating);
+                        // Save to simple 'rating' key used by lobby
+                        localStorage.setItem('rating', stats.rating.toString());
+                        // Also save to currentUser
+                        currentUser.rating = stats.rating;
+                        localStorage.setItem('romgon-user', JSON.stringify(currentUser));
+                        window.currentUser = currentUser;
+                    }
+                    
                     // Update avatar if available from backend
                     if (stats.avatar && stats.avatar_type === 'custom') {
                         console.log('✅ Updating custom avatar from backend');
@@ -25040,6 +25051,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             if (allUsers[username]) {
                 if (!allUsers[username].rating) {
                     allUsers[username].rating = INITIAL_RATING;
+                    // ALSO set the simple 'rating' key used by lobby
+                    localStorage.setItem('rating', INITIAL_RATING.toString());
+                    console.log(`💾 Initialized rating to ${INITIAL_RATING} in both storage keys`);
                 }
                 if (!allUsers[username].ratingHistory) {
                     allUsers[username].ratingHistory = [{
@@ -25111,6 +25125,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             // Save to localStorage
             localStorage.setItem('romgon-users', JSON.stringify(allUsers));
+            
+            // ALSO update the simple 'rating' key used by lobby
+            localStorage.setItem('rating', newRating.toString());
+            console.log(`💾 Saved rating to localStorage 'rating' key:`, newRating);
             
             console.log(`⭐ Rating Update for ${username}:`);
             console.log(`   Old Rating: ${oldRating}`);
