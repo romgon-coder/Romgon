@@ -22155,9 +22155,54 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 else if (row === 6) baseOffsets = [[1, 0], [-1, 0], [0, -1]];
             }
             
-            // Apply rotation transformation
-            // For now, use orientation 0 patterns (we'll add rotation logic later if needed)
-            const offsets = baseOffsets;
+            // Apply rotation transformation based on orientation
+            // Triangles have 6 orientations (0-5) corresponding to 60-degree rotations
+            // Each rotation transforms the offset vectors
+            let offsets = [];
+            
+            // Rotation mapping for hex grid (60-degree steps)
+            // orientation 0 = 270° (pointing left)
+            // orientation 1 = 330° (pointing up-left)
+            // orientation 2 = 30° (pointing up-right)
+            // orientation 3 = 90° (pointing right)
+            // orientation 4 = 150° (pointing down-right)
+            // orientation 5 = 210° (pointing down-left)
+            
+            baseOffsets.forEach(([dr, dc]) => {
+                let newDr, newDc;
+                
+                switch(orientation) {
+                    case 0: // No rotation (base pattern)
+                        newDr = dr;
+                        newDc = dc;
+                        break;
+                    case 1: // Rotate 60° clockwise
+                        newDr = dc;
+                        newDc = -dr + dc;
+                        break;
+                    case 2: // Rotate 120° clockwise
+                        newDr = -dr + dc;
+                        newDc = -dr;
+                        break;
+                    case 3: // Rotate 180° (mirror)
+                        newDr = -dr;
+                        newDc = -dc;
+                        break;
+                    case 4: // Rotate 240° clockwise
+                        newDr = -dc;
+                        newDc = dr - dc;
+                        break;
+                    case 5: // Rotate 300° clockwise
+                        newDr = dr - dc;
+                        newDc = dr;
+                        break;
+                    default:
+                        newDr = dr;
+                        newDc = dc;
+                }
+                
+                offsets.push([newDr, newDc]);
+            });
             
             console.log(`🔍 Pattern for ${row}-${col} orientation ${orientation}:`, offsets);
             console.log(`🔍 Pattern details:`, offsets.map(([dr, dc]) => `[${dr}, ${dc}]`));
