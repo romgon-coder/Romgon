@@ -9991,6 +9991,15 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             </label>
         </div>
         
+        <!-- Play Mode Toggle -->
+        <div style="background: rgba(78, 205, 196, 0.2); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600;">
+                <input type="checkbox" id="sandbox-play-mode" onchange="toggleSandboxPlayMode()" style="width: 20px; height: 20px; cursor: pointer;">
+                <span>▶️ Play Mode (Test Position)</span>
+            </label>
+            <div style="font-size: 0.85em; opacity: 0.9; margin-top: 8px; font-style: italic;">Enable to test moves by dragging pieces</div>
+        </div>
+        
         <!-- Piece Selection -->
         <div id="sandbox-piece-selector" style="display: none; background: rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
             <label style="display: block; margin-bottom: 8px; font-weight: 600;">Select Piece to Place:</label>
@@ -15963,12 +15972,19 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         function toggleSandboxEditMode() {
             const checkbox = document.getElementById('sandbox-edit-mode');
             const pieceSelectorDiv = document.getElementById('sandbox-piece-selector');
+            const playCheckbox = document.getElementById('sandbox-play-mode');
             
             sandboxEditMode = checkbox.checked;
             
             if (sandboxEditMode) {
                 console.log('✏️ Sandbox Edit Mode ENABLED');
                 pieceSelectorDiv.style.display = 'block';
+                
+                // Disable play mode if it's active
+                if (sandboxPlayMode) {
+                    playCheckbox.checked = false;
+                    toggleSandboxPlayMode();
+                }
                 
                 // Add click listeners to all hexagons
                 document.querySelectorAll('.hexagon').forEach(hex => {
@@ -15981,6 +15997,41 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             } else {
                 console.log('✏️ Sandbox Edit Mode DISABLED');
                 pieceSelectorDiv.style.display = 'none';
+            }
+        }
+        
+        let sandboxPlayMode = false;
+        
+        function toggleSandboxPlayMode() {
+            const checkbox = document.getElementById('sandbox-play-mode');
+            const editCheckbox = document.getElementById('sandbox-edit-mode');
+            
+            sandboxPlayMode = checkbox.checked;
+            
+            if (sandboxPlayMode) {
+                console.log('▶️ Sandbox Play Mode ENABLED - pieces can be moved');
+                
+                // Disable edit mode if it's active
+                if (sandboxEditMode) {
+                    editCheckbox.checked = false;
+                    toggleSandboxEditMode();
+                }
+                
+                // Make all pieces draggable
+                document.querySelectorAll('[class*="-piece"]').forEach(piece => {
+                    piece.draggable = true;
+                });
+                
+                // Enable normal game interactions
+                gameInProgress = true;
+                
+            } else {
+                console.log('▶️ Sandbox Play Mode DISABLED');
+                
+                // Disable dragging
+                document.querySelectorAll('[class*="-piece"]').forEach(piece => {
+                    piece.draggable = false;
+                });
             }
         }
         
