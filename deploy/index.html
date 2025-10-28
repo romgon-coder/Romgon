@@ -21568,7 +21568,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             } else if (pieceType === 'circle') {
                 targets = getCircleTargets(fromRow, fromCol);
             } else if (pieceType === 'hexgon') {
-                targets = getHexgonTargets(fromRow, fromCol);
+                // Use rotation-aware movement for hexagons
+                const hexId = `hex-${fromRow}-${fromCol}`;
+                const orientation = getHexgonOrientation(hexId);
+                targets = getRotatedHexgonTargets(fromRow, fromCol, orientation, isWhite);
             }
             
             // Check each target
@@ -21726,10 +21729,6 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             }
             
             return targets;
-        }
-        
-        function getHexgonTargets(row, col) {
-            return getHexgonMoves(row, col);
         }
         
         function getRotatedHexgonTargets(row, col, orientation, isWhite) {
