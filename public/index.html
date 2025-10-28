@@ -2713,43 +2713,73 @@
         console.log('   userAccount?.ratingHistory exists:', !!userAccount?.ratingHistory);
         console.log('   ratingHistory length:', userAccount?.ratingHistory?.length || 0);
         if (userAccount?.ratingHistory) {
-            console.log('   First 3 history entries:', userAccount.ratingHistory.slice(0, 3));
+            console.log('   Full rating history:', userAccount.ratingHistory);
+        } else {
+            console.log('   ⚠️ userAccount or ratingHistory is missing!');
+            console.log('   All users in romgon-users:', Object.keys(allUsers));
         }
         
-        if (ratingChangesEl) ratingChangesEl.textContent = userAccount?.ratingHistory?.length || 0;
+        // Count actual game rating changes (exclude "Game Start" entries)
+        const actualRatingChanges = userAccount?.ratingHistory 
+            ? userAccount.ratingHistory.filter(entry => entry.result !== 'start').length 
+            : 0;
+        
+        if (ratingChangesEl) ratingChangesEl.textContent = actualRatingChanges;
         
         // Display local rating history
         if (userAccount?.ratingHistory) {
             const historyContainer = document.getElementById('hub-rating-history');
-            if (historyContainer && userAccount.ratingHistory.length > 0) {
-                historyContainer.innerHTML = userAccount.ratingHistory.slice(-10).reverse().map(entry => {
-                    const changeColor = entry.change > 0 ? '#27ae60' : '#e74c3c';
-                    const changeSign = entry.change > 0 ? '+' : '';
-                    const resultIcon = entry.result === 'win' ? '✅' : '❌';
-                    const entryDate = new Date(entry.date).toLocaleDateString();
-                    
-                    return `
-                        <div style="
-                            background: rgba(0, 0, 0, 0.3);
-                            padding: 14px;
-                            border-radius: 10px;
-                            display: flex;
-                            justify-content: space-between;
-                            align-items: center;
-                            border-left: 4px solid ${changeColor};
-                            margin-bottom: 8px;
-                        ">
-                            <div style="flex: 1;">
-                                <div style="color: #fff; font-weight: 600; margin-bottom: 4px;">
-                                    ${resultIcon} ${entry.result === 'win' ? 'Victory' : 'Defeat'} vs ${entry.opponent}
-                                </div>
-                                <div style="color: #999; font-size: 0.85em;">
-                                    ${entryDate} • Rating: ${entry.rating} (${changeSign}${entry.change})
+            if (historyContainer) {
+                // Filter out "Game Start" entries and get last 10 actual games
+                const gameHistory = userAccount.ratingHistory.filter(entry => entry.result !== 'start');
+                
+                if (gameHistory.length > 0) {
+                    historyContainer.innerHTML = gameHistory.slice(-10).reverse().map(entry => {
+                        const changeColor = entry.change > 0 ? '#27ae60' : '#e74c3c';
+                        const changeSign = entry.change > 0 ? '+' : '';
+                        const resultIcon = entry.result === 'win' ? '✅' : '❌';
+                        const entryDate = new Date(entry.date).toLocaleDateString();
+                        
+                        return `
+                            <div style="
+                                background: rgba(0, 0, 0, 0.3);
+                                padding: 14px;
+                                border-radius: 10px;
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                border-left: 4px solid ${changeColor};
+                                margin-bottom: 8px;
+                            ">
+                                <div style="flex: 1;">
+                                    <div style="color: #fff; font-weight: 600; margin-bottom: 4px;">
+                                        ${resultIcon} ${entry.result === 'win' ? 'Victory' : 'Defeat'} vs ${entry.opponent}
+                                    </div>
+                                    <div style="color: #999; font-size: 0.85em;">
+                                        ${entryDate} • Rating: ${entry.rating} (${changeSign}${entry.change})
+                                    </div>
                                 </div>
                             </div>
+                        `;
+                    }).join('');
+                } else {
+                    historyContainer.innerHTML = `
+                        <div style="color: #999; text-align: center; padding: 20px;">
+                            No rating history yet. Play games to build your rating history!
                         </div>
                     `;
-                }).join('');
+                }
+            }
+        } else {
+            // No userAccount or ratingHistory - show helpful message
+            const historyContainer = document.getElementById('hub-rating-history');
+            if (historyContainer) {
+                historyContainer.innerHTML = `
+                    <div style="color: #999; text-align: center; padding: 20px;">
+                        Rating history will appear here after you play games.<br>
+                        <small style="color: #666;">If you have played games, try refreshing the page.</small>
+                    </div>
+                `;
             }
         }
         
