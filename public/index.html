@@ -16627,6 +16627,130 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
 
         let chatConnected = false;
         let typingTimeout = null;
+        
+        // Chat WebSocket Client
+        const romgonChat = {
+            socket: null,
+            eventHandlers: new Map(),
+            
+            connect: function(userId, displayName, avatar) {
+                if (this.socket && this.socket.connected) {
+                    console.log('💬 Already connected to chat');
+                    return;
+                }
+                
+                // Connect to chat namespace
+                const backendUrl = typeof BACKEND_API_URL !== 'undefined' ? BACKEND_API_URL.replace('/api', '') : 'https://api.romgon.net';
+                this.socket = io(`${backendUrl}/chat`, {
+                    transports: ['websocket', 'polling'],
+                    reconnection: true,
+                    reconnectionDelay: 1000,
+                    reconnectionAttempts: 5
+                });
+                
+                this.socket.on('connect', () => {
+                    console.log('✅ Connected to chat server');
+                    this.socket.emit('chat:userConnected', { userId, displayName, avatar });
+                });
+                
+                this.socket.on('disconnect', () => {
+                    console.log('❌ Disconnected from chat server');
+                });
+                
+                this.socket.on('connect_error', (error) => {
+                    console.error('❌ Chat connection error:', error);
+                });
+                
+                // Setup event forwarders
+                this.setupEventForwarders();
+            },
+            
+            setupEventForwarders: function() {
+                const events = [
+                    'chat:onlineCount',
+                    'chat:globalMessage',
+                    'chat:globalHistory',
+                    'chat:directMessage',
+                    'chat:directMessagesHistory',
+                    'chat:friendsList',
+                    'chat:friendRequestReceived',
+                    'chat:friendRequestSent',
+                    'chat:friendAdded',
+                    'chat:friendRemoved',
+                    'chat:userOnline',
+                    'chat:userOffline',
+                    'chat:userTyping',
+                    'chat:error'
+                ];
+                
+                events.forEach(event => {
+                    this.socket.on(event, (data) => {
+                        // Remove 'chat:' prefix for handler lookup
+                        const handlerName = event.replace('chat:', '');
+                        const handlers = this.eventHandlers.get(handlerName);
+                        if (handlers) {
+                            handlers.forEach(handler => handler(data));
+                        }
+                    });
+                });
+            },
+            
+            on: function(event, handler) {
+                if (!this.eventHandlers.has(event)) {
+                    this.eventHandlers.set(event, []);
+                }
+                this.eventHandlers.get(event).push(handler);
+            },
+            
+            emit: function(event, data) {
+                if (this.socket && this.socket.connected) {
+                    this.socket.emit(event, data);
+                } else {
+                    console.warn('❌ Cannot emit - not connected to chat');
+                }
+            },
+            
+            loadGlobalHistory: function() {
+                console.log('📜 Loading global chat history...');
+                this.emit('chat:loadGlobalHistory');
+            },
+            
+            sendGlobalMessage: function(message) {
+                this.emit('chat:sendGlobalMessage', { message });
+            },
+            
+            sendDirectMessage: function(recipientId, message) {
+                this.emit('chat:sendDirectMessage', { recipientId, message });
+            },
+            
+            loadDirectMessages: function(friendId) {
+                this.emit('chat:loadDirectMessages', { friendId });
+            },
+            
+            sendFriendRequest: function(targetUsername) {
+                this.emit('chat:sendFriendRequest', { targetUsername });
+            },
+            
+            acceptFriendRequest: function(requesterId) {
+                this.emit('chat:acceptFriendRequest', { requesterId });
+            },
+            
+            declineFriendRequest: function(requesterId) {
+                this.emit('chat:declineFriendRequest', { requesterId });
+            },
+            
+            removeFriend: function(friendId) {
+                this.emit('chat:removeFriend', { friendId });
+            },
+            
+            startTyping: function(roomId) {
+                this.emit('chat:typing', { roomId, typing: true });
+            },
+            
+            stopTyping: function(roomId) {
+                this.emit('chat:typing', { roomId, typing: false });
+            }
+        };
 
         // Initialize chat when user logs in
         function initializeChat() {
