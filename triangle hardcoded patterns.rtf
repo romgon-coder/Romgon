@@ -1,0 +1,203 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1033{\fonttbl{\f0\fnil\fcharset0 Calibri;}{\f1\fnil\fcharset1 Segoe UI Symbol;}}
+{\*\generator Riched20 10.0.19041}\viewkind4\uc1 
+\pard\sa200\sl276\slmult1\f0\fs22\lang9  if (isWhite) \{\par
+                // White triangle patterns - rotation-aware patterns (opposite to black triangles)\par
+                // White triangles face towards black pieces, so their patterns are opposite\par
+                if (row === 0) \{\par
+                    // Row 0 patterns - corrected based on position 0-1 observations\par
+                    if (orientation === 0) offsets = [[0, 1], [1, 1]]; // 02-12 pattern\par
+                    else if (orientation === 1) offsets = [[1, 0], [1, 1], [0, 1]]; // 11-12-02 pattern\par
+                    else if (orientation === 2) offsets = [[1, 1], [1, 0], [0, -1]]; // 12-11-00 pattern\par
+                    else if (orientation === 3) offsets = [[1, 0], [0, -1]]; // 11-00 pattern\par
+                    else if (orientation === 4) offsets = [[0, -1]]; // 00 pattern (correct)\par
+                    else if (orientation === 5) offsets = [[0, 1]]; // 02 pattern (correct)\par
+                \} else if (row === 1) \{\par
+                    // Row 1 patterns - corrected based on position 1-2 observations\par
+                    if (orientation === 0) offsets = [[1, 1], [0, 1], [-1, 0]]; // 23-13-02 pattern\par
+                    else if (orientation === 1) offsets = [[1, 0], [1, 1], [0, 1]]; // 22-23-13 pattern\par
+                    else if (orientation === 2) offsets = [[1, 1], [1, 0], [0, -1]]; // 23-22-11 pattern\par
+                    else if (orientation === 3) offsets = [[1, 0], [0, -1], [-1, -1]]; // 22-11-01 pattern\par
+                    else if (orientation === 4) offsets = [[0, -1], [-1, -1], [-1, 0]]; // 11-01-02 pattern\par
+                    else if (orientation === 5) offsets = [[-1, -1], [-1, 0], [0, 1]]; // 01-02-13 pattern\par
+                \} else if (row === 2) \{\par
+                    // Row 2 patterns - corrected based on position 2-2 observations\par
+                    if (orientation === 0) offsets = [[1, 1], [0, 1], [-1, 0]]; // 33-23-12 pattern\par
+                    else if (orientation === 1) offsets = [[1, 0], [1, 1], [0, 1]]; // 32-33-23 pattern\par
+                    else if (orientation === 2) offsets = [[1, 1], [1, 0], [0, -1]]; // 33-32-21 pattern\par
+                    else if (orientation === 3) offsets = [[1, 0], [0, -1], [-1, -1]]; // 32-21-11 pattern\par
+                    else if (orientation === 4) offsets = [[0, -1], [-1, -1], [-1, 0]]; // 21-11-12 pattern\par
+                    else if (orientation === 5) offsets = [[-1, -1], [-1, 0], [0, 1]]; // 11-12-23 pattern\par
+                \} else if (row === 3) \{\par
+                    // Row 3 patterns - position-specific with rotation\par
+                    if (col === 0) \{\par
+                        if (orientation === 0 || orientation === 3) offsets = [[1, 1], [0, 1], [-1, 1]]; // 41-31-21\par
+                        else if (orientation === 1 || orientation === 4) offsets = [[1, 1], [1, 0]]; // 41-40\par
+                        else if (orientation === 2 || orientation === 5) offsets = [[-1, 1], [-1, 0]]; // 21-20\par
+                    \} else if (col === 1) \{\par
+                        if (orientation === 0 || orientation === 3) offsets = [[1, 1], [0, 1], [-1, 1], [0, -1]]; // 42-32-22-30\par
+                        else if (orientation === 1 || orientation === 4) offsets = [[2, -1], [1, 0], [1, -1], [-1, -1], [-2, -1]]; // 50-41-40-20-10\par
+                        else if (orientation === 2 || orientation === 5) offsets = [[-2, -1], [-1, 0], [-1, 1], [1, -1], [2, -1]]; // 10-21-22-40-50\par
+                    \} else if (col === 2) \{\par
+                        if (orientation === 0 || orientation === 3) offsets = [[1, -2], [0, -1], [-1, -2], [1, 1], [0, 1], [-1, 1]]; // 40-31-20-43-33-23\par
+                        else if (orientation === 1 || orientation === 4) offsets = [[2, -1], [1, 0], [1, 1], [-1, -2], [-1, -1], [-2, -1]]; // 51-42-43-20-21-11\par
+                        else if (orientation === 2 || orientation === 5) offsets = [[1, -2], [1, -1], [2, -1], [-1, 1], [-1, 0], [-2, -1]]; // 40-41-51-23-22-11\par
+                    \} else if (col === 3) \{\par
+                        if (orientation === 0 || orientation === 3) offsets = [[1, -2], [0, -1], [-1, -2], [1, 1], [0, 1], [-1, 1]]; // 41-32-21-44-34-24\par
+                        else if (orientation === 1 || orientation === 4) offsets = [[2, -1], [1, 0], [1, 1], [-1, -2], [-1, -1], [-2, -1]]; // 52-43-44-21-22-12\par
+                        else if (orientation === 2 || orientation === 5) offsets = [[2, -1], [1, -1], [1, -2], [-2, -1], [-1, 0], [-1, 1]]; // 52-42-41-12-23-24\par
+                    \} else if (col === 4) \{\par
+                        if (orientation === 0 || orientation === 3) offsets = [[1, -2], [0, -1], [-1, -2], [1, 1], [0, 1], [-1, 1]]; // 42-33-22-45-35-25\par
+                        else if (orientation === 1 || orientation === 4) offsets = [[2, -1], [1, 0], [1, 1], [-1, -2], [-1, -1], [-2, -1]]; // 53-44-45-22-23-13\par
+                        else if (orientation === 2 || orientation === 5) offsets = [[2, -1], [1, -1], [1, -2], [-2, -1], [-1, 0], [-1, 1]]; // 53-43-42-13-24-25\par
+                    \} else if (col === 5) \{\par
+                        if (orientation === 0 || orientation === 3) offsets = [[1, -2], [0, -1], [-1, -2], [1, 1], [0, 1], [-1, 1]]; // 43-34-23-46-36-26\par
+                        else if (orientation === 1 || orientation === 4) offsets = [[2, -1], [1, 0], [1, 1], [-1, -2], [-1, -1], [-2, -1]]; // 54-45-46-23-24-14\par
+                        else if (orientation === 2 || orientation === 5) offsets = [[2, -1], [1, -1], [1, -2], [-2, -1], [-1, 0], [-1, 1]]; // 54-44-43-14-25-26\par
+                    \} else if (col === 6) \{\par
+                        if (orientation === 0 || orientation === 3) offsets = [[1, -2], [0, -1], [-1, -2], [1, 1], [0, 1], [-1, 1]]; // 44-35-24-47-37-27\par
+                        else if (orientation === 1 || orientation === 4) offsets = [[2, -1], [1, 0], [1, 1], [-1, -2], [-1, -1], [-2, -1]]; // 55-46-47-24-25-15\par
+                        else if (orientation === 2 || orientation === 5) offsets = [[2, -1], [1, -1], [1, -2], [-2, -1], [-1, 0], [-1, 1]]; // 55-45-44-15-26-27\par
+                    \} else if (col === 7) \{\par
+                        if (orientation === 0 || orientation === 3) offsets = [[1, -2], [0, -1], [-1, -2], [0, 1]]; // 45-36-25-38\par
+                        else if (orientation === 1 || orientation === 4) offsets = [[2, -1], [1, 0], [-1, -2], [-1, -1], [-2, -1]]; // 56-47-25-26-16\par
+                        else if (orientation === 2 || orientation === 5) offsets = [[-1, 0], [-2, -1], [2, 1], [1, -1], [1, -2]]; // 27-16-58-46-45\par
+                    \} else if (col === 8) \{\par
+                        if (orientation === 0 || orientation === 3) offsets = [[1, -2], [0, -1], [-1, -2]]; // 46-37-26\par
+                        else if (orientation === 1 || orientation === 4) offsets = [[2, -2], [1, -1], [-1, -3], [-1, -2], [-2, -2]]; // 56-47-25-26-16\par
+                        else if (orientation === 2 || orientation === 5) offsets = [[-1, -1], [-2, -2], [2, 0], [1, -2], [1, -3]]; // 27-16-58-46-45\par
+                    \} else \{\par
+                        // Default fallback for any other column\par
+                        if (orientation === 0 || orientation === 3) offsets = [[1, 0], [0, 1], [-1, 0]]; // 43-34-23 pattern\par
+                        else if (orientation === 1 || orientation === 4) offsets = [[0, 1], [1, 0], [1, -1]]; // 34-43-42 pattern\par
+                        else if (orientation === 2 || orientation === 5) offsets = [[1, 0], [1, -1], [0, -1]]; // 43-42-32 pattern\par
+                    \}\par
+                \} else if (row === 4) \{\par
+                    // Row 4 patterns - position-specific with rotation (mirror structure of row 2)\par
+                    if (col === 0) \{\par
+                        if (orientation === 0 || orientation === 3) offsets = [[1, 0], [0, 1], [-1, 1]]; // 50-41-31\par
+                        else if (orientation === 1 || orientation === 4) offsets = [[2, 0], [1, 1], [1, 0]]; // 60-51-50\par
+                        else if (orientation === 2 || orientation === 5) offsets = [[-1, 0], [-1, 1], [1, 0], [2, 0]]; // 30-31-50-60\par
+                    \} else if (col === 1) \{\par
+                        if (orientation === 0 || orientation === 3) offsets = [[0, -1], [1, -1], [1, 2], [0, 1], [-1, 1]]; // 40-50-53-42-32\par
+                        else if (orientation === 1 || orientation === 4) offsets = [[-1, -1], [-2, -1], [2, 0], [1, 1], [1, 2]]; // 30-20-61-52-53\par
+                        else if (orientation === 2 || orientation === 5) offsets = [[1, -1], [1, 0], [2, 0], [-2, -1], [-1, 1], [-1, 0]]; // 50-51-61-20-32-31\par
+                    \} else if (col === 2) \{\par
+                        if (orientation === 0 || orientation === 3) offsets = [[0, -1], [1, -1], [-1, -2], [1, 2], [0, 1], [-1, 1]]; // 41-51-30-54-43-33\par
+                        else if (orientation === 1 || orientation === 4) offsets = [[-1, -1], [-1, -2], [-2, -1], [2, 0], [1, 1], [1, 2]]; // 31-30-21-62-53-54\par
+                        else if (orientation === 2 || orientation === 5) offsets = [[1, -1], [1, 0], [2, 0], [-2, -1], [-1, 0], [-1, 1]]; // 51-52-62-21-32-33\par
+                    \} else if (col === 3) \{\par
+                        if (orientation === 0 || orientation === 3) offsets = [[0, -1], [1, -1], [-1, -2], [1, 2], [0, 1], [-1, 1]]; // 42-52-31-55-44-34\par
+                        else if (orientation === 1 || orientation === 4) offsets = [[-1, -2], [-1, -1], [-2, -1], [2, 0], [1, 1], [1, 2]]; // 31-32-22-63-54-55\par
+                        else if (orientation === 2 || orientation === 5) offsets = [[1, 0], [1, -1], [2, 0], [-1, 1], [-1, 0], [-2, -1]]; // 53-52-63-34-33-22\par
+                    \} else if (col === 4) \{\par
+                        if (orientation === 0 || orientation === 3) offsets = [[0, -1], [1, -1], [-1, -2], [1, 2], [0, 1], [-1, 1]]; // 43-53-32-56-45-35\par
+                        else if (orientation === 1 || orientation === 4) offsets = [[-1, -2], [-1, -1], [-2, -1], [2, 0], [1, 1], [1, 2]]; // 32-33-23-64-55-56\par
+                        else if (orientation === 2 || orientation === 5) offsets = [[1, -1], [1, 0], [2, 0], [-1, 0], [-2, -1], [-1, 1]]; // 53-54-64-34-23-35\par
+                    \} else if (col === 5) \{\par
+                        if (orientation === 0 || orientation === 3) offsets = [[0, -1], [1, -1], [-1, -2], [1, 2], [0, 1], [-1, 1]]; // 44-54-33-57-46-36\par
+                        else if (orientation === 1 || orientation === 4) offsets = [[-1, -2], [-1, -1], [-2, -1], [2, 0], [1, 1], [1, 2]]; // 33-34-24-65-56-57\par
+                        else if (orientation === 2 || orientation === 5) offsets = [[-2, -1], [-1, 0], [-1, 1], [1, -1], [1, 0], [2, 0]]; // 24-35-36-54-55-65\par
+                    \} else if (col === 6) \{\par
+                        if (orientation === 0 || orientation === 3) offsets = [[0, -1], [1, -1], [-1, -2], [0, 1], [1, 2]]; // 45-55-34-47-58\par
+                        else if (orientation === 1 || orientation === 4) offsets = [[-1, -2], [-1, -1], [-2, -1], [2, 0], [1, 2], [1, 1]]; // 34-35-25-66-58-57\par
+                        else if (orientation === 2 || orientation === 5) offsets = [[-1, 0], [-2, -1], [1, -1], [1, 0], [2, 0]]; // 36-25-55-56-66\par
+                    \} else if (col === 7) \{\par
+                        if (orientation === 0 || orientation === 3) offsets = [[1, -1], [0, -1], [-1, -2]]; // 56-46-35\par
+                        else if (orientation === 1 || orientation === 4) offsets = [[-1, -2], [-1, -1], [1, 1], [2, 0]]; // 35-36-58-67\par
+                        else if (orientation === 2 || orientation === 5) offsets = [[1, -1], [1, 0], [2, 0]]; // 56-57-67\par
+                    \} else \{\par
+                        // Default fallback\par
+                        if (orientation === 0 || orientation === 3) offsets = [[1, 0], [0, 1], [-1, 1]]; \par
+                        else if (orientation === 1 || orientation === 4) offsets = [[1, 0], [1, -1], [0, 1]]; \par
+                        else if (orientation === 2 || orientation === 5) offsets = [[1, 0], [1, -1], [0, -1]]; \par
+                    \}\par
+                \} else if (row === 5) \{\par
+                    // Row 5 patterns - corrected based on position 5-1 observations\par
+                    if (orientation === 0) offsets = [[1, 0], [0, 1], [-1, 1]]; // 61-52-42 pattern\par
+                    else if (orientation === 1) offsets = [[1, 0], [1, -1], [0, 1]]; // 61-60-52 pattern\par
+                    else if (orientation === 2) offsets = [[1, 0], [1, -1], [0, -1]]; // 61-60-50 pattern\par
+                    else if (orientation === 3) offsets = [[-1, 0], [0, -1], [1, -1]]; // 41-50-60 pattern\par
+                    else if (orientation === 4) offsets = [[-1, 0], [-1, 1], [0, -1]]; // 41-42-50 pattern\par
+                    else if (orientation === 5) offsets = [[-1, 0], [-1, 1], [0, 1]]; // 41-42-52 pattern (correct)\par
+                \} else if (row === 6) \{\par
+                    // Row 6 patterns - using same patterns as row 5\par
+                    if (orientation === 0) offsets = [[1, 0], [0, 1], [-1, 1]]; // 61-52-42 pattern\par
+                    else if (orientation === 1) offsets = [[1, 0], [1, -1], [0, 1]]; // 61-60-52 pattern\par
+                    else if (orientation === 2) offsets = [[1, 0], [1, -1], [0, -1]]; // 61-60-50 pattern\par
+                    else if (orientation === 3) offsets = [[-1, 0], [0, -1], [1, -1]]; // 41-50-60 pattern\par
+                    else if (orientation === 4) offsets = [[-1, 0], [-1, 1], [0, -1]]; // 41-42-50 pattern\par
+                    else if (orientation === 5) offsets = [[-1, 0], [-1, 1], [0, 1]]; // 41-42-52 pattern\par
+                \}\par
+            \} else \{\par
+                // Black triangle patterns - specific patterns for each orientation\par
+                // Most rows use the same rotation patterns, but some rows have special cases\par
+                if (row === 3) \{\par
+                    // Row 3 patterns - corrected based on position 3-4 observations\par
+                    if (orientation === 0) offsets = [[1, -1], [0, -1], [-1, -1]]; // 43-33-23 pattern\par
+                    else if (orientation === 1) offsets = [[0, -1], [-1, -1], [-1, 0]]; // 33-23-24 pattern\par
+                    else if (orientation === 2) offsets = [[-1, -1], [-1, 0], [0, 1]]; // 23-24-35 pattern\par
+                    else if (orientation === 3) offsets = [[1, 0], [0, 1], [-1, 0]]; // 44-35-24 pattern\par
+                    else if (orientation === 4) offsets = [[0, 1], [1, 0], [1, -1]]; // 56-65-64 pattern (correct)\par
+                    else if (orientation === 5) offsets = [[1, 0], [1, -1], [0, -1]]; // 65-64-54 pattern (correct)\par
+                \} else if (row === 4) \{\par
+                    // Row 4 patterns - using same patterns as rows 5 & 6\par
+                    if (orientation === 0) offsets = [[1, -1], [0, -1], [-1, 0]]; // 64-54-45 pattern\par
+                    else if (orientation === 1) offsets = [[0, -1], [-1, 0], [-1, 1]]; // 54-45-46 pattern\par
+                    else if (orientation === 2) offsets = [[-1, 0], [-1, 1], [0, 1]]; // 45-46-56 pattern\par
+                    else if (orientation === 3) offsets = [[1, 0], [0, 1], [-1, 1]]; // 65-56-46 pattern\par
+                    else if (orientation === 4) offsets = [[0, 1], [1, 0], [1, -1]]; // 56-65-64 pattern\par
+                    else if (orientation === 5) offsets = [[1, 0], [1, -1], [0, -1]]; // 65-64-54 pattern\par
+                \} else if (row === 5 || row === 6) \{\par
+                    // Rows 5 & 6 patterns - these were working correctly before\par
+                    if (orientation === 0) offsets = [[1, -1], [0, -1], [-1, 0]]; // 64-54-45 pattern\par
+                    else if (orientation === 1) offsets = [[0, -1], [-1, 0], [-1, 1]]; // 54-45-46 pattern\par
+                    else if (orientation === 2) offsets = [[-1, 0], [-1, 1], [0, 1]]; // 45-46-56 pattern\par
+                    else if (orientation === 3) offsets = [[1, 0], [0, 1], [-1, 1]]; // 65-56-46 pattern\par
+                    else if (orientation === 4) offsets = [[0, 1], [1, 0], [1, -1]]; // 56-65-64 pattern\par
+                    else if (orientation === 5) offsets = [[1, 0], [1, -1], [0, -1]]; // 65-64-54 pattern\par
+                \} else if (row === 2) \{\par
+                    // Row 2 patterns - corrected based on position 2-3 observations\par
+                    if (orientation === 0) offsets = [[0, -1], [1, 0], [-1, -1]]; // 22-33-12 pattern\par
+                    else if (orientation === 1) offsets = [[-1, -1], [0, -1], [-1, 0]]; // 12-22-13 pattern\par
+                    else if (orientation === 2) offsets = [[-1, 0], [-1, -1], [0, 1]]; // 13-12-24 pattern\par
+                    else if (orientation === 3) offsets = [[1, 1], [0, 1], [-1, 0]]; // 34-24-13 pattern\par
+                    else if (orientation === 4) offsets = [[1, 1], [1, 0], [0, 1]]; // 34-33-24 pattern\par
+                    else if (orientation === 5) offsets = [[1, 1], [0, -1], [1, 0]]; // 34-22-33 pattern\par
+                \} else if (row === 1) \{\par
+                    // Row 1 patterns - corrected based on position 1-3 observations\par
+                    if (orientation === 0) offsets = [[1, 0], [-1, -1], [0, -1]]; // 23-02-12 pattern\par
+                    else if (orientation === 1) offsets = [[0, -1], [-1, -1], [-1, 0]]; // 12-02-03 pattern\par
+                    else if (orientation === 2) offsets = [[-1, -1], [-1, 0], [0, 1]]; // 02-03-14 pattern\par
+                    else if (orientation === 3) offsets = [[1, 1], [0, 1], [-1, 0]]; // 24-14-03 pattern\par
+                    else if (orientation === 4) offsets = [[0, 1], [1, 0], [1, 1]]; // 14-23-24 pattern\par
+                    else if (orientation === 5) offsets = [[1, 1], [1, 0], [0, -1]]; // 24-23-12 pattern\par
+                \} else if (row === 0) \{\par
+                    // Row 0 patterns - corrected based on position 0-3 observations\par
+                    if (orientation === 0) offsets = [[1, 0], [0, -1]]; // 13-02 pattern\par
+                    else if (orientation === 1) offsets = [[0, -1]]; // 02 pattern (correct)\par
+                    else if (orientation === 2) offsets = [[0, 1]]; // 04 pattern (correct)\par
+                    else if (orientation === 3) offsets = [[0, 1], [1, 1]]; // 04-14 pattern\par
+                    else if (orientation === 4) offsets = [[0, 1], [1, 1], [1, 0]]; // 04-14-13 pattern\par
+                    else if (orientation === 5) offsets = [[1, 0], [1, 1], [0, -1]]; // 13-14-02 pattern\par
+                \} else \{\par
+                    // Standard rotation patterns for any other cases\par
+                    if (orientation === 0) offsets = [[1, -1], [0, -1], [-1, 0]]; // 64-54-45 pattern\par
+                    else if (orientation === 1) offsets = [[0, -1], [-1, 0], [-1, 1]]; // 54-45-46 pattern\par
+                    else if (orientation === 2) offsets = [[-1, 0], [-1, 1], [0, 1]]; // 45-46-56 pattern\par
+                    else if (orientation === 3) offsets = [[1, 0], [0, 1], [-1, 0]]; // 65-56-46 pattern\par
+                    else if (orientation === 4) offsets = [[0, 1], [1, 0], [1, -1]]; // 56-65-64 pattern\par
+                    else if (orientation === 5) offsets = [[1, 0], [1, -1], [0, -1]]; // 65-64-54 pattern\par
+                \}\par
+            \}\par
+            \par
+            console.log(`\f1\u-10179?\u-8947?\f0  Pattern for $\{row\}-$\{col\} orientation $\{orientation\}:`, offsets);\par
+            console.log(`\f1\u-10179?\u-8947?\f0  Pattern details:`, offsets.map(([dr, dc]) => `[$\{dr\}, $\{dc\}]`));\par
+            \par
+            // Show expected target coordinates\par
+            const expectedTargets = offsets.map(([dr, dc]) => `hex-$\{row + dr\}-$\{col + dc\}`);\par
+            console.log(`\f1\u-10180?\u-8273?\f0  Expected target coordinates:`, expectedTargets);\par
+            \par
+            return offsets;\par
+        \}\par
+}
+ 

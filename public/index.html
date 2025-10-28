@@ -2544,7 +2544,10 @@
         
         // Set avatar
         const avatarEl = document.getElementById('account-avatar');
-        if (currentUser.picture) {
+        // Check for custom uploaded avatar first, then Google picture
+        if (currentUser.avatarType === 'custom' && currentUser.avatar) {
+            avatarEl.innerHTML = `<img src="${currentUser.avatar}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />`;
+        } else if (currentUser.picture) {
             avatarEl.innerHTML = `<img src="${currentUser.picture}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />`;
         } else {
             avatarEl.textContent = avatar;
@@ -2592,6 +2595,68 @@
         document.getElementById('account-saved-games').textContent = accountType === 'Guest' ? '0 (session)' : totalGames;
         document.getElementById('account-total-moves').textContent = localStats.totalMoves || 0;
         document.getElementById('account-total-captures').textContent = localStats.totalCaptures || 0;
+        
+        // ============================================
+        // UPDATE RATING DISPLAY (LOCAL DATA)
+        // ============================================
+        const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+        const userAccount = allUsers[currentUser.username];
+        const localRating = userAccount?.rating || currentUser.rating || 1600;
+        
+        const ratingEl = document.getElementById('hub-current-rating');
+        if (ratingEl) {
+            ratingEl.textContent = localRating;
+            console.log('📊 Initial rating display:', localRating);
+        }
+        
+        const tier = getRatingTier(localRating);
+        const tierEl = document.getElementById('hub-rating-tier');
+        if (tierEl) {
+            tierEl.textContent = `${tier.emoji} ${tier.name}`;
+            tierEl.style.color = tier.color;
+            console.log('📊 Initial tier display:', tier.name);
+        }
+        
+        // Rating stats
+        const ratingGamesEl = document.getElementById('hub-rating-games');
+        const ratingChangesEl = document.getElementById('hub-rating-changes');
+        if (ratingGamesEl) ratingGamesEl.textContent = totalGames;
+        if (ratingChangesEl) ratingChangesEl.textContent = userAccount?.ratingHistory?.length || 0;
+        
+        // Display local rating history
+        if (userAccount?.ratingHistory) {
+            const historyContainer = document.getElementById('hub-rating-history');
+            if (historyContainer && userAccount.ratingHistory.length > 0) {
+                historyContainer.innerHTML = userAccount.ratingHistory.slice(-10).reverse().map(entry => {
+                    const changeColor = entry.change > 0 ? '#27ae60' : '#e74c3c';
+                    const changeSign = entry.change > 0 ? '+' : '';
+                    const resultIcon = entry.result === 'win' ? '✅' : '❌';
+                    const entryDate = new Date(entry.date).toLocaleDateString();
+                    
+                    return `
+                        <div style="
+                            background: rgba(0, 0, 0, 0.3);
+                            padding: 14px;
+                            border-radius: 10px;
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            border-left: 4px solid ${changeColor};
+                            margin-bottom: 8px;
+                        ">
+                            <div style="flex: 1;">
+                                <div style="color: #fff; font-weight: 600; margin-bottom: 4px;">
+                                    ${resultIcon} ${entry.result === 'win' ? 'Victory' : 'Defeat'} vs ${entry.opponent}
+                                </div>
+                                <div style="color: #999; font-size: 0.85em;">
+                                    ${entryDate} • Rating: ${entry.rating} (${changeSign}${entry.change})
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
         
         updateTopBarStats(wins, losses, winRate);
         
@@ -2649,6 +2714,21 @@
                         console.log('✅ Updating username from backend:', stats.username);
                         document.getElementById('account-sidebar-name').textContent = stats.username;
                         document.getElementById('account-username').textContent = stats.username;
+                    }
+                    
+                    // Update avatar if available from backend
+                    if (stats.avatar && stats.avatar_type === 'custom') {
+                        console.log('✅ Updating custom avatar from backend');
+                        currentUser.avatar = stats.avatar;
+                        currentUser.avatarType = 'custom';
+                        localStorage.setItem('romgon-user', JSON.stringify(currentUser));
+                        window.currentUser = currentUser;
+                        
+                        // Update avatar display
+                        const avatarEl = document.getElementById('account-avatar');
+                        if (avatarEl) {
+                            avatarEl.innerHTML = `<img src="${stats.avatar}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />`;
+                        }
                     }
                 }
                 
@@ -2715,6 +2795,36 @@
                     
                     updateTopBarStats(backendWins, backendLosses, Math.round(backendWinRate));
                     console.log('✅ All backend stats applied to Player Hub');
+                    
+                    // ============================================
+                    // UPDATE RATING DISPLAY
+                    // ============================================
+                    const rating = stats.rating || currentUser.rating || 1600;
+                    const ratingEl = document.getElementById('hub-current-rating');
+                    if (ratingEl) {
+                        ratingEl.textContent = rating;
+                        console.log('  ✓ Updated rating:', rating);
+                    }
+                    
+                    // Update rating tier
+                    const tier = getRatingTier(rating);
+                    const tierEl = document.getElementById('hub-rating-tier');
+                    if (tierEl) {
+                        tierEl.textContent = `${tier.emoji} ${tier.name}`;
+                        tierEl.style.color = tier.color;
+                        console.log('  ✓ Updated tier:', tier.name);
+                    }
+                    
+                    // Update rating stats
+                    const ratingGamesEl = document.getElementById('hub-rating-games');
+                    const ratingChangesEl = document.getElementById('hub-rating-changes');
+                    if (ratingGamesEl) ratingGamesEl.textContent = backendTotal;
+                    if (ratingChangesEl) ratingChangesEl.textContent = stats.recentGames?.length || 0;
+                    
+                    // Display rating history from recent games
+                    displayRecentGames(stats.recentGames || []);
+                    
+                    console.log('✅ Rating system updated in Player Hub');
                 } else {
                     console.warn('⚠️ Backend stats not in expected format:', stats);
                 }
@@ -2766,7 +2876,7 @@
         if (gamesEl) gamesEl.textContent = wins + losses;
     }
     
-    function updateGlobalAccountBar(username, accountType, avatarInitial) {
+    function updateGlobalAccountBar(username, accountType, avatarInitial, customAvatar = null) {
         // Update global account bar with user info
         const globalUsernameEl = document.getElementById('global-username');
         const globalAccountTypeEl = document.getElementById('global-account-type');
@@ -2785,8 +2895,24 @@
             }
         }
         
-        if (globalAvatarEl && avatarInitial) {
-            globalAvatarEl.textContent = avatarInitial;
+        if (globalAvatarEl) {
+            // Check for custom uploaded avatar or Google profile picture
+            const currentUser = JSON.parse(localStorage.getItem('romgon-user') || '{}');
+            
+            if (currentUser.avatarType === 'custom' && currentUser.avatar) {
+                // Show custom uploaded avatar
+                globalAvatarEl.innerHTML = `<img src="${currentUser.avatar}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />`;
+            } else if (currentUser.picture) {
+                // Show Google OAuth picture
+                globalAvatarEl.innerHTML = `<img src="${currentUser.picture}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />`;
+            } else if (customAvatar) {
+                // Legacy parameter support
+                globalAvatarEl.innerHTML = `<img src="${customAvatar}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />`;
+            } else if (avatarInitial) {
+                // Fallback to emoji/initial
+                globalAvatarEl.textContent = avatarInitial;
+                globalAvatarEl.style.fontSize = '14px';
+            }
         }
     }
     
@@ -6322,32 +6448,32 @@
                 transition: all 0.3s ease;
             " onmouseover="this.style.background='rgba(78, 205, 196, 0.25)'; this.style.borderColor='rgba(78, 205, 196, 0.5)'" onmouseout="this.style.background='rgba(78, 205, 196, 0.15)'; this.style.borderColor='rgba(78, 205, 196, 0.3)'">
                 <div id="global-avatar" style="
-                    width: 30px;
-                    height: 30px;
+                    width: 24px;
+                    height: 24px;
                     border-radius: 50%;
                     background: linear-gradient(135deg, #4ecdc4, #a55eea);
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-size: 14px;
+                    font-size: 12px;
                     font-weight: bold;
                     color: #fff;
                     border: 2px solid rgba(255, 255, 255, 0.3);
                 ">G</div>
                 <div style="display: flex; flex-direction: column; gap: 1px;">
                     <div style="display: flex; align-items: center; gap: 6px;">
-                        <span id="global-username" style="font-weight: 600; color: #fff; font-size: 0.85em;">Player</span>
+                        <span id="global-username" style="font-weight: 600; color: #fff; font-size: 0.8em;">Player</span>
                         <span id="global-account-type" style="
-                            font-size: 0.6em;
-                            padding: 1px 5px;
+                            font-size: 0.55em;
+                            padding: 1px 4px;
                             background: rgba(255, 215, 0, 0.2);
                             color: #ffd700;
-                            border-radius: 5px;
+                            border-radius: 4px;
                             font-weight: 600;
                             text-transform: uppercase;
                         ">Guest</span>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 6px; font-size: 0.7em; color: #aaa;">
+                    <div style="display: flex; align-items: center; gap: 5px; font-size: 0.65em; color: #aaa;">
                         <span><span style="color: #26de81;" id="global-wins">0</span>W</span>
                         <span style="color: #555;">•</span>
                         <span><span style="color: #ff6b6b;" id="global-losses">0</span>L</span>
@@ -16771,14 +16897,11 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
 
             console.log('💬 Initializing chat for', displayName, 'ID:', userId);
 
-            // Connect to chat server
-            romgonChat.connect(userId, displayName, avatar);
+            // Load chat history from backend
+            loadChatHistory();
 
-            // Setup event handlers
+            // Setup event handlers (for WebSocket if available)
             setupChatEventHandlers();
-
-            // Load initial data
-            romgonChat.loadGlobalHistory();
 
             chatConnected = true;
         }
@@ -16941,7 +17064,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 globalPanel.style.display = 'block';
                 friendsPanel.style.display = 'none';
                 
-                romgonChat.stopTyping('direct', romgonChat.currentChatWith);
+                // Load chat history
+                loadChatHistory();
                 
                 console.log('💬 Switched to Global Chat');
             } else if (tab === 'friends') {
@@ -16960,7 +17084,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             }
         }
 
-        function sendGlobalMessage() {
+        async function sendGlobalMessage() {
             const input = document.getElementById('global-chat-input');
             const message = input.value.trim();
             
@@ -16968,27 +17092,60 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 return;
             }
 
-            // Send via backend
-            if (chatConnected && romgonChat.isConnected) {
-                romgonChat.sendGlobalMessage(message);
-                input.value = '';
-                romgonChat.stopTyping('global');
-            } else {
-                // Fallback to local-only
-                const user = JSON.parse(localStorage.getItem('romgon-user') || '{}');
-                const userName = user.displayName || user.email?.split('@')[0] || 'Guest';
-                const userInitial = userName.charAt(0).toUpperCase();
-                
-                addGlobalMessageToUI({
-                    userId: user.userId || 'local',
-                    displayName: userName,
-                    avatar: userInitial,
-                    message: message,
-                    timestamp: new Date().toISOString()
+            // Get user info
+            const user = JSON.parse(localStorage.getItem('romgon-user') || '{}');
+            const token = user.token || localStorage.getItem('romgon-token');
+
+            if (!token) {
+                showNotification('⚠️ Please log in to send messages', 'warning');
+                return;
+            }
+
+            // Clear input immediately for better UX
+            input.value = '';
+
+            try {
+                // Send to backend API
+                const response = await fetch(`${API_URL}/api/chat/send`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ message })
                 });
-                
-                input.value = '';
-                showNotification('💬 Offline mode - message not sent to server', 'warning');
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    if (response.status === 429) {
+                        showNotification(`⏱️ Slow down! Wait ${data.retryAfter}s before sending more messages`, 'warning');
+                    } else if (data.filtered) {
+                        showNotification('🚫 Message contains inappropriate language', 'error');
+                    } else {
+                        showNotification(data.error || 'Failed to send message', 'error');
+                    }
+                    input.value = message; // Restore message on error
+                    return;
+                }
+
+                // Add message to UI immediately
+                const messageData = data.message;
+                addGlobalMessageToUI({
+                    id: messageData.id,
+                    user_id: messageData.user_id,
+                    username: messageData.username,
+                    avatar: messageData.avatar,
+                    avatar_type: messageData.avatar_type,
+                    message: messageData.message,
+                    created_at: messageData.created_at
+                });
+
+                console.log('✅ Message sent successfully');
+            } catch (error) {
+                console.error('❌ Error sending message:', error);
+                showNotification('❌ Failed to send message', 'error');
+                input.value = message; // Restore message on error
             }
         }
 
@@ -17006,7 +17163,19 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             messageDiv.style.marginBottom = '12px';
             messageDiv.setAttribute('data-message-id', data.id);
             
-            const timeAgo = getTimeAgo(new Date(data.timestamp));
+            const timestamp = data.created_at || data.timestamp;
+            const timeAgo = getTimeAgo(new Date(timestamp));
+            const displayName = data.username || data.displayName;
+            const avatar = data.avatar || displayName.charAt(0);
+            const avatarType = data.avatar_type || 'emoji';
+            
+            // Render avatar based on type
+            let avatarHtml;
+            if (avatarType === 'custom' && avatar.startsWith('data:image')) {
+                avatarHtml = `<img src="${avatar}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />`;
+            } else {
+                avatarHtml = avatar; // Emoji
+            }
             
             messageDiv.innerHTML = `
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
@@ -17014,15 +17183,16 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         width: 24px;
                         height: 24px;
                         border-radius: 50%;
-                        background: linear-gradient(135deg, #f57d2d, #fcc49c);
+                        background: linear-gradient(135deg, #ff79c6, #bd93f9);
                         display: flex;
                         align-items: center;
                         justify-content: center;
                         font-size: 12px;
                         font-weight: bold;
                         color: #fff;
-                    ">${data.avatar || data.displayName.charAt(0)}</div>
-                    <span style="color: #f57d2d; font-weight: 600; font-size: 0.9em;">${escapeHtml(data.displayName)}</span>
+                        overflow: hidden;
+                    ">${avatarHtml}</div>
+                    <span style="color: #ff79c6; font-weight: 600; font-size: 0.9em;">${escapeHtml(displayName)}</span>
                     <span style="color: #666; font-size: 0.75em;">${timeAgo}</span>
                 </div>
                 <div style="color: #ccc; font-size: 0.9em; padding-left: 32px;">
@@ -17034,6 +17204,29 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             if (scrollToBottom) {
                 chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        }
+
+        // Load chat history from backend
+        async function loadChatHistory() {
+            try {
+                const response = await fetch(`${API_URL}/api/chat/history?limit=100`);
+                const data = await response.json();
+
+                if (data.success && data.messages) {
+                    const chatContainer = document.getElementById('global-chat-messages');
+                    if (chatContainer) {
+                        chatContainer.innerHTML = ''; // Clear existing
+                        data.messages.forEach(msg => {
+                            addGlobalMessageToUI(msg, false);
+                        });
+                        chatContainer.scrollTop = chatContainer.scrollHeight;
+                        console.log(`✅ Loaded ${data.messages.length} chat messages`);
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error loading chat history:', error);
+                // Don't show error to user, just log it
             }
         }
 
@@ -21467,7 +21660,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             } else if (pieceType === 'circle') {
                 targets = getCircleTargets(fromRow, fromCol);
             } else if (pieceType === 'hexgon') {
-                targets = getHexgonTargets(fromRow, fromCol);
+                // Use rotation-aware movement for hexagons
+                const hexId = `hex-${fromRow}-${fromCol}`;
+                const orientation = getHexgonOrientation(hexId);
+                targets = getRotatedHexgonTargets(fromRow, fromCol, orientation, isWhite);
             }
             
             // Check each target
@@ -21519,40 +21715,6 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             });
             
             return targets;
-        }
-        
-        function getWhiteTriangleTargets(row, col) {
-            const targets = [];
-            let offsets = [];
-            
-            if (row === 0) offsets = [[1, 1], [-1, 1], [0, 1]];
-            else if (row === 1) offsets = [[1, 1], [-1, 0], [0, 1]];
-            else if (row === 2) offsets = [[1, 1], [-1, 0], [0, 1]];
-            else if (row === 3) offsets = [[1, 0], [0, 1], [-1, 0]];
-            else if (row === 4) offsets = [[1, 0], [0, 1], [-1, 1]];
-            else if (row === 5) offsets = [[1, 0], [0, 1], [-1, 1]];
-            else if (row === 6) offsets = [[1, 1], [-1, 1], [0, 1]];
-            
-            offsets.forEach(([dr, dc]) => {
-                const newRow = row + dr;
-                const newCol = col + dc;
-                if (newRow >= 0 && newRow <= 6 && newCol >= 0) targets.push([newRow, newCol]);
-            });
-            
-            return targets;
-        }
-        
-        function getBlackTriangleTargets(row, col) {
-            // Black triangle movement pattern - opposite direction from white triangles
-            // Return OFFSETS, not absolute coordinates
-            if (row === 0) return [[1, 0], [-1, 0], [0, -1]];
-            else if (row === 1) return [[1, 0], [-1, -1], [0, -1]];
-            else if (row === 2) return [[1, 0], [-1, -1], [0, -1]];
-            else if (row === 3) return [[1, -1], [0, -1], [-1, -1]];
-            else if (row === 4) return [[1, -1], [0, -1], [-1, 0]];
-            else if (row === 5) return [[1, -1], [0, -1], [-1, 0]];
-            else if (row === 6) return [[1, 0], [-1, 0], [0, -1]];
-            else return [];
         }
         
         function getRhombusTargets(row, col) {
@@ -21659,10 +21821,6 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             }
             
             return targets;
-        }
-        
-        function getHexgonTargets(row, col) {
-            return getHexgonMoves(row, col);
         }
         
         function getRotatedHexgonTargets(row, col, orientation, isWhite) {
@@ -22065,35 +22223,139 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         function getRotatedTriangleTargets(row, col, orientation, isWhite) {
             console.log(`🔍 getRotatedTriangleTargets called: row=${row}, col=${col}, orientation=${orientation}, isWhite=${isWhite}`);
             
-            // FIXED: Use simple row-based patterns from working game (ignoring rotation for now)
+            // Get the specific movement pattern for this position and orientation
             let offsets = [];
             
             if (isWhite) {
-                // White triangle patterns - simple directional movement by row
-                if (row === 0) offsets = [[1, 1], [-1, 1], [0, 1]];
-                else if (row === 1) offsets = [[1, 1], [-1, 0], [0, 1]];
-                else if (row === 2) offsets = [[1, 1], [-1, 0], [0, 1]];
-                else if (row === 3) offsets = [[1, 0], [0, 1], [-1, 0]];
-                else if (row === 4) offsets = [[1, 0], [0, 1], [-1, 1]];
-                else if (row === 5) offsets = [[1, 0], [0, 1], [-1, 1]];
-                else if (row === 6) offsets = [[1, 1], [-1, 1], [0, 1]];
+                // White triangle patterns - rotation-aware patterns (opposite to black triangles)
+                // White triangles face towards black pieces, so their patterns are opposite
+                if (row === 0) {
+                    // Row 0 patterns - corrected based on position 0-1 observations
+                    if (orientation === 0) offsets = [[0, 1], [1, 1]]; // 02-12 pattern
+                    else if (orientation === 1) offsets = [[1, 0], [1, 1], [0, 1]]; // 11-12-02 pattern
+                    else if (orientation === 2) offsets = [[1, 1], [1, 0], [0, -1]]; // 12-11-00 pattern
+                    else if (orientation === 3) offsets = [[1, 0], [0, -1]]; // 11-00 pattern
+                    else if (orientation === 4) offsets = [[0, -1]]; // 00 pattern (correct)
+                    else if (orientation === 5) offsets = [[0, 1]]; // 02 pattern (correct)
+                } else if (row === 1) {
+                    // Row 1 patterns - corrected based on position 1-2 observations
+                    if (orientation === 0) offsets = [[1, 1], [0, 1], [-1, 0]]; // 23-13-02 pattern
+                    else if (orientation === 1) offsets = [[1, 0], [1, 1], [0, 1]]; // 22-23-13 pattern
+                    else if (orientation === 2) offsets = [[1, 1], [1, 0], [0, -1]]; // 23-22-11 pattern
+                    else if (orientation === 3) offsets = [[1, 0], [0, -1], [-1, -1]]; // 22-11-01 pattern
+                    else if (orientation === 4) offsets = [[0, -1], [-1, -1], [-1, 0]]; // 11-01-02 pattern
+                    else if (orientation === 5) offsets = [[-1, -1], [-1, 0], [0, 1]]; // 01-02-13 pattern
+                } else if (row === 2) {
+                    // Row 2 patterns - corrected based on position 2-2 observations
+                    if (orientation === 0) offsets = [[1, 1], [0, 1], [-1, 0]]; // 33-23-12 pattern
+                    else if (orientation === 1) offsets = [[1, 0], [1, 1], [0, 1]]; // 32-33-23 pattern
+                    else if (orientation === 2) offsets = [[1, 1], [1, 0], [0, -1]]; // 33-32-21 pattern
+                    else if (orientation === 3) offsets = [[1, 0], [0, -1], [-1, -1]]; // 32-21-11 pattern
+                    else if (orientation === 4) offsets = [[0, -1], [-1, -1], [-1, 0]]; // 21-11-12 pattern
+                    else if (orientation === 5) offsets = [[-1, -1], [-1, 0], [0, 1]]; // 11-12-23 pattern
+                } else if (row === 3) {
+                    // Row 3 - White patterns (negated from black row 3)
+                    // Extracted and negated from black: [[1,-1],[0,-1],[-1,-1]] → [[-1,1],[0,1],[1,1]]
+                    if (orientation === 0) offsets = [[-1, 1], [0, 1], [1, 1]];
+                    else if (orientation === 1) offsets = [[0, 1], [1, 1], [1, 0]];
+                    else if (orientation === 2) offsets = [[1, 1], [1, 0], [0, -1]];
+                    else if (orientation === 3) offsets = [[-1, 0], [0, -1], [1, 0]];
+                    else if (orientation === 4) offsets = [[0, -1], [-1, 0], [-1, 1]];
+                    else if (orientation === 5) offsets = [[-1, 0], [-1, 1], [0, 1]];
+                } else if (row === 4) {
+                    // Row 4 - ALWAYS 3 moves (backend pattern with rotation)
+                    if (orientation === 0) offsets = [[1, 0], [0, 1], [-1, 1]];
+                    else if (orientation === 1) offsets = [[1, 0], [1, -1], [0, 1]];
+                    else if (orientation === 2) offsets = [[1, 0], [1, -1], [0, -1]];
+                    else if (orientation === 3) offsets = [[-1, 0], [0, -1], [1, -1]];
+                    else if (orientation === 4) offsets = [[-1, 0], [-1, 1], [0, -1]];
+                    else if (orientation === 5) offsets = [[-1, 0], [-1, 1], [0, 1]];
+                } else if (row === 5) {
+                    // Row 5 patterns - corrected based on position 5-1 observations
+                    if (orientation === 0) offsets = [[1, 0], [0, 1], [-1, 1]]; // 61-52-42 pattern
+                    else if (orientation === 1) offsets = [[1, 0], [1, -1], [0, 1]]; // 61-60-52 pattern
+                    else if (orientation === 2) offsets = [[1, 0], [1, -1], [0, -1]]; // 61-60-50 pattern
+                    else if (orientation === 3) offsets = [[-1, 0], [0, -1], [1, -1]]; // 41-50-60 pattern
+                    else if (orientation === 4) offsets = [[-1, 0], [-1, 1], [0, -1]]; // 41-42-50 pattern
+                    else if (orientation === 5) offsets = [[-1, 0], [-1, 1], [0, 1]]; // 41-42-52 pattern (correct)
+                } else if (row === 6) {
+                    // Row 6 patterns - using same patterns as row 5
+                    if (orientation === 0) offsets = [[1, 0], [0, 1], [-1, 1]]; // 61-52-42 pattern
+                    else if (orientation === 1) offsets = [[1, 0], [1, -1], [0, 1]]; // 61-60-52 pattern
+                    else if (orientation === 2) offsets = [[1, 0], [1, -1], [0, -1]]; // 61-60-50 pattern
+                    else if (orientation === 3) offsets = [[-1, 0], [0, -1], [1, -1]]; // 41-50-60 pattern
+                    else if (orientation === 4) offsets = [[-1, 0], [-1, 1], [0, -1]]; // 41-42-50 pattern
+                    else if (orientation === 5) offsets = [[-1, 0], [-1, 1], [0, 1]]; // 41-42-52 pattern
+                }
             } else {
-                // Black triangle patterns - opposite direction from white
-                if (row === 0) offsets = [[1, 0], [-1, 0], [0, -1]];
-                else if (row === 1) offsets = [[1, 0], [-1, -1], [0, -1]];
-                else if (row === 2) offsets = [[1, 0], [-1, -1], [0, -1]];
-                else if (row === 3) offsets = [[1, -1], [0, -1], [-1, -1]];
-                else if (row === 4) offsets = [[1, -1], [0, -1], [-1, 0]];
-                else if (row === 5) offsets = [[1, -1], [0, -1], [-1, 0]];
-                else if (row === 6) offsets = [[1, 0], [-1, 0], [0, -1]];
+                // Black triangle patterns - specific patterns for each orientation
+                // Most rows use the same rotation patterns, but some rows have special cases
+                if (row === 3) {
+                    // Row 3 patterns - corrected based on position 3-4 observations
+                    if (orientation === 0) offsets = [[1, -1], [0, -1], [-1, -1]]; // 43-33-23 pattern
+                    else if (orientation === 1) offsets = [[0, -1], [-1, -1], [-1, 0]]; // 33-23-24 pattern
+                    else if (orientation === 2) offsets = [[-1, -1], [-1, 0], [0, 1]]; // 23-24-35 pattern
+                    else if (orientation === 3) offsets = [[1, 0], [0, 1], [-1, 0]]; // 44-35-24 pattern
+                    else if (orientation === 4) offsets = [[0, 1], [1, 0], [1, -1]]; // 56-65-64 pattern (correct)
+                    else if (orientation === 5) offsets = [[1, 0], [1, -1], [0, -1]]; // 65-64-54 pattern (correct)
+                } else if (row === 4) {
+                    // Row 4 patterns - using same patterns as rows 5 & 6
+                    if (orientation === 0) offsets = [[1, -1], [0, -1], [-1, 0]]; // 64-54-45 pattern
+                    else if (orientation === 1) offsets = [[0, -1], [-1, 0], [-1, 1]]; // 54-45-46 pattern
+                    else if (orientation === 2) offsets = [[-1, 0], [-1, 1], [0, 1]]; // 45-46-56 pattern
+                    else if (orientation === 3) offsets = [[1, 0], [0, 1], [-1, 1]]; // 65-56-46 pattern
+                    else if (orientation === 4) offsets = [[0, 1], [1, 0], [1, -1]]; // 56-65-64 pattern
+                    else if (orientation === 5) offsets = [[1, 0], [1, -1], [0, -1]]; // 65-64-54 pattern
+                } else if (row === 5 || row === 6) {
+                    // Rows 5 & 6 patterns - these were working correctly before
+                    if (orientation === 0) offsets = [[1, -1], [0, -1], [-1, 0]]; // 64-54-45 pattern
+                    else if (orientation === 1) offsets = [[0, -1], [-1, 0], [-1, 1]]; // 54-45-46 pattern
+                    else if (orientation === 2) offsets = [[-1, 0], [-1, 1], [0, 1]]; // 45-46-56 pattern
+                    else if (orientation === 3) offsets = [[1, 0], [0, 1], [-1, 1]]; // 65-56-46 pattern
+                    else if (orientation === 4) offsets = [[0, 1], [1, 0], [1, -1]]; // 56-65-64 pattern
+                    else if (orientation === 5) offsets = [[1, 0], [1, -1], [0, -1]]; // 65-64-54 pattern
+                } else if (row === 2) {
+                    // Row 2 patterns - corrected based on position 2-3 observations
+                    if (orientation === 0) offsets = [[0, -1], [1, 0], [-1, -1]]; // 22-33-12 pattern
+                    else if (orientation === 1) offsets = [[-1, -1], [0, -1], [-1, 0]]; // 12-22-13 pattern
+                    else if (orientation === 2) offsets = [[-1, 0], [-1, -1], [0, 1]]; // 13-12-24 pattern
+                    else if (orientation === 3) offsets = [[1, 1], [0, 1], [-1, 0]]; // 34-24-13 pattern
+                    else if (orientation === 4) offsets = [[1, 1], [1, 0], [0, 1]]; // 34-33-24 pattern
+                    else if (orientation === 5) offsets = [[1, 1], [0, -1], [1, 0]]; // 34-22-33 pattern
+                } else if (row === 1) {
+                    // Row 1 patterns - corrected based on position 1-3 observations
+                    if (orientation === 0) offsets = [[1, 0], [-1, -1], [0, -1]]; // 23-02-12 pattern
+                    else if (orientation === 1) offsets = [[0, -1], [-1, -1], [-1, 0]]; // 12-02-03 pattern
+                    else if (orientation === 2) offsets = [[-1, -1], [-1, 0], [0, 1]]; // 02-03-14 pattern
+                    else if (orientation === 3) offsets = [[1, 1], [0, 1], [-1, 0]]; // 24-14-03 pattern
+                    else if (orientation === 4) offsets = [[0, 1], [1, 0], [1, 1]]; // 14-23-24 pattern
+                    else if (orientation === 5) offsets = [[1, 1], [1, 0], [0, -1]]; // 24-23-12 pattern
+                } else if (row === 0) {
+                    // Row 0 patterns - corrected based on position 0-3 observations
+                    if (orientation === 0) offsets = [[1, 0], [0, -1]]; // 13-02 pattern
+                    else if (orientation === 1) offsets = [[0, -1]]; // 02 pattern (correct)
+                    else if (orientation === 2) offsets = [[0, 1]]; // 04 pattern (correct)
+                    else if (orientation === 3) offsets = [[0, 1], [1, 1]]; // 04-14 pattern
+                    else if (orientation === 4) offsets = [[0, 1], [1, 1], [1, 0]]; // 04-14-13 pattern
+                    else if (orientation === 5) offsets = [[1, 0], [1, 1], [0, -1]]; // 13-14-02 pattern
+                } else {
+                    // Standard rotation patterns for any other cases
+                    if (orientation === 0) offsets = [[1, -1], [0, -1], [-1, 0]]; // 64-54-45 pattern
+                    else if (orientation === 1) offsets = [[0, -1], [-1, 0], [-1, 1]]; // 54-45-46 pattern
+                    else if (orientation === 2) offsets = [[-1, 0], [-1, 1], [0, 1]]; // 45-46-56 pattern
+                    else if (orientation === 3) offsets = [[1, 0], [0, 1], [-1, 0]]; // 65-56-46 pattern
+                    else if (orientation === 4) offsets = [[0, 1], [1, 0], [1, -1]]; // 56-65-64 pattern
+                    else if (orientation === 5) offsets = [[1, 0], [1, -1], [0, -1]]; // 65-64-54 pattern
+                }
             }
             
             console.log(`🔍 Pattern for ${row}-${col} orientation ${orientation}:`, offsets);
-            console.log(`🔍 Pattern details:`, offsets.map(o => JSON.stringify(o)));
+            console.log(`🔍 Pattern details:`, offsets.map(([dr, dc]) => `[${dr}, ${dc}]`));
             
-            // Calculate target coordinates
-            const targets = offsets.map(([dr, dc]) => [row + dr, col + dc]);
-            console.log(`🎯 Expected target coordinates:`, targets.map(([r, c]) => `hex-${r}-${c}`));
+            // Show expected target coordinates
+            const expectedTargets = offsets.map(([dr, dc]) => `hex-${row + dr}-${col + dc}`);
+            console.log(`🎯 Expected target coordinates:`, expectedTargets);
+            
             return offsets;
         }
         
@@ -22309,11 +22571,17 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 const futureMoves = getSquareTargets(toRow, toCol);
                 mobilityBonus = futureMoves.length * 3;
             } else if (pieceType === 'triangle') {
-                const futureMoves = getWhiteTriangleTargets(toRow, toCol);
-                mobilityBonus = futureMoves.length * 3;
+                // Get current orientation from the piece's current position
+                const fromHexId = `hex-${fromRow}-${fromCol}`;
+                const orientation = getTriangleOrientation(fromHexId);
+                const offsets = getRotatedTriangleTargets(toRow, toCol, orientation, true);
+                mobilityBonus = offsets.length * 3;
             } else if (pieceType === 'hexgon') {
-                const futureMoves = getHexgonTargets(toRow, toCol);
-                mobilityBonus = futureMoves.length * 3;
+                // Get current orientation from the piece's current position
+                const fromHexId = `hex-${fromRow}-${fromCol}`;
+                const orientation = getHexgonOrientation(fromHexId);
+                const targets = getRotatedHexgonTargets(toRow, toCol, orientation, true);
+                mobilityBonus = targets.length * 3;
             }
             score += mobilityBonus;
             
@@ -22332,7 +22600,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             // === TACTICAL THREATS ===
             
             // Check if this move threatens opponent's pieces - BALANCED
-            const threatenedPieces = countThreatenedOpponentPieces(toRow, toCol, pieceType);
+            const threatenedPieces = countThreatenedOpponentPieces(toRow, toCol, pieceType, fromRow, fromCol);
             score += threatenedPieces * 50; // BALANCED - threats matter but not overwhelming
             
             // MAJOR BONUS: Threaten opponent's rhombus!
@@ -22473,15 +22741,39 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         }
         
         // Helper: Count how many opponent pieces this move threatens
-        function countThreatenedOpponentPieces(row, col, pieceType) {
+        function countThreatenedOpponentPieces(row, col, pieceType, fromRow = null, fromCol = null) {
             let count = 0;
             let targets = [];
             
-            if (pieceType === 'square') targets = getSquareTargets(row, col);
-            else if (pieceType === 'triangle') targets = getWhiteTriangleTargets(row, col);
-            else if (pieceType === 'rhombus') targets = getRhombusTargets(row, col);
-            else if (pieceType === 'circle') targets = getCircleTargets(row, col);
-            else if (pieceType === 'hexgon') targets = getHexgonTargets(row, col);
+            if (pieceType === 'square') {
+                targets = getSquareTargets(row, col);
+            } else if (pieceType === 'triangle') {
+                // For triangles, we need orientation - if we have fromRow/fromCol, get it from there
+                if (fromRow !== null && fromCol !== null) {
+                    const fromHexId = `hex-${fromRow}-${fromCol}`;
+                    const orientation = getTriangleOrientation(fromHexId);
+                    const offsets = getRotatedTriangleTargets(row, col, orientation, true);
+                    targets = offsets.map(([dr, dc]) => [row + dr, col + dc]);
+                } else {
+                    // Fallback to orientation 0 if we don't have source position
+                    const offsets = getRotatedTriangleTargets(row, col, 0, true);
+                    targets = offsets.map(([dr, dc]) => [row + dr, col + dc]);
+                }
+            } else if (pieceType === 'rhombus') {
+                targets = getRhombusTargets(row, col);
+            } else if (pieceType === 'circle') {
+                targets = getCircleTargets(row, col);
+            } else if (pieceType === 'hexgon') {
+                // For hexagons, we need orientation - if we have fromRow/fromCol, get it from there
+                if (fromRow !== null && fromCol !== null) {
+                    const fromHexId = `hex-${fromRow}-${fromCol}`;
+                    const orientation = getHexgonOrientation(fromHexId);
+                    targets = getRotatedHexgonTargets(row, col, orientation, true);
+                } else {
+                    // Fallback to orientation 0 if we don't have source position
+                    targets = getRotatedHexgonTargets(row, col, 0, true);
+                }
+            }
             
             targets.forEach(([r, c]) => {
                 const hex = document.getElementById(`hex-${r}-${c}`);
@@ -22531,10 +22823,45 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             // Move piece
             console.log('📦 Removing piece from:', fromHex.id);
+            
+            // Preserve triangle or hexgon orientation if it's a rotatable piece
+            let preservedOrientation = null;
+            let isTriangle = piece.classList.contains('triangle-piece');
+            let isHexgon = piece.classList.contains('hexgon-piece');
+            
+            if (isTriangle) {
+                preservedOrientation = getTriangleOrientation(fromHex.id);
+                console.log('🤖 AI preserving triangle orientation:', preservedOrientation, 'from', fromHex.id);
+            } else if (isHexgon) {
+                preservedOrientation = getHexgonOrientation(fromHex.id);
+                console.log('🤖 AI preserving hexgon orientation:', preservedOrientation, 'from', fromHex.id);
+            }
+            
             piece.remove();
             const newPiece = piece.cloneNode(true);
             console.log('📦 Adding cloned piece to:', toHex.id);
             toHex.appendChild(newPiece);
+            
+            // Restore triangle or hexgon orientation if it was preserved
+            if (preservedOrientation !== null) {
+                if (isTriangle) {
+                    setTriangleOrientation(toHex.id, preservedOrientation);
+                    updateTriangleVisual(toHex.id);
+                    console.log('🤖 AI restored triangle orientation:', preservedOrientation, 'to', toHex.id);
+                    
+                    // Clean up the old orientation from the source hex
+                    triangleOrientations.delete(fromHex.id);
+                    console.log('🤖 AI cleaned up old triangle orientation from:', fromHex.id);
+                } else if (isHexgon) {
+                    setHexgonOrientation(toHex.id, preservedOrientation);
+                    updateHexgonVisual(toHex.id);
+                    console.log('🤖 AI restored hexgon orientation:', preservedOrientation, 'to', toHex.id);
+                    
+                    // Clean up the old orientation from the source hex
+                    hexgonOrientations.delete(fromHex.id);
+                    console.log('🤖 AI cleaned up old hexgon orientation from:', fromHex.id);
+                }
+            }
             
             // Re-setup drag and drop
             setupDragAndDrop();
@@ -25084,9 +25411,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     console.log('   Captures:', captureCount);
                     
                     // For local/AI games, we need to submit as a completed game
+                    // Detect if this is a PvP game or AI game
+                    const opponentType = selectedGameMode === 'pvp' ? 'local' : 'ai';
+                    
                     try {
                         const gameData = {
-                            opponent_type: 'ai', // or 'local' for PvP
+                            opponent_type: opponentType,
                             result: playerWon ? 'win' : 'loss',
                             winner: winner.toLowerCase(),
                             move_count: moveCount,
@@ -25094,6 +25424,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         };
                         
                         console.log('📤 Sending game data:', gameData);
+                        console.log('🎮 Detected game mode:', selectedGameMode, '→ opponent_type:', opponentType);
                         
                         const response = await fetch(`${BACKEND_API_URL || 'https://api.romgon.net'}/api/games/submit-result`, {
                             method: 'POST',
@@ -25131,10 +25462,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 detail: {
                     winner,
                     reason,
-                    isPVP: false
+                    isPVP: selectedGameMode === 'pvp'
                 }
             });
-            console.log('📡 Dispatching gameEnded event');
+            console.log('📡 Dispatching gameEnded event with isPVP:', selectedGameMode === 'pvp');
             document.dispatchEvent(gameEndEvent);
             
             // DIRECT: Switch back to General Navigation
@@ -25827,7 +26158,33 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 const existingPiece = targetHex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
 
                 // CRITICAL: Check if this move would put own rhombus in checkmate
-                const pieceClasses = draggedPiece.className;
+                // Extract ONLY the core piece classes (type + color) to avoid carrying over temporary classes
+                let pieceClasses = '';
+                console.log('🔧 SANITIZING PIECE CLASSES:');
+                console.log('  - draggedPiece.className:', draggedPiece.className);
+                console.log('  - isDraggedWhite:', isDraggedWhite);
+                console.log('  - has triangle-piece?', draggedPiece.classList.contains('triangle-piece'));
+                console.log('  - has hexgon-piece?', draggedPiece.classList.contains('hexgon-piece'));
+                
+                if (draggedPiece.classList.contains('triangle-piece')) {
+                    pieceClasses = isDraggedWhite ? 'triangle-piece white-triangle' : 'triangle-piece';
+                    console.log('  ✅ TRIANGLE detected, sanitized to:', pieceClasses);
+                } else if (draggedPiece.classList.contains('hexgon-piece')) {
+                    pieceClasses = isDraggedWhite ? 'hexgon-piece white-hexgon' : 'hexgon-piece';
+                    console.log('  ✅ HEXAGON detected, sanitized to:', pieceClasses);
+                } else if (draggedPiece.classList.contains('rhombus-piece')) {
+                    pieceClasses = isDraggedWhite ? 'rhombus-piece white-rhombus' : 'rhombus-piece';
+                    console.log('  ✅ RHOMBUS detected, sanitized to:', pieceClasses);
+                } else if (draggedPiece.classList.contains('circle-piece')) {
+                    pieceClasses = isDraggedWhite ? 'circle-piece white-circle' : 'circle-piece';
+                    console.log('  ✅ CIRCLE detected, sanitized to:', pieceClasses);
+                } else if (draggedPiece.classList.contains('square-piece')) {
+                    pieceClasses = isDraggedWhite ? 'square-piece white-piece' : 'square-piece';
+                    console.log('  ✅ SQUARE detected, sanitized to:', pieceClasses);
+                } else {
+                    console.log('  ❌ NO PIECE TYPE DETECTED!');
+                }
+                console.log('  🎯 FINAL pieceClasses:', pieceClasses);
                 // --- PATCH: Allow rhombus to win by skipping checkmate check when moving from base to opponent's base ---
                 const isDraggedRhombus = draggedPiece.classList.contains('rhombus-piece');
                 // Patch: Use full hex ID format for base hexes
@@ -25894,11 +26251,24 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 draggedPiece.remove();
                     
                 const newPiece = document.createElement('div');
+                // CRITICAL: Set className to sanitized pieceClasses to ensure no contamination
                 newPiece.className = pieceClasses;
                 newPiece.draggable = true;
+                
+                // EXTRA SAFETY: Explicitly remove any wrong piece-type classes
+                newPiece.classList.remove('square-piece', 'triangle-piece', 'rhombus-piece', 'circle-piece', 'hexgon-piece');
+                newPiece.classList.remove('white-piece', 'white-triangle', 'white-rhombus', 'white-circle', 'white-hexgon');
+                
+                // Re-add only the correct classes from pieceClasses
+                pieceClasses.split(' ').forEach(cls => {
+                    if (cls.trim()) newPiece.classList.add(cls.trim());
+                });
+                
                 targetHex.appendChild(newPiece);
                 
                 console.log('🎯 Player piece created at:', targetHex.id, 'Classes:', newPiece.className);
+                console.log('🎯 Has triangle-piece?', newPiece.classList.contains('triangle-piece'));
+                console.log('🎯 Has hexgon-piece?', newPiece.classList.contains('hexgon-piece'));
                 console.log('🎯 Immediately after player move - white rhombuses:', document.querySelectorAll('.rhombus-piece.white-rhombus').length);
                 
                 // Restore triangle or hexgon orientation if it was preserved

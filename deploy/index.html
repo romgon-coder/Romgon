@@ -2596,6 +2596,68 @@
         document.getElementById('account-total-moves').textContent = localStats.totalMoves || 0;
         document.getElementById('account-total-captures').textContent = localStats.totalCaptures || 0;
         
+        // ============================================
+        // UPDATE RATING DISPLAY (LOCAL DATA)
+        // ============================================
+        const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+        const userAccount = allUsers[currentUser.username];
+        const localRating = userAccount?.rating || currentUser.rating || 1600;
+        
+        const ratingEl = document.getElementById('hub-current-rating');
+        if (ratingEl) {
+            ratingEl.textContent = localRating;
+            console.log('📊 Initial rating display:', localRating);
+        }
+        
+        const tier = getRatingTier(localRating);
+        const tierEl = document.getElementById('hub-rating-tier');
+        if (tierEl) {
+            tierEl.textContent = `${tier.emoji} ${tier.name}`;
+            tierEl.style.color = tier.color;
+            console.log('📊 Initial tier display:', tier.name);
+        }
+        
+        // Rating stats
+        const ratingGamesEl = document.getElementById('hub-rating-games');
+        const ratingChangesEl = document.getElementById('hub-rating-changes');
+        if (ratingGamesEl) ratingGamesEl.textContent = totalGames;
+        if (ratingChangesEl) ratingChangesEl.textContent = userAccount?.ratingHistory?.length || 0;
+        
+        // Display local rating history
+        if (userAccount?.ratingHistory) {
+            const historyContainer = document.getElementById('hub-rating-history');
+            if (historyContainer && userAccount.ratingHistory.length > 0) {
+                historyContainer.innerHTML = userAccount.ratingHistory.slice(-10).reverse().map(entry => {
+                    const changeColor = entry.change > 0 ? '#27ae60' : '#e74c3c';
+                    const changeSign = entry.change > 0 ? '+' : '';
+                    const resultIcon = entry.result === 'win' ? '✅' : '❌';
+                    const entryDate = new Date(entry.date).toLocaleDateString();
+                    
+                    return `
+                        <div style="
+                            background: rgba(0, 0, 0, 0.3);
+                            padding: 14px;
+                            border-radius: 10px;
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            border-left: 4px solid ${changeColor};
+                            margin-bottom: 8px;
+                        ">
+                            <div style="flex: 1;">
+                                <div style="color: #fff; font-weight: 600; margin-bottom: 4px;">
+                                    ${resultIcon} ${entry.result === 'win' ? 'Victory' : 'Defeat'} vs ${entry.opponent}
+                                </div>
+                                <div style="color: #999; font-size: 0.85em;">
+                                    ${entryDate} • Rating: ${entry.rating} (${changeSign}${entry.change})
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+        
         updateTopBarStats(wins, losses, winRate);
         
         // Try to fetch from backend if registered user (non-blocking)
@@ -2733,6 +2795,36 @@
                     
                     updateTopBarStats(backendWins, backendLosses, Math.round(backendWinRate));
                     console.log('✅ All backend stats applied to Player Hub');
+                    
+                    // ============================================
+                    // UPDATE RATING DISPLAY
+                    // ============================================
+                    const rating = stats.rating || currentUser.rating || 1600;
+                    const ratingEl = document.getElementById('hub-current-rating');
+                    if (ratingEl) {
+                        ratingEl.textContent = rating;
+                        console.log('  ✓ Updated rating:', rating);
+                    }
+                    
+                    // Update rating tier
+                    const tier = getRatingTier(rating);
+                    const tierEl = document.getElementById('hub-rating-tier');
+                    if (tierEl) {
+                        tierEl.textContent = `${tier.emoji} ${tier.name}`;
+                        tierEl.style.color = tier.color;
+                        console.log('  ✓ Updated tier:', tier.name);
+                    }
+                    
+                    // Update rating stats
+                    const ratingGamesEl = document.getElementById('hub-rating-games');
+                    const ratingChangesEl = document.getElementById('hub-rating-changes');
+                    if (ratingGamesEl) ratingGamesEl.textContent = backendTotal;
+                    if (ratingChangesEl) ratingChangesEl.textContent = stats.recentGames?.length || 0;
+                    
+                    // Display rating history from recent games
+                    displayRecentGames(stats.recentGames || []);
+                    
+                    console.log('✅ Rating system updated in Player Hub');
                 } else {
                     console.warn('⚠️ Backend stats not in expected format:', stats);
                 }
