@@ -2556,12 +2556,13 @@
         // Try to fetch from backend if registered user (non-blocking)
         console.log('🔍 Checking if should fetch backend data...');
         console.log('  currentUser.id:', currentUser.id);
+        console.log('  currentUser.username:', currentUser.username);
         console.log('  currentUser.type:', currentUser.type);
-        console.log('  Has JWT token:', !!localStorage.getItem('romgon-jwt'));
+        console.log('  Has JWT token:', hasJWT);
         console.log('  Full currentUser:', currentUser);
         
-        // Fetch backend data if: has ID AND (is registered OR has JWT token)
-        const shouldFetchBackend = currentUser.id && (currentUser.type !== 'guest' || localStorage.getItem('romgon-jwt'));
+        // Fetch backend data if: user is registered AND has JWT token (ID not required)
+        const shouldFetchBackend = hasJWT && currentUser.type === 'registered';
         console.log('  Should fetch backend?', shouldFetchBackend);
         
         if (shouldFetchBackend) {
@@ -2581,6 +2582,14 @@
                 
                 // Update with backend data if available
                 if (stats) {
+                    // CRITICAL: Save user ID from backend if we don't have it
+                    if (stats.userId && !currentUser.id) {
+                        console.log('✅ Saving user ID from backend:', stats.userId);
+                        currentUser.id = stats.userId;
+                        localStorage.setItem('romgon-user', JSON.stringify(currentUser));
+                        window.currentUser = currentUser;
+                    }
+                    
                     // Update email if available from backend
                     if (stats.email) {
                         console.log('✅ Updating email from backend:', stats.email);

@@ -103,6 +103,7 @@ router.get('/stats', authenticateToken, async (req, res) => {
             : 0;
 
         res.json({
+            userId: user.id,
             username: user.username,
             email: user.email,
             rating: user.rating,
