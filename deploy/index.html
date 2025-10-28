@@ -14866,6 +14866,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         let llmMode = false; // LLM AI mode (mockup)
         let currentAIModel = 'claude-sonnet'; // 'claude-sonnet', 'gpt4', 'grok', 'gemini'
         let showAllMoves = false; // Track if "show all moves" mode is active
+        let gameCaptureCount = 0; // Track total captures in current game
         
         // Fog of War variant settings
         let fogOfWarEnabled = false; // Enable/disable Fog of War mode
@@ -19936,6 +19937,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 currentPlayer = 'black';
                 currentTurnPiece = null;
                 gameMode = 'full';
+                gameCaptureCount = 0; // Reset capture counter
                 
                 // Reset board to original configuration
                 resetBoardToOriginal();
@@ -24860,7 +24862,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 
                 // Calculate move count and captures
                 const moveCount = moveHistory ? moveHistory.length : 0;
-                const captureCount = 0; // You may need to track this during gameplay
+                const captureCount = gameCaptureCount; // Use tracked capture count
                 
                 // Record the game
                 const gameRecord = {
@@ -24926,6 +24928,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     console.log('   Result:', playerWon ? 'win' : 'loss');
                     console.log('   Winner:', winner);
                     console.log('   Move count:', moveCount);
+                    console.log('   Captures:', captureCount);
                     
                     // For local/AI games, we need to submit as a completed game
                     try {
@@ -24934,6 +24937,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                             result: playerWon ? 'win' : 'loss',
                             winner: winner.toLowerCase(),
                             move_count: moveCount,
+                            captures: captureCount
                         };
                         
                         console.log('📤 Sending game data:', gameData);
@@ -25711,6 +25715,7 @@ ${moveHistory || '(No moves played yet - starting position)'}
                         // Play captured sound for capture
                         playCapturedSound();
                         didCapture = true;
+                        gameCaptureCount++; // Increment capture counter
                         
                         // Reveal attack area in Fog of War mode
                         revealAttackArea(draggedFromHex.id, targetHex.id);

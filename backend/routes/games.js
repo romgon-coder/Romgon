@@ -605,7 +605,8 @@ router.post('/submit-result',
         body('opponent_type').isIn(['ai', 'local', 'human']).withMessage('Invalid opponent type'),
         body('result').isIn(['win', 'loss', 'draw']).withMessage('Invalid result'),
         body('winner').isString().notEmpty().withMessage('Winner is required'),
-        body('move_count').optional().isInt({ min: 0 }).withMessage('Invalid move count')
+        body('move_count').optional().isInt({ min: 0 }).withMessage('Invalid move count'),
+        body('captures').optional().isInt({ min: 0 }).withMessage('Invalid captures count')
     ],
     async (req, res) => {
         try {
@@ -614,7 +615,7 @@ router.post('/submit-result',
                 return res.status(400).json({ errors: errors.array() });
             }
 
-            const { opponent_type, result, winner, move_count } = req.body;
+            const { opponent_type, result, winner, move_count, captures } = req.body;
             const playerId = req.user.userId;
             const gameId = uuidv4();
 
@@ -645,29 +646,38 @@ router.post('/submit-result',
             // Update user stats
             const db = await dbPromise;
             
+            const moves = move_count || 0;
+            const capturesCount = captures || 0;
+            
             if (result === 'win') {
                 await db.run(
                     `UPDATE users 
                      SET wins = wins + 1, 
-                         total_games = total_games + 1 
+                         total_games = total_games + 1,
+                         total_moves = total_moves + ?,
+                         total_captures = total_captures + ?
                      WHERE id = ?`,
-                    [playerId]
+                    [moves, capturesCount, playerId]
                 );
             } else if (result === 'loss') {
                 await db.run(
                     `UPDATE users 
                      SET losses = losses + 1, 
-                         total_games = total_games + 1 
+                         total_games = total_games + 1,
+                         total_moves = total_moves + ?,
+                         total_captures = total_captures + ?
                      WHERE id = ?`,
-                    [playerId]
+                    [moves, capturesCount, playerId]
                 );
             } else {
                 await db.run(
                     `UPDATE users 
                      SET draws = draws + 1, 
-                         total_games = total_games + 1 
+                         total_games = total_games + 1,
+                         total_moves = total_moves + ?,
+                         total_captures = total_captures + ?
                      WHERE id = ?`,
-                    [playerId]
+                    [moves, capturesCount, playerId]
                 );
             }
 
