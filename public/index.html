@@ -3138,8 +3138,8 @@
     function populateSettingsTab() {
         const currentUser = window.currentUser || JSON.parse(localStorage.getItem('romgon-user') || '{}');
         
-        // Set current username in input
-        const usernameInput = document.getElementById('settings-username-input');
+        // Set current username in input (fixed ID: hub-username-input)
+        const usernameInput = document.getElementById('hub-username-input');
         if (usernameInput && currentUser.username) {
             usernameInput.value = currentUser.username;
         }
@@ -3153,7 +3153,7 @@
     
     // Populate avatar selection grid
     function populateAvatarGrid(currentAvatar) {
-        const avatarGrid = document.getElementById('avatar-selection-grid');
+        const avatarGrid = document.getElementById('avatar-grid');
         if (!avatarGrid) return;
         
         avatarGrid.innerHTML = '';
@@ -3172,7 +3172,7 @@
     
     // Populate badge selection grid
     function populateBadgeGrid(currentUser) {
-        const badgeGrid = document.getElementById('badge-selection-grid');
+        const badgeGrid = document.getElementById('badge-grid');
         if (!badgeGrid) return;
         
         badgeGrid.innerHTML = '';
@@ -3392,7 +3392,7 @@
     
     // Save username
     async function saveUsername() {
-        const usernameInput = document.getElementById('settings-username-input');
+        const usernameInput = document.getElementById('hub-username-input');
         const newUsername = usernameInput.value.trim();
         
         if (!newUsername) {
