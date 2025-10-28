@@ -2599,27 +2599,13 @@
         // ============================================
         // UPDATE RATING DISPLAY (LOCAL DATA)
         // ============================================
-        const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
-        const userAccount = allUsers[currentUser.username];
-        
-        // Check multiple sources for rating (in priority order):
-        // 1. User account in romgon-users
-        // 2. Simple localStorage 'rating' key (used by lobby)
-        // 3. currentUser.rating
-        // 4. Default 1600
-        const simpleRating = localStorage.getItem('rating');
-        const localRating = userAccount?.rating || 
-                           (simpleRating ? parseInt(simpleRating) : null) || 
-                           currentUser.rating || 
-                           1600;
+        // Use centralized RatingManager to get rating
+        const localRating = RatingManager.getCurrentRating(currentUser.username);
         
         const ratingEl = document.getElementById('hub-current-rating');
         if (ratingEl) {
             ratingEl.textContent = localRating;
-            console.log('📊 Initial rating display:', localRating);
-            console.log('   Sources checked: userAccount.rating=' + (userAccount?.rating || 'null') + 
-                       ', localStorage.rating=' + (simpleRating || 'null') + 
-                       ', currentUser.rating=' + (currentUser.rating || 'null'));
+            console.log('📊 Player Hub rating display:', localRating);
         }
         
         const tier = getRatingTier(localRating);
@@ -2732,12 +2718,8 @@
                     // Update rating from backend if available
                     if (stats.rating !== undefined && stats.rating !== null) {
                         console.log('✅ Updating rating from backend:', stats.rating);
-                        // Save to simple 'rating' key used by lobby
-                        localStorage.setItem('rating', stats.rating.toString());
-                        // Also save to currentUser
-                        currentUser.rating = stats.rating;
-                        localStorage.setItem('romgon-user', JSON.stringify(currentUser));
-                        window.currentUser = currentUser;
+                        // Use RatingManager to save to all locations
+                        RatingManager.saveRating(currentUser.username, stats.rating);
                     }
                     
                     // Update avatar if available from backend
@@ -2823,24 +2805,13 @@
                     // ============================================
                     // UPDATE RATING DISPLAY
                     // ============================================
-                    // Check multiple sources for rating:
-                    // 1. Backend stats.rating
-                    // 2. Simple localStorage 'rating' key
-                    // 3. currentUser.rating
-                    // 4. Default 1600
-                    const simpleRating = localStorage.getItem('rating');
-                    const rating = stats.rating || 
-                                  (simpleRating ? parseInt(simpleRating) : null) || 
-                                  currentUser.rating || 
-                                  1600;
+                    // Use RatingManager to get current rating
+                    const rating = RatingManager.getCurrentRating(currentUser.username);
                     
                     const ratingEl = document.getElementById('hub-current-rating');
                     if (ratingEl) {
                         ratingEl.textContent = rating;
-                        console.log('  ✓ Updated rating:', rating);
-                        console.log('   Sources: backend=' + (stats.rating || 'null') + 
-                                   ', localStorage=' + (simpleRating || 'null') + 
-                                   ', currentUser=' + (currentUser.rating || 'null'));
+                        console.log('  ✓ Player Hub rating updated to:', rating);
                     }
                     
                     // Update rating tier
@@ -24999,6 +24970,81 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         const K_FACTOR = 32; // Standard K-factor for rating calculation
         
         /**
+         * CENTRALIZED RATING MANAGER
+         * Single source of truth for all rating operations
+         */
+        const RatingManager = {
+            // Get current rating from all possible sources
+            getCurrentRating(username) {
+                // Priority order:
+                // 1. Simple localStorage 'rating' key (used by lobby and backend sync)
+                const simpleRating = localStorage.getItem('rating');
+                if (simpleRating) {
+                    const rating = parseInt(simpleRating);
+                    console.log('📊 Rating from localStorage["rating"]:', rating);
+                    return rating;
+                }
+                
+                // 2. romgon-users object
+                const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+                if (allUsers[username]?.rating) {
+                    console.log('📊 Rating from romgon-users:', allUsers[username].rating);
+                    return allUsers[username].rating;
+                }
+                
+                // 3. currentUser object
+                const currentUser = window.currentUser || JSON.parse(localStorage.getItem('romgon-user') || '{}');
+                if (currentUser.rating) {
+                    console.log('📊 Rating from currentUser:', currentUser.rating);
+                    return currentUser.rating;
+                }
+                
+                // 4. Default
+                console.log('📊 Rating defaulting to:', INITIAL_RATING);
+                return INITIAL_RATING;
+            },
+            
+            // Save rating to ALL storage locations
+            saveRating(username, newRating) {
+                console.log(`💾 RatingManager: Saving rating ${newRating} for ${username}`);
+                
+                // 1. Simple localStorage 'rating' key (PRIMARY - used by lobby)
+                localStorage.setItem('rating', newRating.toString());
+                console.log('  ✓ Saved to localStorage["rating"]');
+                
+                // 2. romgon-users object
+                const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+                if (allUsers[username]) {
+                    allUsers[username].rating = newRating;
+                    localStorage.setItem('romgon-users', JSON.stringify(allUsers));
+                    console.log('  ✓ Saved to romgon-users');
+                }
+                
+                // 3. currentUser object
+                const currentUserStr = localStorage.getItem('romgon-user');
+                if (currentUserStr) {
+                    const currentUser = JSON.parse(currentUserStr);
+                    currentUser.rating = newRating;
+                    localStorage.setItem('romgon-user', JSON.stringify(currentUser));
+                    window.currentUser = currentUser;
+                    console.log('  ✓ Saved to currentUser');
+                }
+                
+                console.log('✅ Rating saved to all storage locations');
+            },
+            
+            // Initialize rating for new user
+            initializeRating(username) {
+                const currentRating = this.getCurrentRating(username);
+                if (currentRating === INITIAL_RATING) {
+                    this.saveRating(username, INITIAL_RATING);
+                    console.log(`✅ Initialized rating for ${username}: ${INITIAL_RATING}`);
+                }
+                return currentRating;
+            }
+        };
+        
+        /**
          * Calculate new ELO rating based on game result
          * Standard ELO formula: New Rating = Old Rating + K × (Score - Expected Score)
          * @param {number} playerRating - Player's current rating
@@ -25075,62 +25121,47 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
          * @param {string} opponent - Opponent name
          */
         function updatePlayerRating(username, playerWon, opponent) {
-            const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+            console.log(`🎯 updatePlayerRating called: ${username}, won=${playerWon}, opponent=${opponent}`);
             
-            if (!allUsers[username]) {
-                console.warn('⚠️ User not found in localStorage for rating update:', username);
-                console.log('ℹ️ OAuth users use backend rating system - skipping localStorage rating update');
-                // Return a neutral rating change for OAuth users
-                return {
-                    oldRating: 1600,
-                    newRating: 1600,
-                    ratingChange: 0
-                };
-            }
-            
-            // Initialize rating if not exists
-            if (!allUsers[username].rating) {
-                allUsers[username].rating = INITIAL_RATING;
-            }
-            if (!allUsers[username].ratingHistory) {
-                allUsers[username].ratingHistory = [];
-            }
+            // Get current rating using centralized manager
+            const oldRating = RatingManager.getCurrentRating(username);
             
             // Get opponent rating
             const opponentRating = getOpponentRating(opponent);
             
             // Calculate new rating
             const score = playerWon ? 1 : 0;
-            const oldRating = allUsers[username].rating;
             const newRating = calculateEloRating(oldRating, opponentRating, score);
             const ratingChange = newRating - oldRating;
             
-            // Update rating
-            allUsers[username].rating = newRating;
+            // Save using centralized manager (updates ALL storage locations)
+            RatingManager.saveRating(username, newRating);
             
-            // Add to history
-            allUsers[username].ratingHistory.push({
-                date: new Date().toISOString(),
-                rating: newRating,
-                change: ratingChange,
-                opponent: opponent,
-                result: playerWon ? 'win' : 'loss',
-                opponentRating: opponentRating
-            });
-            
-            // Keep only last 100 rating changes
-            if (allUsers[username].ratingHistory.length > 100) {
-                allUsers[username].ratingHistory = allUsers[username].ratingHistory.slice(-100);
+            // Update rating history in romgon-users
+            const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
+            if (allUsers[username]) {
+                if (!allUsers[username].ratingHistory) {
+                    allUsers[username].ratingHistory = [];
+                }
+                
+                allUsers[username].ratingHistory.push({
+                    date: new Date().toISOString(),
+                    rating: newRating,
+                    change: ratingChange,
+                    opponent: opponent,
+                    result: playerWon ? 'win' : 'loss',
+                    opponentRating: opponentRating
+                });
+                
+                // Keep only last 100 rating changes
+                if (allUsers[username].ratingHistory.length > 100) {
+                    allUsers[username].ratingHistory = allUsers[username].ratingHistory.slice(-100);
+                }
+                
+                localStorage.setItem('romgon-users', JSON.stringify(allUsers));
             }
             
-            // Save to localStorage
-            localStorage.setItem('romgon-users', JSON.stringify(allUsers));
-            
-            // ALSO update the simple 'rating' key used by lobby
-            localStorage.setItem('rating', newRating.toString());
-            console.log(`💾 Saved rating to localStorage 'rating' key:`, newRating);
-            
-            console.log(`⭐ Rating Update for ${username}:`);
+            console.log(`⭐ Rating Update Complete for ${username}:`);
             console.log(`   Old Rating: ${oldRating}`);
             console.log(`   New Rating: ${newRating}`);
             console.log(`   Change: ${ratingChange > 0 ? '+' : ''}${ratingChange}`);
