@@ -2544,7 +2544,10 @@
         
         // Set avatar
         const avatarEl = document.getElementById('account-avatar');
-        if (currentUser.picture) {
+        // Check for custom uploaded avatar first, then Google picture
+        if (currentUser.avatarType === 'custom' && currentUser.avatar) {
+            avatarEl.innerHTML = `<img src="${currentUser.avatar}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />`;
+        } else if (currentUser.picture) {
             avatarEl.innerHTML = `<img src="${currentUser.picture}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />`;
         } else {
             avatarEl.textContent = avatar;
@@ -2649,6 +2652,21 @@
                         console.log('✅ Updating username from backend:', stats.username);
                         document.getElementById('account-sidebar-name').textContent = stats.username;
                         document.getElementById('account-username').textContent = stats.username;
+                    }
+                    
+                    // Update avatar if available from backend
+                    if (stats.avatar && stats.avatar_type === 'custom') {
+                        console.log('✅ Updating custom avatar from backend');
+                        currentUser.avatar = stats.avatar;
+                        currentUser.avatarType = 'custom';
+                        localStorage.setItem('romgon-user', JSON.stringify(currentUser));
+                        window.currentUser = currentUser;
+                        
+                        // Update avatar display
+                        const avatarEl = document.getElementById('account-avatar');
+                        if (avatarEl) {
+                            avatarEl.innerHTML = `<img src="${stats.avatar}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />`;
+                        }
                     }
                 }
                 
@@ -25084,9 +25102,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     console.log('   Captures:', captureCount);
                     
                     // For local/AI games, we need to submit as a completed game
+                    // Detect if this is a PvP game or AI game
+                    const opponentType = selectedGameMode === 'pvp' ? 'local' : 'ai';
+                    
                     try {
                         const gameData = {
-                            opponent_type: 'ai', // or 'local' for PvP
+                            opponent_type: opponentType,
                             result: playerWon ? 'win' : 'loss',
                             winner: winner.toLowerCase(),
                             move_count: moveCount,
@@ -25094,6 +25115,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         };
                         
                         console.log('📤 Sending game data:', gameData);
+                        console.log('🎮 Detected game mode:', selectedGameMode, '→ opponent_type:', opponentType);
                         
                         const response = await fetch(`${BACKEND_API_URL || 'https://api.romgon.net'}/api/games/submit-result`, {
                             method: 'POST',
@@ -25131,10 +25153,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 detail: {
                     winner,
                     reason,
-                    isPVP: false
+                    isPVP: selectedGameMode === 'pvp'
                 }
             });
-            console.log('📡 Dispatching gameEnded event');
+            console.log('📡 Dispatching gameEnded event with isPVP:', selectedGameMode === 'pvp');
             document.dispatchEvent(gameEndEvent);
             
             // DIRECT: Switch back to General Navigation
