@@ -16639,6 +16639,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     return;
                 }
                 
+                // Check if Socket.IO is loaded
+                if (typeof io === 'undefined') {
+                    console.error('❌ Socket.IO not loaded - chat unavailable');
+                    return;
+                }
+                
                 // Connect to chat namespace
                 const backendUrl = typeof BACKEND_API_URL !== 'undefined' ? BACKEND_API_URL.replace('/api', '') : 'https://api.romgon.net';
                 this.socket = io(`${backendUrl}/chat`, {
