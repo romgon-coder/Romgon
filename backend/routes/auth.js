@@ -367,7 +367,16 @@ router.get('/google/callback', async (req, res) => {
             [googleUser.id]
         );
 
-        console.log('🔍 Lookup by google_id result:', user ? `FOUND user: ${user.username}` : 'NOT FOUND');
+        console.log('🔍 Lookup by google_id result:', user ? `FOUND user: ${user.username} (ID: ${user.id})` : 'NOT FOUND');
+        
+        if (user) {
+            console.log('📝 Database user details:', JSON.stringify({
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                google_id: user.google_id
+            }));
+        }
 
         if (!user) {
             // Check if user exists by email (for migration of old accounts)
