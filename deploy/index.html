@@ -22162,14 +22162,13 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     else if (orientation === 4) offsets = [[0, -1], [-1, -1], [-1, 0]]; // 21-11-12 pattern
                     else if (orientation === 5) offsets = [[-1, -1], [-1, 0], [0, 1]]; // 11-12-23 pattern
                 } else if (row === 3) {
-                    // Row 3 - White patterns (opposite of black row 3)
-                    // Negated from black: [[1, -1], [0, -1], [-1, -1]] → [[-1, 1], [0, 1], [1, 1]]
-                    if (orientation === 0) offsets = [[-1, 1], [0, 1], [1, 1]];
-                    else if (orientation === 1) offsets = [[0, 1], [1, 1], [1, 0]];
-                    else if (orientation === 2) offsets = [[1, 1], [1, 0], [0, -1]];
-                    else if (orientation === 3) offsets = [[-1, 0], [0, -1], [1, 0]];
-                    else if (orientation === 4) offsets = [[0, -1], [-1, 0], [-1, 1]];
-                    else if (orientation === 5) offsets = [[-1, 0], [-1, 1], [0, 1]];
+                    // Row 3 - Using same pattern structure as Row 2 (based on 2-2 observations)
+                    if (orientation === 0) offsets = [[1, 1], [0, 1], [-1, 0]]; // 44-34-23 pattern
+                    else if (orientation === 1) offsets = [[1, 0], [1, 1], [0, 1]]; // 43-44-34 pattern
+                    else if (orientation === 2) offsets = [[1, 1], [1, 0], [0, -1]]; // 44-43-32 pattern
+                    else if (orientation === 3) offsets = [[1, 0], [0, -1], [-1, -1]]; // 43-32-22 pattern
+                    else if (orientation === 4) offsets = [[0, -1], [-1, -1], [-1, 0]]; // 32-22-23 pattern
+                    else if (orientation === 5) offsets = [[-1, -1], [-1, 0], [0, 1]]; // 22-23-34 pattern
                 } else if (row === 4) {
                     // Row 4 - ALWAYS 3 moves (backend pattern with rotation)
                     if (orientation === 0) offsets = [[1, 0], [0, 1], [-1, 1]];
