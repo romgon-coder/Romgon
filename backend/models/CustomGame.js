@@ -8,9 +8,12 @@ class CustomGame {
 
     // Create custom_games table if it doesn't exist
     async initTable() {
+        // Detect if using PostgreSQL
+        const isPostgres = !!process.env.DATABASE_URL;
+        
         const query = `
             CREATE TABLE IF NOT EXISTS custom_games (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id ${isPostgres ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT'},
                 game_id TEXT UNIQUE NOT NULL,
                 name TEXT NOT NULL,
                 description TEXT,
@@ -25,8 +28,8 @@ class CustomGame {
                 is_public INTEGER DEFAULT 1,
                 is_featured INTEGER DEFAULT 0,
                 tags TEXT,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `;
         
