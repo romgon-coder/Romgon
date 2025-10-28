@@ -2705,6 +2705,17 @@
         const ratingGamesEl = document.getElementById('hub-rating-games');
         const ratingChangesEl = document.getElementById('hub-rating-changes');
         if (ratingGamesEl) ratingGamesEl.textContent = totalGames;
+        
+        // Debug: Check userAccount and ratingHistory
+        console.log('🔍 Player Hub Rating Debug:');
+        console.log('   currentUser.username:', currentUser.username);
+        console.log('   userAccount exists:', !!userAccount);
+        console.log('   userAccount?.ratingHistory exists:', !!userAccount?.ratingHistory);
+        console.log('   ratingHistory length:', userAccount?.ratingHistory?.length || 0);
+        if (userAccount?.ratingHistory) {
+            console.log('   First 3 history entries:', userAccount.ratingHistory.slice(0, 3));
+        }
+        
         if (ratingChangesEl) ratingChangesEl.textContent = userAccount?.ratingHistory?.length || 0;
         
         // Display local rating history
@@ -25195,27 +25206,45 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             // Update rating history in romgon-users
             const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
-            if (allUsers[username]) {
-                if (!allUsers[username].ratingHistory) {
-                    allUsers[username].ratingHistory = [];
-                }
-                
-                allUsers[username].ratingHistory.push({
-                    date: new Date().toISOString(),
-                    rating: newRating,
-                    change: ratingChange,
-                    opponent: opponent,
-                    result: playerWon ? 'win' : 'loss',
-                    opponentRating: opponentRating
-                });
-                
-                // Keep only last 100 rating changes
-                if (allUsers[username].ratingHistory.length > 100) {
-                    allUsers[username].ratingHistory = allUsers[username].ratingHistory.slice(-100);
-                }
-                
-                localStorage.setItem('romgon-users', JSON.stringify(allUsers));
+            
+            // ENSURE user entry exists before adding to history
+            if (!allUsers[username]) {
+                console.warn(`⚠️ User entry missing in romgon-users during rating update. Creating entry for: ${username}`);
+                allUsers[username] = {
+                    username: username,
+                    rating: oldRating,
+                    ratingHistory: [],
+                    stats: { wins: 0, losses: 0, totalGames: 0, totalMoves: 0, totalCaptures: 0 },
+                    games: []
+                };
             }
+            
+            // Initialize rating history if it doesn't exist
+            if (!allUsers[username].ratingHistory) {
+                console.log(`📝 Initializing ratingHistory array for ${username}`);
+                allUsers[username].ratingHistory = [];
+            }
+            
+            // Add rating change to history
+            const historyEntry = {
+                date: new Date().toISOString(),
+                rating: newRating,
+                change: ratingChange,
+                opponent: opponent,
+                result: playerWon ? 'win' : 'loss',
+                opponentRating: opponentRating
+            };
+            allUsers[username].ratingHistory.push(historyEntry);
+            console.log(`📊 Added rating history entry:`, historyEntry);
+            console.log(`   Total history entries: ${allUsers[username].ratingHistory.length}`);
+            
+            // Keep only last 100 rating changes
+            if (allUsers[username].ratingHistory.length > 100) {
+                allUsers[username].ratingHistory = allUsers[username].ratingHistory.slice(-100);
+            }
+            
+            localStorage.setItem('romgon-users', JSON.stringify(allUsers));
+            console.log(`💾 Saved romgon-users to localStorage with ${allUsers[username].ratingHistory.length} history entries`);
             
             console.log(`⭐ Rating Update Complete for ${username}:`);
             console.log(`   Old Rating: ${oldRating}`);
