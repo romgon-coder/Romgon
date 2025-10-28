@@ -22888,10 +22888,16 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 
                 // Get piece type
                 let pieceType = 'square';
+                console.log(`🔬 [displayAllPossibleMoves] Determining piece type for piece at ${pieceHex.id}:`, piece.className);
+                console.log(`🔬 Has triangle-piece?`, piece.classList.contains('triangle-piece'));
+                console.log(`🔬 Has hexgon-piece?`, piece.classList.contains('hexgon-piece'));
+                
                 if (piece.classList.contains('triangle-piece')) pieceType = 'triangle';
                 else if (piece.classList.contains('rhombus-piece')) pieceType = 'rhombus';
                 else if (piece.classList.contains('circle-piece')) pieceType = 'circle';
                 else if (piece.classList.contains('hexgon-piece')) pieceType = 'hexgon';
+                
+                console.log(`🔬 Final pieceType:`, pieceType);
                 
                 // Highlight all possible moves for this piece
                 highlightPieceMoves(parseInt(row), parseInt(col), pieceType, pieceHex.id);
