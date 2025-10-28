@@ -3,27 +3,130 @@
 // ============================================
 
 const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
 const path = require('path');
 const fs = require('fs');
 
-const dbPath = path.join(__dirname, 'romgon.db');
+// Check if PostgreSQL URL is provided (Railway)
+const usePostgres = !!process.env.DATABASE_URL;
 
-// Create or connect to database
-const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-        console.error('❌ Database connection error:', err);
-    } else {
-        console.log('✅ Connected to SQLite database:', dbPath);
-        initializeTables();
-    }
-});
+let db;
+let dbPromise;
+
+if (usePostgres) {
+    console.log('🐘 Using PostgreSQL database');
+    
+    // PostgreSQL connection pool
+    const pool = new Pool({
+        connectionString: process.env.DATABASE_URL,
+        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    });
+
+    // Test connection
+    pool.query('SELECT NOW()', (err, res) => {
+        if (err) {
+            console.error('❌ PostgreSQL connection error:', err);
+        } else {
+            console.log('✅ Connected to PostgreSQL database');
+            initializeTables();
+        }
+    });
+
+    // PostgreSQL promise wrapper
+    dbPromise = {
+        run: async (sql, params = []) => {
+            // Convert SQLite syntax to PostgreSQL
+            sql = sql.replace(/\?/g, (match, offset) => {
+                const index = sql.substring(0, offset).split('?').length;
+                return `$${index}`;
+            });
+            
+            const result = await pool.query(sql, params);
+            return { 
+                id: result.rows[0]?.id, 
+                changes: result.rowCount 
+            };
+        },
+
+        get: async (sql, params = []) => {
+            // Convert SQLite syntax to PostgreSQL
+            sql = sql.replace(/\?/g, (match, offset) => {
+                const index = sql.substring(0, offset).split('?').length;
+                return `$${index}`;
+            });
+            
+            const result = await pool.query(sql, params);
+            return result.rows[0];
+        },
+
+        all: async (sql, params = []) => {
+            // Convert SQLite syntax to PostgreSQL
+            sql = sql.replace(/\?/g, (match, offset) => {
+                const index = sql.substring(0, offset).split('?').length;
+                return `$${index}`;
+            });
+            
+            const result = await pool.query(sql, params);
+            return result.rows || [];
+        }
+    };
+
+    db = pool; // For compatibility
+
+} else {
+    console.log('📁 Using SQLite database (local development)');
+    
+    const dbPath = path.join(__dirname, 'romgon.db');
+
+    // Create or connect to database
+    db = new sqlite3.Database(dbPath, (err) => {
+        if (err) {
+            console.error('❌ Database connection error:', err);
+        } else {
+            console.log('✅ Connected to SQLite database:', dbPath);
+            initializeTables();
+        }
+    });
+
+    // SQLite promise wrapper
+    dbPromise = {
+        run: (sql, params = []) => {
+            return new Promise((resolve, reject) => {
+                db.run(sql, params, function(err) {
+                    if (err) reject(err);
+                    else resolve({ id: this.lastID, changes: this.changes });
+                });
+            });
+        },
+
+        get: (sql, params = []) => {
+            return new Promise((resolve, reject) => {
+                db.get(sql, params, (err, row) => {
+                    if (err) reject(err);
+                    else resolve(row);
+                });
+            });
+        },
+
+        all: (sql, params = []) => {
+            return new Promise((resolve, reject) => {
+                db.all(sql, params, (err, rows) => {
+                    if (err) reject(err);
+                    else resolve(rows || []);
+                });
+            });
+        }
+    };
+}
 
 // Initialize all tables
-function initializeTables() {
-    // Users table
-    db.run(`
+async function initializeTables() {
+    const isPostgres = usePostgres;
+    
+    // Users table - PostgreSQL compatible syntax
+    const createUsersTable = `
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id ${isPostgres ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT'},
             username TEXT UNIQUE NOT NULL,
             email TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL,
@@ -36,56 +139,29 @@ function initializeTables() {
             member_level TEXT DEFAULT 'Bronze',
             is_guest INTEGER DEFAULT 0,
             google_id TEXT UNIQUE,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            avatar TEXT DEFAULT '😀',
+            avatar_type TEXT DEFAULT 'emoji',
+            badge TEXT,
+            created_at TIMESTAMP DEFAULT ${isPostgres ? 'CURRENT_TIMESTAMP' : "CURRENT_TIMESTAMP"},
+            updated_at TIMESTAMP DEFAULT ${isPostgres ? 'CURRENT_TIMESTAMP' : "CURRENT_TIMESTAMP"}
         )
-    `, (err) => {
-        if (err) console.error('❌ Error creating users table:', err);
-        else console.log('✅ Users table ready');
-        
-        // Add columns if they don't exist (for existing databases)
-        db.run('ALTER TABLE users ADD COLUMN is_guest INTEGER DEFAULT 0', (err) => {
-            if (err && !err.message.includes('duplicate column')) {
-                console.error('Warning: Could not add is_guest column:', err.message);
-            }
-        });
-        
-        // Add google_id column without UNIQUE constraint (will add constraint later if needed)
-        db.run('ALTER TABLE users ADD COLUMN google_id TEXT', (err) => {
-            if (err && !err.message.includes('duplicate column')) {
-                console.error('Warning: Could not add google_id column:', err.message);
-            } else if (!err) {
-                console.log('✅ Added google_id column');
-            }
-        });
-        
-        // Add avatar column for custom profile pictures
-        db.run('ALTER TABLE users ADD COLUMN avatar TEXT DEFAULT "😀"', (err) => {
-            if (err && !err.message.includes('duplicate column')) {
-                console.error('Warning: Could not add avatar column:', err.message);
-            } else if (!err) {
-                console.log('✅ Added avatar column');
-            }
-        });
-        
-        // Add avatar_type column to distinguish emoji vs custom image
-        db.run('ALTER TABLE users ADD COLUMN avatar_type TEXT DEFAULT "emoji"', (err) => {
-            if (err && !err.message.includes('duplicate column')) {
-                console.error('Warning: Could not add avatar_type column:', err.message);
-            } else if (!err) {
-                console.log('✅ Added avatar_type column');
-            }
-        });
-        
-        // Add badge column for user achievements
-        db.run('ALTER TABLE users ADD COLUMN badge TEXT', (err) => {
-            if (err && !err.message.includes('duplicate column')) {
-                console.error('Warning: Could not add badge column:', err.message);
-            } else if (!err) {
-                console.log('✅ Added badge column');
-            }
-        });
-    });
+    `;
+    
+    try {
+        if (isPostgres) {
+            await dbPromise.run(createUsersTable.replace(/\?/g, (m, i) => `$${i+1}`));
+        } else {
+            await new Promise((resolve, reject) => {
+                db.run(createUsersTable, (err) => {
+                    if (err) reject(err);
+                    else resolve();
+                });
+            });
+        }
+        console.log('✅ Users table ready');
+    } catch (err) {
+        console.error('❌ Error creating users table:', err);
+    }
 
     // Games table
     db.run(`
@@ -237,35 +313,5 @@ function initializeTables() {
         else console.log('✅ API keys table ready');
     });
 }
-
-// Promise-based database wrapper
-const dbPromise = {
-    run: (sql, params = []) => {
-        return new Promise((resolve, reject) => {
-            db.run(sql, params, function(err) {
-                if (err) reject(err);
-                else resolve({ id: this.lastID, changes: this.changes });
-            });
-        });
-    },
-
-    get: (sql, params = []) => {
-        return new Promise((resolve, reject) => {
-            db.get(sql, params, (err, row) => {
-                if (err) reject(err);
-                else resolve(row);
-            });
-        });
-    },
-
-    all: (sql, params = []) => {
-        return new Promise((resolve, reject) => {
-            db.all(sql, params, (err, rows) => {
-                if (err) reject(err);
-                else resolve(rows || []);
-            });
-        });
-    }
-};
 
 module.exports = { db, dbPromise };
