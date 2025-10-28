@@ -25495,11 +25495,16 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                             result: playerWon ? 'win' : 'loss',
                             winner: winner.toLowerCase(),
                             move_count: moveCount,
-                            captures: captureCount
+                            captures: captureCount,
+                            // Include rating information
+                            old_rating: ratingUpdate.oldRating,
+                            new_rating: ratingUpdate.newRating,
+                            rating_change: ratingUpdate.ratingChange
                         };
                         
                         console.log('📤 Sending game data:', gameData);
                         console.log('🎮 Detected game mode:', selectedGameMode, '→ opponent_type:', opponentType);
+                        console.log('⭐ Rating info: old=' + ratingUpdate.oldRating + ', new=' + ratingUpdate.newRating + ', change=' + ratingUpdate.ratingChange);
                         
                         const response = await fetch(`${BACKEND_API_URL || 'https://api.romgon.net'}/api/games/submit-result`, {
                             method: 'POST',
@@ -25515,6 +25520,13 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         if (response.ok) {
                             const result = await response.json();
                             console.log('✅ Game result submitted to backend successfully:', result);
+                            
+                            // If backend returns updated rating, sync it locally
+                            if (result.rating !== undefined && result.rating !== null) {
+                                console.log('🔄 Backend returned updated rating:', result.rating);
+                                RatingManager.saveRating(currentUser.username, result.rating);
+                                console.log('✅ Local rating synced with backend');
+                            }
                         } else {
                             const errorText = await response.text();
                             console.error('❌ Backend game submission failed:', response.status, response.statusText);
