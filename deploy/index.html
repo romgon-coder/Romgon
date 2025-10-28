@@ -25852,10 +25852,13 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 
                 // Preserve triangle or hexgon orientation if it's a rotatable piece
                 let preservedOrientation = null;
-                if (draggedPiece.classList.contains('triangle-piece')) {
+                let isTriangle = draggedPiece.classList.contains('triangle-piece');
+                let isHexgon = draggedPiece.classList.contains('hexgon-piece');
+                
+                if (isTriangle) {
                     preservedOrientation = getTriangleOrientation(fromHexId);
                     console.log('Preserving triangle orientation:', preservedOrientation, 'from', fromHexId);
-                } else if (draggedPiece.classList.contains('hexgon-piece')) {
+                } else if (isHexgon) {
                     preservedOrientation = getHexgonOrientation(fromHexId);
                     console.log('Preserving hexgon orientation:', preservedOrientation, 'from', fromHexId);
                 }
@@ -25873,7 +25876,7 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 // Restore triangle or hexgon orientation if it was preserved
                 if (preservedOrientation !== null) {
                     const toHexId = targetHex.id;
-                    if (draggedPiece.classList.contains('triangle-piece')) {
+                    if (isTriangle) {
                         setTriangleOrientation(toHexId, preservedOrientation);
                         updateTriangleVisual(toHexId);
                         console.log('Restored triangle orientation:', preservedOrientation, 'to', toHexId);
@@ -25881,7 +25884,7 @@ ${moveHistory || '(No moves played yet - starting position)'}
                         // Clean up the old orientation from the source hex
                         triangleOrientations.delete(fromHexId);
                         console.log('Cleaned up old triangle orientation from:', fromHexId);
-                    } else if (draggedPiece.classList.contains('hexgon-piece')) {
+                    } else if (isHexgon) {
                         setHexgonOrientation(toHexId, preservedOrientation);
                         updateHexgonVisual(toHexId);
                         console.log('Restored hexgon orientation:', preservedOrientation, 'to', toHexId);
