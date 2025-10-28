@@ -2601,12 +2601,25 @@
         // ============================================
         const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
         const userAccount = allUsers[currentUser.username];
-        const localRating = userAccount?.rating || currentUser.rating || 1600;
+        
+        // Check multiple sources for rating (in priority order):
+        // 1. User account in romgon-users
+        // 2. Simple localStorage 'rating' key (used by lobby)
+        // 3. currentUser.rating
+        // 4. Default 1600
+        const simpleRating = localStorage.getItem('rating');
+        const localRating = userAccount?.rating || 
+                           (simpleRating ? parseInt(simpleRating) : null) || 
+                           currentUser.rating || 
+                           1600;
         
         const ratingEl = document.getElementById('hub-current-rating');
         if (ratingEl) {
             ratingEl.textContent = localRating;
             console.log('📊 Initial rating display:', localRating);
+            console.log('   Sources checked: userAccount.rating=' + (userAccount?.rating || 'null') + 
+                       ', localStorage.rating=' + (simpleRating || 'null') + 
+                       ', currentUser.rating=' + (currentUser.rating || 'null'));
         }
         
         const tier = getRatingTier(localRating);
@@ -2799,11 +2812,24 @@
                     // ============================================
                     // UPDATE RATING DISPLAY
                     // ============================================
-                    const rating = stats.rating || currentUser.rating || 1600;
+                    // Check multiple sources for rating:
+                    // 1. Backend stats.rating
+                    // 2. Simple localStorage 'rating' key
+                    // 3. currentUser.rating
+                    // 4. Default 1600
+                    const simpleRating = localStorage.getItem('rating');
+                    const rating = stats.rating || 
+                                  (simpleRating ? parseInt(simpleRating) : null) || 
+                                  currentUser.rating || 
+                                  1600;
+                    
                     const ratingEl = document.getElementById('hub-current-rating');
                     if (ratingEl) {
                         ratingEl.textContent = rating;
                         console.log('  ✓ Updated rating:', rating);
+                        console.log('   Sources: backend=' + (stats.rating || 'null') + 
+                                   ', localStorage=' + (simpleRating || 'null') + 
+                                   ', currentUser=' + (currentUser.rating || 'null'));
                     }
                     
                     // Update rating tier
