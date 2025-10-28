@@ -22581,11 +22581,17 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 const futureMoves = getSquareTargets(toRow, toCol);
                 mobilityBonus = futureMoves.length * 3;
             } else if (pieceType === 'triangle') {
-                const futureMoves = getWhiteTriangleTargets(toRow, toCol);
-                mobilityBonus = futureMoves.length * 3;
+                // Get current orientation from the piece's current position
+                const fromHexId = `hex-${fromRow}-${fromCol}`;
+                const orientation = getTriangleOrientation(fromHexId);
+                const offsets = getRotatedTriangleTargets(toRow, toCol, orientation, true);
+                mobilityBonus = offsets.length * 3;
             } else if (pieceType === 'hexgon') {
-                const futureMoves = getHexgonTargets(toRow, toCol);
-                mobilityBonus = futureMoves.length * 3;
+                // Get current orientation from the piece's current position
+                const fromHexId = `hex-${fromRow}-${fromCol}`;
+                const orientation = getHexgonOrientation(fromHexId);
+                const targets = getRotatedHexgonTargets(toRow, toCol, orientation, true);
+                mobilityBonus = targets.length * 3;
             }
             score += mobilityBonus;
             
@@ -22604,7 +22610,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             // === TACTICAL THREATS ===
             
             // Check if this move threatens opponent's pieces - BALANCED
-            const threatenedPieces = countThreatenedOpponentPieces(toRow, toCol, pieceType);
+            const threatenedPieces = countThreatenedOpponentPieces(toRow, toCol, pieceType, fromRow, fromCol);
             score += threatenedPieces * 50; // BALANCED - threats matter but not overwhelming
             
             // MAJOR BONUS: Threaten opponent's rhombus!
@@ -22745,15 +22751,39 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         }
         
         // Helper: Count how many opponent pieces this move threatens
-        function countThreatenedOpponentPieces(row, col, pieceType) {
+        function countThreatenedOpponentPieces(row, col, pieceType, fromRow = null, fromCol = null) {
             let count = 0;
             let targets = [];
             
-            if (pieceType === 'square') targets = getSquareTargets(row, col);
-            else if (pieceType === 'triangle') targets = getWhiteTriangleTargets(row, col);
-            else if (pieceType === 'rhombus') targets = getRhombusTargets(row, col);
-            else if (pieceType === 'circle') targets = getCircleTargets(row, col);
-            else if (pieceType === 'hexgon') targets = getHexgonTargets(row, col);
+            if (pieceType === 'square') {
+                targets = getSquareTargets(row, col);
+            } else if (pieceType === 'triangle') {
+                // For triangles, we need orientation - if we have fromRow/fromCol, get it from there
+                if (fromRow !== null && fromCol !== null) {
+                    const fromHexId = `hex-${fromRow}-${fromCol}`;
+                    const orientation = getTriangleOrientation(fromHexId);
+                    const offsets = getRotatedTriangleTargets(row, col, orientation, true);
+                    targets = offsets.map(([dr, dc]) => [row + dr, col + dc]);
+                } else {
+                    // Fallback to orientation 0 if we don't have source position
+                    const offsets = getRotatedTriangleTargets(row, col, 0, true);
+                    targets = offsets.map(([dr, dc]) => [row + dr, col + dc]);
+                }
+            } else if (pieceType === 'rhombus') {
+                targets = getRhombusTargets(row, col);
+            } else if (pieceType === 'circle') {
+                targets = getCircleTargets(row, col);
+            } else if (pieceType === 'hexgon') {
+                // For hexagons, we need orientation - if we have fromRow/fromCol, get it from there
+                if (fromRow !== null && fromCol !== null) {
+                    const fromHexId = `hex-${fromRow}-${fromCol}`;
+                    const orientation = getHexgonOrientation(fromHexId);
+                    targets = getRotatedHexgonTargets(row, col, orientation, true);
+                } else {
+                    // Fallback to orientation 0 if we don't have source position
+                    targets = getRotatedHexgonTargets(row, col, 0, true);
+                }
+            }
             
             targets.forEach(([r, c]) => {
                 const hex = document.getElementById(`hex-${r}-${c}`);
@@ -22803,10 +22833,45 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             // Move piece
             console.log('📦 Removing piece from:', fromHex.id);
+            
+            // Preserve triangle or hexgon orientation if it's a rotatable piece
+            let preservedOrientation = null;
+            let isTriangle = piece.classList.contains('triangle-piece');
+            let isHexgon = piece.classList.contains('hexgon-piece');
+            
+            if (isTriangle) {
+                preservedOrientation = getTriangleOrientation(fromHex.id);
+                console.log('🤖 AI preserving triangle orientation:', preservedOrientation, 'from', fromHex.id);
+            } else if (isHexgon) {
+                preservedOrientation = getHexgonOrientation(fromHex.id);
+                console.log('🤖 AI preserving hexgon orientation:', preservedOrientation, 'from', fromHex.id);
+            }
+            
             piece.remove();
             const newPiece = piece.cloneNode(true);
             console.log('📦 Adding cloned piece to:', toHex.id);
             toHex.appendChild(newPiece);
+            
+            // Restore triangle or hexgon orientation if it was preserved
+            if (preservedOrientation !== null) {
+                if (isTriangle) {
+                    setTriangleOrientation(toHex.id, preservedOrientation);
+                    updateTriangleVisual(toHex.id);
+                    console.log('🤖 AI restored triangle orientation:', preservedOrientation, 'to', toHex.id);
+                    
+                    // Clean up the old orientation from the source hex
+                    triangleOrientations.delete(fromHex.id);
+                    console.log('🤖 AI cleaned up old triangle orientation from:', fromHex.id);
+                } else if (isHexgon) {
+                    setHexgonOrientation(toHex.id, preservedOrientation);
+                    updateHexgonVisual(toHex.id);
+                    console.log('🤖 AI restored hexgon orientation:', preservedOrientation, 'to', toHex.id);
+                    
+                    // Clean up the old orientation from the source hex
+                    hexgonOrientations.delete(fromHex.id);
+                    console.log('🤖 AI cleaned up old hexgon orientation from:', fromHex.id);
+                }
+            }
             
             // Re-setup drag and drop
             setupDragAndDrop();
