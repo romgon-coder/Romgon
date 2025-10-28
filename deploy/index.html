@@ -26055,6 +26055,13 @@ ${moveHistory || '(No moves played yet - starting position)'}
                         updateBaseDefenceDisplay();
                     } else {
                         console.log('📋 Turn NOT ending yet - rotatable piece (triangle/hexagon) can still rotate');
+                        console.log('🔍 NEW PIECE ANALYSIS at turn-end check:');
+                        console.log('  - Classes:', newPiece.className);
+                        console.log('  - Has triangle-piece?', newPiece.classList.contains('triangle-piece'));
+                        console.log('  - Has hexgon-piece?', newPiece.classList.contains('hexgon-piece'));
+                        console.log('  - Has white-triangle?', newPiece.classList.contains('white-triangle'));
+                        console.log('  - Has white-hexgon?', newPiece.classList.contains('white-hexgon'));
+                        console.log('  - Parent hex:', newPiece.parentElement ? newPiece.parentElement.id : 'NO PARENT');
                     } // triangles and hexagons end turn via rotation/KEEP flow
                 }
 
