@@ -15273,10 +15273,6 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 const [, row, col] = hexId.match(/hex-(\d+)-(\d+)/);
                 console.log('📍 Piece position:', row, col);
                 
-                if (this.classList.contains('circle-piece')) {
-                    console.log('🔵 Calling showCircleMovementPattern');
-                    showCircleMovementPattern(parseInt(row), parseInt(col));
-                }
                 const rotationControls = document.getElementById('rotation-controls');
                 if (rotationControls) {
                     if (this.classList.contains('triangle-piece') || this.classList.contains('hexgon-piece')) {
@@ -15285,16 +15281,28 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         rotationControls.style.display = 'none';
                     }
                 }
+                
+                console.log('🎬 [UNDO HANDLER] Showing movement pattern for:', this.className);
+                console.log('Is circle?', this.classList.contains('circle-piece'));
+                console.log('Is hexgon?', this.classList.contains('hexgon-piece'));
+                console.log('Is triangle?', this.classList.contains('triangle-piece'));
+                console.log('Is rhombus?', this.classList.contains('rhombus-piece'));
+                
                 if (this.classList.contains('circle-piece')) {
+                    console.log('📞 Calling showCircleMovementPattern');
                     showCircleMovementPattern(parseInt(row), parseInt(col));
                 } else if (this.classList.contains('triangle-piece')) {
+                    console.log('📞 Calling showTriangleMovementPattern');
                     // Both white and black triangles use the same rotation-aware movement system
                     showTriangleMovementPattern(parseInt(row), parseInt(col));
                 } else if (this.classList.contains('hexgon-piece')) {
+                    console.log('📞 Calling showHexgonMovementPattern');
                     showHexgonMovementPattern(parseInt(row), parseInt(col));
                 } else if (this.classList.contains('rhombus-piece')) {
+                    console.log('📞 Calling showRhombusMovementPattern');
                     showRhombusMovementPattern(parseInt(row), parseInt(col));
                 } else {
+                    console.log('📞 Calling showSquareMovementPattern');
                     showSquareMovementPattern(parseInt(row), parseInt(col));
                 }
             });
@@ -25616,11 +25624,20 @@ ${moveHistory || '(No moves played yet - starting position)'}
                         }
                     }
                     
+                    console.log('🎬 [INITIAL SETUP] Showing movement pattern for:', this.className);
+                    console.log('Is circle?', this.classList.contains('circle-piece'));
+                    console.log('Is hexgon?', this.classList.contains('hexgon-piece'));
+                    console.log('Is triangle?', this.classList.contains('triangle-piece'));
+                    console.log('Is rhombus?', this.classList.contains('rhombus-piece'));
+                    
                     if (this.classList.contains('circle-piece')) {
+                        console.log('📞 Calling showCircleMovementPattern');
                         showCircleMovementPattern(parseInt(row), parseInt(col));
                     } else if (this.classList.contains('hexgon-piece')) {
+                        console.log('📞 Calling showHexgonMovementPattern');
                         showHexgonMovementPattern(parseInt(row), parseInt(col));
                     } else if (this.classList.contains('triangle-piece')) {
+                        console.log('📞 Calling showTriangleMovementPattern');
                         // Both white and black triangles use the same rotation-aware movement system
                         showTriangleMovementPattern(parseInt(row), parseInt(col));
                     } else if (this.classList.contains('rhombus-piece')) {
