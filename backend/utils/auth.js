@@ -32,14 +32,21 @@ async function comparePassword(password, hash) {
 // JWT TOKEN MANAGEMENT
 // ============================================
 
-function generateToken(userId, username, expiresIn = '7d') {
+function generateToken(userId, username, email = null, expiresIn = '7d') {
     try {
+        const payload = {
+            userId,
+            username,
+            iat: Math.floor(Date.now() / 1000)
+        };
+        
+        // Include email if provided
+        if (email) {
+            payload.email = email;
+        }
+        
         return jwt.sign(
-            {
-                userId,
-                username,
-                iat: Math.floor(Date.now() / 1000)
-            },
+            payload,
             JWT_SECRET,
             { expiresIn }
         );

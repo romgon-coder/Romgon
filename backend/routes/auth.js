@@ -102,8 +102,8 @@ router.post('/register', async (req, res) => {
 
         const userId = result.id;
 
-        // Generate token
-        const token = generateToken(userId, username);
+        // Generate token with email
+        const token = generateToken(userId, username, email);
 
         console.log(`✅ New user registered: ${username} (ID: ${userId})`);
 
@@ -168,8 +168,8 @@ router.post('/login', async (req, res) => {
             });
         }
 
-        // Generate token
-        const token = generateToken(user.id, user.username);
+        // Generate token with email
+        const token = generateToken(user.id, user.username, user.email);
 
         console.log(`✅ User logged in: ${username} (ID: ${user.id})`);
 
@@ -257,7 +257,7 @@ router.post('/guest', async (req, res) => {
 
         const userId = result.id;  // Fixed: use result.id instead of result.lastID
 
-        // Generate token
+        // Generate token (no real email for guest accounts)
         const token = generateToken(userId, username);
 
         res.status(201).json({
@@ -405,8 +405,8 @@ router.get('/google/callback', async (req, res) => {
             console.log('✅ Existing user found:', user.username);
         }
 
-        // Generate JWT token
-        const token = generateToken(user.id, user.username);
+        // Generate JWT token with email
+        const token = generateToken(user.id, user.username, user.email);
         console.log('✅ JWT generated, redirecting to frontend...');
 
         // Redirect to frontend with token
