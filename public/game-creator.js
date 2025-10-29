@@ -16,6 +16,8 @@ const gameData = {
     board: {
         width: 11,
         height: 11,
+        rows: 7,
+        colsPerRow: [4, 5, 6, 7, 6, 5, 4],
         zones: [],
         placements: [],
         deletedHexes: []
