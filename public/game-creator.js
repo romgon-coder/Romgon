@@ -998,7 +998,7 @@ function redrawBoard() {
     });
     gameData.board.zones = validZones;
     
-    // Get zone colors
+    // Get zone colors and save them to board config
     const zoneColors = {
         base: document.getElementById('baseZoneColor')?.value || '#8b4513',
         inner: document.getElementById('innerZoneColor')?.value || '#6d3a13',
@@ -1006,6 +1006,9 @@ function redrawBoard() {
         outer: document.getElementById('outerZoneColor')?.value || '#fcc49c',
         dead: document.getElementById('deadZoneColor')?.value || '#333333'
     };
+    
+    // Save zone colors to board config for later use
+    gameData.board.zoneColors = zoneColors;
 
     for (let row = 0; row < height; row++) {
         for (let col = 0; col < width; col++) {
@@ -1015,7 +1018,9 @@ function redrawBoard() {
             // SKIP DELETED HEXES - don't draw them at all
             if (isDeleted) continue;
             
-            const xOffset = (row % 2 === 0) ? (bHexWidth * 0.5) : 0;
+            // FIX: Odd rows (1, 3, 5...) should be offset to the right by half hex width
+            // This creates the proper hexagonal honeycomb pattern
+            const xOffset = (row % 2 === 1) ? (bHexWidth * 0.5) : 0;
             const x = centerX + (col - width/2) * colSpacing + xOffset;
             const y = centerY + (row - height/2) * rowSpacing;
             
