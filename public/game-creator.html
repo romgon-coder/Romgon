@@ -1005,6 +1005,91 @@
                 <button class="btn btn-secondary" onclick="clearBoardPlacements()">Clear All Placements</button>
             </div>
 
+            <div class="section">
+                <h2>🎮 Special Board Mechanics</h2>
+                <p style="color: #666; margin-bottom: 15px;">Configure special zone behaviors and hex-based mechanics for your game</p>
+                
+                <h3 style="margin: 20px 0 15px;">Zone-Based Mechanics</h3>
+                
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="boardMechanicTeleport">
+                    <label for="boardMechanicTeleport">🌀 Teleport Zones - Mark specific zones that teleport pieces to other locations</label>
+                </div>
+                
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="boardMechanicTrap">
+                    <label for="boardMechanicTrap">🔒 Trap Zones - Hexes that immobilize pieces when entered</label>
+                </div>
+                
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="boardMechanicGoal">
+                    <label for="boardMechanicGoal">🎯 Goal/Exit Zones - Mark zones as winning exit points</label>
+                </div>
+                
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="boardMechanicCollectable">
+                    <label for="boardMechanicCollectable">⭐ Collectible Hexes - Mark hexes with items to collect</label>
+                </div>
+                
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="boardMechanicOneWay">
+                    <label for="boardMechanicOneWay">➡️ Directional Hexes - Hexes that only allow movement in certain directions</label>
+                </div>
+                
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="boardMechanicSlide">
+                    <label for="boardMechanicSlide">🧊 Slide/Ice Zones - Pieces slide until hitting obstacle (ice physics)</label>
+                </div>
+                
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="boardMechanicBoost">
+                    <label for="boardMechanicBoost">⚡ Boost Zones - Double movement range when on these hexes</label>
+                </div>
+                
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="boardMechanicSlow">
+                    <label for="boardMechanicSlow">🐌 Slow Zones - Reduced movement range (mud, swamp)</label>
+                </div>
+                
+                <h3 style="margin: 30px 0 15px;">Board-Wide Rules</h3>
+                
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="boardMechanicWrap">
+                    <label for="boardMechanicWrap">🔄 Wraparound Board - Edges connect (like Pac-Man, torus topology)</label>
+                </div>
+                
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="boardMechanicFog">
+                    <label for="boardMechanicFog">🌫️ Fog of War - Players only see nearby hexes</label>
+                </div>
+                
+                <div class="control-group" id="fogRangeGroup" style="margin-left: 30px; display: none;">
+                    <label>Visibility Range (hexes)</label>
+                    <input type="number" id="fogRange" min="1" max="10" value="3">
+                    <small>How many hexes away players can see (1-10)</small>
+                </div>
+                
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="boardMechanicDynamic">
+                    <label for="boardMechanicDynamic">🔀 Dynamic Board - Board changes during gameplay (hexes appear/disappear)</label>
+                </div>
+                
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="boardMechanicGravity">
+                    <label for="boardMechanicGravity">⬇️ Gravity Direction - Pieces "fall" toward specific direction</label>
+                </div>
+                
+                <div class="control-group" id="gravityDirectionGroup" style="margin-left: 30px; display: none;">
+                    <label>Gravity Direction</label>
+                    <select id="gravityDirection">
+                        <option value="down">Down (toward bottom rows)</option>
+                        <option value="up">Up (toward top rows)</option>
+                        <option value="left">Left</option>
+                        <option value="right">Right</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="btn-group">
                 <button class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
                 <button class="btn btn-success" onclick="goToStep(3)">Next: Game Rules →</button>

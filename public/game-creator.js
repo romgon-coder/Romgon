@@ -1266,6 +1266,8 @@ function clearBoardPlacements() {
 // ============================================================================
 
 function initGameMechanicsToggles() {
+    // === GAME RULES MECHANICS ===
+    
     // Stacking toggle
     const stackingCheckbox = document.getElementById('mechanicStacking');
     const stackLimitGroup = document.getElementById('stackLimitGroup');
@@ -1308,6 +1310,26 @@ function initGameMechanicsToggles() {
     if (turnLimitCheckbox && moveLimitGroup) {
         turnLimitCheckbox.addEventListener('change', () => {
             moveLimitGroup.style.display = turnLimitCheckbox.checked ? 'block' : 'none';
+        });
+    }
+    
+    // === BOARD MECHANICS ===
+    
+    // Fog of War toggle
+    const fogCheckbox = document.getElementById('boardMechanicFog');
+    const fogRangeGroup = document.getElementById('fogRangeGroup');
+    if (fogCheckbox && fogRangeGroup) {
+        fogCheckbox.addEventListener('change', () => {
+            fogRangeGroup.style.display = fogCheckbox.checked ? 'block' : 'none';
+        });
+    }
+    
+    // Gravity toggle
+    const gravityCheckbox = document.getElementById('boardMechanicGravity');
+    const gravityDirectionGroup = document.getElementById('gravityDirectionGroup');
+    if (gravityCheckbox && gravityDirectionGroup) {
+        gravityCheckbox.addEventListener('change', () => {
+            gravityDirectionGroup.style.display = gravityCheckbox.checked ? 'block' : 'none';
         });
     }
 }
@@ -1353,7 +1375,30 @@ function generateGameConfig() {
             creator: 'Anonymous'
         },
         pieces: gameData.pieces,
-        board: gameData.board,
+        board: {
+            ...gameData.board,
+            // Board mechanics
+            boardMechanics: {
+                teleport: document.getElementById('boardMechanicTeleport')?.checked || false,
+                trap: document.getElementById('boardMechanicTrap')?.checked || false,
+                goal: document.getElementById('boardMechanicGoal')?.checked || false,
+                collectable: document.getElementById('boardMechanicCollectable')?.checked || false,
+                oneWay: document.getElementById('boardMechanicOneWay')?.checked || false,
+                slide: document.getElementById('boardMechanicSlide')?.checked || false,
+                boost: document.getElementById('boardMechanicBoost')?.checked || false,
+                slow: document.getElementById('boardMechanicSlow')?.checked || false,
+                wrap: document.getElementById('boardMechanicWrap')?.checked || false,
+                fog: {
+                    enabled: document.getElementById('boardMechanicFog')?.checked || false,
+                    range: parseInt(document.getElementById('fogRange')?.value) || 3
+                },
+                dynamic: document.getElementById('boardMechanicDynamic')?.checked || false,
+                gravity: {
+                    enabled: document.getElementById('boardMechanicGravity')?.checked || false,
+                    direction: document.getElementById('gravityDirection')?.value || 'down'
+                }
+            }
+        },
         rules: {
             winCondition: document.getElementById('winCondition')?.value || 'eliminate_all',
             maxTurns: parseInt(document.getElementById('maxTurns')?.value) || 0,
