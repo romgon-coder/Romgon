@@ -133,6 +133,9 @@ window.addEventListener('DOMContentLoaded', () => {
     if (boardCanvas) {
         redrawBoard();
     }
+    
+    // Initialize zone legend preview
+    updateZoneLegendPreview();
 });
 
 // ============================================================================
@@ -1091,6 +1094,39 @@ function redrawBoard() {
     }
     
     saveToLocalStorage();
+    updateZoneLegendPreview(); // Update the legend based on zones used
+}
+
+function updateZoneLegendPreview() {
+    // Check which special zones are actually used in the board
+    const specialZones = gameData.board.specialZones || {};
+    const usedZoneTypes = new Set();
+    
+    Object.values(specialZones).forEach(zoneType => {
+        // Group one-way directions together
+        if (zoneType.startsWith('oneway_')) {
+            usedZoneTypes.add('oneway');
+        } else {
+            usedZoneTypes.add(zoneType);
+        }
+    });
+    
+    // Show/hide special zones section
+    const specialZonesSection = document.getElementById('specialZonesLegend');
+    if (specialZonesSection) {
+        specialZonesSection.style.display = usedZoneTypes.size > 0 ? 'block' : 'none';
+    }
+    
+    // Show/hide individual zone legend items
+    const legendItems = document.querySelectorAll('.zone-legend-item');
+    legendItems.forEach(item => {
+        const zoneType = item.getAttribute('data-zone');
+        if (zoneType && usedZoneTypes.has(zoneType)) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
 }
 
 function handleBoardClick(e) {
@@ -1458,6 +1494,7 @@ function generateGameConfig() {
             allowGuests: document.getElementById('allowGuests')?.checked || false,
             enableDragDrop: document.getElementById('enableDragDrop')?.checked || true,
             enableClickMove: document.getElementById('enableClickMove')?.checked || true,
+            showZoneLegend: document.getElementById('showZoneLegend')?.checked || true,
             customRules: document.getElementById('customRules')?.value || '',
             
             // Game Mechanics (Casual Game Features)

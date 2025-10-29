@@ -1227,6 +1227,196 @@
                     <input type="checkbox" id="enableClickMove" checked>
                     <label for="enableClickMove">Enable Click-to-Move (tap friendly)</label>
                 </div>
+                
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="showZoneLegend" checked>
+                    <label for="showZoneLegend">📋 Show Zone Legend - Display in-game panel explaining zone types and mechanics</label>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🗺️ Zone Legend Preview</h2>
+                <p style="color: #666; margin-bottom: 15px;">This panel will appear in-game to help players understand your board zones</p>
+                
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 12px; color: white;">
+                    <h3 style="margin: 0 0 15px 0; font-size: 1.3em;">🎯 Board Zones Guide</h3>
+                    
+                    <div id="zoneLegendPreview" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px;">
+                        <!-- Classic Zones -->
+                        <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; backdrop-filter: blur(10px);">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                <div style="width: 30px; height: 30px; background: #8b4513; border-radius: 6px; border: 2px solid white;"></div>
+                                <strong style="font-size: 1.1em;">🏰 Base Zone</strong>
+                            </div>
+                            <p style="margin: 0; font-size: 0.9em; opacity: 0.95;">Starting positions for pieces. Your home territory.</p>
+                        </div>
+                        
+                        <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; backdrop-filter: blur(10px);">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                <div style="width: 30px; height: 30px; background: #6d3a13; border-radius: 6px; border: 2px solid white;"></div>
+                                <strong style="font-size: 1.1em;">🛡️ Inner Zone</strong>
+                            </div>
+                            <p style="margin: 0; font-size: 0.9em; opacity: 0.95;">Close to base. Defensive positions.</p>
+                        </div>
+                        
+                        <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; backdrop-filter: blur(10px);">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                <div style="width: 30px; height: 30px; background: #f57d2d; border-radius: 6px; border: 2px solid white;"></div>
+                                <strong style="font-size: 1.1em;">⚔️ Middle Zone</strong>
+                            </div>
+                            <p style="margin: 0; font-size: 0.9em; opacity: 0.95;">Main battlefield area. Where most action happens.</p>
+                        </div>
+                        
+                        <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; backdrop-filter: blur(10px);">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                <div style="width: 30px; height: 30px; background: #fcc49c; border-radius: 6px; border: 2px solid white;"></div>
+                                <strong style="font-size: 1.1em;">🌐 Outer Zone</strong>
+                            </div>
+                            <p style="margin: 0; font-size: 0.9em; opacity: 0.95;">Edge hexes. Border of the playable area.</p>
+                        </div>
+                        
+                        <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; backdrop-filter: blur(10px);">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                <div style="width: 30px; height: 30px; background: #333333; border-radius: 6px; border: 2px solid white;"></div>
+                                <strong style="font-size: 1.1em;">☠️ Dead Zone</strong>
+                            </div>
+                            <p style="margin: 0; font-size: 0.9em; opacity: 0.95;">Unusable hexes. Cannot move here.</p>
+                        </div>
+                        
+                        <!-- Special Zones - Only show if used -->
+                        <div id="specialZonesLegend" style="display: none; grid-column: 1 / -1;">
+                            <hr style="border: 1px solid rgba(255,255,255,0.3); margin: 15px 0;">
+                            <h4 style="margin: 0 0 12px 0; font-size: 1.2em;">✨ Special Zone Mechanics</h4>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px;">
+                                
+                                <div class="zone-legend-item" data-zone="teleport" style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; display: none;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 2em;">🌀</span>
+                                        <div>
+                                            <strong style="display: block;">Teleport Zone</strong>
+                                            <small style="opacity: 0.9;">Instantly transports pieces to linked location</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="zone-legend-item" data-zone="trap" style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; display: none;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 2em;">🔒</span>
+                                        <div>
+                                            <strong style="display: block;">Trap Zone</strong>
+                                            <small style="opacity: 0.9;">Pieces become immobilized when entering</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="zone-legend-item" data-zone="goal" style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; display: none;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 2em;">🎯</span>
+                                        <div>
+                                            <strong style="display: block;">Goal/Exit Zone</strong>
+                                            <small style="opacity: 0.9;">Reach here to win or score points</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="zone-legend-item" data-zone="collectable" style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; display: none;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 2em;">⭐</span>
+                                        <div>
+                                            <strong style="display: block;">Collectible</strong>
+                                            <small style="opacity: 0.9;">Collect items from these hexes</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="zone-legend-item" data-zone="oneway" style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; display: none;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 2em;">➡️</span>
+                                        <div>
+                                            <strong style="display: block;">One-Way</strong>
+                                            <small style="opacity: 0.9;">Can only move in specific direction</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="zone-legend-item" data-zone="slide" style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; display: none;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 2em;">🧊</span>
+                                        <div>
+                                            <strong style="display: block;">Slide/Ice</strong>
+                                            <small style="opacity: 0.9;">Pieces slide until hitting obstacle</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="zone-legend-item" data-zone="boost" style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; display: none;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 2em;">⚡</span>
+                                        <div>
+                                            <strong style="display: block;">Boost Zone</strong>
+                                            <small style="opacity: 0.9;">Double movement range</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="zone-legend-item" data-zone="slow" style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; display: none;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 2em;">🐌</span>
+                                        <div>
+                                            <strong style="display: block;">Slow Zone</strong>
+                                            <small style="opacity: 0.9;">Reduced movement (mud/swamp)</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="zone-legend-item" data-zone="damage" style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; display: none;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 2em;">💥</span>
+                                        <div>
+                                            <strong style="display: block;">Damage Zone</strong>
+                                            <small style="opacity: 0.9;">Hurts pieces when entering</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="zone-legend-item" data-zone="heal" style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; display: none;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 2em;">💚</span>
+                                        <div>
+                                            <strong style="display: block;">Heal Zone</strong>
+                                            <small style="opacity: 0.9;">Restores piece health</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="zone-legend-item" data-zone="spawn" style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; display: none;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 2em;">🔄</span>
+                                        <div>
+                                            <strong style="display: block;">Spawn Point</strong>
+                                            <small style="opacity: 0.9;">Pieces respawn here</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="zone-legend-item" data-zone="checkpoint" style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; display: none;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 2em;">🚩</span>
+                                        <div>
+                                            <strong style="display: block;">Checkpoint</strong>
+                                            <small style="opacity: 0.9;">Save progress point</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 15px; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                        <small style="opacity: 0.9;">💡 <strong>Tip:</strong> This legend will automatically update based on the zones you use in your game.</small>
+                    </div>
+                </div>
             </div>
 
             <div class="section">
