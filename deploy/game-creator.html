@@ -1121,6 +1121,100 @@
             </div>
 
             <div class="section">
+                <h2>🎮 Game Mechanics (Casual Game Features)</h2>
+                <p style="color: #666; margin-bottom: 15px;">Configure special mechanics for puzzle, casual, or race-style games</p>
+                
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="mechanicMoveOnly">
+                    <label for="mechanicMoveOnly">🚶 Move Only (no capturing) - Pieces can only move, never attack or capture</label>
+                </div>
+
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="mechanicStacking">
+                    <label for="mechanicStacking">📚 Stacking System - Allow multiple pieces on same hex</label>
+                </div>
+                
+                <div class="control-group" id="stackLimitGroup" style="margin-left: 30px; display: none;">
+                    <label>Maximum Stack Size per Hex</label>
+                    <input type="number" id="maxStackSize" min="1" max="10" value="6">
+                    <small>How many pieces can occupy the same hex (1-10)</small>
+                </div>
+
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="mechanicPickup">
+                    <label for="mechanicPickup">🎯 Move & Pickup - Pieces collect items or other pieces when moving over them</label>
+                </div>
+
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="mechanicTrapped">
+                    <label for="mechanicTrapped">🔒 Trapped/Stuck - Pieces can become immobilized (e.g., surrounded, frozen)</label>
+                </div>
+                
+                <div class="control-group" id="trapConditionGroup" style="margin-left: 30px; display: none;">
+                    <label>Trap Condition</label>
+                    <select id="trapCondition">
+                        <option value="surrounded">Surrounded by enemy pieces (all adjacent hexes)</option>
+                        <option value="adjacent">Any enemy adjacent (touching)</option>
+                        <option value="zone">Specific zone type traps pieces</option>
+                        <option value="custom">Custom trap rule</option>
+                    </select>
+                </div>
+
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="mechanicEscape">
+                    <label for="mechanicEscape">🏃 Escape Goal - Pieces must reach exit/goal zone to score/win</label>
+                </div>
+
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="mechanicTeleport">
+                    <label for="mechanicTeleport">🌀 Teleport Zones - Special zones that transport pieces to other locations</label>
+                </div>
+
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="mechanicPush">
+                    <label for="mechanicPush">⬆️ Push/Pull - Pieces can push/pull other pieces (like Sokoban)</label>
+                </div>
+
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="mechanicOneWay">
+                    <label for="mechanicOneWay">➡️ One-Way Movement - Pieces can only move in certain directions</label>
+                </div>
+
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="mechanicTimedMoves">
+                    <label for="mechanicTimedMoves">⏱️ Timed Challenges - Race mode with countdown timer</label>
+                </div>
+                
+                <div class="control-group" id="timedDurationGroup" style="margin-left: 30px; display: none;">
+                    <label>Time Limit (seconds)</label>
+                    <input type="number" id="timedDuration" min="10" max="600" value="60">
+                    <small>How long players have to complete the challenge</small>
+                </div>
+
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="mechanicCollectibles">
+                    <label for="mechanicCollectibles">⭐ Collectibles - Players must collect items/stars to win</label>
+                </div>
+                
+                <div class="control-group" id="collectiblesCountGroup" style="margin-left: 30px; display: none;">
+                    <label>Items to Collect</label>
+                    <input type="number" id="collectiblesCount" min="1" max="50" value="5">
+                    <small>Number of collectibles needed to win</small>
+                </div>
+
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="mechanicTurnLimit">
+                    <label for="mechanicTurnLimit">🔢 Move Limit - Limited number of moves to complete puzzle</label>
+                </div>
+                
+                <div class="control-group" id="moveLimitGroup" style="margin-left: 30px; display: none;">
+                    <label>Maximum Moves Allowed</label>
+                    <input type="number" id="maxMovesAllowed" min="1" max="100" value="20">
+                    <small>Puzzle must be solved within this many moves</small>
+                </div>
+            </div>
+
+            <div class="section">
                 <h2>Custom Rules (Optional)</h2>
                 <div class="control-group">
                     <label>Additional Rules & Mechanics</label>

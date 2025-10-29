@@ -114,6 +114,9 @@ window.addEventListener('DOMContentLoaded', () => {
     // Load saved data
     loadFromLocalStorage();
     
+    // Initialize game mechanics toggles
+    initGameMechanicsToggles();
+    
     // Initialize default tool for movement pattern editor
     if (!gameData.currentTool) {
         setMoveTool('move');
@@ -1262,6 +1265,53 @@ function clearBoardPlacements() {
 // STEP 4: GAME RULES (handled by form inputs)
 // ============================================================================
 
+function initGameMechanicsToggles() {
+    // Stacking toggle
+    const stackingCheckbox = document.getElementById('mechanicStacking');
+    const stackLimitGroup = document.getElementById('stackLimitGroup');
+    if (stackingCheckbox && stackLimitGroup) {
+        stackingCheckbox.addEventListener('change', () => {
+            stackLimitGroup.style.display = stackingCheckbox.checked ? 'block' : 'none';
+        });
+    }
+
+    // Trapped/Stuck toggle
+    const trappedCheckbox = document.getElementById('mechanicTrapped');
+    const trapConditionGroup = document.getElementById('trapConditionGroup');
+    if (trappedCheckbox && trapConditionGroup) {
+        trappedCheckbox.addEventListener('change', () => {
+            trapConditionGroup.style.display = trappedCheckbox.checked ? 'block' : 'none';
+        });
+    }
+
+    // Timed Moves toggle
+    const timedCheckbox = document.getElementById('mechanicTimedMoves');
+    const timedDurationGroup = document.getElementById('timedDurationGroup');
+    if (timedCheckbox && timedDurationGroup) {
+        timedCheckbox.addEventListener('change', () => {
+            timedDurationGroup.style.display = timedCheckbox.checked ? 'block' : 'none';
+        });
+    }
+
+    // Collectibles toggle
+    const collectiblesCheckbox = document.getElementById('mechanicCollectibles');
+    const collectiblesCountGroup = document.getElementById('collectiblesCountGroup');
+    if (collectiblesCheckbox && collectiblesCountGroup) {
+        collectiblesCheckbox.addEventListener('change', () => {
+            collectiblesCountGroup.style.display = collectiblesCheckbox.checked ? 'block' : 'none';
+        });
+    }
+
+    // Move Limit toggle
+    const turnLimitCheckbox = document.getElementById('mechanicTurnLimit');
+    const moveLimitGroup = document.getElementById('moveLimitGroup');
+    if (turnLimitCheckbox && moveLimitGroup) {
+        turnLimitCheckbox.addEventListener('change', () => {
+            moveLimitGroup.style.display = turnLimitCheckbox.checked ? 'block' : 'none';
+        });
+    }
+}
+
 // ============================================================================
 // STEP 5: TEST & PUBLISH
 // ============================================================================
@@ -1318,7 +1368,37 @@ function generateGameConfig() {
             allowGuests: document.getElementById('allowGuests')?.checked || false,
             enableDragDrop: document.getElementById('enableDragDrop')?.checked || true,
             enableClickMove: document.getElementById('enableClickMove')?.checked || true,
-            customRules: document.getElementById('customRules')?.value || ''
+            customRules: document.getElementById('customRules')?.value || '',
+            
+            // Game Mechanics (Casual Game Features)
+            mechanics: {
+                moveOnly: document.getElementById('mechanicMoveOnly')?.checked || false,
+                stacking: {
+                    enabled: document.getElementById('mechanicStacking')?.checked || false,
+                    maxSize: parseInt(document.getElementById('maxStackSize')?.value) || 6
+                },
+                pickup: document.getElementById('mechanicPickup')?.checked || false,
+                trapped: {
+                    enabled: document.getElementById('mechanicTrapped')?.checked || false,
+                    condition: document.getElementById('trapCondition')?.value || 'surrounded'
+                },
+                escape: document.getElementById('mechanicEscape')?.checked || false,
+                teleport: document.getElementById('mechanicTeleport')?.checked || false,
+                push: document.getElementById('mechanicPush')?.checked || false,
+                oneWay: document.getElementById('mechanicOneWay')?.checked || false,
+                timed: {
+                    enabled: document.getElementById('mechanicTimedMoves')?.checked || false,
+                    duration: parseInt(document.getElementById('timedDuration')?.value) || 60
+                },
+                collectibles: {
+                    enabled: document.getElementById('mechanicCollectibles')?.checked || false,
+                    count: parseInt(document.getElementById('collectiblesCount')?.value) || 5
+                },
+                moveLimit: {
+                    enabled: document.getElementById('mechanicTurnLimit')?.checked || false,
+                    maxMoves: parseInt(document.getElementById('maxMovesAllowed')?.value) || 20
+                }
+            }
         }
     };
 
