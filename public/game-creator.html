@@ -967,14 +967,38 @@
 
                 <div class="controls" id="zoneControls" style="display: none; margin: 20px 0;">
                     <div class="control-group">
-                        <label>Zone to Paint</label>
+                        <label>🎨 Classic Zone to Paint</label>
                         <select id="zoneSelector">
-                            <option value="base">Base Zone (Starting Positions)</option>
-                            <option value="inner">Inner Zone</option>
-                            <option value="middle">Middle Zone (Battlefield)</option>
-                            <option value="outer">Outer Zone (Edge)</option>
-                            <option value="dead">Dead Zone</option>
+                            <option value="base">🏰 Base Zone (Starting Positions)</option>
+                            <option value="inner">🛡️ Inner Zone</option>
+                            <option value="middle">⚔️ Middle Zone (Battlefield)</option>
+                            <option value="outer">🌐 Outer Zone (Edge)</option>
+                            <option value="dead">☠️ Dead Zone</option>
                         </select>
+                        <small>Standard Romgon zones for traditional gameplay</small>
+                    </div>
+                    
+                    <div class="control-group" style="margin-top: 20px;">
+                        <label>✨ Special Mechanic Zone to Paint</label>
+                        <select id="specialZoneSelector">
+                            <option value="">-- No Special Mechanic --</option>
+                            <option value="teleport">🌀 Teleport Zone - Transports pieces to linked location</option>
+                            <option value="trap">🔒 Trap Zone - Immobilizes pieces</option>
+                            <option value="goal">🎯 Goal/Exit Zone - Win by reaching here</option>
+                            <option value="collectable">⭐ Collectible Hex - Item to collect</option>
+                            <option value="oneway_up">⬆️ One-Way Up - Only move upward</option>
+                            <option value="oneway_down">⬇️ One-Way Down - Only move downward</option>
+                            <option value="oneway_left">⬅️ One-Way Left - Only move left</option>
+                            <option value="oneway_right">➡️ One-Way Right - Only move right</option>
+                            <option value="slide">🧊 Slide/Ice - Slide until obstacle</option>
+                            <option value="boost">⚡ Boost Zone - Double movement range</option>
+                            <option value="slow">🐌 Slow Zone - Reduced movement (mud/swamp)</option>
+                            <option value="damage">💥 Damage Zone - Hurts pieces entering</option>
+                            <option value="heal">💚 Heal Zone - Restores piece health</option>
+                            <option value="spawn">🔄 Spawn Point - Pieces respawn here</option>
+                            <option value="checkpoint">🚩 Checkpoint - Save progress point</option>
+                        </select>
+                        <small>Special zones for puzzle, race, and casual games</small>
                     </div>
                 </div>
 

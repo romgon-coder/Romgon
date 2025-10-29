@@ -19,6 +19,7 @@ const gameData = {
         rows: 7,
         colsPerRow: [4, 5, 6, 7, 6, 5, 4],
         zones: [],
+        specialZones: {},
         placements: [],
         deletedHexes: []
     },
@@ -1033,6 +1034,33 @@ function redrawBoard() {
             
             drawHexagon(boardCtx, x, y, bHexSize, hexColor, '#666', 1);
             
+            // Draw special zone indicator (small icon in corner)
+            const specialZone = gameData.board.specialZones?.[hexKey];
+            if (specialZone) {
+                const specialZoneIcons = {
+                    'teleport': '🌀',
+                    'trap': '🔒',
+                    'goal': '🎯',
+                    'collectable': '⭐',
+                    'oneway_up': '⬆️',
+                    'oneway_down': '⬇️',
+                    'oneway_left': '⬅️',
+                    'oneway_right': '➡️',
+                    'slide': '🧊',
+                    'boost': '⚡',
+                    'slow': '🐌',
+                    'damage': '💥',
+                    'heal': '💚',
+                    'spawn': '🔄',
+                    'checkpoint': '🚩'
+                };
+                const icon = specialZoneIcons[specialZone] || '✨';
+                boardCtx.font = `${Math.max(8, bHexSize * 0.6)}px Arial`;
+                boardCtx.textAlign = 'center';
+                boardCtx.textBaseline = 'middle';
+                boardCtx.fillText(icon, x, y - bHexSize * 0.3);
+            }
+            
             // Check if there's a piece placement on this hex
             const placement = gameData.board.placements.find(p => p.hex === hexKey);
             if (placement) {
@@ -1137,14 +1165,31 @@ function handleBoardClick(e) {
                         showNotification(`Hex ${hexKey} deleted`, 'success');
                     }
                 } else if (gameData.currentBoardTool === 'zone') {
-                    // Paint zone
+                    // Paint zone - handle both classic and special zones
                     const selectedZone = document.getElementById('zoneSelector').value;
+                    const selectedSpecialZone = document.getElementById('specialZoneSelector')?.value || '';
+                    
                     if (!gameData.board.zones) {
                         gameData.board.zones = {};
                     }
+                    if (!gameData.board.specialZones) {
+                        gameData.board.specialZones = {};
+                    }
+                    
+                    // Set classic zone
                     gameData.board.zones[hexKey] = selectedZone;
+                    
+                    // Set or clear special zone
+                    if (selectedSpecialZone) {
+                        gameData.board.specialZones[hexKey] = selectedSpecialZone;
+                        showNotification(`Hex ${hexKey} → ${selectedZone} zone + ${selectedSpecialZone} mechanic`, 'success');
+                    } else {
+                        // Remove special zone if "No Special Mechanic" is selected
+                        delete gameData.board.specialZones[hexKey];
+                        showNotification(`Hex ${hexKey} → ${selectedZone} zone`, 'success');
+                    }
+                    
                     redrawBoard();
-                    showNotification(`Hex ${hexKey} set to ${selectedZone} zone`, 'success');
                 } else if (gameData.currentBoardTool === 'place') {
                     // Place shape logic
                     const pieceId = document.getElementById('placePieceSelector').value;
