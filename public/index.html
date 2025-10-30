@@ -6791,22 +6791,22 @@
         top: 0;
         left: 0;
         right: 0;
-        height: 45px;
+        height: 35px;
         background: rgba(20, 24, 32, 0.95);
         backdrop-filter: blur(10px);
         border-bottom: 2px solid rgba(245, 125, 45, 0.3);
         display: none;
         align-items: center;
         justify-content: space-between;
-        padding: 0 25px;
+        padding: 0 20px;
         z-index: 9997;
         box-sizing: border-box;
     ">
         <!-- Logo/Brand -->
-        <div style="display: flex; align-items: center; gap: 15px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
             <h1 style="
                 margin: 0;
-                font-size: 1.3em;
+                font-size: 1.1em;
                 background: linear-gradient(135deg, #f57d2d 0%, #fcc49c 100%);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
@@ -6817,46 +6817,73 @@
         </div>
         
         <!-- Account Status -->
-        <div style="display: flex; align-items: center; gap: 20px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <!-- Notification Bell -->
+            <div id="global-notification-bell" style="
+                position: relative;
+                cursor: pointer;
+                font-size: 18px;
+                padding: 4px;
+                transition: transform 0.2s ease;
+            " onclick="toggleGlobalNotificationPanel()">
+                🔔
+                <div id="global-notification-badge" style="
+                    position: absolute;
+                    top: -2px;
+                    right: -2px;
+                    background-color: #e74c3c;
+                    color: white;
+                    border-radius: 50%;
+                    width: 14px;
+                    height: 14px;
+                    display: none;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 9px;
+                    font-weight: bold;
+                    border: 1px solid #fff;
+                ">0</div>
+            </div>
+            
             <!-- Account Card -->
             <div onclick="showAccountModal()" style="
                 display: flex;
                 align-items: center;
-                gap: 10px;
-                padding: 6px 14px;
+                gap: 8px;
+                padding: 4px 10px;
                 background: rgba(78, 205, 196, 0.15);
                 border: 1px solid rgba(78, 205, 196, 0.3);
-                border-radius: 10px;
+                border-radius: 8px;
                 cursor: pointer;
                 transition: all 0.3s ease;
             " onmouseover="this.style.background='rgba(78, 205, 196, 0.25)'; this.style.borderColor='rgba(78, 205, 196, 0.5)'" onmouseout="this.style.background='rgba(78, 205, 196, 0.15)'; this.style.borderColor='rgba(78, 205, 196, 0.3)'">
                 <div id="global-avatar" style="
-                    width: 24px;
-                    height: 24px;
+                    width: 20px;
+                    height: 20px;
                     border-radius: 50%;
                     background: linear-gradient(135deg, #4ecdc4, #a55eea);
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-size: 12px;
+                    font-size: 10px;
                     font-weight: bold;
                     color: #fff;
                     border: 2px solid rgba(255, 255, 255, 0.3);
                 ">G</div>
                 <div style="display: flex; flex-direction: column; gap: 1px;">
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                        <span id="global-username" style="font-weight: 600; color: #fff; font-size: 0.8em;">Player</span>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <span id="global-username" style="font-weight: 600; color: #fff; font-size: 0.75em;">Player</span>
                         <span id="global-account-type" style="
-                            font-size: 0.55em;
-                            padding: 1px 4px;
+                            font-size: 0.5em;
+                            padding: 1px 3px;
                             background: rgba(255, 215, 0, 0.2);
                             color: #ffd700;
-                            border-radius: 4px;
+                            border-radius: 3px;
                             font-weight: 600;
                             text-transform: uppercase;
                         ">Guest</span>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 5px; font-size: 0.65em; color: #aaa;">
+                    <div style="display: flex; align-items: center; gap: 4px; font-size: 0.6em; color: #aaa;">
                         <span><span style="color: #26de81;" id="global-wins">0</span>W</span>
                         <span style="color: #555;">•</span>
                         <span><span style="color: #ff6b6b;" id="global-losses">0</span>L</span>
@@ -6871,14 +6898,60 @@
                 background: transparent;
                 border: none;
                 color: #aaa;
-                font-size: 1.1em;
+                font-size: 1em;
                 cursor: pointer;
-                padding: 6px;
+                padding: 4px;
                 transition: color 0.3s;
             " onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#aaa'" title="Settings">
                 ⚙️
             </button>
         </div>
+    </div>
+
+    <!-- Global Notification Panel (Dropdown from top bar) -->
+    <div id="global-notification-panel" style="
+        display: none;
+        position: fixed;
+        top: 40px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.95);
+        border: 2px solid rgba(78, 205, 196, 0.5);
+        border-radius: 8px;
+        padding: 12px;
+        width: 320px;
+        max-height: 400px;
+        overflow-y: auto;
+        z-index: 9998;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    ">
+        <div style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(78, 205, 196, 0.3);
+        ">
+            <h3 style="
+                margin: 0;
+                color: #4ecdc4;
+                font-size: 14px;
+            ">Notifications</h3>
+            <button onclick="clearAllNotifications()" style="
+                background: #e74c3c;
+                color: white;
+                border: none;
+                padding: 4px 8px;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 11px;
+            ">Clear All</button>
+        </div>
+        <div id="global-notification-list" style="
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        "></div>
     </div>
 
     <!-- Keyboard Navigation Player Indicator -->
@@ -23742,7 +23815,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             turnIndicator.id = 'turn-indicator';
             turnIndicator.style.cssText = `
                 position: fixed;
-                top: 20px;
+                top: 45px;
                 left: 50%;
                 transform: translateX(-50%);
                 display: flex;
@@ -24538,6 +24611,19 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         // NOTIFICATION SYSTEM FUNCTIONS
         // ============================================
         
+        // Toggle global notification panel
+        function toggleGlobalNotificationPanel() {
+            const panel = document.getElementById('global-notification-panel');
+            if (panel) {
+                if (panel.style.display === 'none' || !panel.style.display) {
+                    panel.style.display = 'block';
+                    loadNotifications();
+                } else {
+                    panel.style.display = 'none';
+                }
+            }
+        }
+        
         // Add a new notification
         function addNotification(type, title, message, actionData = null) {
             const notification = {
@@ -24570,21 +24656,28 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         function loadNotifications() {
             try {
                 const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
-                const notificationList = document.getElementById('notification-list');
                 
-                if (!notificationList) return;
+                // Update in-game panel if exists
+                const notificationList = document.getElementById('notification-list');
+                // Update global panel if exists
+                const globalNotificationList = document.getElementById('global-notification-list');
+                
+                if (!notificationList && !globalNotificationList) return;
                 
                 if (notifications.length === 0) {
-                    notificationList.innerHTML = '<div style="color: #999; text-align: center; padding: 20px;">No notifications</div>';
+                    const emptyMsg = '<div style="color: #999; text-align: center; padding: 20px; font-size: 12px;">No notifications</div>';
+                    if (notificationList) notificationList.innerHTML = emptyMsg;
+                    if (globalNotificationList) globalNotificationList.innerHTML = emptyMsg;
                     return;
                 }
                 
-                notificationList.innerHTML = '';
+                if (notificationList) notificationList.innerHTML = '';
+                if (globalNotificationList) globalNotificationList.innerHTML = '';
                 
                 notifications.forEach(notif => {
                     const notifItem = document.createElement('div');
                     notifItem.style.cssText = `
-                        padding: 10px;
+                        padding: 8px;
                         background: ${notif.read ? 'rgba(255, 255, 255, 0.05)' : 'rgba(78, 205, 196, 0.1)'};
                         border-left: 3px solid ${getNotificationColor(notif.type)};
                         border-radius: 4px;
@@ -24605,29 +24698,32 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     notifTitle.style.cssText = `
                         color: ${getNotificationColor(notif.type)};
                         font-weight: bold;
-                        font-size: 14px;
-                        margin-bottom: 5px;
+                        font-size: 12px;
+                        margin-bottom: 4px;
                     `;
                     
                     const notifMessage = document.createElement('div');
                     notifMessage.textContent = notif.message;
                     notifMessage.style.cssText = `
                         color: #ccc;
-                        font-size: 12px;
-                        margin-bottom: 5px;
+                        font-size: 11px;
+                        margin-bottom: 4px;
                     `;
                     
                     const notifTime = document.createElement('div');
                     notifTime.textContent = formatTimeAgo(notif.timestamp);
                     notifTime.style.cssText = `
                         color: #777;
-                        font-size: 11px;
+                        font-size: 10px;
                     `;
                     
                     notifItem.appendChild(notifTitle);
                     notifItem.appendChild(notifMessage);
                     notifItem.appendChild(notifTime);
-                    notificationList.appendChild(notifItem);
+                    
+                    // Append to both lists if they exist
+                    if (notificationList) notificationList.appendChild(notifItem.cloneNode(true));
+                    if (globalNotificationList) globalNotificationList.appendChild(notifItem);
                 });
             } catch (e) {
                 console.error('Failed to load notifications:', e);
@@ -24669,10 +24765,18 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
                 const unreadCount = notifications.filter(n => !n.read).length;
                 
+                // Update in-game badge
                 const badge = document.getElementById('notification-badge');
                 if (badge) {
                     badge.textContent = unreadCount;
                     badge.style.display = unreadCount > 0 ? 'flex' : 'none';
+                }
+                
+                // Update global top bar badge
+                const globalBadge = document.getElementById('global-notification-badge');
+                if (globalBadge) {
+                    globalBadge.textContent = unreadCount;
+                    globalBadge.style.display = unreadCount > 0 ? 'flex' : 'none';
                 }
             } catch (e) {
                 console.error('Failed to update notification badge:', e);
