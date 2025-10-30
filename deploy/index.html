@@ -24092,6 +24092,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
 
             // Create center turn display
             const turnDisplay = document.createElement('div');
+            turnDisplay.id = 'turn-display';
             turnDisplay.style.cssText = `
                 background-color: ${currentPlayer === 'black' ? '#333' : '#fff'};
                 color: ${currentPlayer === 'black' ? '#fff' : '#333'};
@@ -24101,6 +24102,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 font-size: 16px;
                 border: 2px solid ${currentPlayer === 'black' ? '#fff' : '#333'};
                 box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+                display: flex;
+                align-items: center;
+                white-space: nowrap;
             `;
             turnDisplay.textContent = `${currentPlayer.toUpperCase()} TURN`;
 
