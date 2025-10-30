@@ -5779,6 +5779,7 @@
             z-index: 15;
             top: 80px;
             font-size: 0.85em;
+            transition: opacity 0.2s ease;
         }
         
         /* Position left panel (White Eliminated) */
@@ -5799,6 +5800,12 @@
             letter-spacing: 1px;
             font-weight: 700;
             text-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
+            transition: color 0.2s ease;
+        }
+        
+        .eliminated-section h3:hover {
+            color: #6fe4db;
+            text-shadow: 0 0 15px rgba(78, 205, 196, 0.8);
         }
 
         /* Embedded movement-section inside each eliminated panel */
@@ -24828,6 +24835,116 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         
         // ============================================
         // END NOTIFICATION SYSTEM
+        // ============================================
+
+        // ============================================
+        // DRAGGABLE ELIMINATED PANELS
+        // ============================================
+        
+        let draggedPanel = null;
+        let dragOffsetX = 0;
+        let dragOffsetY = 0;
+        
+        // Initialize draggable panels
+        function initializeDraggablePanels() {
+            const sections = document.querySelectorAll('.eliminated-section');
+            
+            sections.forEach((section, index) => {
+                // Load saved position from localStorage
+                const savedPos = localStorage.getItem(`eliminatedPanel${index}Position`);
+                if (savedPos) {
+                    const pos = JSON.parse(savedPos);
+                    section.style.left = pos.left;
+                    section.style.top = pos.top;
+                }
+                
+                // Add draggable header
+                const header = section.querySelector('h3');
+                if (header) {
+                    header.style.cursor = 'move';
+                    header.style.userSelect = 'none';
+                    
+                    header.addEventListener('mousedown', function(e) {
+                        draggedPanel = section;
+                        const rect = section.getBoundingClientRect();
+                        dragOffsetX = e.clientX - rect.left;
+                        dragOffsetY = e.clientY - rect.top;
+                        
+                        // Add dragging class for visual feedback
+                        section.style.opacity = '0.8';
+                        section.style.cursor = 'move';
+                        
+                        e.preventDefault();
+                    });
+                }
+            });
+        }
+        
+        // Handle drag movement
+        document.addEventListener('mousemove', function(e) {
+            if (!draggedPanel) return;
+            
+            const newLeft = e.clientX - dragOffsetX;
+            const newTop = e.clientY - dragOffsetY;
+            
+            // Keep panel within viewport bounds
+            const maxX = window.innerWidth - draggedPanel.offsetWidth;
+            const maxY = window.innerHeight - draggedPanel.offsetHeight;
+            
+            const boundedLeft = Math.max(0, Math.min(newLeft, maxX));
+            const boundedTop = Math.max(0, Math.min(newTop, maxY));
+            
+            draggedPanel.style.left = boundedLeft + 'px';
+            draggedPanel.style.top = boundedTop + 'px';
+        });
+        
+        // Handle drag end
+        document.addEventListener('mouseup', function(e) {
+            if (!draggedPanel) return;
+            
+            // Save position to localStorage
+            const sections = Array.from(document.querySelectorAll('.eliminated-section'));
+            const index = sections.indexOf(draggedPanel);
+            
+            if (index !== -1) {
+                const position = {
+                    left: draggedPanel.style.left,
+                    top: draggedPanel.style.top
+                };
+                localStorage.setItem(`eliminatedPanel${index}Position`, JSON.stringify(position));
+            }
+            
+            // Remove dragging visual feedback
+            draggedPanel.style.opacity = '';
+            draggedPanel.style.cursor = '';
+            draggedPanel = null;
+        });
+        
+        // Initialize on page load and when game starts
+        window.addEventListener('DOMContentLoaded', initializeDraggablePanels);
+        
+        // Re-initialize when eliminated panels are added to DOM
+        const eliminatedObserver = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.addedNodes.length) {
+                    mutation.addedNodes.forEach(function(node) {
+                        if (node.id === 'eliminated-pieces-container' || 
+                            (node.querySelector && node.querySelector('#eliminated-pieces-container'))) {
+                            // Delay initialization to ensure DOM is ready
+                            setTimeout(initializeDraggablePanels, 100);
+                        }
+                    });
+                }
+            });
+        });
+        
+        eliminatedObserver.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+        
+        // ============================================
+        // END DRAGGABLE ELIMINATED PANELS
         // ============================================
 
         // Function to add eliminated piece to display
