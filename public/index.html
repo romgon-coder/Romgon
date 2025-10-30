@@ -2263,6 +2263,137 @@
         </div>
     </div>
 
+    <!-- Game Info Modal -->
+    <div id="game-info-modal" style="
+        display: none;
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(20, 24, 32, 0.98);
+        z-index: 3001;
+        overflow-y: auto;
+        padding: 0; margin: 0;
+        backdrop-filter: blur(4px);
+    ">
+        <div style="
+            max-width: 700px;
+            margin: 60px auto;
+            background: #23272e;
+            border-radius: 18px;
+            box-shadow: 0 8px 40px #000a;
+            padding: 40px 36px;
+            color: #fff;
+            position: relative;
+        ">
+            <button onclick="hideGameInfoModal()" style="
+                position: absolute; top: 18px; right: 18px;
+                background: #4ecdc4; color: #23272e;
+                border: none; border-radius: 8px;
+                font-size: 1.2em; font-weight: bold;
+                padding: 6px 16px; cursor: pointer; z-index: 10;
+                transition: all 0.3s ease;
+            " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">✖️</button>
+            
+            <h2 style="color: #4ecdc4; margin-top: 0; text-align: center; font-size: 1.8em;">📖 How to Play</h2>
+            
+            <div id="game-info-content" style="display: flex; flex-direction: column; gap: 24px;">
+                <!-- Game Objective -->
+                <div>
+                    <h3 style="color: #ff6b6b; margin: 0 0 12px 0; font-size: 1.3em;">🎯 Objective</h3>
+                    <p id="game-objective-text" style="color: #ddd; font-size: 1em; line-height: 1.6;">
+                        Eliminate all opponent pieces or capture their base to win!
+                    </p>
+                </div>
+                
+                <!-- Zone Guide -->
+                <div id="zone-guide-section">
+                    <h3 style="color: #ffd700; margin: 0 0 12px 0; font-size: 1.3em;">🗺️ Zone Guide</h3>
+                    <div id="zone-guide-content" style="display: grid; grid-template-columns: 1fr; gap: 12px;">
+                        <!-- Classic Zones -->
+                        <div style="background: rgba(78, 205, 196, 0.1); border-left: 4px solid #4ecdc4; padding: 12px; border-radius: 8px;">
+                            <strong style="color: #4ecdc4;">🔵 Base Zone</strong>
+                            <p style="color: #bbb; margin: 4px 0 0 0; font-size: 0.95em;">Your starting position and fortress. Protect at all costs!</p>
+                        </div>
+                        <div style="background: rgba(155, 89, 182, 0.1); border-left: 4px solid #9b59b6; padding: 12px; border-radius: 8px;">
+                            <strong style="color: #9b59b6;">🟣 Inner Zone</strong>
+                            <p style="color: #bbb; margin: 4px 0 0 0; font-size: 0.95em;">Close defense area with strategic importance.</p>
+                        </div>
+                        <div style="background: rgba(52, 152, 219, 0.1); border-left: 4px solid #3498db; padding: 12px; border-radius: 8px;">
+                            <strong style="color: #3498db;">🔷 Middle Zone</strong>
+                            <p style="color: #bbb; margin: 4px 0 0 0; font-size: 0.95em;">Neutral territory for tactical positioning.</p>
+                        </div>
+                        <div style="background: rgba(46, 204, 113, 0.1); border-left: 4px solid #2ecc71; padding: 12px; border-radius: 8px;">
+                            <strong style="color: #2ecc71;">🟢 Outer Zone</strong>
+                            <p style="color: #bbb; margin: 4px 0 0 0; font-size: 0.95em;">Opponent's defense perimeter.</p>
+                        </div>
+                        <div style="background: rgba(127, 140, 141, 0.1); border-left: 4px solid #7f8c8d; padding: 12px; border-radius: 8px;">
+                            <strong style="color: #7f8c8d;">⚫ Dead Zone</strong>
+                            <p style="color: #bbb; margin: 4px 0 0 0; font-size: 0.95em;">Impassable hexes or special areas.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Special Zones (Dynamic) -->
+                    <div id="special-zones-info" style="display: none; margin-top: 16px;">
+                        <h4 style="color: #ff6b6b; margin: 12px 0 8px 0; font-size: 1.1em;">✨ Special Mechanics</h4>
+                        <div id="special-zones-list" style="display: grid; grid-template-columns: 1fr; gap: 8px;">
+                            <!-- Dynamically populated based on game config -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Game Mechanics -->
+                <div id="mechanics-section">
+                    <h3 style="color: #a55eea; margin: 0 0 12px 0; font-size: 1.3em;">🎮 Active Mechanics</h3>
+                    <ul id="mechanics-list" style="color: #ddd; font-size: 1em; line-height: 1.8; margin: 0; padding-left: 20px;">
+                        <li>Move pieces strategically across hexagonal zones</li>
+                        <li>Attack adjacent opponent pieces to capture them</li>
+                        <li>Rotate triangles and hexagons to change attack directions</li>
+                        <li>Build fortress defenses in your base zone</li>
+                    </ul>
+                </div>
+                
+                <!-- Quick Controls -->
+                <div>
+                    <h3 style="color: #fdcb6e; margin: 0 0 12px 0; font-size: 1.3em;">⌨️ Quick Controls</h3>
+                    <div style="background: rgba(253, 203, 110, 0.1); border-radius: 8px; padding: 16px;">
+                        <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; color: #ddd; font-size: 0.95em;">
+                            <strong style="color: #fdcb6e;">Click Piece</strong>
+                            <span>Select and see available moves</span>
+                            
+                            <strong style="color: #fdcb6e;">Drag & Drop</strong>
+                            <span>Move pieces to valid hexes</span>
+                            
+                            <strong style="color: #fdcb6e;">↺ / ↻ Buttons</strong>
+                            <span>Rotate selected triangle/hexagon</span>
+                            
+                            <strong style="color: #fdcb6e;">KEEP Button</strong>
+                            <span>End turn without rotating</span>
+                            
+                            <strong style="color: #fdcb6e;">RELEASE</strong>
+                            <span>Deselect piece and choose another</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 24px; padding-top: 20px; border-top: 2px solid #333; text-align: center;">
+                <button onclick="hideGameInfoModal()" style="
+                    background: linear-gradient(135deg, #4ecdc4, #44b3aa);
+                    color: white;
+                    border: none;
+                    padding: 12px 32px;
+                    border-radius: 8px;
+                    font-weight: 700;
+                    font-size: 1em;
+                    cursor: pointer;
+                    box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+                    transition: all 0.3s ease;
+                " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(78, 205, 196, 0.5)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(78, 205, 196, 0.3)'">
+                    ✓ Got It!
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Statistics Dashboard Modal -->
     <!-- TEST: This comment was added to verify live deployment on romgon.net -->
     <div id="stats-dashboard-modal" style="
@@ -4170,6 +4301,124 @@
         const zoomValue = parseFloat(document.getElementById('settings-zoom').value);
         document.getElementById('zoom-value').textContent = Math.round(zoomValue * 100) + '%';
     }
+    
+    // ============================================
+    // GAME INFO MODAL FUNCTIONS
+    // ============================================
+    
+    function showGameInfoModal(gameConfig) {
+        const modal = document.getElementById('game-info-modal');
+        if (!modal) return;
+        
+        // Populate objective text
+        const objectiveText = document.getElementById('game-objective-text');
+        if (objectiveText && gameConfig?.rules?.winCondition) {
+            const winConditions = {
+                'eliminate_all': 'Eliminate all opponent pieces to claim victory!',
+                'fortress': 'Capture the opponent\'s fortress or eliminate all their pieces.',
+                'territory': 'Control the most territory on the board when time runs out.',
+                'capture': 'Capture the opponent\'s key pieces to win.',
+                'goal': 'Reach the goal zone before your opponent!',
+                'collectibles': `Collect all ${gameConfig.rules.mechanics?.collectibles?.count || 5} collectibles to win!`,
+                'timed': `Complete your objective within ${gameConfig.rules.mechanics?.timed?.duration || 300} seconds!`
+            };
+            objectiveText.textContent = winConditions[gameConfig.rules.winCondition] || 'Eliminate all opponent pieces or capture their base to win!';
+        }
+        
+        // Populate special zones if they exist
+        const specialZonesInfo = document.getElementById('special-zones-info');
+        const specialZonesList = document.getElementById('special-zones-list');
+        
+        if (specialZonesInfo && specialZonesList && gameConfig?.board?.specialZones) {
+            const usedZones = new Set();
+            Object.values(gameConfig.board.specialZones).forEach(zone => {
+                if (zone.startsWith('oneway_')) {
+                    usedZones.add('oneway');
+                } else {
+                    usedZones.add(zone);
+                }
+            });
+            
+            if (usedZones.size > 0) {
+                specialZonesInfo.style.display = 'block';
+                specialZonesList.innerHTML = '';
+                
+                const zoneDescriptions = {
+                    'teleport': { icon: '🌀', name: 'Teleport Zone', desc: 'Instantly transports pieces to another teleport zone' },
+                    'trap': { icon: '🔒', name: 'Trap Zone', desc: 'Immobilizes pieces for several turns' },
+                    'goal': { icon: '🎯', name: 'Goal Zone', desc: 'Reach this zone to win the game!' },
+                    'collectable': { icon: '⭐', name: 'Collectible', desc: 'Collect these items to achieve your objective' },
+                    'oneway': { icon: '➡️', name: 'One-Way Zones', desc: 'Can only move in the specified direction' },
+                    'slide': { icon: '🧊', name: 'Slide Zone', desc: 'Pieces slide multiple hexes in one move' },
+                    'boost': { icon: '⚡', name: 'Speed Boost', desc: 'Grants an extra move when entered' },
+                    'slow': { icon: '🐌', name: 'Slow Zone', desc: 'Costs an extra move to pass through' },
+                    'damage': { icon: '💥', name: 'Damage Zone', desc: 'Reduces piece health or sends to checkpoint' },
+                    'heal': { icon: '💚', name: 'Heal Zone', desc: 'Restores piece health' },
+                    'spawn': { icon: '🔄', name: 'Spawn Point', desc: 'New pieces appear here' },
+                    'checkpoint': { icon: '🚩', name: 'Checkpoint', desc: 'Save point for respawning' }
+                };
+                
+                usedZones.forEach(zoneType => {
+                    const info = zoneDescriptions[zoneType];
+                    if (info) {
+                        const zoneDiv = document.createElement('div');
+                        zoneDiv.style.cssText = 'background: rgba(255, 107, 107, 0.1); border-left: 4px solid #ff6b6b; padding: 10px; border-radius: 6px;';
+                        zoneDiv.innerHTML = `
+                            <strong style="color: #ff6b6b;">${info.icon} ${info.name}</strong>
+                            <p style="color: #bbb; margin: 4px 0 0 0; font-size: 0.9em;">${info.desc}</p>
+                        `;
+                        specialZonesList.appendChild(zoneDiv);
+                    }
+                });
+            } else {
+                specialZonesInfo.style.display = 'none';
+            }
+        }
+        
+        // Populate mechanics list
+        const mechanicsList = document.getElementById('mechanics-list');
+        if (mechanicsList && gameConfig?.rules?.mechanics) {
+            const activeMechanics = [];
+            const m = gameConfig.rules.mechanics;
+            
+            if (m.moveOnly) activeMechanics.push('Move-only gameplay (no combat)');
+            if (m.stacking?.enabled) activeMechanics.push(`Stack up to ${m.stacking.maxSize || 6} pieces per hex`);
+            if (m.pickup) activeMechanics.push('Pick up and carry pieces');
+            if (m.trapped?.enabled) activeMechanics.push('Pieces can be trapped and immobilized');
+            if (m.escape) activeMechanics.push('Escape mechanics for trapped pieces');
+            if (m.teleport) activeMechanics.push('Teleportation between special zones');
+            if (m.push) activeMechanics.push('Push opponent pieces');
+            if (m.oneWay) activeMechanics.push('One-way movement restrictions');
+            if (m.timed?.enabled) activeMechanics.push(`Time limit: ${m.timed.duration || 300} seconds`);
+            if (m.collectibles?.enabled) activeMechanics.push(`Collect ${m.collectibles.count || 5} items to win`);
+            if (m.moveLimit?.enabled) activeMechanics.push(`Move limit: ${m.moveLimit.maxMoves} moves maximum`);
+            
+            if (activeMechanics.length > 0) {
+                mechanicsList.innerHTML = activeMechanics.map(m => `<li>${m}</li>`).join('');
+            } else {
+                // Default mechanics
+                mechanicsList.innerHTML = `
+                    <li>Move pieces strategically across hexagonal zones</li>
+                    <li>Attack adjacent opponent pieces to capture them</li>
+                    <li>Rotate triangles and hexagons to change attack directions</li>
+                    <li>Build fortress defenses in your base zone</li>
+                `;
+            }
+        }
+        
+        modal.style.display = 'block';
+    }
+    
+    function hideGameInfoModal() {
+        const modal = document.getElementById('game-info-modal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+    
+    // ============================================
+    // END GAME INFO MODAL FUNCTIONS
+    // ============================================
     
     // Add zoom slider listener
     document.addEventListener('DOMContentLoaded', function() {
@@ -23883,6 +24132,33 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             helpButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
             helpButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
 
+            // Create Game Info button (shows game-specific info)
+            const gameInfoButton = document.createElement('button');
+            gameInfoButton.innerHTML = '<span class="game-menu-button-emoji">ℹ️</span><span class="game-menu-button-label">Game<br>Info</span>';
+            gameInfoButton.className = 'game-menu-button';
+            gameInfoButton.title = '';
+            gameInfoButton.onclick = function() {
+                // Try to get game config from window or localStorage
+                let gameConfig = window.currentGameConfig;
+                
+                // If no config available, use default
+                if (!gameConfig) {
+                    gameConfig = {
+                        rules: {
+                            winCondition: 'eliminate_all',
+                            mechanics: {}
+                        },
+                        board: {
+                            specialZones: {}
+                        }
+                    };
+                }
+                
+                showGameInfoModal(gameConfig);
+            };
+            gameInfoButton.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
+            gameInfoButton.onmouseout = function() { this.style.transform = 'scale(1)'; };
+
             // Create music toggle button
             const musicButton = document.createElement('button');
             const updateMusicButtonDisplayLocal = () => {
@@ -24084,6 +24360,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             gameButtonsPanel.appendChild(showAllMovesButton);
             gameButtonsPanel.appendChild(flipButton);
             gameButtonsPanel.appendChild(helpButton);
+            gameButtonsPanel.appendChild(gameInfoButton);
             
             // Add RPN buttons to panel
             gameButtonsPanel.appendChild(copyPositionBtn);
@@ -26324,6 +26601,16 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     return; // Invalid move
                 }
                 console.log('✅ DROP: Valid highlight found, proceeding...');
+
+                // CRITICAL: Block rhombus diagonal captures - diagonal moves are MOVEMENT ONLY
+                if (targetHex.classList.contains('highlight-diagonal')) {
+                    const targetPiece = targetHex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
+                    if (targetPiece) {
+                        console.log('❌ DIAGONAL CAPTURE BLOCKED: Rhombus diagonal moves cannot capture!');
+                        showNotification('⛔ Diagonal moves are for movement only!', 'warning');
+                        return;
+                    }
+                }
                 
                 // Check piece colors for capture logic
                 const isDraggedWhite = draggedPiece.classList.contains('white-piece') || 
