@@ -13518,6 +13518,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 const winningPlayer = isWhite ? 'Black' : 'White';
                 console.log(`FIVE-FOLD SHUTTLE REPETITION! ${losingPlayer} loses!`);
                 // Delay game over slightly so move appears in list first
+                addNotification('error', 'Repetition 5 Shuttle Warning', `${losingPlayer} lost by shuttling 5 times between ${sortedPositions[0]} and ${sortedPositions[1]}!`);
                 setTimeout(() => {
                     showGameOver(winningPlayer, `${losingPlayer} lost by shuttling 5 times between ${sortedPositions[0]} and ${sortedPositions[1]}!`);
                 }, 100);
@@ -13603,6 +13604,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 console.log(`THREEFOLD REPETITION! ${losingPlayer} loses by repeating position!`);
                 
                 // Delay game over slightly so move appears first
+                addNotification('error', 'Repetition 3 Fold Warning', `${losingPlayer} lost by threefold repetition (same position occurred 3 times)!`);
                 setTimeout(() => {
                     showGameOver(winningPlayer, `${losingPlayer} lost by threefold repetition (same position occurred 3 times)!`);
                 }, 100);
@@ -13825,6 +13827,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         // Check if this is a NEW rhombus under attack (wasn't before)
                         if (!previousRhombusesUnderAttack.has(pieceId)) {
                             newRhombusUnderAttack = true;
+                            addNotification('warning', 'Rhombus Lock', 'Your rhombus is being attacked!');
                         }
                     } else {
                         // Regular red highlight for other pieces
@@ -15087,6 +15090,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             if (circleDeadZone.has(coord)) {
                 currentZone = 'dead';
                 console.log(`❌ Circle is in DEAD ZONE - cannot move`);
+                addNotification('warning', 'Circle Cannot Move', 'Circles are not allowed to move to dead zone.');
                 return; // cannot move in dead zone
             } else if (circleInnerZone.has(coord)) {
                 zoneSet = circleInnerZone;
@@ -15749,6 +15753,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
 
         // Show popup/warning for illegal base defense move
         function showBaseDefenseWarning() {
+            addNotification('warning', 'Base is Open', 'Only the allowed piece(s) can leave the base in this variant!');
             alert('❌ Illegal move: Only the allowed piece(s) can leave the base in this variant!');
         }
 
@@ -15812,8 +15817,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         // Show popup/warning for shape defense violation
         function showShapeDefenseWarning(pieceType) {
             if (pieceType === 'rhombus') {
+                addNotification('warning', 'Base Defended', "Rhombus can only escape if the opponent's base is not under attack (Shape Defence variation).");
                 alert('Shape Defense: Cannot escape - your base is not under threat. Position your shapes to defend the base first.');
             } else {
+                addNotification('warning', 'Base Defended', `${pieceType} cannot leave base under shape defense rules!`);
                 alert(`❌ Illegal move: ${pieceType} cannot leave base under shape defense rules!`);
             }
         }
@@ -16609,6 +16616,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             // Mark that we're now in an active game
             gameInProgress = true;
+            
+            // Add notification for game start
+            addNotification('game', 'Game Started', `${selectedGameMode.toUpperCase()} mode - Good luck!`);
             
             // Initialize game based on selected mode
             if (selectedGameMode === 'pvp') {
@@ -24709,6 +24719,16 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             updateNotificationBadge();
         });
         
+        // Helper function to get piece name for notifications
+        function getPieceName(piece) {
+            if (piece.classList.contains('square-piece')) return 'Square';
+            if (piece.classList.contains('triangle-piece')) return 'Triangle';
+            if (piece.classList.contains('rhombus-piece')) return 'Rhombus';
+            if (piece.classList.contains('circle-piece')) return 'Circle';
+            if (piece.classList.contains('hexgon-piece')) return 'Hexagon';
+            return 'Piece';
+        }
+        
         // ============================================
         // END NOTIFICATION SYSTEM
         // ============================================
@@ -24727,9 +24747,11 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 if (isWhite) {
                     capturedWhitePieces.push(pieceChar);
                     console.log(`📦 Captured WHITE piece: ${pieceChar}, total white captured: ${capturedWhitePieces.length}`);
+                    addNotification('game', 'Shape Eliminated', `White ${getPieceName(piece)} was captured!`);
                 } else {
                     capturedBlackPieces.push(pieceChar);
                     console.log(`📦 Captured BLACK piece: ${pieceChar}, total black captured: ${capturedBlackPieces.length}`);
+                    addNotification('game', 'Shape Eliminated', `Black ${getPieceName(piece)} was captured!`);
                 }
             }
             
@@ -26066,6 +26088,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             gameOver = true; // Set game over flag
             gameInProgress = false; // Game is no longer in progress
             
+            // Add notification for game end
+            addNotification('game', 'Game Ended', `${winner} wins! ${reason}`);
+            
             // Hide ChatGPT button
             hideChatGPTButton();
             
@@ -26867,6 +26892,7 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     !targetHex.classList.contains('highlight-red') && 
                     !targetHex.classList.contains('highlight-danger') && 
                     !targetHex.classList.contains('highlight-diagonal')) {
+                    addNotification('warning', 'Cannot Move to That Hex', 'Outside your pattern.');
                     return; // Not a valid move
                 }
                 
@@ -26917,6 +26943,7 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     if (targetPiece) {
                         console.log('❌ DIAGONAL CAPTURE BLOCKED: Rhombus diagonal moves cannot capture!');
                         showNotification('⛔ Diagonal moves are for movement only!', 'warning');
+                        addNotification('warning', 'DIAGONAL CAPTURE BLOCKED', 'Rhombus diagonal moves cannot capture.');
                         return;
                     }
                 }
@@ -26999,6 +27026,7 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     // skipping checkmate check for rhombus moving from base to opponent base
                 } else {
                     if (wouldMoveResultInOwnCheckmate(draggedFromHex.id, targetId, pieceClasses, existingPiece)) {
+                        addNotification('error', 'ILLEGAL MOVE!', 'This move puts your rhombus under attack. You can only do this if you capture the attacking piece!');
                         alert('❌ ILLEGAL MOVE! This move puts your rhombus under attack. You can only do this if you capture the attacking piece!');
                         return; // Block the move
                     }
