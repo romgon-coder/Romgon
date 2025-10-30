@@ -15035,8 +15035,13 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     const isDiagonalMove = (deadZone.has(currentPos) && innerPerimeter.has(targetPos)) || 
                                           (innerPerimeter.has(currentPos) && deadZone.has(targetPos));
                     
-                    // Highlight in red if opponent piece (but NOT for diagonal moves - diagonal is movement only)
-                    if (hasOpponentPiece && !isDiagonalMove) {
+                    // CRITICAL FIX: Diagonal moves are MOVEMENT ONLY - cannot capture
+                    if (isDiagonalMove) {
+                        // Always use purple highlight for diagonal moves (even with opponent piece)
+                        // This ensures the drop handler can detect and block diagonal captures
+                        targetHex.classList.add('highlight-diagonal');
+                    } else if (hasOpponentPiece) {
+                        // Red highlight for normal (non-diagonal) capture moves
                         targetHex.classList.add('highlight-red');
                     } else if (!hasFriendlyPiece) {
                         // Check if this position would be vulnerable to attack
@@ -15044,12 +15049,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         if (isPositionVulnerable(targetRow, targetCol, isWhite, 'rhombus')) {
                             targetHex.classList.add('highlight-danger');
                         } else {
-                            // Use purple highlight for ALL diagonal moves (both directions)
-                            if (isDiagonalMove) {
-                                targetHex.classList.add('highlight-diagonal');
-                            } else {
-                                targetHex.classList.add('highlight-green');
-                            }
+                            targetHex.classList.add('highlight-green');
                         }
                     }
                 }
