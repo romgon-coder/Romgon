@@ -10693,12 +10693,16 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 </div>
     
     <!-- Sandbox Mode Tools Panel -->
-    <div id="sandbox-tools-panel" style="display: none; position: fixed; top: 80px; left: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 20px; box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4); z-index: 1000; min-width: 280px; color: #fff;">
-        <div style="text-align: center; margin-bottom: 15px;">
-            <div style="font-size: 2em;">🛠️</div>
+    <div id="sandbox-tools-panel" style="display: none; position: fixed; top: 80px; left: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 0; box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4); z-index: 1000; min-width: 280px; max-width: 320px; color: #fff; resize: both; overflow: auto;">
+        <!-- Draggable Header -->
+        <div class="sandbox-panel-header" style="cursor: move; padding: 15px 20px; background: rgba(0, 0, 0, 0.2); border-radius: 12px 12px 0 0; text-align: center; user-select: none;">
+            <div style="font-size: 2em; margin-bottom: 5px;">🛠️</div>
             <h3 style="margin: 8px 0 4px 0; font-size: 1.2em;">Sandbox Mode</h3>
-            <p style="margin: 0; font-size: 0.85em; opacity: 0.9;">Position Editor</p>
+            <p style="margin: 0; font-size: 0.85em; opacity: 0.9;">Position Editor (Drag to Move)</p>
         </div>
+        
+        <!-- Panel Content -->
+        <div style="padding: 20px; padding-top: 15px;">
         
         <!-- Edit Mode Toggle -->
         <div style="background: rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
@@ -10776,6 +10780,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         <!-- Current Turn Indicator -->
         <div id="sandbox-turn-display" style="margin-top: 15px; text-align: center; padding: 10px; background: rgba(0, 0, 0, 0.2); border-radius: 6px; font-weight: 600;">
             Current Turn: <span id="sandbox-current-turn">Black</span>
+        </div>
         </div>
     </div>
     
@@ -12799,14 +12804,19 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             background: rgba(0, 0, 0, 0.9);
             border: 2px solid rgba(78, 205, 196, 0.5);
             border-radius: 15px;
-            padding: 15px;
+            padding: 0;
             z-index: 1000;
             display: none;
             min-width: 200px;
+            resize: both;
+            overflow: auto;
+            max-width: 400px;
         " id="camera-panel">
-            <!-- Header with close button -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <div style="color: #4ecdc4; font-weight: bold;">🎥 3D Camera</div>
+            <!-- Draggable Header with close button -->
+            <div class="camera-panel-header" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: rgba(78, 205, 196, 0.1); border-radius: 15px 15px 0 0; cursor: move; user-select: none;">
+                <div style="color: #4ecdc4; font-weight: bold;">🎥 3D Camera (Drag to Move)</div>
+                <button onclick="closeCameraPanel()" style="
+                    background: rgba(255, 121, 198, 0.2);
                 <button onclick="closeCameraPanel()" style="
                     background: rgba(255, 121, 198, 0.2);
                     border: 1px solid #ff79c6;
@@ -12822,6 +12832,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     padding: 0;
                 " title="Close panel (camera stays on)">✕</button>
             </div>
+            
+            <!-- Panel Content -->
+            <div style="padding: 15px;">
             <!-- Drag Area for Camera Control -->
             <div id="camera-drag-area" style="
                 background: rgba(78, 205, 196, 0.1);
@@ -12871,6 +12884,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             <div style="display: flex; gap: 8px; margin-top: 10px;">
                 <button onclick="resetCamera3D()" style="flex: 1; padding: 10px; background: rgba(255, 121, 198, 0.3); border: 1px solid #ff79c6; border-radius: 8px; color: white; cursor: pointer; font-weight: bold; font-size: 12px;">↻ Reset</button>
                 <button onclick="disableCamera3D()" style="flex: 1; padding: 10px; background: rgba(255, 79, 79, 0.3); border: 1px solid #ff4f4f; border-radius: 8px; color: white; cursor: pointer; font-weight: bold; font-size: 12px;">⏻ OFF</button>
+            </div>
             </div>
         </div>
         
@@ -24945,6 +24959,194 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         
         // ============================================
         // END DRAGGABLE ELIMINATED PANELS
+        // ============================================
+
+        // ============================================
+        // DRAGGABLE SANDBOX PANEL
+        // ============================================
+        
+        let draggedSandboxPanel = null;
+        let sandboxDragOffsetX = 0;
+        let sandboxDragOffsetY = 0;
+        
+        // Initialize sandbox panel dragging
+        function initializeSandboxDraggable() {
+            const sandboxPanel = document.getElementById('sandbox-tools-panel');
+            const header = sandboxPanel?.querySelector('.sandbox-panel-header');
+            
+            if (!sandboxPanel || !header) return;
+            
+            // Load saved position
+            const savedPosition = localStorage.getItem('sandboxPanelPosition');
+            if (savedPosition) {
+                const { left, top } = JSON.parse(savedPosition);
+                sandboxPanel.style.left = left;
+                sandboxPanel.style.top = top;
+            }
+            
+            // Make header draggable
+            header.addEventListener('mousedown', function(e) {
+                draggedSandboxPanel = sandboxPanel;
+                const rect = sandboxPanel.getBoundingClientRect();
+                sandboxDragOffsetX = e.clientX - rect.left;
+                sandboxDragOffsetY = e.clientY - rect.top;
+                
+                // Add dragging visual feedback
+                sandboxPanel.style.opacity = '0.8';
+                sandboxPanel.style.cursor = 'move';
+                
+                e.preventDefault();
+            });
+        }
+        
+        // Handle sandbox drag movement
+        document.addEventListener('mousemove', function(e) {
+            if (!draggedSandboxPanel) return;
+            
+            const newLeft = e.clientX - sandboxDragOffsetX;
+            const newTop = e.clientY - sandboxDragOffsetY;
+            
+            // Keep panel within viewport bounds
+            const maxX = window.innerWidth - draggedSandboxPanel.offsetWidth;
+            const maxY = window.innerHeight - draggedSandboxPanel.offsetHeight;
+            
+            const boundedLeft = Math.max(0, Math.min(newLeft, maxX));
+            const boundedTop = Math.max(0, Math.min(newTop, maxY));
+            
+            draggedSandboxPanel.style.left = boundedLeft + 'px';
+            draggedSandboxPanel.style.top = boundedTop + 'px';
+        });
+        
+        // Handle sandbox drag end
+        document.addEventListener('mouseup', function(e) {
+            if (!draggedSandboxPanel) return;
+            
+            // Save position to localStorage
+            const position = {
+                left: draggedSandboxPanel.style.left,
+                top: draggedSandboxPanel.style.top
+            };
+            localStorage.setItem('sandboxPanelPosition', JSON.stringify(position));
+            
+            // Remove dragging visual feedback
+            draggedSandboxPanel.style.opacity = '';
+            draggedSandboxPanel.style.cursor = '';
+            draggedSandboxPanel = null;
+        });
+        
+        // Initialize when sandbox mode starts
+        const originalStartSandboxMode = startSandboxMode;
+        if (typeof originalStartSandboxMode === 'function') {
+            startSandboxMode = function() {
+                originalStartSandboxMode.apply(this, arguments);
+                // Initialize drag after panel is shown
+                setTimeout(initializeSandboxDraggable, 100);
+            };
+        }
+        
+        // ============================================
+        // END DRAGGABLE SANDBOX PANEL
+        // ============================================
+
+        // ============================================
+        // DRAGGABLE CAMERA PANEL
+        // ============================================
+        
+        let draggedCameraPanel = null;
+        let cameraDragOffsetX = 0;
+        let cameraDragOffsetY = 0;
+        
+        // Initialize camera panel dragging
+        function initializeCameraDraggable() {
+            const cameraPanel = document.getElementById('camera-panel');
+            const header = cameraPanel?.querySelector('.camera-panel-header');
+            
+            if (!cameraPanel || !header) return;
+            
+            // Load saved position
+            const savedPosition = localStorage.getItem('cameraPanelPosition');
+            if (savedPosition) {
+                const { left, top, bottom, right } = JSON.parse(savedPosition);
+                if (left) cameraPanel.style.left = left;
+                if (top) cameraPanel.style.top = top;
+                if (bottom) cameraPanel.style.bottom = bottom;
+                if (right) cameraPanel.style.right = right;
+            }
+            
+            // Make header draggable (prevent conflict with close button)
+            header.addEventListener('mousedown', function(e) {
+                // Don't drag if clicking the close button
+                if (e.target.closest('button')) return;
+                
+                draggedCameraPanel = cameraPanel;
+                const rect = cameraPanel.getBoundingClientRect();
+                cameraDragOffsetX = e.clientX - rect.left;
+                cameraDragOffsetY = e.clientY - rect.top;
+                
+                // Add dragging visual feedback
+                cameraPanel.style.opacity = '0.8';
+                
+                e.preventDefault();
+            });
+        }
+        
+        // Handle camera drag movement
+        document.addEventListener('mousemove', function(e) {
+            if (!draggedCameraPanel) return;
+            
+            const newLeft = e.clientX - cameraDragOffsetX;
+            const newTop = e.clientY - cameraDragOffsetY;
+            
+            // Keep panel within viewport bounds
+            const maxX = window.innerWidth - draggedCameraPanel.offsetWidth;
+            const maxY = window.innerHeight - draggedCameraPanel.offsetHeight;
+            
+            const boundedLeft = Math.max(0, Math.min(newLeft, maxX));
+            const boundedTop = Math.max(0, Math.min(newTop, maxY));
+            
+            // Clear bottom/right positioning
+            draggedCameraPanel.style.bottom = 'auto';
+            draggedCameraPanel.style.right = 'auto';
+            
+            draggedCameraPanel.style.left = boundedLeft + 'px';
+            draggedCameraPanel.style.top = boundedTop + 'px';
+        });
+        
+        // Handle camera drag end
+        document.addEventListener('mouseup', function(e) {
+            if (!draggedCameraPanel) return;
+            
+            // Save position to localStorage
+            const position = {
+                left: draggedCameraPanel.style.left,
+                top: draggedCameraPanel.style.top,
+                bottom: draggedCameraPanel.style.bottom,
+                right: draggedCameraPanel.style.right
+            };
+            localStorage.setItem('cameraPanelPosition', JSON.stringify(position));
+            
+            // Remove dragging visual feedback
+            draggedCameraPanel.style.opacity = '';
+            draggedCameraPanel = null;
+        });
+        
+        // Initialize when camera panel is shown
+        const originalToggleCamera3D = toggleCamera3D;
+        if (typeof originalToggleCamera3D === 'function') {
+            toggleCamera3D = function() {
+                originalToggleCamera3D.apply(this, arguments);
+                // Initialize drag after panel is shown
+                setTimeout(initializeCameraDraggable, 100);
+            };
+        }
+        
+        // Also initialize on page load in case camera is already visible
+        window.addEventListener('DOMContentLoaded', function() {
+            setTimeout(initializeCameraDraggable, 500);
+        });
+        
+        // ============================================
+        // END DRAGGABLE CAMERA PANEL
         // ============================================
 
         // ============================================
