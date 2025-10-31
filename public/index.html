@@ -24947,6 +24947,204 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         // END DRAGGABLE ELIMINATED PANELS
         // ============================================
 
+        // ============================================
+        // TABLEBASE SYSTEM
+        // ============================================
+        
+        // All 51 hex coordinates on the Romgon board
+        const ALL_HEXES = [
+            '0-0', '0-1', '0-2', '0-3', '0-4', '0-5',
+            '1-0', '1-1', '1-2', '1-3', '1-4', '1-5', '1-6',
+            '2-0', '2-1', '2-2', '2-3', '2-4', '2-5', '2-6', '2-7',
+            '3-0', '3-1', '3-2', '3-3', '3-4', '3-5', '3-6', '3-7', '3-8',
+            '4-0', '4-1', '4-2', '4-3', '4-4', '4-5', '4-6', '4-7',
+            '5-0', '5-1', '5-2', '5-3', '5-4', '5-5', '5-6',
+            '6-0', '6-1', '6-2', '6-3', '6-4', '6-5'
+        ];
+        
+        let loadedTablebases = {};
+        let tablebaseEnabled = false;
+        
+        /**
+         * Load a tablebase JSON file
+         * @param {string} url - URL to tablebase JSON file
+         * @param {string} name - Tablebase identifier (e.g., 'square_vs_square')
+         */
+        async function loadTablebase(url, name) {
+            try {
+                console.log(`📚 Loading tablebase: ${name} from ${url}`);
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                loadedTablebases[name] = data.tablebase;
+                
+                console.log(`✅ Tablebase ${name} loaded: ${Object.keys(data.tablebase).length} positions`);
+                console.log(`   Stats:`, data.metadata.stats);
+                
+                return data;
+            } catch (error) {
+                console.error(`❌ Failed to load tablebase ${name}:`, error);
+                return null;
+            }
+        }
+        
+        /**
+         * Encode current board position for tablebase lookup
+         * @returns {string} Encoded position (e.g., "Sw0-0|Sb6-5|white")
+         */
+        function encodeCurrentPosition() {
+            const whitePieces = [];
+            const blackPieces = [];
+            
+            // Scan all hexes for pieces
+            ALL_HEXES.forEach(hexId => {
+                const hex = document.getElementById(`hex-${hexId}`);
+                if (!hex) return;
+                
+                const piece = hex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
+                if (!piece) return;
+                
+                const isWhite = piece.classList.contains('white-piece') || 
+                               piece.classList.contains('white-triangle') || 
+                               piece.classList.contains('white-rhombus') ||
+                               piece.classList.contains('white-circle') ||
+                               piece.classList.contains('white-hexgon');
+                
+                let pieceType = '';
+                if (piece.classList.contains('square-piece')) pieceType = 'S';
+                else if (piece.classList.contains('triangle-piece')) pieceType = 'T';
+                else if (piece.classList.contains('rhombus-piece')) pieceType = 'R';
+                else if (piece.classList.contains('circle-piece')) pieceType = 'C';
+                else if (piece.classList.contains('hexgon-piece')) pieceType = 'H';
+                
+                const pieceStr = `${pieceType}${isWhite ? 'w' : 'b'}${hexId}`;
+                
+                if (isWhite) {
+                    whitePieces.push(pieceStr);
+                } else {
+                    blackPieces.push(pieceStr);
+                }
+            });
+            
+            // Sort for canonical representation
+            whitePieces.sort();
+            blackPieces.sort();
+            
+            const turn = currentPlayer === 'white' ? 'white' : 'black';
+            return `${whitePieces.join(',')}|${blackPieces.join(',')}|${turn}`;
+        }
+        
+        /**
+         * Query tablebase for current position
+         * @returns {Object|null} Tablebase result or null if not found
+         */
+        function probeTablebase() {
+            if (!tablebaseEnabled || Object.keys(loadedTablebases).length === 0) {
+                return null;
+            }
+            
+            const position = encodeCurrentPosition();
+            console.log(`🔍 Probing tablebase for position: ${position}`);
+            
+            // Try to find position in any loaded tablebase
+            for (const [name, tablebase] of Object.entries(loadedTablebases)) {
+                const result = tablebase[position];
+                if (result) {
+                    console.log(`✅ Tablebase hit in ${name}:`, result);
+                    return { ...result, tablebaseName: name };
+                }
+            }
+            
+            console.log(`❌ Position not found in any loaded tablebase`);
+            return null;
+        }
+        
+        /**
+         * Display tablebase result in engine analysis panel
+         * @param {Object} result - Tablebase result
+         */
+        function displayTablebaseResult(result) {
+            if (!result) return;
+            
+            const analysisPanel = document.getElementById('engine-analysis-panel');
+            if (!analysisPanel) return;
+            
+            let resultText = '';
+            let resultColor = '';
+            
+            if (result.result === 'WIN') {
+                resultText = `Tablebase: ${currentPlayer.toUpperCase()} WINS`;
+                resultColor = '#4ade80';
+            } else if (result.result === 'LOSS') {
+                resultText = `Tablebase: ${currentPlayer.toUpperCase()} LOSES`;
+                resultColor = '#f87171';
+            } else {
+                resultText = 'Tablebase: DRAW';
+                resultColor = '#fbbf24';
+            }
+            
+            const dtmText = result.dtm !== null ? ` in ${result.dtm} moves` : '';
+            const bestMoveText = result.bestMove ? `\nBest move: ${result.bestMove}` : '';
+            
+            // Add tablebase result to analysis display
+            const tablebaseDiv = document.createElement('div');
+            tablebaseDiv.style.cssText = `
+                background: rgba(0, 0, 0, 0.3);
+                border-left: 4px solid ${resultColor};
+                padding: 10px;
+                margin: 10px 0;
+                border-radius: 5px;
+                font-family: monospace;
+            `;
+            tablebaseDiv.innerHTML = `
+                <strong style="color: ${resultColor};">${resultText}${dtmText}</strong>${bestMoveText}
+            `;
+            
+            // Insert at top of analysis panel
+            const firstChild = analysisPanel.firstChild;
+            if (firstChild) {
+                analysisPanel.insertBefore(tablebaseDiv, firstChild);
+            } else {
+                analysisPanel.appendChild(tablebaseDiv);
+            }
+        }
+        
+        /**
+         * Get tablebase-guided move for AI
+         * @returns {Object|null} Best move from tablebase or null
+         */
+        function getTablebaseMove() {
+            const result = probeTablebase();
+            if (!result || !result.bestMove) return null;
+            
+            // Parse best move (format: "Sw0-0>1-1")
+            const match = result.bestMove.match(/^[STCRH][wb](\d+-\d+)>(\d+-\d+)$/);
+            if (!match) return null;
+            
+            const [, fromHex, toHex] = match;
+            return { from: fromHex, to: toHex, evaluation: result };
+        }
+        
+        // Auto-load default tablebases on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            // Load Square vs Square tablebase (most common endgame)
+            loadTablebase('tablebases/square_vs_square.json', 'square_vs_square')
+                .then(data => {
+                    if (data) {
+                        tablebaseEnabled = true;
+                        console.log('✅ Default tablebases loaded and enabled');
+                    }
+                });
+        });
+        
+        // ============================================
+        // END TABLEBASE SYSTEM
+        // ============================================
+
         // Function to add eliminated piece to display
         function addToEliminatedPieces(piece) {
             const isWhite = piece.classList.contains('white-piece') || 

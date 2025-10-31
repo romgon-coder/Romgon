@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Romgon Tablebase Tester</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .section h2 {
+            margin-bottom: 15px;
+            color: #4ecdc4;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-size: 14px;
+        }
+        
+        textarea {
+            min-height: 80px;
+            font-family: monospace;
+        }
+        
+        button {
+            background: #4ecdc4;
+            color: #fff;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 10px;
+        }
+        
+        button:hover {
+            background: #45b8af;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .result {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        
+        .result.win {
+            border-left: 5px solid #4ade80;
+        }
+        
+        .result.loss {
+            border-left: 5px solid #f87171;
+        }
+        
+        .result.draw {
+            border-left: 5px solid #fbbf24;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .stat-card {
+            background: rgba(78, 205, 196, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4ecdc4;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+        
+        .examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .example-btn {
+            background: rgba(118, 75, 162, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .example-btn:hover {
+            background: rgba(118, 75, 162, 0.8);
+        }
+        
+        #loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            font-size: 1.2em;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #4ecdc4;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: rgba(248, 113, 113, 0.2);
+            border: 1px solid #f87171;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+            color: #fecaca;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Romgon Tablebase Tester</h1>
+        
+        <!-- Load Tablebase Section -->
+        <div class="section">
+            <h2>📂 Load Tablebase</h2>
+            <div class="input-group">
+                <label for="tablebaseFile">Select Tablebase File:</label>
+                <input type="file" id="tablebaseFile" accept=".json">
+            </div>
+            <button onclick="loadTablebase()">Load Tablebase</button>
+            <div id="tablebaseInfo"></div>
+        </div>
+        
+        <!-- Query Position Section -->
+        <div class="section">
+            <h2>🔎 Query Position</h2>
+            <div class="input-group">
+                <label for="positionInput">Position (Format: Sw0-0|Sb6-5|white):</label>
+                <input type="text" id="positionInput" placeholder="Example: Sw0-0|Sb6-5|white">
+            </div>
+            
+            <div class="examples">
+                <div class="example-btn" onclick="loadExample('Sw0-0|Sb6-5|white')">
+                    Square vs Square - White to move
+                </div>
+                <div class="example-btn" onclick="loadExample('Sw3-2|Sb3-6|black')">
+                    Square vs Square - Black to move
+                </div>
+                <div class="example-btn" onclick="loadExample('Tw1-0|Tb5-6|white')">
+                    Triangle vs Triangle
+                </div>
+                <div class="example-btn" onclick="loadExample('Rw3-0|Rb3-8|white')">
+                    Rhombus vs Rhombus
+                </div>
+            </div>
+            
+            <button onclick="queryPosition()" style="margin-top: 15px;">Query Tablebase</button>
+            <div id="queryResult"></div>
+        </div>
+        
+        <!-- Manual Position Builder -->
+        <div class="section">
+            <h2>🎮 Manual Position Builder</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <label>White Piece:</label>
+                    <select id="whitePieceType">
+                        <option value="square">Square</option>
+                        <option value="triangle">Triangle</option>
+                        <option value="rhombus">Rhombus</option>
+                        <option value="circle">Circle</option>
+                        <option value="hexagon">Hexagon</option>
+                    </select>
+                    <label style="margin-top: 10px;">White Position:</label>
+                    <input type="text" id="whitePosition" placeholder="e.g., 0-0">
+                </div>
+                <div>
+                    <label>Black Piece:</label>
+                    <select id="blackPieceType">
+                        <option value="square">Square</option>
+                        <option value="triangle">Triangle</option>
+                        <option value="rhombus">Rhombus</option>
+                        <option value="circle">Circle</option>
+                        <option value="hexagon">Hexagon</option>
+                    </select>
+                    <label style="margin-top: 10px;">Black Position:</label>
+                    <input type="text" id="blackPosition" placeholder="e.g., 6-5">
+                </div>
+            </div>
+            <div class="input-group" style="margin-top: 15px;">
+                <label>Turn:</label>
+                <select id="turn">
+                    <option value="white">White</option>
+                    <option value="black">Black</option>
+                </select>
+            </div>
+            <button onclick="buildAndQuery()">Build & Query</button>
+        </div>
+        
+        <!-- Statistics Section -->
+        <div class="section">
+            <h2>📊 Tablebase Statistics</h2>
+            <div id="statsContainer">
+                <p>Load a tablebase to see statistics.</p>
+            </div>
+        </div>
+        
+        <div id="loading">
+            <div class="spinner"></div>
+            <p>Processing...</p>
+        </div>
+    </div>
+    
+    <script>
+        let currentTablebase = null;
+        let tablebaseMetadata = null;
+        
+        function loadTablebase() {
+            const fileInput = document.getElementById('tablebaseFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showError('tablebaseInfo', 'Please select a tablebase file.');
+                return;
+            }
+            
+            showLoading(true);
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    currentTablebase = data.tablebase;
+                    tablebaseMetadata = data.metadata;
+                    
+                    showLoading(false);
+                    
+                    document.getElementById('tablebaseInfo').innerHTML = `
+                        <div class="result">
+                            ✅ Tablebase loaded successfully!
+                            
+                            Generated: ${new Date(tablebaseMetadata.generated).toLocaleString()}
+                            Configuration: ${JSON.stringify(tablebaseMetadata.config)}
+                            Total positions: ${tablebaseMetadata.stats.total}
+                        </div>
+                    `;
+                    
+                    displayStats();
+                } catch (error) {
+                    showLoading(false);
+                    showError('tablebaseInfo', `Error loading tablebase: ${error.message}`);
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        function queryPosition() {
+            if (!currentTablebase) {
+                showError('queryResult', 'Please load a tablebase first.');
+                return;
+            }
+            
+            const position = document.getElementById('positionInput').value.trim();
+            
+            if (!position) {
+                showError('queryResult', 'Please enter a position.');
+                return;
+            }
+            
+            const result = currentTablebase[position];
+            
+            if (!result) {
+                document.getElementById('queryResult').innerHTML = `
+                    <div class="result error">
+                        ❌ Position not found in tablebase.
+                        
+                        Possible reasons:
+                        - Position format is incorrect
+                        - Position not covered by this tablebase
+                        - Invalid hex coordinates
+                    </div>
+                `;
+                return;
+            }
+            
+            const resultClass = result.result.toLowerCase();
+            const dtmText = result.dtm !== null ? `Distance to mate: ${result.dtm}` : 'N/A';
+            const bestMoveText = result.bestMove || 'None';
+            
+            document.getElementById('queryResult').innerHTML = `
+                <div class="result ${resultClass}">
+                    <strong>Result: ${result.result}</strong>
+                    
+                    ${dtmText}
+                    Best move: ${bestMoveText}
+                    
+                    Position: ${position}
+                </div>
+            `;
+        }
+        
+        function loadExample(position) {
+            document.getElementById('positionInput').value = position;
+        }
+        
+        function buildAndQuery() {
+            const whitePieceType = document.getElementById('whitePieceType').value;
+            const whitePosition = document.getElementById('whitePosition').value.trim();
+            const blackPieceType = document.getElementById('blackPieceType').value;
+            const blackPosition = document.getElementById('blackPosition').value.trim();
+            const turn = document.getElementById('turn').value;
+            
+            if (!whitePosition || !blackPosition) {
+                showError('queryResult', 'Please enter positions for both pieces.');
+                return;
+            }
+            
+            // Build position string
+            const whitePiece = `${whitePieceType[0].toUpperCase()}w${whitePosition}`;
+            const blackPiece = `${blackPieceType[0].toUpperCase()}b${blackPosition}`;
+            const position = `${whitePiece}|${blackPiece}|${turn}`;
+            
+            document.getElementById('positionInput').value = position;
+            queryPosition();
+        }
+        
+        function displayStats() {
+            if (!tablebaseMetadata) return;
+            
+            const stats = tablebaseMetadata.stats;
+            
+            document.getElementById('statsContainer').innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.total.toLocaleString()}</div>
+                        <div class="stat-label">Total Positions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.wins.toLocaleString()}</div>
+                        <div class="stat-label">Wins (${(stats.wins / stats.total * 100).toFixed(1)}%)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.losses.toLocaleString()}</div>
+                        <div class="stat-label">Losses (${(stats.losses / stats.total * 100).toFixed(1)}%)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.draws.toLocaleString()}</div>
+                        <div class="stat-label">Draws (${(stats.draws / stats.total * 100).toFixed(1)}%)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.maxDepth}</div>
+                        <div class="stat-label">Max Depth to Mate</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${tablebaseMetadata.generationTime}s</div>
+                        <div class="stat-label">Generation Time</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+        
+        function showError(elementId, message) {
+            document.getElementById(elementId).innerHTML = `
+                <div class="error">⚠️ ${message}</div>
+            `;
+        }
+    </script>
+</body>
+</html>
