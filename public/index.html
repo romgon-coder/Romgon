@@ -22055,9 +22055,11 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             return 'unknown';
         }
         
-        /**
-         * Get all possible target positions for a piece
-         */
+        // ========== MINIMAX FUNCTIONS (DISABLED) ==========
+        // Note: These functions are disabled because they require virtual board state
+        // DOM manipulation doesn't work well for deep recursive search
+        
+        /*
         function getPossibleTargets(fromRow, fromCol, pieceType, piece) {
             const targets = [];
             
