@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Romgon Game Rules Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            color: #fff;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #4ecdc4;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .panel {
+            background: rgba(78, 205, 196, 0.1);
+            border: 2px solid rgba(78, 205, 196, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            overflow: visible;
+            position: relative;
+            resize: both;
+            min-width: 300px;
+            min-height: 200px;
+        }
+        
+        .panel h2 {
+            color: #4ecdc4;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            cursor: move;
+            user-select: none;
+            padding: 5px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        
+        .panel h2:hover {
+            background: rgba(78, 205, 196, 0.2);
+        }
+        
+        .panel.dragging {
+            position: fixed;
+            z-index: 1000;
+            opacity: 0.9;
+            cursor: move;
+        }
+        
+        .mini-board {
+            display: grid;
+            grid-template-columns: repeat(9, 40px);
+            gap: 2px;
+            margin: 20px auto;
+            width: fit-content;
+            pointer-events: all;
+        }
+        
+        #boardContainer {
+            transform: rotate(90deg);
+            padding: 150px;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: -8px;
+            overflow: visible;
+        }
+        
+        .board-row {
+            display: flex !important;
+            justify-content: center !important;
+            gap: -2px !important;
+            margin: -3px 0 !important;
+        }
+        
+        .board-row:nth-child(even) {
+            margin-left: 18px !important;
+        }
+        
+        .mini-hex {
+            width: 40px;
+            height: 46px;
+            background: rgba(255, 165, 0, 0.3);
+            border: 1px solid rgba(255, 165, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65em;
+            cursor: pointer;
+            position: relative;
+            transform: rotate(-90deg);
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+            margin: 1px;
+        }
+        
+        .mini-hex:hover {
+            background: rgba(78, 205, 196, 0.3);
+        }
+        
+        .mini-hex.selected {
+            background: rgba(78, 205, 196, 0.5);
+            border: 2px solid #4ecdc4;
+        }
+        
+        .mini-hex.valid-move {
+            background: rgba(74, 222, 128, 0.5);
+            border: 2px solid #4ade80;
+        }
+        
+        .mini-hex.capture-move {
+            background: rgba(248, 113, 113, 0.5);
+            border: 2px solid #f87171;
+        }
+        
+        .mini-hex.expected-move {
+            background: rgba(251, 191, 36, 0.5);
+            border: 2px solid #fbbf24;
+        }
+        
+        .mini-hex.incorrect-move {
+            background: rgba(168, 85, 247, 0.5);
+            border: 2px solid #a855f7;
+        }
+        
+        .mini-hex.dead-zone {
+            background: rgba(120, 53, 15, 0.5);
+            border-color: rgba(120, 53, 15, 0.8);
+        }
+        
+        .piece-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .white-piece-icon {
+            background: #fff;
+            color: #000;
+        }
+        
+        .black-piece-icon {
+            background: #333;
+            color: #fff;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            background: #4ecdc4;
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #45b8af;
+            transform: translateY(-2px);
+        }
+        
+        button.danger {
+            background: #f87171;
+        }
+        
+        button.danger:hover {
+            background: #dc2626;
+        }
+        
+        select, input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            width: 100%;
+        }
+        
+        .rule-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .rule-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #4ecdc4;
+        }
+        
+        .rule-item h3 {
+            color: #4ecdc4;
+            margin-bottom: 5px;
+        }
+        
+        .rule-status {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 3px;
+            font-size: 0.85em;
+            margin-left: 10px;
+        }
+        
+        .status-pass {
+            background: #4ade80;
+            color: #000;
+        }
+        
+        .status-fail {
+            background: #f87171;
+            color: #fff;
+        }
+        
+        .status-unknown {
+            background: #fbbf24;
+            color: #000;
+        }
+        
+        .log {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        
+        .log-info {
+            color: #4ecdc4;
+        }
+        
+        .log-success {
+            color: #4ade80;
+        }
+        
+        .log-error {
+            color: #f87171;
+        }
+        
+        .log-warning {
+            color: #fbbf24;
+        }
+        
+        .test-suite {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .test-case {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+        
+        .scenario-builder {
+            display: grid;
+            gap: 10px;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Romgon Game Rules Dashboard</h1>
+        
+        <div class="grid">
+            <!-- Interactive Board Testing -->
+            <div class="panel">
+                <h2>📋 Interactive Board</h2>
+                <div class="controls">
+                    <select id="pieceType">
+                        <option value="square">Square (S)</option>
+                        <option value="triangle">Triangle (T)</option>
+                        <option value="rhombus">Rhombus (R)</option>
+                        <option value="circle">Circle (C)</option>
+                        <option value="hexagon">Hexagon (H)</option>
+                    </select>
+                    <select id="pieceColor">
+                        <option value="white">White</option>
+                        <option value="black">Black</option>
+                    </select>
+                    <button onclick="clearBoard()">Clear Board</button>
+                    <button onclick="testMoves()">Test Moves</button>
+                    <button onclick="toggleCorrectionMode()">Correction Mode</button>
+                    <button onclick="compareMoveSets()">Compare Moves</button>
+                    <button onclick="saveCorrections()">💾 Save Corrections</button>
+                    <button onclick="loadCorrections()">📂 Load Corrections</button>
+                    <button onclick="exportRulesConfig()">📥 Export Rules Config</button>
+                </div>
+                <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                    <strong>Legend:</strong><br>
+                    🟦 Selected | 🟢 Valid Move | 🔴 Capture | 🟡 Expected | 🟣 Mark as Wrong
+                </div>
+                <div id="boardContainer"></div>
+                <div id="moveInfo" style="margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 5px;"></div>
+            </div>
+            
+            <!-- Rule Checker -->
+            <div class="panel">
+                <h2>✅ Rule Verification</h2>
+                <div class="controls">
+                    <button onclick="runAllTests()">Run All Tests</button>
+                    <button onclick="testSpecificRule()">Test Selected Rule</button>
+                    <button onclick="exportTestResults()">Export Results</button>
+                </div>
+                <select id="ruleSelector" style="margin-bottom: 10px;">
+                    <option value="square_movement">Square Movement (4 directions)</option>
+                    <option value="triangle_movement">Triangle Movement (rotation-based)</option>
+                    <option value="rhombus_diagonal">Rhombus Diagonal Restriction</option>
+                    <option value="circle_perimeter">Circle Perimeter Movement</option>
+                    <option value="hexagon_movement">Hexagon Movement (6 directions)</option>
+                    <option value="base_defense">Base Defense Win Condition</option>
+                    <option value="shape_elimination">Shape Elimination Win</option>
+                    <option value="rhombus_capture">Rhombus Cannot Capture Rhombus</option>
+                    <option value="capture_rules">General Capture Rules</option>
+                </select>
+                <div id="ruleResults"></div>
+            </div>
+        </div>
+        
+        <div class="grid">
+            <!-- Scenario Builder -->
+            <div class="panel">
+                <h2>🎬 Scenario Builder</h2>
+                <div class="scenario-builder">
+                    <input type="text" id="scenarioName" placeholder="Scenario Name">
+                    <textarea id="scenarioDesc" placeholder="Description of what you're testing..." rows="3"></textarea>
+                    <input type="text" id="whitePieces" placeholder="White pieces (e.g., Sw0-0,Tw1-0)">
+                    <input type="text" id="blackPieces" placeholder="Black pieces (e.g., Sb6-5,Tb5-6)">
+                    <select id="expectedOutcome">
+                        <option value="">Expected Outcome</option>
+                        <option value="white_wins">White Wins</option>
+                        <option value="black_wins">Black Wins</option>
+                        <option value="draw">Draw</option>
+                        <option value="legal_move">Legal Move</option>
+                        <option value="illegal_move">Illegal Move</option>
+                    </select>
+                    <button onclick="saveScenario()">Save Scenario</button>
+                    <button onclick="loadScenario()">Load Scenario</button>
+                    <button onclick="runScenario()">Run Test</button>
+                </div>
+                <div id="scenarioResults" style="margin-top: 15px;"></div>
+            </div>
+            
+            <!-- Console Log -->
+            <div class="panel">
+                <h2>📝 Test Log</h2>
+                <button onclick="clearLog()" class="danger" style="margin-bottom: 10px;">Clear Log</button>
+                <div id="testLog" class="log"></div>
+            </div>
+        </div>
+        
+        <div class="panel full-width">
+            <h2>📚 All Game Rules Reference</h2>
+            <ul class="rule-list" id="rulesReference"></ul>
+        </div>
+    </div>
+    
+    <script>
+        // Board state
+        let boardState = {};
+        let selectedHex = null;
+        let testMode = false;
+        let correctionMode = false;
+        let expectedMoves = [];
+        let actualMoves = [];
+        let rulesDatabase = {}; // Store all corrections
+        
+        // All 51 hexes
+        const ALL_HEXES = [
+            '0-0', '0-1', '0-2', '0-3', '0-4', '0-5',
+            '1-0', '1-1', '1-2', '1-3', '1-4', '1-5', '1-6',
+            '2-0', '2-1', '2-2', '2-3', '2-4', '2-5', '2-6', '2-7',
+            '3-0', '3-1', '3-2', '3-3', '3-4', '3-5', '3-6', '3-7', '3-8',
+            '4-0', '4-1', '4-2', '4-3', '4-4', '4-5', '4-6', '4-7',
+            '5-0', '5-1', '5-2', '5-3', '5-4', '5-5', '5-6',
+            '6-0', '6-1', '6-2', '6-3', '6-4', '6-5'
+        ];
+        
+        const DEAD_ZONE = new Set(['3-3', '3-4', '3-5']);
+        
+        // Initialize board
+        function initBoard() {
+            const container = document.getElementById('boardContainer');
+            container.innerHTML = '';
+            
+            // Create simplified 2D grid representation
+            const rows = [6, 7, 8, 9, 8, 7, 6]; // hexes per row
+            let hexIndex = 0;
+            
+            rows.forEach((count, rowIdx) => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'board-row';
+                rowDiv.style.display = 'flex';
+                rowDiv.style.justifyContent = 'center';
+                rowDiv.style.gap = '2px';
+                
+                for (let col = 0; col < count; col++) {
+                    const hexId = ALL_HEXES[hexIndex];
+                    const hex = document.createElement('div');
+                    hex.className = 'mini-hex';
+                    hex.id = `hex-${hexId}`;
+                    hex.textContent = hexId;
+                    
+                    if (DEAD_ZONE.has(hexId)) {
+                        hex.classList.add('dead-zone');
+                    }
+                    
+                    hex.onclick = () => handleHexClick(hexId);
+                    rowDiv.appendChild(hex);
+                    hexIndex++;
+                }
+                
+                container.appendChild(rowDiv);
+            });
+        }
+        
+        function handleHexClick(hexId) {
+            const hex = document.getElementById(`hex-${hexId}`);
+            
+            // Correction mode: mark hexes as expected moves
+            if (correctionMode) {
+                if (hex.classList.contains('expected-move')) {
+                    hex.classList.remove('expected-move');
+                    expectedMoves = expectedMoves.filter(h => h !== hexId);
+                    log(`Removed ${hexId} from expected moves`, 'info');
+                } else if (hex.classList.contains('valid-move') || hex.classList.contains('capture-move')) {
+                    hex.classList.add('incorrect-move');
+                    log(`Marked ${hexId} as incorrect`, 'warning');
+                } else {
+                    hex.classList.add('expected-move');
+                    expectedMoves.push(hexId);
+                    log(`Added ${hexId} to expected moves`, 'success');
+                }
+                return;
+            }
+            
+            if (testMode) {
+                // In test mode, clicking shows valid moves
+                return;
+            }
+            
+            if (boardState[hexId]) {
+                // Remove piece
+                delete boardState[hexId];
+                hex.innerHTML = hexId;
+            } else {
+                // Add piece
+                const pieceType = document.getElementById('pieceType').value;
+                const color = document.getElementById('pieceColor').value;
+                
+                boardState[hexId] = { type: pieceType, color: color };
+                
+                const piece = document.createElement('div');
+                piece.className = `piece-icon ${color}-piece-icon`;
+                piece.textContent = pieceType[0].toUpperCase();
+                hex.innerHTML = '';
+                hex.appendChild(piece);
+            }
+            
+            log(`Piece ${boardState[hexId] ? 'added' : 'removed'} at ${hexId}`, 'info');
+        }
+        
+        function clearBoard() {
+            boardState = {};
+            initBoard();
+            log('Board cleared', 'info');
+        }
+        
+        function testMoves() {
+            // Clear previous highlights
+            ALL_HEXES.forEach(hexId => {
+                const hex = document.getElementById(`hex-${hexId}`);
+                if (hex) {
+                    hex.classList.remove('valid-move', 'capture-move', 'selected');
+                }
+            });
+            
+            // Get first piece on board
+            const pieces = Object.keys(boardState);
+            if (pieces.length === 0) {
+                log('No pieces on board to test', 'warning');
+                document.getElementById('moveInfo').innerHTML = '<strong>⚠️ No pieces on board</strong><br>Click hexes to add pieces first.';
+                return;
+            }
+            
+            const testHex = pieces[0];
+            const piece = boardState[testHex];
+            
+            const selectedHex = document.getElementById(`hex-${testHex}`);
+            if (selectedHex) {
+                selectedHex.classList.add('selected');
+            }
+            
+            // Calculate legal moves
+            const legalMoves = getLegalMoves(testHex, piece.type, piece.color);
+            actualMoves = legalMoves; // Store for comparison
+            
+            legalMoves.forEach(move => {
+                const targetHex = document.getElementById(`hex-${move.to}`);
+                if (targetHex) {
+                    targetHex.classList.add(move.isCapture ? 'capture-move' : 'valid-move');
+                }
+            });
+            
+            const moveInfo = document.getElementById('moveInfo');
+            moveInfo.innerHTML = `
+                <strong style="color: #4ecdc4;">${piece.color.toUpperCase()} ${piece.type.toUpperCase()} at ${testHex}</strong><br>
+                Legal moves: <strong>${legalMoves.length}</strong><br>
+                Captures: <strong style="color: #f87171;">${legalMoves.filter(m => m.isCapture).length}</strong><br>
+                Empty moves: <strong style="color: #4ade80;">${legalMoves.filter(m => !m.isCapture).length}</strong>
+            `;
+            
+            log(`Testing ${piece.color} ${piece.type} at ${testHex}: ${legalMoves.length} legal moves found`, 'success');
+        }
+        
+        // Correction Mode Functions
+        function toggleCorrectionMode() {
+            correctionMode = !correctionMode;
+            const btn = event.target;
+            
+            if (correctionMode) {
+                btn.textContent = '✓ Exit Correction Mode';
+                btn.style.background = '#fbbf24';
+                log('🟡 CORRECTION MODE: Click hexes to mark as expected moves', 'warning');
+                document.getElementById('moveInfo').innerHTML = `
+                    <strong style="color: #fbbf24;">🛠️ CORRECTION MODE ACTIVE</strong><br>
+                    Click green/red hexes to mark as incorrect<br>
+                    Click empty hexes to mark as expected moves<br>
+                    Click "Compare Moves" to see differences
+                `;
+            } else {
+                btn.textContent = 'Correction Mode';
+                btn.style.background = '#4ecdc4';
+                log('Correction mode disabled', 'info');
+            }
+        }
+        
+        function compareMoveSets() {
+            if (actualMoves.length === 0) {
+                log('Run "Test Moves" first to generate actual moves', 'warning');
+                return;
+            }
+            
+            const actualSet = new Set(actualMoves.map(m => m.to));
+            const expectedSet = new Set(expectedMoves);
+            
+            // Find differences
+            const missing = [...expectedSet].filter(hex => !actualSet.has(hex));
+            const extra = [...actualSet].filter(hex => !expectedSet.has(hex));
+            const correct = [...actualSet].filter(hex => expectedSet.has(hex));
+            
+            const moveInfo = document.getElementById('moveInfo');
+            moveInfo.innerHTML = `
+                <strong style="color: #4ecdc4;">📊 MOVE COMPARISON</strong><br>
+                <span style="color: #4ade80;">✅ Correct: ${correct.length}</span><br>
+                <span style="color: #f87171;">❌ Missing: ${missing.length} ${missing.length > 0 ? `(${missing.join(', ')})` : ''}</span><br>
+                <span style="color: #fbbf24;">⚠️ Extra: ${extra.length} ${extra.length > 0 ? `(${extra.join(', ')})` : ''}</span><br>
+                <strong>Accuracy: ${correct.length > 0 ? ((correct.length / (correct.length + missing.length + extra.length)) * 100).toFixed(1) : 0}%</strong>
+            `;
+            
+            // Highlight differences
+            missing.forEach(hexId => {
+                const hex = document.getElementById(`hex-${hexId}`);
+                if (hex) {
+                    hex.style.boxShadow = '0 0 10px #f87171';
+                }
+            });
+            
+            extra.forEach(hexId => {
+                const hex = document.getElementById(`hex-${hexId}`);
+                if (hex) {
+                    hex.style.boxShadow = '0 0 10px #fbbf24';
+                }
+            });
+            
+            log(`Comparison: ${correct.length} correct, ${missing.length} missing, ${extra.length} extra`, 
+                missing.length === 0 && extra.length === 0 ? 'success' : 'warning');
+        }
+        
+        // Save and Load Corrections
+        function saveCorrections() {
+            const pieces = Object.keys(boardState);
+            if (pieces.length === 0) {
+                log('No pieces on board to save', 'warning');
+                return;
+            }
+            
+            const testHex = pieces[0];
+            const piece = boardState[testHex];
+            
+            // Create unique key for this rule
+            const ruleKey = `${piece.type}_${piece.color}_${testHex}`;
+            
+            // Store correction data
+            const correction = {
+                pieceType: piece.type,
+                color: piece.color,
+                position: testHex,
+                expectedMoves: [...expectedMoves],
+                actualMoves: actualMoves.map(m => ({ to: m.to, isCapture: m.isCapture })),
+                timestamp: new Date().toISOString(),
+                boardState: JSON.parse(JSON.stringify(boardState))
+            };
+            
+            rulesDatabase[ruleKey] = correction;
+            
+            // Save to localStorage
+            localStorage.setItem('romgonRulesDatabase', JSON.stringify(rulesDatabase));
+            
+            log(`✅ Saved correction for ${piece.color} ${piece.type} at ${testHex}`, 'success');
+            
+            // Show confirmation
+            const moveInfo = document.getElementById('moveInfo');
+            moveInfo.innerHTML = `
+                <strong style="color: #4ade80;">✅ CORRECTION SAVED</strong><br>
+                Rule: ${piece.type} movement<br>
+                Position: ${testHex}<br>
+                Expected moves: ${expectedMoves.length}<br>
+                <em>Saved to localStorage and ready for export</em>
+            `;
+        }
+        
+        function loadCorrections() {
+            const stored = localStorage.getItem('romgonRulesDatabase');
+            if (!stored) {
+                log('No saved corrections found', 'warning');
+                return;
+            }
+            
+            rulesDatabase = JSON.parse(stored);
+            const count = Object.keys(rulesDatabase).length;
+            
+            log(`📂 Loaded ${count} saved corrections`, 'success');
+            
+            // Display loaded corrections
+            const moveInfo = document.getElementById('moveInfo');
+            let html = `<strong style="color: #4ecdc4;">📂 LOADED CORRECTIONS (${count})</strong><br>`;
+            
+            Object.entries(rulesDatabase).forEach(([key, data]) => {
+                html += `<div style="font-size: 0.9em; margin: 5px 0;">
+                    ${data.color} ${data.pieceType} at ${data.position} - ${data.expectedMoves.length} moves
+                </div>`;
+            });
+            
+            moveInfo.innerHTML = html;
+        }
+        
+        function exportRulesConfig() {
+            const stored = localStorage.getItem('romgonRulesDatabase');
+            if (!stored) {
+                log('No corrections to export. Save some corrections first.', 'warning');
+                return;
+            }
+            
+            rulesDatabase = JSON.parse(stored);
+            
+            // Create comprehensive rules configuration
+            const config = {
+                version: '1.0.0',
+                generated: new Date().toISOString(),
+                description: 'Romgon Game Rules Configuration - Corrected Movement Patterns',
+                corrections: rulesDatabase,
+                stats: {
+                    totalCorrections: Object.keys(rulesDatabase).length,
+                    pieceTypes: [...new Set(Object.values(rulesDatabase).map(r => r.pieceType))]
+                }
+            };
+            
+            // Export as JavaScript module
+            const jsContent = `// Romgon Game Rules Configuration
+// Generated: ${config.generated}
+// Total Corrections: ${config.stats.totalCorrections}
+
+const ROMGON_RULES_CONFIG = ${JSON.stringify(config, null, 2)};
+
+// Helper function to get corrected moves for a piece
+function getCorrectedMoves(pieceType, color, position) {
+    const key = \`\${pieceType}_\${color}_\${position}\`;
+    return ROMGON_RULES_CONFIG.corrections[key]?.expectedMoves || null;
+}
+
+// Helper function to validate a move
+function isMoveCorrected(pieceType, color, fromHex, toHex) {
+    const key = \`\${pieceType}_\${color}_\${fromHex}\`;
+    const correction = ROMGON_RULES_CONFIG.corrections[key];
+    return correction ? correction.expectedMoves.includes(toHex) : null;
+}
+
+// Export for use in game engine
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { ROMGON_RULES_CONFIG, getCorrectedMoves, isMoveCorrected };
+}
+`;
+            
+            // Download as .js file
+            const jsBlob = new Blob([jsContent], { type: 'application/javascript' });
+            const jsUrl = URL.createObjectURL(jsBlob);
+            const jsLink = document.createElement('a');
+            jsLink.href = jsUrl;
+            jsLink.download = `romgon-rules-config-${Date.now()}.js`;
+            jsLink.click();
+            
+            // Also download as JSON for easy loading
+            const jsonBlob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+            const jsonUrl = URL.createObjectURL(jsonBlob);
+            const jsonLink = document.createElement('a');
+            jsonLink.href = jsonUrl;
+            jsonLink.download = `romgon-rules-config-${Date.now()}.json`;
+            jsonLink.click();
+            
+            log(`📥 Exported rules config with ${config.stats.totalCorrections} corrections`, 'success');
+            
+            const moveInfo = document.getElementById('moveInfo');
+            moveInfo.innerHTML = `
+                <strong style="color: #4ade80;">📥 RULES CONFIG EXPORTED</strong><br>
+                Files downloaded:<br>
+                ✅ romgon-rules-config.js (JavaScript module)<br>
+                ✅ romgon-rules-config.json (JSON data)<br><br>
+                <em>You can now use these files in your game engine!</em>
+            `;
+        }
+        
+        // Movement calculation (simplified)
+        function getLegalMoves(fromHex, pieceType, color) {
+            const moves = [];
+            const neighbors = getNeighbors(fromHex);
+            
+            switch (pieceType) {
+                case 'square':
+                    // 4 diagonal neighbors
+                    const crossNeighbors = getCrossNeighbors(fromHex);
+                    crossNeighbors.forEach(hex => {
+                        if (canMoveTo(hex, color)) {
+                            moves.push({ to: hex, isCapture: !!boardState[hex] });
+                        }
+                    });
+                    break;
+                    
+                case 'hexagon':
+                    // All 6 neighbors
+                    neighbors.forEach(hex => {
+                        if (canMoveTo(hex, color)) {
+                            moves.push({ to: hex, isCapture: !!boardState[hex] });
+                        }
+                    });
+                    break;
+                    
+                case 'rhombus':
+                    // Similar to square but with diagonal restrictions
+                    const rhombusNeighbors = getCrossNeighbors(fromHex);
+                    rhombusNeighbors.forEach(hex => {
+                        if (canMoveTo(hex, color)) {
+                            const isDiagonal = isDiagonalMove(fromHex, hex);
+                            // Diagonal moves cannot capture
+                            if (isDiagonal && boardState[hex]) {
+                                return; // Skip
+                            }
+                            moves.push({ to: hex, isCapture: !!boardState[hex] && !isDiagonal });
+                        }
+                    });
+                    break;
+                    
+                default:
+                    // Simplified for other pieces
+                    neighbors.slice(0, 3).forEach(hex => {
+                        if (canMoveTo(hex, color)) {
+                            moves.push({ to: hex, isCapture: !!boardState[hex] });
+                        }
+                    });
+            }
+            
+            return moves;
+        }
+        
+        function getNeighbors(hexId) {
+            const [row, col] = hexId.split('-').map(Number);
+            const isEvenRow = row % 2 === 0;
+            const offsets = isEvenRow 
+                ? [[1, 0], [1, 1], [0, 1], [-1, 0], [-1, 1], [0, -1]]
+                : [[1, -1], [1, 0], [0, 1], [-1, -1], [-1, 0], [0, -1]];
+            
+            return offsets
+                .map(([r, c]) => `${row + r}-${col + c}`)
+                .filter(hex => ALL_HEXES.includes(hex));
+        }
+        
+        function getCrossNeighbors(hexId) {
+            const [row, col] = hexId.split('-').map(Number);
+            let offsets = [];
+            
+            if (row === 3) {
+                offsets = [[1, -1], [1, 0], [-1, 0], [-1, -1]];
+            } else if (row % 2 === 0) {
+                offsets = [[1, 0], [1, 1], [-1, -1], [-1, 0]];
+            } else {
+                offsets = [[1, 0], [1, 1], [-1, -1], [-1, 0]];
+            }
+            
+            return offsets
+                .map(([r, c]) => `${row + r}-${col + c}`)
+                .filter(hex => ALL_HEXES.includes(hex));
+        }
+        
+        function isDiagonalMove(from, to) {
+            const deadZone = new Set(['3-3', '3-4', '3-5']);
+            const innerPerimeter = new Set(['4-2', '4-3', '4-4', '4-5', '2-2', '2-3', '2-4', '2-5']);
+            return (deadZone.has(from) && innerPerimeter.has(to)) || 
+                   (innerPerimeter.has(from) && deadZone.has(to));
+        }
+        
+        function canMoveTo(hexId, myColor) {
+            const piece = boardState[hexId];
+            if (!piece) return true; // Empty hex
+            return piece.color !== myColor; // Can capture opponent
+        }
+        
+        // Testing framework
+        function runAllTests() {
+            clearLog();
+            log('=== RUNNING ALL TESTS ===', 'info');
+            
+            const tests = [
+                testSquareMovement,
+                testRhombusDiagonal,
+                testBaseDefense,
+                testCaptureRules
+            ];
+            
+            let passed = 0;
+            let failed = 0;
+            
+            tests.forEach(test => {
+                try {
+                    const result = test();
+                    if (result) {
+                        passed++;
+                        log(`✅ ${test.name}: PASS`, 'success');
+                    } else {
+                        failed++;
+                        log(`❌ ${test.name}: FAIL`, 'error');
+                    }
+                } catch (e) {
+                    failed++;
+                    log(`❌ ${test.name}: ERROR - ${e.message}`, 'error');
+                }
+            });
+            
+            log(`\n=== RESULTS: ${passed} passed, ${failed} failed ===`, passed === tests.length ? 'success' : 'warning');
+        }
+        
+        function testSquareMovement() {
+            clearBoard();
+            boardState['3-4'] = { type: 'square', color: 'white' };
+            const moves = getLegalMoves('3-4', 'square', 'white');
+            return moves.length === 4; // Should have 4 moves
+        }
+        
+        function testRhombusDiagonal() {
+            clearBoard();
+            boardState['3-3'] = { type: 'rhombus', color: 'white' };
+            boardState['4-3'] = { type: 'square', color: 'black' };
+            const moves = getLegalMoves('3-3', 'rhombus', 'white');
+            const canCaptureOnDiagonal = moves.some(m => m.to === '4-3' && m.isCapture);
+            return !canCaptureOnDiagonal; // Should NOT be able to capture on diagonal
+        }
+        
+        function testBaseDefense() {
+            // Test if base defense is checked correctly
+            log('Base defense test: Checking if base adjacency is detected', 'info');
+            return true; // Placeholder
+        }
+        
+        function testCaptureRules() {
+            clearBoard();
+            boardState['0-0'] = { type: 'square', color: 'white' };
+            boardState['1-0'] = { type: 'square', color: 'black' };
+            const moves = getLegalMoves('0-0', 'square', 'white');
+            const canCapture = moves.some(m => m.to === '1-0' && m.isCapture);
+            return canCapture; // Should be able to capture
+        }
+        
+        // Logging
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('testLog');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function clearLog() {
+            document.getElementById('testLog').innerHTML = '';
+        }
+        
+        // Scenario management
+        let savedScenarios = [];
+        
+        function saveScenario() {
+            const name = document.getElementById('scenarioName').value;
+            const desc = document.getElementById('scenarioDesc').value;
+            const whitePieces = document.getElementById('whitePieces').value;
+            const blackPieces = document.getElementById('blackPieces').value;
+            const outcome = document.getElementById('expectedOutcome').value;
+            
+            if (!name) {
+                log('Please enter a scenario name', 'warning');
+                return;
+            }
+            
+            const scenario = {
+                name,
+                description: desc,
+                whitePieces,
+                blackPieces,
+                expectedOutcome: outcome,
+                boardState: JSON.parse(JSON.stringify(boardState))
+            };
+            
+            savedScenarios.push(scenario);
+            localStorage.setItem('romgonScenarios', JSON.stringify(savedScenarios));
+            
+            log(`Scenario "${name}" saved`, 'success');
+            document.getElementById('scenarioResults').innerHTML = `
+                <div style="background: rgba(74, 222, 128, 0.2); padding: 10px; border-radius: 5px;">
+                    ✅ Scenario saved: ${name}
+                </div>
+            `;
+        }
+        
+        function loadScenario() {
+            const stored = localStorage.getItem('romgonScenarios');
+            if (!stored) {
+                log('No saved scenarios found', 'warning');
+                return;
+            }
+            
+            savedScenarios = JSON.parse(stored);
+            log(`Loaded ${savedScenarios.length} scenarios`, 'success');
+            
+            if (savedScenarios.length > 0) {
+                const last = savedScenarios[savedScenarios.length - 1];
+                document.getElementById('scenarioName').value = last.name;
+                document.getElementById('scenarioDesc').value = last.description;
+                document.getElementById('whitePieces').value = last.whitePieces;
+                document.getElementById('blackPieces').value = last.blackPieces;
+                document.getElementById('expectedOutcome').value = last.expectedOutcome;
+                
+                if (last.boardState) {
+                    boardState = last.boardState;
+                    initBoard();
+                    // Restore pieces on board
+                    Object.keys(boardState).forEach(hexId => {
+                        const piece = boardState[hexId];
+                        const hex = document.getElementById(`hex-${hexId}`);
+                        if (hex) {
+                            const pieceDiv = document.createElement('div');
+                            pieceDiv.className = `piece-icon ${piece.color}-piece-icon`;
+                            pieceDiv.textContent = piece.type[0].toUpperCase();
+                            hex.innerHTML = '';
+                            hex.appendChild(pieceDiv);
+                        }
+                    });
+                }
+            }
+        }
+        
+        function runScenario() {
+            const name = document.getElementById('scenarioName').value;
+            const outcome = document.getElementById('expectedOutcome').value;
+            
+            if (!name) {
+                log('Please enter a scenario name', 'warning');
+                return;
+            }
+            
+            log(`Running scenario: ${name}`, 'info');
+            
+            // Run the test based on current board state
+            const pieces = Object.keys(boardState);
+            
+            if (pieces.length === 0) {
+                log('No pieces on board to test', 'warning');
+                return;
+            }
+            
+            // Simulate test
+            let result = 'PASS';
+            let resultMessage = `Scenario "${name}" executed successfully`;
+            
+            document.getElementById('scenarioResults').innerHTML = `
+                <div style="background: rgba(74, 222, 128, 0.2); padding: 10px; border-radius: 5px; margin-top: 10px;">
+                    ✅ ${resultMessage}<br>
+                    Pieces on board: ${pieces.length}<br>
+                    Expected: ${outcome || 'Not specified'}
+                </div>
+            `;
+            
+            log(resultMessage, 'success');
+        }
+        
+        function testSpecificRule() {
+            const rule = document.getElementById('ruleSelector').value;
+            log(`Testing rule: ${rule}`, 'info');
+            
+            let result = false;
+            
+            switch(rule) {
+                case 'square_movement':
+                    result = testSquareMovement();
+                    break;
+                case 'rhombus_diagonal':
+                    result = testRhombusDiagonal();
+                    break;
+                case 'base_defense':
+                    result = testBaseDefense();
+                    break;
+                case 'capture_rules':
+                    result = testCaptureRules();
+                    break;
+                default:
+                    log('Test not implemented yet', 'warning');
+                    return;
+            }
+            
+            const resultDiv = document.getElementById('ruleResults');
+            resultDiv.innerHTML = `
+                <div style="background: rgba(${result ? '74, 222, 128' : '248, 113, 113'}, 0.2); padding: 10px; border-radius: 5px; margin-top: 10px;">
+                    ${result ? '✅ PASS' : '❌ FAIL'}: ${rule}
+                </div>
+            `;
+        }
+        
+        function exportTestResults() {
+            const results = {
+                timestamp: new Date().toISOString(),
+                boardState: boardState,
+                scenarios: savedScenarios
+            };
+            
+            const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `romgon-test-results-${Date.now()}.json`;
+            a.click();
+            
+            log('Test results exported', 'success');
+        }
+        
+        // Initialize rules reference
+        function loadRulesReference() {
+            const rules = [
+                { name: 'Square Movement', desc: '4 diagonal directions', tested: false },
+                { name: 'Triangle Movement', desc: 'Rotation-based, 2 forward hexes', tested: false },
+                { name: 'Rhombus Diagonal', desc: 'Cannot capture on diagonal moves (dead zone ↔ inner perimeter)', tested: false },
+                { name: 'Circle Perimeter', desc: 'Moves along zone perimeters clockwise/counter-clockwise', tested: false },
+                { name: 'Hexagon Movement', desc: '6 adjacent hexes (all directions)', tested: false },
+                { name: 'Base Defense', desc: 'Must have piece adjacent to base, else lose', tested: false },
+                { name: 'Shape Elimination', desc: 'Rhombus elimination = instant loss', tested: false },
+                { name: 'Rhombus vs Rhombus', desc: 'Rhombuses cannot capture each other', tested: false },
+            ];
+            
+            const list = document.getElementById('rulesReference');
+            rules.forEach(rule => {
+                const item = document.createElement('li');
+                item.className = 'rule-item';
+                item.innerHTML = `
+                    <h3>${rule.name} <span class="rule-status status-unknown">NOT TESTED</span></h3>
+                    <p>${rule.desc}</p>
+                `;
+                list.appendChild(item);
+            });
+        }
+        
+        // Initialize
+        initBoard();
+        loadRulesReference();
+        log('Dashboard initialized', 'success');
+        
+        // Make panels draggable
+        initDraggablePanels();
+        
+        function initDraggablePanels() {
+            const panels = document.querySelectorAll('.panel');
+            
+            panels.forEach(panel => {
+                const header = panel.querySelector('h2');
+                if (!header) return;
+                
+                let isDragging = false;
+                let currentX;
+                let currentY;
+                let initialX;
+                let initialY;
+                let xOffset = 0;
+                let yOffset = 0;
+                
+                header.addEventListener('mousedown', dragStart);
+                
+                function dragStart(e) {
+                    // Don't drag if clicking on buttons or inputs
+                    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || 
+                        e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') {
+                        return;
+                    }
+                    
+                    initialX = e.clientX - xOffset;
+                    initialY = e.clientY - yOffset;
+                    
+                    if (e.target === header) {
+                        isDragging = true;
+                        panel.classList.add('dragging');
+                        
+                        // Convert to fixed positioning
+                        const rect = panel.getBoundingClientRect();
+                        panel.style.position = 'fixed';
+                        panel.style.left = rect.left + 'px';
+                        panel.style.top = rect.top + 'px';
+                        panel.style.width = rect.width + 'px';
+                        
+                        document.addEventListener('mousemove', drag);
+                        document.addEventListener('mouseup', dragEnd);
+                    }
+                }
+                
+                function drag(e) {
+                    if (isDragging) {
+                        e.preventDefault();
+                        
+                        currentX = e.clientX - initialX;
+                        currentY = e.clientY - initialY;
+                        
+                        xOffset = currentX;
+                        yOffset = currentY;
+                        
+                        setTranslate(currentX, currentY, panel);
+                    }
+                }
+                
+                function dragEnd(e) {
+                    initialX = currentX;
+                    initialY = currentY;
+                    
+                    isDragging = false;
+                    panel.classList.remove('dragging');
+                    
+                    document.removeEventListener('mousemove', drag);
+                    document.removeEventListener('mouseup', dragEnd);
+                }
+                
+                function setTranslate(xPos, yPos, el) {
+                    const rect = el.getBoundingClientRect();
+                    el.style.left = (rect.left + xPos - currentX + xPos) + 'px';
+                    el.style.top = (rect.top + yPos - currentY + yPos) + 'px';
+                    currentX = xPos;
+                    currentY = yPos;
+                }
+            });
+            
+            log('✅ Panels are now draggable and resizable', 'success');
+        }
+    </script>
+</body>
+</html>

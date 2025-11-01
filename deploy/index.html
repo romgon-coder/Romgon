@@ -21656,308 +21656,118 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         }
         
         // Evaluate multi-move lookahead: What happens after this move?
-        // ========== QUIESCENCE SEARCH - Deep Tactical Analysis ==========
-        // Searches "quiet" positions by continuing to search captures, threats, and forcing moves
-        // until the position stabilizes. Prevents horizon effect (missing tactics just beyond search depth)
+        // ========== SIMPLIFIED LOOKAHEAD - Performance Optimized ==========
         function evaluateMultiMoveLookahead(fromRow, fromCol, toRow, toCol, pieceType, isCapture) {
-            // Start quiescence search with max depth of 6 plies (3 full moves)
-            return quiescenceSearch(fromRow, fromCol, toRow, toCol, pieceType, isCapture, 0, 6, true);
-        }
-        
-        /**
-         * Quiescence Search - Continues searching tactical sequences until position is "quiet"
-         * @param fromRow - Starting row
-         * @param fromCol - Starting column
-         * @param toRow - Target row
-         * @param toCol - Target column
-         * @param pieceType - Type of piece moving
-         * @param isCapture - Whether this move captures
-         * @param depth - Current search depth
-         * @param maxDepth - Maximum search depth
-         * @param isMaximizing - Is AI maximizing or opponent minimizing?
-         * @returns Score for this move sequence
-         */
-        function quiescenceSearch(fromRow, fromCol, toRow, toCol, pieceType, isCapture, depth, maxDepth, isMaximizing) {
+            // DISABLED: Quiescence search was causing browser crashes (500k+ recursive calls)
+            // Using simplified 1-move lookahead instead for performance
+            
+            let lookaheadScore = 0;
+            
             // Simulate the move temporarily
             const simulatedState = simulateMove(fromRow, fromCol, toRow, toCol, pieceType, isCapture);
             if (!simulatedState) return 0; // Invalid simulation
             
-            // Base evaluation of this position
-            let staticEval = evaluatePositionStatic(simulatedState, isMaximizing);
+            // Evaluate follow-up opportunities from the new position
+            const followUpMoves = getFollowUpMoves(toRow, toCol, pieceType, simulatedState);
             
-            // Check if position is "quiet" (no forcing moves available)
-            const isQuiet = isPositionQuiet(toRow, toCol, pieceType, simulatedState, isMaximizing);
-            
-            // If max depth reached OR position is quiet, return static evaluation
-            if (depth >= maxDepth || isQuiet) {
-                cleanupSimulation(simulatedState);
-                return staticEval;
-            }
-            
-            // Position is NOT quiet - continue searching tactical sequences
-            console.log(`🔍 Quiescence depth ${depth}: Searching tactical continuation...`);
-            
-            if (isMaximizing) {
-                // AI's turn - look for best tactical move
-                let maxScore = staticEval; // Stand-pat: AI can choose to stop here
-                
-                // Get all tactical moves (captures, threats, rhombus advances, gateway transitions)
-                const tacticalMoves = getTacticalMoves(toRow, toCol, pieceType, simulatedState, true);
-                
-                // Search each tactical continuation
-                for (const move of tacticalMoves) {
-                    const score = quiescenceSearch(
-                        move.fromRow, move.fromCol, 
-                        move.toRow, move.toCol, 
-                        move.pieceType, move.isCapture,
-                        depth + 1, maxDepth, false // Opponent's turn next
-                    );
+            // Score based on follow-up opportunities
+            followUpMoves.forEach(followUp => {
+                // Can we capture something valuable next turn?
+                if (followUp.isCapture) {
+                    lookaheadScore += 50;
                     
-                    maxScore = Math.max(maxScore, score);
-                    
-                    // Alpha-beta pruning could go here (future optimization)
+                    // Extra bonus for capturing high-value pieces
+                    if (followUp.capturedType === 'rhombus') lookaheadScore += 200;
+                    else if (followUp.capturedType === 'triangle') lookaheadScore += 40;
+                    else if (followUp.capturedType === 'hexgon') lookaheadScore += 35;
+                    else if (followUp.capturedType === 'circle') lookaheadScore += 30;
+                    else if (followUp.capturedType === 'square') lookaheadScore += 25;
                 }
                 
-                cleanupSimulation(simulatedState);
-                return maxScore;
-                
-            } else {
-                // Opponent's turn - look for best counter
-                let minScore = staticEval; // Stand-pat: opponent can choose to stop here
-                
-                // Get opponent's tactical moves
-                const tacticalMoves = getTacticalMoves(toRow, toCol, pieceType, simulatedState, false);
-                
-                // Search each tactical response
-                for (const move of tacticalMoves) {
-                    const score = quiescenceSearch(
-                        move.fromRow, move.fromCol,
-                        move.toRow, move.toCol,
-                        move.pieceType, move.isCapture,
-                        depth + 1, maxDepth, true // AI's turn next
-                    );
-                    
-                    minScore = Math.min(minScore, score);
-                    
-                    // Alpha-beta pruning could go here (future optimization)
+                // Can we threaten opponent's rhombus?
+                if (followUp.threatenRhombus) {
+                    lookaheadScore += 150;
                 }
                 
-                cleanupSimulation(simulatedState);
-                return minScore;
+                // Can we advance our rhombus toward goal?
+                if (pieceType === 'rhombus' && followUp.advanceToGoal) {
+                    const distanceToGoal = Math.abs(followUp.toRow - 3) + Math.abs(followUp.toCol - 8);
+                    lookaheadScore += (20 - distanceToGoal) * 10;
+                }
+                
+                // Can we create multiple threats (fork)?
+                if (followUp.createsFork) {
+                    lookaheadScore += 80;
+                }
+            });
+            
+            // Check opponent's best response
+            const opponentBestResponse = evaluateOpponentResponse(toRow, toCol, pieceType, simulatedState);
+            
+            // Penalty if opponent can counter-attack effectively
+            if (opponentBestResponse.canCapture) {
+                lookaheadScore -= 60;
+                if (pieceType === 'rhombus') lookaheadScore -= 200; // CRITICAL: Don't lose rhombus!
             }
+            
+            // Penalty if opponent can threaten our rhombus
+            if (opponentBestResponse.threatensOurRhombus) {
+                lookaheadScore -= 120;
+            }
+            
+            // Bonus if this move sets up a winning sequence
+            if (opponentBestResponse.cannotPreventWin) {
+                lookaheadScore += 500; // Forced win in 2 moves!
+            }
+            
+            // Mobility evaluation: Do we have good options from new position?
+            const mobilityAfterMove = followUpMoves.length;
+            lookaheadScore += mobilityAfterMove * 5;
+            
+            // Clean up simulation
+            cleanupSimulation(simulatedState);
+            
+            return lookaheadScore;
         }
         
-        /**
-         * Static evaluation of current position (no further search)
-         * Returns score from AI's perspective (positive = good for AI)
-         */
+        
+        // ========== QUIESCENCE SEARCH - DISABLED DUE TO PERFORMANCE ==========
+        // Caused 500k+ recursive function calls and browser crashes
+        // All quiescence functions commented out below
+        
+        /*
+        function quiescenceSearch(fromRow, fromCol, toRow, toCol, pieceType, isCapture, depth, maxDepth, isMaximizing) {
+            // DISABLED - caused infinite recursion
+            return 0;
+        }
+        
         function evaluatePositionStatic(simulatedState, isAITurn) {
-            let score = 0;
-            
-            // Material count
-            const whitePieces = document.querySelectorAll('.white-piece, .white-triangle, .white-rhombus, .white-circle, .white-hexgon');
-            const blackPieces = document.querySelectorAll('.square-piece:not(.white-piece), .triangle-piece:not(.white-triangle), .rhombus-piece:not(.white-rhombus), .circle-piece:not(.white-circle), .hexgon-piece:not(.white-hexgon)');
-            
-            // Material advantage
-            score += (whitePieces.length - blackPieces.length) * 100;
-            
-            // Check win conditions
-            const whiteRhombus = document.querySelector('.rhombus-piece.white-rhombus');
-            const blackRhombus = document.querySelector('.rhombus-piece:not(.white-rhombus)');
-            
-            if (whiteRhombus) {
-                const whiteRhombusHex = whiteRhombus.closest('.hexagon');
-                if (whiteRhombusHex) {
-                    const [, wRow, wCol] = whiteRhombusHex.id.match(/hex-(\d+)-(\d+)/);
-                    // Distance to opponent base (3-0)
-                    const distToWin = Math.abs(parseInt(wRow) - 3) + Math.abs(parseInt(wCol) - 0);
-                    score += (20 - distToWin) * 50; // Closer to win = higher score
-                    
-                    if (distToWin <= 1) score += 5000; // About to win!
-                }
-            } else {
-                score -= 10000; // Lost our rhombus - catastrophic
-            }
-            
-            if (blackRhombus) {
-                const blackRhombusHex = blackRhombus.closest('.hexagon');
-                if (blackRhombusHex) {
-                    const [, bRow, bCol] = blackRhombusHex.id.match(/hex-(\d+)-(\d+)/);
-                    // Distance to our base (3-8)
-                    const distToLoss = Math.abs(parseInt(bRow) - 3) + Math.abs(parseInt(bCol) - 8);
-                    score -= (20 - distToLoss) * 50; // Opponent closer to win = lower score
-                    
-                    if (distToLoss <= 1) score -= 5000; // About to lose!
-                }
-            } else {
-                score += 10000; // Captured opponent rhombus - huge advantage
-            }
-            
-            // King elimination progress
-            const blackPieceTypes = {
-                triangle: document.querySelectorAll('.triangle-piece:not(.white-triangle)').length,
-                square: document.querySelectorAll('.square-piece:not(.white-piece)').length,
-                circle: document.querySelectorAll('.circle-piece:not(.white-circle)').length,
-                hexagon: document.querySelectorAll('.hexgon-piece:not(.white-hexgon)').length,
-                rhombus: blackRhombus ? 1 : 0
-            };
-            const typesRemaining = Object.values(blackPieceTypes).filter(count => count > 0).length;
-            score += (5 - typesRemaining) * 800; // Fewer enemy types = better
-            
-            return score;
+            // DISABLED
+            return 0;
         }
         
-        /**
-         * Check if position is "quiet" (no immediate tactical sequences)
-         */
         function isPositionQuiet(row, col, pieceType, simulatedState, isAITurn) {
-            // Position is NOT quiet if:
-            // 1. We can capture valuable pieces
-            // 2. We threaten opponent's rhombus
-            // 3. Opponent threatens our rhombus
-            // 4. Rhombus is 1-2 moves from winning
-            // 5. Circle can use gateway to attack
-            
-            const whiteRhombus = document.querySelector('.rhombus-piece.white-rhombus');
-            const blackRhombus = document.querySelector('.rhombus-piece:not(.white-rhombus)');
-            
-            // Check rhombus distances to goals
-            if (whiteRhombus) {
-                const whiteRhombusHex = whiteRhombus.closest('.hexagon');
-                if (whiteRhombusHex) {
-                    const [, wRow, wCol] = whiteRhombusHex.id.match(/hex-(\d+)-(\d+)/);
-                    const distToWin = Math.abs(parseInt(wRow) - 3) + Math.abs(parseInt(wCol) - 0);
-                    if (distToWin <= 2) return false; // NOT quiet - close to winning!
-                }
-            }
-            
-            if (blackRhombus) {
-                const blackRhombusHex = blackRhombus.closest('.hexagon');
-                if (blackRhombusHex) {
-                    const [, bRow, bCol] = blackRhombusHex.id.match(/hex-(\d+)-(\d+)/);
-                    const distToLoss = Math.abs(parseInt(bRow) - 3) + Math.abs(parseInt(bCol) - 8);
-                    if (distToLoss <= 2) return false; // NOT quiet - about to lose!
-                }
-            }
-            
-            // Check for immediate captures available
-            const tacticalMoves = getTacticalMoves(row, col, pieceType, simulatedState, isAITurn);
-            if (tacticalMoves.length > 0) return false; // NOT quiet - tactics available!
-            
-            // Position is quiet - no forcing moves
+            // DISABLED
             return true;
         }
         
-        /**
-         * Get all tactical/forcing moves (captures, threats, critical advances)
-         * These are the moves that should be searched deeper
-         */
         function getTacticalMoves(row, col, pieceType, simulatedState, isAITurn) {
-            const tacticalMoves = [];
-            
-            // Get all pieces for the current player
-            const playerPieces = isAITurn 
-                ? document.querySelectorAll('.white-piece, .white-triangle, .white-rhombus, .white-circle, .white-hexgon')
-                : document.querySelectorAll('.square-piece:not(.white-piece), .triangle-piece:not(.white-triangle), .rhombus-piece:not(.white-rhombus), .circle-piece:not(.white-circle), .hexgon-piece:not(.white-hexgon)');
-            
-            playerPieces.forEach(piece => {
-                const hex = piece.closest('.hexagon');
-                if (!hex) return;
-                
-                const [, fromRow, fromCol] = hex.id.match(/hex-(\d+)-(\d+)/);
-                const pieceType = getPieceTypeFromElement(piece);
-                
-                // Get all possible moves for this piece
-                const possibleMoves = getPossibleMovesForPiece(parseInt(fromRow), parseInt(fromCol), pieceType);
-                
-                possibleMoves.forEach(move => {
-                    const targetHex = document.getElementById(`hex-${move.toRow}-${move.toCol}`);
-                    if (!targetHex) return;
-                    
-                    const isCapture = targetHex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece') !== null;
-                    
-                    // Only include tactical moves:
-                    if (isCapture) {
-                        // All captures are tactical
-                        tacticalMoves.push({
-                            fromRow: parseInt(fromRow),
-                            fromCol: parseInt(fromCol),
-                            toRow: move.toRow,
-                            toCol: move.toCol,
-                            pieceType: pieceType,
-                            isCapture: true
-                        });
-                    } else if (pieceType === 'rhombus') {
-                        // Rhombus advances toward goal are tactical
-                        const goalRow = isAITurn ? 3 : 3;
-                        const goalCol = isAITurn ? 0 : 8;
-                        const currentDist = Math.abs(parseInt(fromRow) - goalRow) + Math.abs(parseInt(fromCol) - goalCol);
-                        const newDist = Math.abs(move.toRow - goalRow) + Math.abs(move.toCol - goalCol);
-                        
-                        if (newDist < currentDist) {
-                            tacticalMoves.push({
-                                fromRow: parseInt(fromRow),
-                                fromCol: parseInt(fromCol),
-                                toRow: move.toRow,
-                                toCol: move.toCol,
-                                pieceType: pieceType,
-                                isCapture: false
-                            });
-                        }
-                    }
-                    // TODO: Add circle gateway transitions to tacticalMoves
-                    // TODO: Add rotation threats to tacticalMoves
-                });
-            });
-            
-            // Limit tactical moves to top 5 to prevent explosion (quiescence can expand quickly)
-            return tacticalMoves.slice(0, 5);
+            // DISABLED
+            return [];
         }
         
-        /**
-         * Get piece type from DOM element
-         */
         function getPieceTypeFromElement(piece) {
-            if (piece.classList.contains('rhombus-piece')) return 'rhombus';
-            if (piece.classList.contains('triangle-piece')) return 'triangle';
-            if (piece.classList.contains('hexgon-piece')) return 'hexgon';
-            if (piece.classList.contains('circle-piece')) return 'circle';
-            if (piece.classList.contains('square-piece')) return 'square';
+            // DISABLED
             return 'unknown';
         }
         
-        /**
-         * Get all possible moves for a piece at given position
-         */
         function getPossibleMovesForPiece(fromRow, fromCol, pieceType) {
-            const moves = [];
-            
-            if (pieceType === 'square') {
-                const targets = getSquareTargets(fromRow, fromCol);
-                targets.forEach(([toRow, toCol]) => moves.push({ toRow, toCol }));
-            } else if (pieceType === 'triangle') {
-                const fromHexId = `hex-${fromRow}-${fromCol}`;
-                const orientation = getTriangleOrientation(fromHexId);
-                const targets = getRotatedTriangleTargets(fromRow, fromCol, orientation, true);
-                targets.forEach(([toRow, toCol]) => moves.push({ toRow, toCol }));
-            } else if (pieceType === 'hexgon') {
-                const fromHexId = `hex-${fromRow}-${fromCol}`;
-                const orientation = getHexgonOrientation(fromHexId);
-                const targets = getRotatedHexgonTargets(fromRow, fromCol, orientation, true);
-                targets.forEach(([toRow, toCol]) => moves.push({ toRow, toCol }));
-            } else if (pieceType === 'circle') {
-                const targets = getCircleTargets(fromRow, fromCol);
-                targets.forEach(([toRow, toCol]) => moves.push({ toRow, toCol }));
-            } else if (pieceType === 'rhombus') {
-                const targets = getRhombusMoves(fromRow, fromCol);
-                targets.forEach(([toRow, toCol]) => moves.push({ toRow, toCol }));
-            }
-            
-            return moves;
+            // DISABLED
+            return [];
         }
+        */
         
-        // ========== OLD LOOKAHEAD (DEPRECATED - replaced by Quiescence Search) ==========
-        // Keeping for reference, but quiescence search is now the primary method
+        // ========== SIMULATION FUNCTIONS (Still needed for 1-move lookahead) ==========
         
         // Simulate a move and return the game state (temporary DOM manipulation)
         function simulateMove(fromRow, fromCol, toRow, toCol, pieceType, isCapture) {
