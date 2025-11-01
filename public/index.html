@@ -21658,32 +21658,87 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         // Evaluate multi-move lookahead: What happens after this move?
         // ========== SIMPLIFIED LOOKAHEAD - Performance Optimized ==========
         // ========== MINIMAX WITH ALPHA-BETA PRUNING ==========
-        // Searches game tree to fixed depth with pruning for efficiency
-        // Alpha-Beta pruning cuts ~50-90% of nodes, making deep search feasible
+        // TEMPORARILY DISABLED: DOM-based simulation causing issues
+        // Need to implement virtual board state instead of DOM manipulation
         
         let nodesSearched = 0; // Performance tracking
         let nodesPruned = 0;   // Alpha-beta efficiency tracking
         
         function evaluateMultiMoveLookahead(fromRow, fromCol, toRow, toCol, pieceType, isCapture) {
-            // Reset performance counters
-            nodesSearched = 0;
-            nodesPruned = 0;
+            // TEMPORARY: Using simple evaluation until virtual board is implemented
+            // Minimax requires proper game state representation, not DOM manipulation
             
-            // Use Minimax with Alpha-Beta at depth 4 (2 full moves ahead)
-            const depth = 4;
-            const alpha = -Infinity; // Best score AI can guarantee
-            const beta = Infinity;   // Best score opponent can guarantee
+            let lookaheadScore = 0;
             
-            const score = minimax(fromRow, fromCol, toRow, toCol, pieceType, isCapture, depth, alpha, beta, true);
+            // Simulate the move temporarily
+            const simulatedState = simulateMove(fromRow, fromCol, toRow, toCol, pieceType, isCapture);
+            if (!simulatedState) return 0; // Invalid simulation
             
-            // Log performance metrics
-            if (nodesSearched > 0) {
-                const prunePercent = ((nodesPruned / (nodesSearched + nodesPruned)) * 100).toFixed(1);
-                console.log(`🔍 Minimax: ${nodesSearched} nodes searched, ${nodesPruned} pruned (${prunePercent}% efficiency)`);
+            // Evaluate follow-up opportunities from the new position
+            const followUpMoves = getFollowUpMoves(toRow, toCol, pieceType, simulatedState);
+            
+            // Score based on follow-up opportunities
+            followUpMoves.forEach(followUp => {
+                // Can we capture something valuable next turn?
+                if (followUp.isCapture) {
+                    lookaheadScore += 50;
+                    
+                    // Extra bonus for capturing high-value pieces
+                    if (followUp.capturedType === 'rhombus') lookaheadScore += 200;
+                    else if (followUp.capturedType === 'triangle') lookaheadScore += 40;
+                    else if (followUp.capturedType === 'hexgon') lookaheadScore += 35;
+                    else if (followUp.capturedType === 'circle') lookaheadScore += 30;
+                    else if (followUp.capturedType === 'square') lookaheadScore += 25;
+                }
+                
+                // Can we threaten opponent's rhombus?
+                if (followUp.threatenRhombus) {
+                    lookaheadScore += 150;
+                }
+                
+                // Can we advance our rhombus toward goal?
+                if (pieceType === 'rhombus' && followUp.advanceToGoal) {
+                    const distanceToGoal = Math.abs(followUp.toRow - 3) + Math.abs(followUp.toCol - 8);
+                    lookaheadScore += (20 - distanceToGoal) * 10;
+                }
+                
+                // Can we create multiple threats (fork)?
+                if (followUp.createsFork) {
+                    lookaheadScore += 80;
+                }
+            });
+            
+            // Check opponent's best response
+            const opponentBestResponse = evaluateOpponentResponse(toRow, toCol, pieceType, simulatedState);
+            
+            // Penalty if opponent can counter-attack effectively
+            if (opponentBestResponse.canCapture) {
+                lookaheadScore -= 60;
+                if (pieceType === 'rhombus') lookaheadScore -= 200; // CRITICAL: Don't lose rhombus!
             }
             
-            return score;
+            // Penalty if opponent can threaten our rhombus
+            if (opponentBestResponse.threatensOurRhombus) {
+                lookaheadScore -= 120;
+            }
+            
+            // Bonus if this move sets up a winning sequence
+            if (opponentBestResponse.cannotPreventWin) {
+                lookaheadScore += 500; // Forced win in 2 moves!
+            }
+            
+            // Mobility evaluation: Do we have good options from new position?
+            const mobilityAfterMove = followUpMoves.length;
+            lookaheadScore += mobilityAfterMove * 5;
+            
+            // Clean up simulation
+            cleanupSimulation(simulatedState);
+            
+            return lookaheadScore;
         }
+        
+        // ========== MINIMAX DISABLED - COMMENTED OUT ==========
+        /*
         
         /**
          * Minimax algorithm with Alpha-Beta pruning
@@ -22024,6 +22079,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             return targets;
         }
+        */
+        
+        // ========== END MINIMAX DISABLED SECTION ==========
         
         
         // ========== QUIESCENCE SEARCH - DISABLED DUE TO PERFORMANCE ==========
