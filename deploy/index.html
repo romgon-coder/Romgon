@@ -10693,12 +10693,16 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 </div>
     
     <!-- Sandbox Mode Tools Panel -->
-    <div id="sandbox-tools-panel" style="display: none; position: fixed; top: 80px; left: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 20px; box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4); z-index: 1000; min-width: 280px; color: #fff;">
-        <div style="text-align: center; margin-bottom: 15px;">
-            <div style="font-size: 2em;">🛠️</div>
+    <div id="sandbox-tools-panel" style="display: none; position: fixed; top: 80px; left: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 0; box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4); z-index: 1000; min-width: 280px; max-width: 320px; color: #fff; resize: both; overflow: auto;">
+        <!-- Draggable Header -->
+        <div class="sandbox-panel-header" style="cursor: move; padding: 15px 20px; background: rgba(0, 0, 0, 0.2); border-radius: 12px 12px 0 0; text-align: center; user-select: none;">
+            <div style="font-size: 2em; margin-bottom: 5px;">🛠️</div>
             <h3 style="margin: 8px 0 4px 0; font-size: 1.2em;">Sandbox Mode</h3>
-            <p style="margin: 0; font-size: 0.85em; opacity: 0.9;">Position Editor</p>
+            <p style="margin: 0; font-size: 0.85em; opacity: 0.9;">Position Editor (Drag to Move)</p>
         </div>
+        
+        <!-- Panel Content -->
+        <div style="padding: 20px; padding-top: 15px;">
         
         <!-- Edit Mode Toggle -->
         <div style="background: rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
@@ -10776,6 +10780,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         <!-- Current Turn Indicator -->
         <div id="sandbox-turn-display" style="margin-top: 15px; text-align: center; padding: 10px; background: rgba(0, 0, 0, 0.2); border-radius: 6px; font-weight: 600;">
             Current Turn: <span id="sandbox-current-turn">Black</span>
+        </div>
         </div>
     </div>
     
@@ -12799,14 +12804,19 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             background: rgba(0, 0, 0, 0.9);
             border: 2px solid rgba(78, 205, 196, 0.5);
             border-radius: 15px;
-            padding: 15px;
+            padding: 0;
             z-index: 1000;
             display: none;
             min-width: 200px;
+            resize: both;
+            overflow: auto;
+            max-width: 400px;
         " id="camera-panel">
-            <!-- Header with close button -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <div style="color: #4ecdc4; font-weight: bold;">🎥 3D Camera</div>
+            <!-- Draggable Header with close button -->
+            <div class="camera-panel-header" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: rgba(78, 205, 196, 0.1); border-radius: 15px 15px 0 0; cursor: move; user-select: none;">
+                <div style="color: #4ecdc4; font-weight: bold;">🎥 3D Camera (Drag to Move)</div>
+                <button onclick="closeCameraPanel()" style="
+                    background: rgba(255, 121, 198, 0.2);
                 <button onclick="closeCameraPanel()" style="
                     background: rgba(255, 121, 198, 0.2);
                     border: 1px solid #ff79c6;
@@ -12822,6 +12832,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     padding: 0;
                 " title="Close panel (camera stays on)">✕</button>
             </div>
+            
+            <!-- Panel Content -->
+            <div style="padding: 15px;">
             <!-- Drag Area for Camera Control -->
             <div id="camera-drag-area" style="
                 background: rgba(78, 205, 196, 0.1);
@@ -12871,6 +12884,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             <div style="display: flex; gap: 8px; margin-top: 10px;">
                 <button onclick="resetCamera3D()" style="flex: 1; padding: 10px; background: rgba(255, 121, 198, 0.3); border: 1px solid #ff79c6; border-radius: 8px; color: white; cursor: pointer; font-weight: bold; font-size: 12px;">↻ Reset</button>
                 <button onclick="disableCamera3D()" style="flex: 1; padding: 10px; background: rgba(255, 79, 79, 0.3); border: 1px solid #ff4f4f; border-radius: 8px; color: white; cursor: pointer; font-weight: bold; font-size: 12px;">⏻ OFF</button>
+            </div>
             </div>
         </div>
         
@@ -21642,75 +21656,308 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         }
         
         // Evaluate multi-move lookahead: What happens after this move?
+        // ========== QUIESCENCE SEARCH - Deep Tactical Analysis ==========
+        // Searches "quiet" positions by continuing to search captures, threats, and forcing moves
+        // until the position stabilizes. Prevents horizon effect (missing tactics just beyond search depth)
         function evaluateMultiMoveLookahead(fromRow, fromCol, toRow, toCol, pieceType, isCapture) {
-            let lookaheadScore = 0;
-            
+            // Start quiescence search with max depth of 6 plies (3 full moves)
+            return quiescenceSearch(fromRow, fromCol, toRow, toCol, pieceType, isCapture, 0, 6, true);
+        }
+        
+        /**
+         * Quiescence Search - Continues searching tactical sequences until position is "quiet"
+         * @param fromRow - Starting row
+         * @param fromCol - Starting column
+         * @param toRow - Target row
+         * @param toCol - Target column
+         * @param pieceType - Type of piece moving
+         * @param isCapture - Whether this move captures
+         * @param depth - Current search depth
+         * @param maxDepth - Maximum search depth
+         * @param isMaximizing - Is AI maximizing or opponent minimizing?
+         * @returns Score for this move sequence
+         */
+        function quiescenceSearch(fromRow, fromCol, toRow, toCol, pieceType, isCapture, depth, maxDepth, isMaximizing) {
             // Simulate the move temporarily
             const simulatedState = simulateMove(fromRow, fromCol, toRow, toCol, pieceType, isCapture);
             if (!simulatedState) return 0; // Invalid simulation
             
-            // Evaluate follow-up opportunities from the new position
-            const followUpMoves = getFollowUpMoves(toRow, toCol, pieceType, simulatedState);
+            // Base evaluation of this position
+            let staticEval = evaluatePositionStatic(simulatedState, isMaximizing);
             
-            // Score based on follow-up opportunities
-            followUpMoves.forEach(followUp => {
-                // Can we capture something valuable next turn?
-                if (followUp.isCapture) {
-                    lookaheadScore += 50;
+            // Check if position is "quiet" (no forcing moves available)
+            const isQuiet = isPositionQuiet(toRow, toCol, pieceType, simulatedState, isMaximizing);
+            
+            // If max depth reached OR position is quiet, return static evaluation
+            if (depth >= maxDepth || isQuiet) {
+                cleanupSimulation(simulatedState);
+                return staticEval;
+            }
+            
+            // Position is NOT quiet - continue searching tactical sequences
+            console.log(`🔍 Quiescence depth ${depth}: Searching tactical continuation...`);
+            
+            if (isMaximizing) {
+                // AI's turn - look for best tactical move
+                let maxScore = staticEval; // Stand-pat: AI can choose to stop here
+                
+                // Get all tactical moves (captures, threats, rhombus advances, gateway transitions)
+                const tacticalMoves = getTacticalMoves(toRow, toCol, pieceType, simulatedState, true);
+                
+                // Search each tactical continuation
+                for (const move of tacticalMoves) {
+                    const score = quiescenceSearch(
+                        move.fromRow, move.fromCol, 
+                        move.toRow, move.toCol, 
+                        move.pieceType, move.isCapture,
+                        depth + 1, maxDepth, false // Opponent's turn next
+                    );
                     
-                    // Extra bonus for capturing high-value pieces
-                    if (followUp.capturedType === 'rhombus') lookaheadScore += 200;
-                    else if (followUp.capturedType === 'triangle') lookaheadScore += 40;
-                    else if (followUp.capturedType === 'hexgon') lookaheadScore += 35;
-                    else if (followUp.capturedType === 'circle') lookaheadScore += 30;
-                    else if (followUp.capturedType === 'square') lookaheadScore += 25;
+                    maxScore = Math.max(maxScore, score);
+                    
+                    // Alpha-beta pruning could go here (future optimization)
                 }
                 
-                // Can we threaten opponent's rhombus?
-                if (followUp.threatenRhombus) {
-                    lookaheadScore += 150;
+                cleanupSimulation(simulatedState);
+                return maxScore;
+                
+            } else {
+                // Opponent's turn - look for best counter
+                let minScore = staticEval; // Stand-pat: opponent can choose to stop here
+                
+                // Get opponent's tactical moves
+                const tacticalMoves = getTacticalMoves(toRow, toCol, pieceType, simulatedState, false);
+                
+                // Search each tactical response
+                for (const move of tacticalMoves) {
+                    const score = quiescenceSearch(
+                        move.fromRow, move.fromCol,
+                        move.toRow, move.toCol,
+                        move.pieceType, move.isCapture,
+                        depth + 1, maxDepth, true // AI's turn next
+                    );
+                    
+                    minScore = Math.min(minScore, score);
+                    
+                    // Alpha-beta pruning could go here (future optimization)
                 }
                 
-                // Can we advance our rhombus toward goal?
-                if (pieceType === 'rhombus' && followUp.advanceToGoal) {
-                    const distanceToGoal = Math.abs(followUp.toRow - 3) + Math.abs(followUp.toCol - 8);
-                    lookaheadScore += (20 - distanceToGoal) * 10;
+                cleanupSimulation(simulatedState);
+                return minScore;
+            }
+        }
+        
+        /**
+         * Static evaluation of current position (no further search)
+         * Returns score from AI's perspective (positive = good for AI)
+         */
+        function evaluatePositionStatic(simulatedState, isAITurn) {
+            let score = 0;
+            
+            // Material count
+            const whitePieces = document.querySelectorAll('.white-piece, .white-triangle, .white-rhombus, .white-circle, .white-hexgon');
+            const blackPieces = document.querySelectorAll('.square-piece:not(.white-piece), .triangle-piece:not(.white-triangle), .rhombus-piece:not(.white-rhombus), .circle-piece:not(.white-circle), .hexgon-piece:not(.white-hexgon)');
+            
+            // Material advantage
+            score += (whitePieces.length - blackPieces.length) * 100;
+            
+            // Check win conditions
+            const whiteRhombus = document.querySelector('.rhombus-piece.white-rhombus');
+            const blackRhombus = document.querySelector('.rhombus-piece:not(.white-rhombus)');
+            
+            if (whiteRhombus) {
+                const whiteRhombusHex = whiteRhombus.closest('.hexagon');
+                if (whiteRhombusHex) {
+                    const [, wRow, wCol] = whiteRhombusHex.id.match(/hex-(\d+)-(\d+)/);
+                    // Distance to opponent base (3-0)
+                    const distToWin = Math.abs(parseInt(wRow) - 3) + Math.abs(parseInt(wCol) - 0);
+                    score += (20 - distToWin) * 50; // Closer to win = higher score
+                    
+                    if (distToWin <= 1) score += 5000; // About to win!
                 }
+            } else {
+                score -= 10000; // Lost our rhombus - catastrophic
+            }
+            
+            if (blackRhombus) {
+                const blackRhombusHex = blackRhombus.closest('.hexagon');
+                if (blackRhombusHex) {
+                    const [, bRow, bCol] = blackRhombusHex.id.match(/hex-(\d+)-(\d+)/);
+                    // Distance to our base (3-8)
+                    const distToLoss = Math.abs(parseInt(bRow) - 3) + Math.abs(parseInt(bCol) - 8);
+                    score -= (20 - distToLoss) * 50; // Opponent closer to win = lower score
+                    
+                    if (distToLoss <= 1) score -= 5000; // About to lose!
+                }
+            } else {
+                score += 10000; // Captured opponent rhombus - huge advantage
+            }
+            
+            // King elimination progress
+            const blackPieceTypes = {
+                triangle: document.querySelectorAll('.triangle-piece:not(.white-triangle)').length,
+                square: document.querySelectorAll('.square-piece:not(.white-piece)').length,
+                circle: document.querySelectorAll('.circle-piece:not(.white-circle)').length,
+                hexagon: document.querySelectorAll('.hexgon-piece:not(.white-hexgon)').length,
+                rhombus: blackRhombus ? 1 : 0
+            };
+            const typesRemaining = Object.values(blackPieceTypes).filter(count => count > 0).length;
+            score += (5 - typesRemaining) * 800; // Fewer enemy types = better
+            
+            return score;
+        }
+        
+        /**
+         * Check if position is "quiet" (no immediate tactical sequences)
+         */
+        function isPositionQuiet(row, col, pieceType, simulatedState, isAITurn) {
+            // Position is NOT quiet if:
+            // 1. We can capture valuable pieces
+            // 2. We threaten opponent's rhombus
+            // 3. Opponent threatens our rhombus
+            // 4. Rhombus is 1-2 moves from winning
+            // 5. Circle can use gateway to attack
+            
+            const whiteRhombus = document.querySelector('.rhombus-piece.white-rhombus');
+            const blackRhombus = document.querySelector('.rhombus-piece:not(.white-rhombus)');
+            
+            // Check rhombus distances to goals
+            if (whiteRhombus) {
+                const whiteRhombusHex = whiteRhombus.closest('.hexagon');
+                if (whiteRhombusHex) {
+                    const [, wRow, wCol] = whiteRhombusHex.id.match(/hex-(\d+)-(\d+)/);
+                    const distToWin = Math.abs(parseInt(wRow) - 3) + Math.abs(parseInt(wCol) - 0);
+                    if (distToWin <= 2) return false; // NOT quiet - close to winning!
+                }
+            }
+            
+            if (blackRhombus) {
+                const blackRhombusHex = blackRhombus.closest('.hexagon');
+                if (blackRhombusHex) {
+                    const [, bRow, bCol] = blackRhombusHex.id.match(/hex-(\d+)-(\d+)/);
+                    const distToLoss = Math.abs(parseInt(bRow) - 3) + Math.abs(parseInt(bCol) - 8);
+                    if (distToLoss <= 2) return false; // NOT quiet - about to lose!
+                }
+            }
+            
+            // Check for immediate captures available
+            const tacticalMoves = getTacticalMoves(row, col, pieceType, simulatedState, isAITurn);
+            if (tacticalMoves.length > 0) return false; // NOT quiet - tactics available!
+            
+            // Position is quiet - no forcing moves
+            return true;
+        }
+        
+        /**
+         * Get all tactical/forcing moves (captures, threats, critical advances)
+         * These are the moves that should be searched deeper
+         */
+        function getTacticalMoves(row, col, pieceType, simulatedState, isAITurn) {
+            const tacticalMoves = [];
+            
+            // Get all pieces for the current player
+            const playerPieces = isAITurn 
+                ? document.querySelectorAll('.white-piece, .white-triangle, .white-rhombus, .white-circle, .white-hexgon')
+                : document.querySelectorAll('.square-piece:not(.white-piece), .triangle-piece:not(.white-triangle), .rhombus-piece:not(.white-rhombus), .circle-piece:not(.white-circle), .hexgon-piece:not(.white-hexgon)');
+            
+            playerPieces.forEach(piece => {
+                const hex = piece.closest('.hexagon');
+                if (!hex) return;
                 
-                // Can we create multiple threats (fork)?
-                if (followUp.createsFork) {
-                    lookaheadScore += 80;
-                }
+                const [, fromRow, fromCol] = hex.id.match(/hex-(\d+)-(\d+)/);
+                const pieceType = getPieceTypeFromElement(piece);
+                
+                // Get all possible moves for this piece
+                const possibleMoves = getPossibleMovesForPiece(parseInt(fromRow), parseInt(fromCol), pieceType);
+                
+                possibleMoves.forEach(move => {
+                    const targetHex = document.getElementById(`hex-${move.toRow}-${move.toCol}`);
+                    if (!targetHex) return;
+                    
+                    const isCapture = targetHex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece') !== null;
+                    
+                    // Only include tactical moves:
+                    if (isCapture) {
+                        // All captures are tactical
+                        tacticalMoves.push({
+                            fromRow: parseInt(fromRow),
+                            fromCol: parseInt(fromCol),
+                            toRow: move.toRow,
+                            toCol: move.toCol,
+                            pieceType: pieceType,
+                            isCapture: true
+                        });
+                    } else if (pieceType === 'rhombus') {
+                        // Rhombus advances toward goal are tactical
+                        const goalRow = isAITurn ? 3 : 3;
+                        const goalCol = isAITurn ? 0 : 8;
+                        const currentDist = Math.abs(parseInt(fromRow) - goalRow) + Math.abs(parseInt(fromCol) - goalCol);
+                        const newDist = Math.abs(move.toRow - goalRow) + Math.abs(move.toCol - goalCol);
+                        
+                        if (newDist < currentDist) {
+                            tacticalMoves.push({
+                                fromRow: parseInt(fromRow),
+                                fromCol: parseInt(fromCol),
+                                toRow: move.toRow,
+                                toCol: move.toCol,
+                                pieceType: pieceType,
+                                isCapture: false
+                            });
+                        }
+                    }
+                    // TODO: Add circle gateway transitions to tacticalMoves
+                    // TODO: Add rotation threats to tacticalMoves
+                });
             });
             
-            // Check opponent's best response
-            const opponentBestResponse = evaluateOpponentResponse(toRow, toCol, pieceType, simulatedState);
-            
-            // Penalty if opponent can counter-attack effectively
-            if (opponentBestResponse.canCapture) {
-                lookaheadScore -= 60;
-                if (pieceType === 'rhombus') lookaheadScore -= 200; // CRITICAL: Don't lose rhombus!
-            }
-            
-            // Penalty if opponent can threaten our rhombus
-            if (opponentBestResponse.threatensOurRhombus) {
-                lookaheadScore -= 120;
-            }
-            
-            // Bonus if this move sets up a winning sequence
-            if (opponentBestResponse.cannotPreventWin) {
-                lookaheadScore += 500; // Forced win in 2 moves!
-            }
-            
-            // Mobility evaluation: Do we have good options from new position?
-            const mobilityAfterMove = followUpMoves.length;
-            lookaheadScore += mobilityAfterMove * 5;
-            
-            // Clean up simulation
-            cleanupSimulation(simulatedState);
-            
-            return lookaheadScore;
+            // Limit tactical moves to top 5 to prevent explosion (quiescence can expand quickly)
+            return tacticalMoves.slice(0, 5);
         }
+        
+        /**
+         * Get piece type from DOM element
+         */
+        function getPieceTypeFromElement(piece) {
+            if (piece.classList.contains('rhombus-piece')) return 'rhombus';
+            if (piece.classList.contains('triangle-piece')) return 'triangle';
+            if (piece.classList.contains('hexgon-piece')) return 'hexgon';
+            if (piece.classList.contains('circle-piece')) return 'circle';
+            if (piece.classList.contains('square-piece')) return 'square';
+            return 'unknown';
+        }
+        
+        /**
+         * Get all possible moves for a piece at given position
+         */
+        function getPossibleMovesForPiece(fromRow, fromCol, pieceType) {
+            const moves = [];
+            
+            if (pieceType === 'square') {
+                const targets = getSquareTargets(fromRow, fromCol);
+                targets.forEach(([toRow, toCol]) => moves.push({ toRow, toCol }));
+            } else if (pieceType === 'triangle') {
+                const fromHexId = `hex-${fromRow}-${fromCol}`;
+                const orientation = getTriangleOrientation(fromHexId);
+                const targets = getRotatedTriangleTargets(fromRow, fromCol, orientation, true);
+                targets.forEach(([toRow, toCol]) => moves.push({ toRow, toCol }));
+            } else if (pieceType === 'hexgon') {
+                const fromHexId = `hex-${fromRow}-${fromCol}`;
+                const orientation = getHexgonOrientation(fromHexId);
+                const targets = getRotatedHexgonTargets(fromRow, fromCol, orientation, true);
+                targets.forEach(([toRow, toCol]) => moves.push({ toRow, toCol }));
+            } else if (pieceType === 'circle') {
+                const targets = getCircleTargets(fromRow, fromCol);
+                targets.forEach(([toRow, toCol]) => moves.push({ toRow, toCol }));
+            } else if (pieceType === 'rhombus') {
+                const targets = getRhombusMoves(fromRow, fromCol);
+                targets.forEach(([toRow, toCol]) => moves.push({ toRow, toCol }));
+            }
+            
+            return moves;
+        }
+        
+        // ========== OLD LOOKAHEAD (DEPRECATED - replaced by Quiescence Search) ==========
+        // Keeping for reference, but quiescence search is now the primary method
         
         // Simulate a move and return the game state (temporary DOM manipulation)
         function simulateMove(fromRow, fromCol, toRow, toCol, pieceType, isCapture) {
@@ -21990,9 +22237,13 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             const mobilityDiff = newMoves.length - currentMoves.length;
             score += mobilityDiff * 15;
             
+            // ========== GRANDMASTER: ROTATION STRATEGY ==========
+            
             // Check if new orientation creates attack opportunities
             let currentAttacks = 0;
             let newAttacks = 0;
+            let threatenRhombus = false;
+            let canReachBase = false;
             
             // Count attacks on opponent pieces with current orientation
             currentMoves.forEach(([targetRow, targetCol]) => {
@@ -22023,22 +22274,33 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                                        piece.classList.contains('white-hexgon');
                         if (!isWhite) {
                             newAttacks++;
-                            // Extra bonus for threatening rhombus
+                            // Extra bonus for threatening rhombus (applies to all pieces)
                             if (piece.classList.contains('rhombus-piece')) {
-                                score += 400;
+                                score += 400; // Moderate bonus - rotation threatens rhombus
+                                threatenRhombus = true;
+                                console.log(`🎯 AI: Rotation at ${row}-${col} would threaten opponent rhombus!`);
                             }
                         }
                     }
                 }
+                
+                // Rotation is just a normal action - no special bonuses for hexagons
+                // It changes attack pattern but doesn't enable special captures or wins
             });
             
             // Attack opportunity difference
             const attackDiff = newAttacks - currentAttacks;
-            score += attackDiff * 80;
+            score += attackDiff * 80; // Moderate bonus for gaining attacks
             
-            // If we lose attack opportunities, heavily penalize
+            // If we lose attack opportunities, penalize
             if (attackDiff < 0) {
-                score -= 100; // Don't rotate away from attacks!
+                score -= 100; // Don't rotate away from attacks
+            }
+            
+            // Check if rotation creates FORK (multiple threats)
+            if (newAttacks >= 2) {
+                score += 150; // Bonus for creating multiple threats
+                console.log(`♟️ AI: Rotation at ${row}-${col} creates FORK (${newAttacks} threats)!`);
             }
             
             // Check if new orientation threatens more important pieces
@@ -22053,7 +22315,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                                        piece.classList.contains('white-circle') ||
                                        piece.classList.contains('white-hexgon');
                         if (!isWhite) {
-                            // Bonus based on piece value
+                            // Small bonus based on piece value
                             if (piece.classList.contains('triangle-piece')) score += 30;
                             else if (piece.classList.contains('hexgon-piece')) score += 25;
                             else if (piece.classList.contains('circle-piece')) score += 20;
@@ -22063,19 +22325,146 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 }
             });
             
-            // Check if new orientation opens up path to key positions
-            // Bonus for attacking toward opponent's base (column 0)
-            newMoves.forEach(([targetRow, targetCol]) => {
-                if (targetCol < col) { // Moving toward opponent side
-                    score += 10;
+            // ========== CRITICAL: STRATEGIC ROTATION EVALUATION ==========
+            
+            // 1. Check if rotation blocks OPPONENT rhombus path/escape
+            const blackRhombusPiece = document.querySelector('.rhombus-piece:not(.white-rhombus)');
+            let blocksOpponentRhombus = false;
+            if (blackRhombusPiece) {
+                const blackRhombusHex = blackRhombusPiece.closest('.hexagon');
+                if (blackRhombusHex) {
+                    const [, bRow, bCol] = blackRhombusHex.id.match(/hex-(\d+)-(\d+)/);
+                    const blackRhombusRow = parseInt(bRow);
+                    const blackRhombusCol = parseInt(bCol);
+                    
+                    // Check if any of our new attack positions block rhombus escape routes
+                    newMoves.forEach(([targetRow, targetCol]) => {
+                        // Check if this position is adjacent to opponent rhombus
+                        const distToBlackRhombus = Math.abs(targetRow - blackRhombusRow) + Math.abs(targetCol - blackRhombusCol);
+                        if (distToBlackRhombus <= 1) {
+                            // We're adjacent - check if rotation blocks their escape
+                            const blackRhombusMoves = getRhombusMoves(blackRhombusRow, blackRhombusCol);
+                            const couldBlockEscape = blackRhombusMoves.some(([mr, mc]) => {
+                                return mr === targetRow && mc === targetCol;
+                            });
+                            
+                            if (couldBlockEscape) {
+                                blocksOpponentRhombus = true;
+                                score += 1500; // HUGE bonus - rotation traps opponent rhombus!
+                                console.log(`🚧 AI: Rotation at ${row}-${col} BLOCKS opponent rhombus escape!`);
+                            }
+                        }
+                    });
+                    
+                    // Check if rotation blocks path to their goal
+                    const distToTheirGoal = Math.abs(blackRhombusRow - 3) + Math.abs(blackRhombusCol - 0);
+                    if (distToTheirGoal <= 3) {
+                        newMoves.forEach(([targetRow, targetCol]) => {
+                            const blocksPath = isOnPathToBase(targetRow, targetCol, blackRhombusRow, blackRhombusCol, 3, 0);
+                            if (blocksPath) {
+                                blocksOpponentRhombus = true;
+                                score += 800; // Major bonus - rotation blocks path to goal
+                                console.log(`🚧 AI: Rotation at ${row}-${col} blocks opponent rhombus path to goal!`);
+                            }
+                        });
+                    }
                 }
-                if (targetRow === 3) { // Center row
+            }
+            
+            // 2. Check if rotation OPENS path for OUR rhombus to escape/advance
+            const whiteRhombus = document.querySelector('.rhombus-piece.white-rhombus');
+            let helpsOurRhombus = false;
+            if (whiteRhombus) {
+                const whiteRhombusHex = whiteRhombus.closest('.hexagon');
+                if (whiteRhombusHex) {
+                    const [, wRow, wCol] = whiteRhombusHex.id.match(/hex-(\d+)-(\d+)/);
+                    const whiteRhombusRow = parseInt(wRow);
+                    const whiteRhombusCol = parseInt(wCol);
+                    
+                    // Check if our rhombus is currently blocked/trapped
+                    const currentRhombusMoves = getRhombusMoves(whiteRhombusRow, whiteRhombusCol);
+                    const isTrapped = currentRhombusMoves.length <= 2;
+                    
+                    if (isTrapped) {
+                        // Check if rotating THIS piece opens up space for rhombus
+                        const ourCurrentHex = document.getElementById(`hex-${row}-${col}`);
+                        if (ourCurrentHex) {
+                            const distToOurRhombus = Math.abs(row - whiteRhombusRow) + Math.abs(col - whiteRhombusCol);
+                            if (distToOurRhombus <= 2) {
+                                // We're near our trapped rhombus - rotation might help
+                                // Check if new attack positions clear blockers
+                                newMoves.forEach(([targetRow, targetCol]) => {
+                                    const targetHex = document.getElementById(`hex-${targetRow}-${targetCol}`);
+                                    if (targetHex) {
+                                        const blocker = targetHex.querySelector('.square-piece:not(.white-piece), .triangle-piece:not(.white-triangle), .circle-piece:not(.white-circle), .hexgon-piece:not(.white-hexgon)');
+                                        if (blocker) {
+                                            // Check if this blocker is adjacent to our rhombus
+                                            const blockerDistToRhombus = Math.abs(targetRow - whiteRhombusRow) + Math.abs(targetCol - whiteRhombusCol);
+                                            if (blockerDistToRhombus <= 1) {
+                                                helpsOurRhombus = true;
+                                                score += 2000; // CRITICAL - rotation can free our rhombus!
+                                                console.log(`🔓 AI: Rotation at ${row}-${col} can capture blocker and FREE our rhombus!`);
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    } else {
+                        // Rhombus not trapped - check if rotation opens advancement path
+                        const distToGoal = Math.abs(whiteRhombusRow - 3) + Math.abs(whiteRhombusCol - 8);
+                        if (distToGoal <= 4) {
+                            // Rhombus is advancing - rotation might clear path
+                            newMoves.forEach(([targetRow, targetCol]) => {
+                                const targetHex = document.getElementById(`hex-${targetRow}-${targetCol}`);
+                                if (targetHex) {
+                                    const blocker = targetHex.querySelector('.square-piece:not(.white-piece), .triangle-piece:not(.white-triangle), .circle-piece:not(.white-circle), .hexgon-piece:not(.white-hexgon)');
+                                    if (blocker) {
+                                        // Check if this blocker is on path to goal
+                                        const blocksGoalPath = isOnPathToBase(targetRow, targetCol, whiteRhombusRow, whiteRhombusCol, 3, 8);
+                                        if (blocksGoalPath) {
+                                            helpsOurRhombus = true;
+                                            score += 1200; // Major bonus - rotation clears path to victory!
+                                            console.log(`🛤️ AI: Rotation at ${row}-${col} clears path for rhombus advancement!`);
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                    
+                    // 3. Bonus for protecting our rhombus from threats
+                    newMoves.forEach(([targetRow, targetCol]) => {
+                        if (targetRow === whiteRhombusRow && targetCol === whiteRhombusCol) {
+                            score += 400; // Can defend our rhombus after rotation
+                            console.log(`🛡️ AI: Rotation at ${row}-${col} enables rhombus defense!`);
+                        }
+                    });
+                }
+            }
+            
+            // 4. Strategic positioning after rotation
+            newMoves.forEach(([targetRow, targetCol]) => {
+                // Small bonus for attacking toward opponent's base
+                if (targetCol < col) {
                     score += 8;
+                }
+                // Small bonus for center control
+                if (targetRow === 3) {
+                    score += 6;
                 }
             });
             
-            // Strong penalty to prefer moving over rotating (unless rotation is clearly better)
-            score -= 50;
+            // ========== ROTATION PENALTY/BONUS LOGIC ==========
+            // Rotation can be CRITICAL when it helps/blocks rhombus
+            if (blocksOpponentRhombus || helpsOurRhombus) {
+                score += 100; // Extra bonus - this rotation has strategic importance!
+                console.log(`⭐ AI: Strategic rotation - helps our position significantly!`);
+            } else if (threatenRhombus || newAttacks >= 2) {
+                score -= 20; // Small penalty - rotation creates threats but no rhombus impact
+            } else {
+                score -= 60; // Normal penalty - prefer moving to rotating
+            }
             
             return score;
         }
@@ -22853,7 +23242,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             let blackRhombus = document.querySelector('.rhombus-piece:not(.white-rhombus)');
             const whiteRhombus = document.querySelector('.rhombus-piece.white-rhombus');
             
-            // Check if this is a winning move
+            // ========== GRANDMASTER: WIN CONDITION AWARENESS ==========
+            
+            // 1. RHOMBUS BASE CAPTURE WIN (White rhombus reaching 3-8)
             if (pieceType === 'rhombus' && toRow === 3 && toCol === 8) {
                 // Check if black rhombus is blocking our base
                 if (blackRhombus) {
@@ -22867,7 +23258,77 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                             score += 100000; // INSTANT WIN!
                         }
                     }
+                } else {
+                    score += 100000; // INSTANT WIN!
                 }
+            }
+            
+            // 2. ❌ REMOVED - HEXAGONS CANNOT CAPTURE BASES! Only rhombus can win by base capture!
+            // Hexagons are regular pieces - they don't have special base capture ability
+            
+            // 3. ❌ REMOVED - HEXAGONS CANNOT CAPTURE BASES! 
+            // Opponent hexagons are NOT a base capture threat (only rhombus threatens base)
+            // But hexagons are still valuable pieces to capture/defend against
+            
+            // 4. DEFEND AGAINST OPPONENT RHOMBUS
+            if (blackRhombus) {
+                const blackHex = blackRhombus.closest('.hexagon');
+                if (blackHex) {
+                    const [, bRow, bCol] = blackHex.id.match(/hex-(\d+)-(\d+)/);
+                    const distToTheirGoal = Math.abs(parseInt(bRow) - 3) + Math.abs(parseInt(bCol) - 0);
+                    
+                    if (distToTheirGoal === 0) {
+                        // Opponent rhombus AT their goal - CRITICAL!
+                        if (toRow == bRow && toCol == bCol && isCapture) {
+                            console.log('🛡️ AI BLOCKING OPPONENT RHOMBUS AT BASE!');
+                            score += 150000; // PREVENT INSTANT LOSS!
+                        }
+                    }
+                }
+            }
+            
+            // 5. KING ELIMINATION WIN STRATEGY
+            const opponentPieceTypes = {
+                triangle: document.querySelectorAll('.triangle-piece:not(.white-triangle)').length,
+                square: document.querySelectorAll('.square-piece:not(.white-piece)').length,
+                circle: document.querySelectorAll('.circle-piece:not(.white-circle)').length,
+                hexagon: document.querySelectorAll('.hexgon-piece:not(.white-hexgon)').length,
+                rhombus: document.querySelectorAll('.rhombus-piece:not(.white-rhombus)').length
+            };
+            
+            const typesRemaining = Object.values(opponentPieceTypes).filter(count => count > 0).length;
+            
+            if (typesRemaining <= 2) {
+                // Close to king elimination win!
+                console.log(`🎯 AI: Only ${typesRemaining} opponent piece types left!`);
+                
+                if (isCapture) {
+                    const targetHex = document.getElementById(`hex-${toRow}-${toCol}`);
+                    if (targetHex) {
+                        const targetPiece = targetHex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
+                        if (targetPiece) {
+                            // Determine piece type being captured
+                            let capturedType = '';
+                            if (targetPiece.classList.contains('triangle-piece')) capturedType = 'triangle';
+                            else if (targetPiece.classList.contains('square-piece')) capturedType = 'square';
+                            else if (targetPiece.classList.contains('circle-piece')) capturedType = 'circle';
+                            else if (targetPiece.classList.contains('hexgon-piece')) capturedType = 'hexagon';
+                            else if (targetPiece.classList.contains('rhombus-piece')) capturedType = 'rhombus';
+                            
+                            // Check if this is the LAST piece of its type
+                            if (opponentPieceTypes[capturedType] === 1) {
+                                console.log(`🏆 AI: Capturing LAST ${capturedType} for king elimination!`);
+                                score += 50000; // Huge bonus - one step closer to king elimination!
+                            } else {
+                                console.log(`🎯 AI: Capturing ${capturedType} (${opponentPieceTypes[capturedType]-1} will remain)`);
+                                score += 12000; // Large bonus when close to king elimination
+                            }
+                        }
+                    }
+                }
+            } else if (typesRemaining <= 3 && isCapture) {
+                // Getting close to king elimination
+                score += 3000; // Moderate bonus
             }
             
             // Protect our rhombus from being checkmated/stalemated
@@ -22992,6 +23453,152 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 }
             }
             
+            // === CIRCLE STRATEGY ===
+            if (pieceType === 'circle') {
+                // GRANDMASTER: Circle pieces are powerful with unique circular movement
+                console.log(`🔵 AI evaluating circle move: ${fromRow}-${fromCol} → ${toRow}-${toCol}`);
+                
+                // Determine current zone and target zone
+                const fromCoord = `${fromRow}-${fromCol}`;
+                const toCoord = `${toRow}-${toCol}`;
+                
+                let fromZone = 'unknown';
+                let toZone = 'unknown';
+                
+                if (circleDeadZone && circleDeadZone.has(fromCoord)) fromZone = 'dead';
+                else if (circleInnerZone && circleInnerZone.has(fromCoord)) fromZone = 'inner';
+                else if (circleMiddleZone && circleMiddleZone.has(fromCoord)) fromZone = 'middle';
+                else if (circleOuterZone && circleOuterZone.has(fromCoord)) fromZone = 'outer';
+                
+                if (circleDeadZone && circleDeadZone.has(toCoord)) toZone = 'dead';
+                else if (circleInnerZone && circleInnerZone.has(toCoord)) toZone = 'inner';
+                else if (circleMiddleZone && circleMiddleZone.has(toCoord)) toZone = 'middle';
+                else if (circleOuterZone && circleOuterZone.has(toCoord)) toZone = 'outer';
+                
+                // Check if this is a GATEWAY TRANSITION (zone change)
+                const isGatewayTransition = (fromZone !== toZone);
+                
+                if (isGatewayTransition) {
+                    console.log(`🚪 AI: Circle gateway transition detected: ${fromZone} → ${toZone}`);
+                    
+                    // WARNING: Avoid dead zone (circles can't move from there!)
+                    if (toZone === 'dead') {
+                        score -= 5000; // CATASTROPHIC - circle would be trapped!
+                        console.log(`🚫 AI: Circle gateway would enter DEAD ZONE - BLOCKED!`);
+                    } else {
+                        // STRATEGIC: Gateway transitions are CRITICAL for multi-zone tactics
+                        score += 200; // Base bonus for zone transition capability
+                        
+                        // Check what we can ATTACK from the new zone
+                        const futureMovesInNewZone = getCircleTargets(toRow, toCol);
+                        
+                        // Check for HIGH-VALUE TARGETS in new zone (especially RHOMBUS!)
+                        let highValueTargetsInNewZone = 0;
+                        let canAttackRhombusAfterTransition = false;
+                        
+                        futureMovesInNewZone.forEach(([attackRow, attackCol]) => {
+                            const targetHex = document.getElementById(`hex-${attackRow}-${attackCol}`);
+                            if (targetHex) {
+                                // Check for opponent rhombus
+                                const opponentRhombus = targetHex.querySelector('.rhombus-piece:not(.white-rhombus)');
+                                if (opponentRhombus) {
+                                    canAttackRhombusAfterTransition = true;
+                                    score += 2500; // CRITICAL - gateway enables rhombus attack!
+                                    console.log(`⭐⭐⭐ AI: Gateway transition enables RHOMBUS ATTACK at ${attackRow}-${attackCol}!`);
+                                }
+                                
+                                // Check for other valuable opponent pieces
+                                const opponentPiece = targetHex.querySelector('.square-piece:not(.white-piece), .triangle-piece:not(.white-triangle), .circle-piece:not(.white-circle), .hexgon-piece:not(.white-hexgon)');
+                                if (opponentPiece) {
+                                    highValueTargetsInNewZone++;
+                                    score += 180; // Gateway enables attack on valuable piece
+                                }
+                            }
+                        });
+                        
+                        if (highValueTargetsInNewZone > 0 && !canAttackRhombusAfterTransition) {
+                            console.log(`⭐ AI: Gateway transition enables ${highValueTargetsInNewZone} attacks in new zone!`);
+                        }
+                        
+                        // Strategic zone positioning after gateway
+                        if (toZone === 'middle') {
+                            score += 120; // Middle zone is strategically central
+                            console.log(`🎯 AI: Gateway to MIDDLE zone - excellent positioning`);
+                        } else if (toZone === 'inner') {
+                            score += 80; // Inner zone has good coverage
+                            console.log(`🎯 AI: Gateway to INNER zone - good positioning`);
+                        } else if (toZone === 'outer') {
+                            score += 60; // Outer zone useful for wide coverage
+                        }
+                        
+                        // Check if gateway helps coordinate with OUR rhombus
+                        const whiteRhombus = document.querySelector('.rhombus-piece.white-rhombus');
+                        if (whiteRhombus) {
+                            const whiteRhombusHex = whiteRhombus.closest('.hexagon');
+                            if (whiteRhombusHex) {
+                                const [, wRow, wCol] = whiteRhombusHex.id.match(/hex-(\d+)-(\d+)/);
+                                const rhombusRow = parseInt(wRow);
+                                const rhombusCol = parseInt(wCol);
+                                
+                                // Check if circle can support rhombus from new zone
+                                const canDefendRhombusFromNewZone = futureMovesInNewZone.some(([r, c]) => {
+                                    return r === rhombusRow && c === rhombusCol;
+                                });
+                                
+                                if (canDefendRhombusFromNewZone) {
+                                    score += 600; // Gateway enables rhombus defense!
+                                    console.log(`🛡️ AI: Gateway transition enables defense of our rhombus!`);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // NOT a gateway - normal circle movement within same zone
+                    
+                    // WARNING: Avoid dead zone (circles can't move from there!)
+                    if (toZone === 'dead') {
+                        score -= 5000; // CATASTROPHIC - circle would be trapped!
+                        console.log(`🚫 AI: Circle move would enter DEAD ZONE - BLOCKED!`);
+                    }
+                    
+                    // Circles excel at zone control and perimetric sweeps
+                    const futureMoves = getCircleTargets(toRow, toCol);
+                    
+                    // Bonus for positioning in zones with good mobility
+                    if (futureMoves.length >= 8) {
+                        score += 100; // Excellent position with many options
+                        console.log(`🔵 Circle has excellent mobility: ${futureMoves.length} moves`);
+                    } else if (futureMoves.length >= 5) {
+                        score += 50; // Good position
+                    } else if (futureMoves.length <= 2) {
+                        score -= 80; // Avoid getting stuck with limited options
+                        console.log(`⚠️ Circle would have limited mobility: ${futureMoves.length} moves`);
+                    }
+                    
+                    // Bonus for controlling key zones (center zones are strategic)
+                    if (toZone === 'middle') {
+                        score += 60; // Middle zone control
+                        console.log(`🔵 Circle controlling middle zone`);
+                    } else if (toZone === 'inner') {
+                        score += 40; // Inner zone control
+                    }
+                    
+                    // Circles are great for blocking opponent pieces
+                    const blocksOpponentPath = futureMoves.some(([r, c]) => {
+                        const hex = document.getElementById(`hex-${r}-${c}`);
+                        if (hex) {
+                            const piece = hex.querySelector('.square-piece:not(.white-piece), .triangle-piece:not(.white-triangle), .rhombus-piece:not(.white-rhombus), .circle-piece:not(.white-circle), .hexgon-piece:not(.white-hexgon)');
+                            return piece !== null;
+                        }
+                        return false;
+                    });
+                    
+                    if (blocksOpponentPath) {
+                        score += 70; // Good defensive positioning
+                    }
+                }
+            }
+            
             // === DEFENSIVE PLAY ===
             
             // Block opponent's rhombus path
@@ -23048,6 +23655,15 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 const orientation = getHexgonOrientation(fromHexId);
                 const targets = getRotatedHexgonTargets(toRow, toCol, orientation, true);
                 mobilityBonus = targets.length * 3;
+            } else if (pieceType === 'circle') {
+                // GRANDMASTER: Circle mobility evaluation (circular zone movement)
+                const futureMoves = getCircleTargets(toRow, toCol);
+                mobilityBonus = futureMoves.length * 4; // Circles are powerful - higher mobility bonus
+                console.log(`🔵 AI: Circle at ${toRow}-${toCol} would have ${futureMoves.length} moves`);
+            } else if (pieceType === 'rhombus') {
+                // GRANDMASTER: Rhombus mobility evaluation (diagonal + escapes)
+                const futureMoves = getRhombusMoves(toRow, toCol);
+                mobilityBonus = futureMoves.length * 3;
             }
             score += mobilityBonus;
             
@@ -23110,10 +23726,62 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 }
             }
             
+            // ========== GRANDMASTER: GAME PHASE ADAPTATION ==========
+            const gamePhase = detectGamePhase();
+            
+            if (gamePhase === 'endgame') {
+                // ENDGAME: Aggressive play, every move counts
+                console.log('🏁 AI: Endgame strategy active');
+                
+                if (pieceType === 'rhombus') {
+                    score *= 1.5; // More aggressive rhombus play in endgame
+                }
+                
+                // King elimination becomes primary strategy
+                if (typesRemaining <= 2) {
+                    score *= 1.3; // Boost all endgame capture scores
+                }
+                
+                // Avoid passive moves
+                if (!isCapture && !isPieceUnderThreat(fromRow, fromCol, true)) {
+                    score -= 80; // Penalty for non-forcing moves in endgame
+                }
+            } else if (gamePhase === 'midgame') {
+                // MIDGAME: Balanced approach (current scoring is good)
+                console.log('⚔️ AI: Midgame strategy active');
+            } else if (gamePhase === 'opening') {
+                // OPENING: Careful development
+                console.log('📖 AI: Opening strategy active');
+                
+                if (pieceType === 'rhombus') {
+                    const distFromBase = Math.abs(fromRow - 3) + Math.abs(fromCol - 8);
+                    if (distFromBase > 3) {
+                        score -= 300; // Don't rush rhombus out too early
+                    }
+                }
+                
+                // Encourage non-rhombus development
+                if (pieceType !== 'rhombus') {
+                    score += 120;
+                }
+            }
+            
             // Small random factor for variety
             score += Math.random() * 3;
             
             return score;
+        }
+        
+        // GRANDMASTER: Detect game phase based on material
+        function detectGamePhase() {
+            const whitePieces = document.querySelectorAll('.white-piece, .white-triangle, .white-rhombus, .white-circle, .white-hexgon').length;
+            const blackPieces = document.querySelectorAll('.square-piece:not(.white-piece), .triangle-piece:not(.white-triangle), .rhombus-piece:not(.white-rhombus), .circle-piece:not(.white-circle), .hexgon-piece:not(.white-hexgon)').length;
+            
+            const totalPieces = whitePieces + blackPieces;
+            
+            if (totalPieces <= 8) return 'endgame';
+            if (totalPieces <= 16) return 'midgame';
+            return 'opening';
         }
         
         // Check if a rhombus move is a diagonal move (dead zone ↔ inner perimeter)
@@ -23204,6 +23872,17 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 return row > minRow && row < maxRow;
             }
             return false;
+        }
+        
+        // Check if position is on path between attacker and target (for blocking)
+        function isOnPathToBase(blockRow, blockCol, attackerRow, attackerCol, baseRow, baseCol) {
+            // Simple Manhattan distance check
+            const distAttackerToBase = Math.abs(attackerRow - baseRow) + Math.abs(attackerCol - baseCol);
+            const distBlockerToBase = Math.abs(blockRow - baseRow) + Math.abs(blockCol - baseCol);
+            const distAttackerToBlocker = Math.abs(attackerRow - blockRow) + Math.abs(attackerCol - blockCol);
+            
+            // If blocker is between attacker and base (Manhattan distance)
+            return (distAttackerToBlocker + distBlockerToBase) === distAttackerToBase && distBlockerToBase < distAttackerToBase;
         }
         
         // Helper: Count how many opponent pieces this move threatens
@@ -24945,6 +25624,194 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         
         // ============================================
         // END DRAGGABLE ELIMINATED PANELS
+        // ============================================
+
+        // ============================================
+        // DRAGGABLE SANDBOX PANEL
+        // ============================================
+        
+        let draggedSandboxPanel = null;
+        let sandboxDragOffsetX = 0;
+        let sandboxDragOffsetY = 0;
+        
+        // Initialize sandbox panel dragging
+        function initializeSandboxDraggable() {
+            const sandboxPanel = document.getElementById('sandbox-tools-panel');
+            const header = sandboxPanel?.querySelector('.sandbox-panel-header');
+            
+            if (!sandboxPanel || !header) return;
+            
+            // Load saved position
+            const savedPosition = localStorage.getItem('sandboxPanelPosition');
+            if (savedPosition) {
+                const { left, top } = JSON.parse(savedPosition);
+                sandboxPanel.style.left = left;
+                sandboxPanel.style.top = top;
+            }
+            
+            // Make header draggable
+            header.addEventListener('mousedown', function(e) {
+                draggedSandboxPanel = sandboxPanel;
+                const rect = sandboxPanel.getBoundingClientRect();
+                sandboxDragOffsetX = e.clientX - rect.left;
+                sandboxDragOffsetY = e.clientY - rect.top;
+                
+                // Add dragging visual feedback
+                sandboxPanel.style.opacity = '0.8';
+                sandboxPanel.style.cursor = 'move';
+                
+                e.preventDefault();
+            });
+        }
+        
+        // Handle sandbox drag movement
+        document.addEventListener('mousemove', function(e) {
+            if (!draggedSandboxPanel) return;
+            
+            const newLeft = e.clientX - sandboxDragOffsetX;
+            const newTop = e.clientY - sandboxDragOffsetY;
+            
+            // Keep panel within viewport bounds
+            const maxX = window.innerWidth - draggedSandboxPanel.offsetWidth;
+            const maxY = window.innerHeight - draggedSandboxPanel.offsetHeight;
+            
+            const boundedLeft = Math.max(0, Math.min(newLeft, maxX));
+            const boundedTop = Math.max(0, Math.min(newTop, maxY));
+            
+            draggedSandboxPanel.style.left = boundedLeft + 'px';
+            draggedSandboxPanel.style.top = boundedTop + 'px';
+        });
+        
+        // Handle sandbox drag end
+        document.addEventListener('mouseup', function(e) {
+            if (!draggedSandboxPanel) return;
+            
+            // Save position to localStorage
+            const position = {
+                left: draggedSandboxPanel.style.left,
+                top: draggedSandboxPanel.style.top
+            };
+            localStorage.setItem('sandboxPanelPosition', JSON.stringify(position));
+            
+            // Remove dragging visual feedback
+            draggedSandboxPanel.style.opacity = '';
+            draggedSandboxPanel.style.cursor = '';
+            draggedSandboxPanel = null;
+        });
+        
+        // Initialize when sandbox mode starts
+        const originalStartSandboxMode = startSandboxMode;
+        if (typeof originalStartSandboxMode === 'function') {
+            startSandboxMode = function() {
+                originalStartSandboxMode.apply(this, arguments);
+                // Initialize drag after panel is shown
+                setTimeout(initializeSandboxDraggable, 100);
+            };
+        }
+        
+        // ============================================
+        // END DRAGGABLE SANDBOX PANEL
+        // ============================================
+
+        // ============================================
+        // DRAGGABLE CAMERA PANEL
+        // ============================================
+        
+        let draggedCameraPanel = null;
+        let cameraDragOffsetX = 0;
+        let cameraDragOffsetY = 0;
+        
+        // Initialize camera panel dragging
+        function initializeCameraDraggable() {
+            const cameraPanel = document.getElementById('camera-panel');
+            const header = cameraPanel?.querySelector('.camera-panel-header');
+            
+            if (!cameraPanel || !header) return;
+            
+            // Load saved position
+            const savedPosition = localStorage.getItem('cameraPanelPosition');
+            if (savedPosition) {
+                const { left, top, bottom, right } = JSON.parse(savedPosition);
+                if (left) cameraPanel.style.left = left;
+                if (top) cameraPanel.style.top = top;
+                if (bottom) cameraPanel.style.bottom = bottom;
+                if (right) cameraPanel.style.right = right;
+            }
+            
+            // Make header draggable (prevent conflict with close button)
+            header.addEventListener('mousedown', function(e) {
+                // Don't drag if clicking the close button
+                if (e.target.closest('button')) return;
+                
+                draggedCameraPanel = cameraPanel;
+                const rect = cameraPanel.getBoundingClientRect();
+                cameraDragOffsetX = e.clientX - rect.left;
+                cameraDragOffsetY = e.clientY - rect.top;
+                
+                // Add dragging visual feedback
+                cameraPanel.style.opacity = '0.8';
+                
+                e.preventDefault();
+            });
+        }
+        
+        // Handle camera drag movement
+        document.addEventListener('mousemove', function(e) {
+            if (!draggedCameraPanel) return;
+            
+            const newLeft = e.clientX - cameraDragOffsetX;
+            const newTop = e.clientY - cameraDragOffsetY;
+            
+            // Keep panel within viewport bounds
+            const maxX = window.innerWidth - draggedCameraPanel.offsetWidth;
+            const maxY = window.innerHeight - draggedCameraPanel.offsetHeight;
+            
+            const boundedLeft = Math.max(0, Math.min(newLeft, maxX));
+            const boundedTop = Math.max(0, Math.min(newTop, maxY));
+            
+            // Clear bottom/right positioning
+            draggedCameraPanel.style.bottom = 'auto';
+            draggedCameraPanel.style.right = 'auto';
+            
+            draggedCameraPanel.style.left = boundedLeft + 'px';
+            draggedCameraPanel.style.top = boundedTop + 'px';
+        });
+        
+        // Handle camera drag end
+        document.addEventListener('mouseup', function(e) {
+            if (!draggedCameraPanel) return;
+            
+            // Save position to localStorage
+            const position = {
+                left: draggedCameraPanel.style.left,
+                top: draggedCameraPanel.style.top,
+                bottom: draggedCameraPanel.style.bottom,
+                right: draggedCameraPanel.style.right
+            };
+            localStorage.setItem('cameraPanelPosition', JSON.stringify(position));
+            
+            // Remove dragging visual feedback
+            draggedCameraPanel.style.opacity = '';
+            draggedCameraPanel = null;
+        });
+        
+        // Initialize when camera panel is shown
+        const originalToggleCamera3D = toggleCamera3D;
+        if (typeof originalToggleCamera3D === 'function') {
+            toggleCamera3D = function() {
+                originalToggleCamera3D.apply(this, arguments);
+                // Initialize drag after panel is shown
+                setTimeout(initializeCameraDraggable, 100);
+            };
+        }
+        
+        // Also initialize on page load in case camera is already visible
+        window.addEventListener('DOMContentLoaded', function() {
+            setTimeout(initializeCameraDraggable, 500);
+        });
+        
+        // ============================================
+        // END DRAGGABLE CAMERA PANEL
         // ============================================
 
         // ============================================
