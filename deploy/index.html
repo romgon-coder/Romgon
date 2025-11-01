@@ -21657,77 +21657,372 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         
         // Evaluate multi-move lookahead: What happens after this move?
         // ========== SIMPLIFIED LOOKAHEAD - Performance Optimized ==========
+        // ========== MINIMAX WITH ALPHA-BETA PRUNING ==========
+        // Searches game tree to fixed depth with pruning for efficiency
+        // Alpha-Beta pruning cuts ~50-90% of nodes, making deep search feasible
+        
+        let nodesSearched = 0; // Performance tracking
+        let nodesPruned = 0;   // Alpha-beta efficiency tracking
+        
         function evaluateMultiMoveLookahead(fromRow, fromCol, toRow, toCol, pieceType, isCapture) {
-            // DISABLED: Quiescence search was causing browser crashes (500k+ recursive calls)
-            // Using simplified 1-move lookahead instead for performance
+            // Reset performance counters
+            nodesSearched = 0;
+            nodesPruned = 0;
             
-            let lookaheadScore = 0;
+            // Use Minimax with Alpha-Beta at depth 4 (2 full moves ahead)
+            const depth = 4;
+            const alpha = -Infinity; // Best score AI can guarantee
+            const beta = Infinity;   // Best score opponent can guarantee
             
-            // Simulate the move temporarily
+            const score = minimax(fromRow, fromCol, toRow, toCol, pieceType, isCapture, depth, alpha, beta, true);
+            
+            // Log performance metrics
+            if (nodesSearched > 0) {
+                const prunePercent = ((nodesPruned / (nodesSearched + nodesPruned)) * 100).toFixed(1);
+                console.log(`🔍 Minimax: ${nodesSearched} nodes searched, ${nodesPruned} pruned (${prunePercent}% efficiency)`);
+            }
+            
+            return score;
+        }
+        
+        /**
+         * Minimax algorithm with Alpha-Beta pruning
+         * @param fromRow - Starting position row
+         * @param fromCol - Starting position column
+         * @param toRow - Target position row
+         * @param toCol - Target position column
+         * @param pieceType - Type of piece moving
+         * @param isCapture - Whether this move captures
+         * @param depth - Remaining search depth
+         * @param alpha - Best score AI can guarantee (maximizing player)
+         * @param beta - Best score opponent can guarantee (minimizing player)
+         * @param isMaximizing - True if AI's turn, false if opponent's turn
+         * @returns Evaluation score
+         */
+        function minimax(fromRow, fromCol, toRow, toCol, pieceType, isCapture, depth, alpha, beta, isMaximizing) {
+            nodesSearched++;
+            
+            // Base case: reached depth limit
+            if (depth === 0) {
+                return evaluatePositionMinimax();
+            }
+            
+            // Simulate the move
             const simulatedState = simulateMove(fromRow, fromCol, toRow, toCol, pieceType, isCapture);
-            if (!simulatedState) return 0; // Invalid simulation
+            if (!simulatedState) {
+                return isMaximizing ? -10000 : 10000; // Invalid move
+            }
             
-            // Evaluate follow-up opportunities from the new position
-            const followUpMoves = getFollowUpMoves(toRow, toCol, pieceType, simulatedState);
+            // Check for terminal position (game over)
+            const terminalScore = checkTerminalPosition();
+            if (terminalScore !== null) {
+                cleanupSimulation(simulatedState);
+                return terminalScore;
+            }
             
-            // Score based on follow-up opportunities
-            followUpMoves.forEach(followUp => {
-                // Can we capture something valuable next turn?
-                if (followUp.isCapture) {
-                    lookaheadScore += 50;
+            if (isMaximizing) {
+                // AI's turn - maximize score
+                let maxEval = -Infinity;
+                
+                // Get all possible moves for AI
+                const aiMoves = getAllPossibleMoves(true);
+                
+                // Move ordering: search captures and threats first (better pruning)
+                aiMoves.sort((a, b) => {
+                    const aScore = (a.isCapture ? 1000 : 0) + (a.threatensRhombus ? 500 : 0);
+                    const bScore = (b.isCapture ? 1000 : 0) + (b.threatensRhombus ? 500 : 0);
+                    return bScore - aScore;
+                });
+                
+                // Limit breadth: only consider top 8 moves to prevent explosion
+                const movesToSearch = aiMoves.slice(0, 8);
+                
+                for (const move of movesToSearch) {
+                    const eval_score = minimax(
+                        move.fromRow, move.fromCol,
+                        move.toRow, move.toCol,
+                        move.pieceType, move.isCapture,
+                        depth - 1, alpha, beta, false
+                    );
                     
-                    // Extra bonus for capturing high-value pieces
-                    if (followUp.capturedType === 'rhombus') lookaheadScore += 200;
-                    else if (followUp.capturedType === 'triangle') lookaheadScore += 40;
-                    else if (followUp.capturedType === 'hexgon') lookaheadScore += 35;
-                    else if (followUp.capturedType === 'circle') lookaheadScore += 30;
-                    else if (followUp.capturedType === 'square') lookaheadScore += 25;
+                    maxEval = Math.max(maxEval, eval_score);
+                    alpha = Math.max(alpha, eval_score);
+                    
+                    // Beta cutoff: opponent won't allow this branch
+                    if (beta <= alpha) {
+                        nodesPruned++;
+                        break; // Prune remaining moves
+                    }
                 }
                 
-                // Can we threaten opponent's rhombus?
-                if (followUp.threatenRhombus) {
-                    lookaheadScore += 150;
+                cleanupSimulation(simulatedState);
+                return maxEval;
+                
+            } else {
+                // Opponent's turn - minimize score
+                let minEval = Infinity;
+                
+                // Get all possible moves for opponent
+                const opponentMoves = getAllPossibleMoves(false);
+                
+                // Move ordering: search captures and threats first
+                opponentMoves.sort((a, b) => {
+                    const aScore = (a.isCapture ? 1000 : 0) + (a.threatensRhombus ? 500 : 0);
+                    const bScore = (b.isCapture ? 1000 : 0) + (b.threatensRhombus ? 500 : 0);
+                    return bScore - aScore;
+                });
+                
+                // Limit breadth: only consider top 8 moves
+                const movesToSearch = opponentMoves.slice(0, 8);
+                
+                for (const move of movesToSearch) {
+                    const eval_score = minimax(
+                        move.fromRow, move.fromCol,
+                        move.toRow, move.toCol,
+                        move.pieceType, move.isCapture,
+                        depth - 1, alpha, beta, true
+                    );
+                    
+                    minEval = Math.min(minEval, eval_score);
+                    beta = Math.min(beta, eval_score);
+                    
+                    // Alpha cutoff: AI won't allow this branch
+                    if (beta <= alpha) {
+                        nodesPruned++;
+                        break; // Prune remaining moves
+                    }
                 }
                 
-                // Can we advance our rhombus toward goal?
-                if (pieceType === 'rhombus' && followUp.advanceToGoal) {
-                    const distanceToGoal = Math.abs(followUp.toRow - 3) + Math.abs(followUp.toCol - 8);
-                    lookaheadScore += (20 - distanceToGoal) * 10;
-                }
-                
-                // Can we create multiple threats (fork)?
-                if (followUp.createsFork) {
-                    lookaheadScore += 80;
-                }
+                cleanupSimulation(simulatedState);
+                return minEval;
+            }
+        }
+        
+        /**
+         * Evaluate current board position (static evaluation)
+         * Positive scores favor AI, negative favor opponent
+         */
+        function evaluatePositionMinimax() {
+            let score = 0;
+            
+            // Material count
+            const whitePieces = document.querySelectorAll('.white-piece, .white-triangle, .white-rhombus, .white-circle, .white-hexgon');
+            const blackPieces = document.querySelectorAll('.square-piece:not(.white-piece), .triangle-piece:not(.white-triangle), .rhombus-piece:not(.white-rhombus), .circle-piece:not(.white-circle), .hexgon-piece:not(.white-hexgon)');
+            
+            // Piece values
+            let whiteMaterial = 0;
+            let blackMaterial = 0;
+            
+            whitePieces.forEach(piece => {
+                if (piece.classList.contains('rhombus-piece')) whiteMaterial += 500; // Rhombus critical
+                else if (piece.classList.contains('triangle-piece')) whiteMaterial += 35;
+                else if (piece.classList.contains('hexgon-piece')) whiteMaterial += 33;
+                else if (piece.classList.contains('circle-piece')) whiteMaterial += 32;
+                else whiteMaterial += 30; // Square
             });
             
-            // Check opponent's best response
-            const opponentBestResponse = evaluateOpponentResponse(toRow, toCol, pieceType, simulatedState);
+            blackPieces.forEach(piece => {
+                if (piece.classList.contains('rhombus-piece')) blackMaterial += 500;
+                else if (piece.classList.contains('triangle-piece')) blackMaterial += 35;
+                else if (piece.classList.contains('hexgon-piece')) blackMaterial += 33;
+                else if (piece.classList.contains('circle-piece')) blackMaterial += 32;
+                else blackMaterial += 30;
+            });
             
-            // Penalty if opponent can counter-attack effectively
-            if (opponentBestResponse.canCapture) {
-                lookaheadScore -= 60;
-                if (pieceType === 'rhombus') lookaheadScore -= 200; // CRITICAL: Don't lose rhombus!
+            score += (whiteMaterial - blackMaterial);
+            
+            // Rhombus position evaluation
+            const whiteRhombus = document.querySelector('.rhombus-piece.white-rhombus');
+            const blackRhombus = document.querySelector('.rhombus-piece:not(.white-rhombus)');
+            
+            if (whiteRhombus) {
+                const whiteRhombusHex = whiteRhombus.closest('.hexagon');
+                if (whiteRhombusHex) {
+                    const [, wRow, wCol] = whiteRhombusHex.id.match(/hex-(\d+)-(\d+)/);
+                    const distToWin = Math.abs(parseInt(wRow) - 3) + Math.abs(parseInt(wCol) - 0);
+                    score += (15 - distToWin) * 40; // Progress bonus
+                }
             }
             
-            // Penalty if opponent can threaten our rhombus
-            if (opponentBestResponse.threatensOurRhombus) {
-                lookaheadScore -= 120;
+            if (blackRhombus) {
+                const blackRhombusHex = blackRhombus.closest('.hexagon');
+                if (blackRhombusHex) {
+                    const [, bRow, bCol] = blackRhombusHex.id.match(/hex-(\d+)-(\d+)/);
+                    const distToLoss = Math.abs(parseInt(bRow) - 3) + Math.abs(parseInt(bCol) - 8);
+                    score -= (15 - distToLoss) * 40; // Danger penalty
+                }
             }
             
-            // Bonus if this move sets up a winning sequence
-            if (opponentBestResponse.cannotPreventWin) {
-                lookaheadScore += 500; // Forced win in 2 moves!
+            // King elimination progress
+            const blackPieceTypes = {
+                triangle: document.querySelectorAll('.triangle-piece:not(.white-triangle)').length,
+                square: document.querySelectorAll('.square-piece:not(.white-piece)').length,
+                circle: document.querySelectorAll('.circle-piece:not(.white-circle)').length,
+                hexagon: document.querySelectorAll('.hexgon-piece:not(.white-hexgon)').length,
+                rhombus: blackRhombus ? 1 : 0
+            };
+            const typesRemaining = Object.values(blackPieceTypes).filter(count => count > 0).length;
+            score += (5 - typesRemaining) * 300;
+            
+            return score;
+        }
+        
+        /**
+         * Check if position is terminal (game over)
+         * Returns score if terminal, null otherwise
+         */
+        function checkTerminalPosition() {
+            const whiteRhombus = document.querySelector('.rhombus-piece.white-rhombus');
+            const blackRhombus = document.querySelector('.rhombus-piece:not(.white-rhombus)');
+            
+            // AI rhombus reached goal
+            if (whiteRhombus) {
+                const whiteRhombusHex = whiteRhombus.closest('.hexagon');
+                if (whiteRhombusHex) {
+                    const [, wRow, wCol] = whiteRhombusHex.id.match(/hex-(\d+)-(\d+)/);
+                    if (parseInt(wRow) === 3 && parseInt(wCol) === 0) {
+                        return 100000; // AI wins!
+                    }
+                }
             }
             
-            // Mobility evaluation: Do we have good options from new position?
-            const mobilityAfterMove = followUpMoves.length;
-            lookaheadScore += mobilityAfterMove * 5;
+            // Opponent rhombus reached goal
+            if (blackRhombus) {
+                const blackRhombusHex = blackRhombus.closest('.hexagon');
+                if (blackRhombusHex) {
+                    const [, bRow, bCol] = blackRhombusHex.id.match(/hex-(\d+)-(\d+)/);
+                    if (parseInt(bRow) === 3 && parseInt(bCol) === 8) {
+                        return -100000; // Opponent wins!
+                    }
+                }
+            }
             
-            // Clean up simulation
-            cleanupSimulation(simulatedState);
+            // King elimination win
+            const blackPieceTypes = {
+                triangle: document.querySelectorAll('.triangle-piece:not(.white-triangle)').length,
+                square: document.querySelectorAll('.square-piece:not(.white-piece)').length,
+                circle: document.querySelectorAll('.circle-piece:not(.white-circle)').length,
+                hexagon: document.querySelectorAll('.hexgon-piece:not(.white-hexgon)').length,
+                rhombus: blackRhombus ? 1 : 0
+            };
+            const typesRemaining = Object.values(blackPieceTypes).filter(count => count > 0).length;
             
-            return lookaheadScore;
+            if (typesRemaining === 0) {
+                return 100000; // AI wins by king elimination!
+            }
+            
+            // Check opponent's pieces
+            const whitePieceTypes = {
+                triangle: document.querySelectorAll('.triangle-piece.white-triangle').length,
+                square: document.querySelectorAll('.square-piece.white-piece').length,
+                circle: document.querySelectorAll('.circle-piece.white-circle').length,
+                hexagon: document.querySelectorAll('.hexgon-piece.white-hexgon').length,
+                rhombus: whiteRhombus ? 1 : 0
+            };
+            const whiteTypesRemaining = Object.values(whitePieceTypes).filter(count => count > 0).length;
+            
+            if (whiteTypesRemaining === 0) {
+                return -100000; // Opponent wins by king elimination!
+            }
+            
+            return null; // Not terminal
+        }
+        
+        /**
+         * Get all legal moves for current player
+         * @param isAI - True for AI (white), false for opponent (black)
+         * @returns Array of move objects
+         */
+        function getAllPossibleMoves(isAI) {
+            const moves = [];
+            
+            // Get all pieces for current player
+            const pieces = isAI
+                ? document.querySelectorAll('.white-piece, .white-triangle, .white-rhombus, .white-circle, .white-hexgon')
+                : document.querySelectorAll('.square-piece:not(.white-piece), .triangle-piece:not(.white-triangle), .rhombus-piece:not(.white-rhombus), .circle-piece:not(.white-circle), .hexgon-piece:not(.white-hexgon)');
+            
+            pieces.forEach(piece => {
+                const hex = piece.closest('.hexagon');
+                if (!hex) return;
+                
+                const [, fromRow, fromCol] = hex.id.match(/hex-(\d+)-(\d+)/);
+                const pieceType = getPieceType(piece);
+                
+                // Get possible moves for this piece
+                const targets = getPossibleTargets(parseInt(fromRow), parseInt(fromCol), pieceType, piece);
+                
+                targets.forEach(([toRow, toCol]) => {
+                    const targetHex = document.getElementById(`hex-${toRow}-${toCol}`);
+                    if (!targetHex) return;
+                    
+                    const isCapture = targetHex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece') !== null;
+                    
+                    // Check if this move threatens opponent rhombus
+                    const rhombusTarget = isAI 
+                        ? document.querySelector('.rhombus-piece:not(.white-rhombus)')
+                        : document.querySelector('.rhombus-piece.white-rhombus');
+                    
+                    let threatensRhombus = false;
+                    if (rhombusTarget) {
+                        const rhombusHex = rhombusTarget.closest('.hexagon');
+                        if (rhombusHex) {
+                            const [, rRow, rCol] = rhombusHex.id.match(/hex-(\d+)-(\d+)/);
+                            // Simple check: can we attack rhombus position from new position?
+                            const dist = Math.abs(toRow - parseInt(rRow)) + Math.abs(toCol - parseInt(rCol));
+                            threatensRhombus = (dist <= 1);
+                        }
+                    }
+                    
+                    moves.push({
+                        fromRow: parseInt(fromRow),
+                        fromCol: parseInt(fromCol),
+                        toRow,
+                        toCol,
+                        pieceType,
+                        isCapture,
+                        threatensRhombus
+                    });
+                });
+            });
+            
+            return moves;
+        }
+        
+        /**
+         * Get piece type from DOM element
+         */
+        function getPieceType(piece) {
+            if (piece.classList.contains('rhombus-piece')) return 'rhombus';
+            if (piece.classList.contains('triangle-piece')) return 'triangle';
+            if (piece.classList.contains('hexgon-piece')) return 'hexgon';
+            if (piece.classList.contains('circle-piece')) return 'circle';
+            if (piece.classList.contains('square-piece')) return 'square';
+            return 'unknown';
+        }
+        
+        /**
+         * Get all possible target positions for a piece
+         */
+        function getPossibleTargets(fromRow, fromCol, pieceType, piece) {
+            const targets = [];
+            
+            if (pieceType === 'square') {
+                return getSquareTargets(fromRow, fromCol);
+            } else if (pieceType === 'triangle') {
+                const fromHexId = `hex-${fromRow}-${fromCol}`;
+                const orientation = getTriangleOrientation(fromHexId);
+                return getRotatedTriangleTargets(fromRow, fromCol, orientation, true);
+            } else if (pieceType === 'hexgon') {
+                const fromHexId = `hex-${fromRow}-${fromCol}`;
+                const orientation = getHexgonOrientation(fromHexId);
+                return getRotatedHexgonTargets(fromRow, fromCol, orientation, true);
+            } else if (pieceType === 'circle') {
+                return getCircleTargets(fromRow, fromCol);
+            } else if (pieceType === 'rhombus') {
+                return getRhombusMoves(fromRow, fromCol);
+            }
+            
+            return targets;
         }
         
         
