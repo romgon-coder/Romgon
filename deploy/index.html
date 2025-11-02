@@ -20840,6 +20840,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         console.log('📝 Updated room players:', roomClient.currentRoom.players);
                     }
                     
+                    // Store the gameId in the room object for broadcasts
+                    if (data.gameId) {
+                        roomClient.currentRoom.id = data.gameId;
+                        console.log('📝 Updated room gameId:', data.gameId);
+                    }
+                    
                     closeMultiplayerModal();
                     startMultiplayerGame(data.gameId);
                 };
@@ -20896,6 +20902,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         if (data.players && Array.isArray(data.players)) {
                             roomClient.currentRoom.players = data.players;
                             console.log('📝 Updated room players:', roomClient.currentRoom.players);
+                        }
+                        
+                        // Store the gameId in the room object for broadcasts
+                        if (data.gameId) {
+                            roomClient.currentRoom.id = data.gameId;
+                            console.log('📝 Updated room gameId:', data.gameId);
                         }
                         
                         closeMultiplayerModal();
@@ -21044,6 +21056,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         console.log('📝 Updated room players:', roomClient.currentRoom.players);
                     }
                     
+                    // Store the gameId in the room object for broadcasts
+                    if (eventData.gameId) {
+                        roomClient.currentRoom.id = eventData.gameId;
+                        console.log('📝 Updated room gameId:', eventData.gameId);
+                    }
+                    
                     closeMultiplayerModal();
                     startMultiplayerGame(eventData.gameId);
                 };
@@ -21152,6 +21170,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     if (data.players && Array.isArray(data.players)) {
                         roomClient.currentRoom.players = data.players;
                         console.log('📝 Updated room players:', roomClient.currentRoom.players);
+                    }
+                    
+                    // Store the gameId in the room object for broadcasts
+                    if (data.gameId) {
+                        roomClient.currentRoom.id = data.gameId;
+                        console.log('📝 Updated room gameId:', data.gameId);
                     }
                     
                     closeMultiplayerModal();
