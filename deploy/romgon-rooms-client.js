@@ -318,6 +318,21 @@ class RoomClient {
             // Handle authentication errors (only for authenticated endpoint)
             if (token && (response.status === 401 || response.status === 403)) {
                 console.error('❌ Authentication error:', data.error, data.message);
+                
+                // If token signature is invalid, clear it and reload
+                if (data.message && data.message.includes('invalid signature')) {
+                    console.warn('⚠️ Invalid token signature detected - clearing old token');
+                    localStorage.removeItem('romgon-jwt');
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('romgon-guest-info');
+                    
+                    if (typeof alert !== 'undefined') {
+                        alert('Your session expired. Please log in again.');
+                        window.location.reload();
+                    }
+                    return [];
+                }
+                
                 if (typeof alert !== 'undefined') {
                     alert('Authentication error: ' + (data.message || 'Please log in again'));
                 }
