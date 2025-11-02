@@ -30746,6 +30746,7 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 // IMPORTANT: Store userId and token for active games feature
                 localStorage.setItem('userId', guestData.user.id.toString());
                 localStorage.setItem('token', guestData.token);
+                localStorage.setItem('romgon-jwt', guestData.token); // Also store as romgon-jwt for room client compatibility
                 
                 console.log('✅ Guest account created:', guest);
                 console.log('✅ userId:', guestData.user.id);
