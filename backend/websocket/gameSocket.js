@@ -282,11 +282,15 @@ function setupSocketHandlers(io) {
 
         // Chat message in game
         socket.on('game:chat', (data) => {
-            const { gameId, userId, message } = data;
+            const { gameId, message, sender } = data;
+            
+            console.log(`💬 Chat in game ${gameId} from ${sender}: ${message}`);
 
-            gameNamespace.to(`game-${gameId}`).emit('game:chatMessage', {
-                userId,
+            // Broadcast to all OTHER players in the game (not back to sender)
+            socket.to(`game-${gameId}`).emit('game:chatMessage', {
+                gameId,
                 message,
+                sender: sender || socket.username || 'Unknown',
                 timestamp: new Date().toISOString()
             });
         });

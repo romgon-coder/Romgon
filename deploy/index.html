@@ -13500,15 +13500,35 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             if (!message) return;
             
-            // Add message to chat
-            addChatMessage(message, 'You', true);
+            // Get username from localStorage
+            const token = localStorage.getItem('romgon-jwt') || localStorage.getItem('token');
+            let username = 'You';
+            
+            if (token) {
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    username = payload.username || 'You';
+                } catch (e) {
+                    console.error('Failed to parse username:', e);
+                }
+            }
+            
+            // Add message to chat locally
+            addChatMessage(message, username, true);
+            
+            // Send to opponent via game socket if connected
+            if (gameSocket && gameSocket.connected && multiplayerMode) {
+                gameSocket.emit('game:chat', {
+                    gameId: roomClient.currentRoom?.id || 'practice',
+                    message: message,
+                    sender: username
+                });
+                console.log('💬 Chat message sent to opponent:', message);
+            }
             
             // Clear input
             input.value = '';
             input.focus();
-            
-            // TODO: Send to opponent via multiplayer system
-            // For now, just local display
         }
         
         function addChatMessage(text, sender, isOwn = false) {
@@ -18428,6 +18448,14 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     loadActiveGames(); // Remove from active games
                     loadMatchHistory(); // Add to history
                     loadUserStats(); // Update rating
+                });
+                
+                // Listen for in-game chat messages
+                gameSocket.on('game:chatMessage', (data) => {
+                    console.log('💬 Chat message received:', data);
+                    const { message, sender } = data;
+                    addChatMessage(message, sender, false);
+                    playMessageSound(); // Play notification sound
                 });
                 
                 console.log('✅ Game socket initialized');
