@@ -20755,6 +20755,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 
                 console.log('✅ Guest token stored for ready button');
                 
+                // Initialize game socket for guest
+                initializeGameSocket();
+                console.log('✅ Game socket initialized for guest');
+                
                 // Setup WebSocket event handlers for room updates
                 if (!roomClient.socket || !roomClient.socket.connected) {
                     await roomClient.connect();
@@ -20819,6 +20823,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 if (!roomClient.socket || !roomClient.socket.connected) {
                     roomClient.connect();
                     await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                // Initialize game socket for multiplayer
+                if (!gameSocket || !gameSocket.connected) {
+                    initializeGameSocket();
+                    console.log('✅ Game socket initialized for multiplayer');
                 }
 
                 document.getElementById('mp-error-message').textContent = '';
@@ -20923,16 +20933,43 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 }
             }
 
-            // Join the game room via WebSocket
-            if (gameSocket && gameSocket.connected) {
-                gameSocket.emit('game:join', {
-                    gameId,
-                    userId: JSON.parse(atob(localStorage.getItem('romgon-jwt').split('.')[1])).userId
-                });
-                console.log('🔌 Joined game room via gameSocket:', gameId);
-            } else {
-                console.error('❌ gameSocket not connected!');
+            // Ensure gameSocket is initialized and wait for connection
+            if (!gameSocket) {
+                console.log('⚠️ Game socket not initialized, initializing now...');
+                initializeGameSocket();
             }
+            
+            // Function to join game when socket is ready
+            const joinGameRoom = () => {
+                if (gameSocket && gameSocket.connected) {
+                    const token = localStorage.getItem('romgon-jwt');
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    
+                    gameSocket.emit('game:join', {
+                        gameId,
+                        userId: payload.userId
+                    });
+                    console.log('🔌 Joined game room via gameSocket:', gameId);
+                } else {
+                    console.log('⏳ Waiting for gameSocket to connect...');
+                    // If not connected yet, wait for connection event
+                    if (gameSocket) {
+                        gameSocket.once('connect', () => {
+                            const token = localStorage.getItem('romgon-jwt');
+                            const payload = JSON.parse(atob(token.split('.')[1]));
+                            
+                            gameSocket.emit('game:join', {
+                                gameId,
+                                userId: payload.userId
+                            });
+                            console.log('🔌 Joined game room via gameSocket (after wait):', gameId);
+                        });
+                    }
+                }
+            };
+            
+            // Try to join game room
+            joinGameRoom();
 
             // Start the game
             closeMultiplayerModal();
