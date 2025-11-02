@@ -114,10 +114,18 @@ router.post('/join', authenticateToken, async (req, res) => {
             });
         }
 
+        // If player is already in this room, just return the room info
         if (room.players.some(p => p.userId === userId)) {
-            return res.status(400).json({
-                success: false,
-                error: 'You are already in this room'
+            console.log(`👤 ${username} is already in room ${roomCode}, returning room info`);
+            return res.json({
+                success: true,
+                room: {
+                    code: roomCode,
+                    id: room.id,
+                    hostUsername: room.hostUsername,
+                    players: room.players,
+                    status: room.status
+                }
             });
         }
 

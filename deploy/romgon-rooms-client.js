@@ -176,6 +176,12 @@ class RoomClient {
 
     async joinRoom(roomCode) {
         try {
+            // Leave current room first if already in one
+            if (this.currentRoom) {
+                console.log('⚠️ Already in a room, leaving it first...');
+                await this.leaveRoom();
+            }
+
             const token = localStorage.getItem('romgon-jwt');
             const response = await fetch(`${getBackendAPIURL()}/api/rooms/join`, {
                 method: 'POST',
