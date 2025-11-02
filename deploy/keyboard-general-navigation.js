@@ -74,18 +74,8 @@ class GeneralNavigationSystem {
     
     if (!this.enabled) return;
     
-    // 🔥 CRITICAL: Ignore keyboard navigation if user is typing in an input field
-    const activeElement = document.activeElement;
-    const isTyping = activeElement && (
-      activeElement.tagName === 'INPUT' ||
-      activeElement.tagName === 'TEXTAREA' ||
-      activeElement.isContentEditable
-    );
-    
-    if (isTyping) {
-      this.logDebug('⌨️ User is typing in input field, ignoring navigation keys');
-      return;
-    }
+    // Safety check for event.key
+    if (!event || !event.key) return;
     
     const key = event.key.toLowerCase();
     
@@ -110,7 +100,6 @@ class GeneralNavigationSystem {
       event.preventDefault();
       this.navigate('right');
     } else if (key === 'e') {
-      console.log('🎯 [KeyboardNav] E key pressed - calling confirmSelection()');
       event.preventDefault();
       this.confirmSelection();
     } else if (key === 'escape') {
@@ -194,20 +183,10 @@ class GeneralNavigationSystem {
     }
 
     this.logDebug(`Confirming: ${this.focusedElement.tagName} - ${this.focusedElement.textContent.substring(0, 30)}`);
-    console.log('🎯 [KeyboardNav] Calling .click() on:', this.focusedElement);
-    console.log('🎯 [KeyboardNav] Element onclick:', this.focusedElement.onclick);
-    console.log('🎯 [KeyboardNav] Element getAttribute(onclick):', this.focusedElement.getAttribute('onclick'));
 
-    // Simulate click/activation with a proper MouseEvent
+    // Simulate click/activation
     if (this.focusedElement.tagName === 'BUTTON' || this.focusedElement.getAttribute('role') === 'button') {
-      console.log('🎯 [KeyboardNav] Dispatching click event...');
-      const clickEvent = new MouseEvent('click', {
-        bubbles: true,
-        cancelable: true,
-        view: window
-      });
-      this.focusedElement.dispatchEvent(clickEvent);
-      console.log('🎯 [KeyboardNav] Click event dispatched!');
+      this.focusedElement.click();
     } else if (this.focusedElement.tagName === 'A') {
       this.focusedElement.click();
     } else if (this.focusedElement.tagName === 'INPUT') {
@@ -251,7 +230,6 @@ class GeneralNavigationSystem {
     
     // Check if any major modal/screen is open
     const signupModal = document.getElementById('signup-modal');
-    const signinModal = document.getElementById('signin-modal');
     const accountModal = document.getElementById('account-modal');
     const settingsModal = document.getElementById('settings-modal');
     const openingBookModal = document.getElementById('opening-book-modal');
@@ -262,14 +240,9 @@ class GeneralNavigationSystem {
       const style = window.getComputedStyle(signupModal);
       this.logDebug(`signup-modal display: ${style.display}, visibility: ${style.visibility}, offsetParent: ${signupModal.offsetParent}`);
     }
-    if (signinModal) {
-      const style = window.getComputedStyle(signinModal);
-      this.logDebug(`signin-modal display: ${style.display}, visibility: ${style.visibility}, offsetParent: ${signinModal.offsetParent}`);
-    }
     
     const openModals = [
-      signupModal,
-      signinModal,
+      signupModal, 
       accountModal, 
       settingsModal, 
       openingBookModal, 
@@ -277,10 +250,7 @@ class GeneralNavigationSystem {
     ].filter(modal => {
       if (!modal) return false;
       const style = window.getComputedStyle(modal);
-      // Fixed position modals may have offsetParent === null, so check display and visibility only
-      const isDisplayed = style.display !== 'none';
-      const isVisible = style.visibility !== 'hidden';
-      return isDisplayed && isVisible;
+      return style.display !== 'none' && style.visibility !== 'hidden' && modal.offsetParent !== null;
     });
     
     this.logDebug(`Open modals count: ${openModals.length}`);
@@ -372,8 +342,15 @@ class GeneralNavigationSystem {
    */
   setEnabled(enabled) {
     this.enabled = enabled;
+    this.logDebug(`General Navigation ${enabled ? 'ENABLED' : 'DISABLED'}`);
     if (!enabled) {
       this.clearFocus();
+    } else {
+      // When enabling, update elements
+      this.updateNavigationElements();
+      if (this.navigationElements.length > 0 && !this.focusedElement) {
+        this.focusElement(0);
+      }
     }
   }
 
