@@ -232,7 +232,10 @@ function setupSocketHandlers(io) {
                 
                 if (game) {
                     const moves = JSON.parse(game.moves || '[]');
-                    const isWhiteTurn = moves.length % 2 === 0;
+                    // In Romgon, BLACK moves first
+                    // Move 0 (even) = black's turn, Move 1 (odd) = white's turn
+                    // After a move is made, it becomes the opponent's turn
+                    const isBlackTurn = moves.length % 2 === 0;
 
                     // Broadcast to all players in game
                     gameNamespace.to(`game-${gameId}`).emit('game:moveUpdate', {
@@ -240,7 +243,7 @@ function setupSocketHandlers(io) {
                         move,
                         userId,
                         moveCount: game.total_moves,
-                        turn: isWhiteTurn ? 'white' : 'black',
+                        turn: isBlackTurn ? 'black' : 'white',
                         timestamp: new Date().toISOString()
                     });
 

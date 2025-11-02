@@ -18528,6 +18528,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         const { from, to, piece, captured, triangleOrientation, hexgonOrientation } = data.move;
                         
                         console.log('🔄 Applying opponent move:', from, '→', to);
+                        console.log('🔄 Turn from server:', data.turn);
+                        console.log('🔄 Current local turn before update:', currentPlayer);
                         
                         const fromHex = document.getElementById(from);
                         const toHex = document.getElementById(to);
@@ -18567,8 +18569,11 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                                 console.log('Restored hexgon orientation:', hexgonOrientation);
                             }
                             
-                            // Switch turn
-                            currentPlayer = currentPlayer === 'white' ? 'black' : 'white';
+                            // Sync turn from server if provided
+                            if (data.turn) {
+                                currentPlayer = data.turn;
+                                console.log('🔄 Turn synchronized to:', currentPlayer);
+                            }
                             updateTurnDisplay();
                             
                             // Update highlights
