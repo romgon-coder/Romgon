@@ -10416,7 +10416,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 <button class="mp-button" onclick="startMatchmaking()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                     🎯 Quick Match (Matchmaking)
                 </button>
-                <button class="mp-button" onclick="createMultiplayerRoom()">
+                <button class="mp-button" onclick="showRoomConfig()">
                     🎮 Create Private Room
                 </button>
                 <button class="mp-button secondary" onclick="showJoinRoom()">
@@ -10432,6 +10432,96 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     ← Back to Menu
                 </button>
             </div>
+        </div>
+
+        <!-- Room Configuration View -->
+        <div class="multiplayer-container" id="mp-room-config" style="display: none;">
+            <h2>⚙️ Room Configuration</h2>
+            
+            <div style="margin: 20px 0;">
+                <label style="display: block; color: #4ecdc4; margin-bottom: 8px; font-weight: bold;">
+                    🎨 Choose Your Color:
+                </label>
+                <div style="display: flex; gap: 10px;">
+                    <button class="color-choice-btn" id="color-black-btn" onclick="selectColor('black')" style="
+                        flex: 1;
+                        padding: 15px;
+                        background: linear-gradient(135deg, #2c3e50 0%, #000000 100%);
+                        color: white;
+                        border: 3px solid #4ecdc4;
+                        border-radius: 8px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                    ">
+                        ⚫ Black<br>
+                        <span style="font-size: 12px; opacity: 0.8;">(Moves First)</span>
+                    </button>
+                    <button class="color-choice-btn" id="color-white-btn" onclick="selectColor('white')" style="
+                        flex: 1;
+                        padding: 15px;
+                        background: linear-gradient(135deg, #ecf0f1 0%, #bdc3c7 100%);
+                        color: #2c3e50;
+                        border: 3px solid transparent;
+                        border-radius: 8px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                    ">
+                        ⚪ White<br>
+                        <span style="font-size: 12px; opacity: 0.8;">(Moves Second)</span>
+                    </button>
+                </div>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <label style="display: block; color: #4ecdc4; margin-bottom: 8px; font-weight: bold;">
+                    🎲 Game Variant:
+                </label>
+                <select id="room-variant" style="
+                    width: 100%;
+                    padding: 12px;
+                    background: rgba(0, 0, 0, 0.3);
+                    border: 2px solid rgba(78, 205, 196, 0.3);
+                    border-radius: 8px;
+                    color: white;
+                    font-size: 14px;
+                    cursor: pointer;
+                ">
+                    <option value="standard">🎯 Standard Romgon</option>
+                    <option value="shape-defense">🛡️ Shape Defense (Rhombus protects other pieces)</option>
+                    <option value="rhombus-original">💎 Rhombus Original (Different movement)</option>
+                </select>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <label style="display: block; color: #4ecdc4; margin-bottom: 8px; font-weight: bold;">
+                    ⏱️ Time Control:
+                </label>
+                <select id="room-time-control" style="
+                    width: 100%;
+                    padding: 12px;
+                    background: rgba(0, 0, 0, 0.3);
+                    border: 2px solid rgba(78, 205, 196, 0.3);
+                    border-radius: 8px;
+                    color: white;
+                    font-size: 14px;
+                    cursor: pointer;
+                ">
+                    <option value="unlimited">♾️ Unlimited (No Time Limit)</option>
+                    <option value="5+0">⚡ Blitz: 5 minutes</option>
+                    <option value="10+0">🏃 Rapid: 10 minutes</option>
+                    <option value="15+10">🎯 Standard: 15 min + 10 sec increment</option>
+                    <option value="30+0">♟️ Classical: 30 minutes</option>
+                </select>
+            </div>
+
+            <button class="mp-button" onclick="createRoomWithConfig()">
+                ✅ Create Room
+            </button>
+            <button class="mp-back-button" onclick="backToMultiplayerMenu()">
+                ← Back
+            </button>
         </div>
 
         <!-- Matchmaking View -->
@@ -20582,6 +20672,99 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 console.log('✅ Room created:', room);
 
                 // Try to connect WebSocket in background (non-blocking)
+                if (!roomClient.socket || !roomClient.socket.connected) {
+                    console.log('🔌 Connecting to WebSocket in background...');
+                    roomClient.connect();
+                }
+
+                // Setup room event handlers
+                roomClient.onPlayerJoinedRoom = (data) => {
+                    console.log('👤 Player joined:', data);
+                    updateRoomPlayersList(data.players);
+                    
+                    // Show ready button when both players present
+                    if (data.players && data.players.length === 2) {
+                        document.getElementById('ready-button').style.display = 'block';
+                    }
+                };
+
+                roomClient.onGameStarted = (data) => {
+                    console.log('🎮 Game starting!', data);
+                    closeMultiplayerModal();
+                    startMultiplayerGame(data.gameId);
+                };
+            } catch (error) {
+                console.error('❌ Error creating room:', error);
+                alert('Failed to create room: ' + error.message);
+                backToMultiplayerMenu();
+            }
+        }
+
+        // Room configuration state
+        let roomConfig = {
+            color: 'black', // Default to black (moves first)
+            variant: 'standard',
+            timeControl: 'unlimited'
+        };
+
+        function showRoomConfig() {
+            showView('mp-room-config');
+            // Reset to defaults
+            selectColor('black');
+            document.getElementById('room-variant').value = 'standard';
+            document.getElementById('room-time-control').value = 'unlimited';
+        }
+
+        function selectColor(color) {
+            roomConfig.color = color;
+            
+            // Update button styles
+            const blackBtn = document.getElementById('color-black-btn');
+            const whiteBtn = document.getElementById('color-white-btn');
+            
+            if (color === 'black') {
+                blackBtn.style.border = '3px solid #4ecdc4';
+                blackBtn.style.transform = 'scale(1.05)';
+                whiteBtn.style.border = '3px solid transparent';
+                whiteBtn.style.transform = 'scale(1)';
+            } else {
+                whiteBtn.style.border = '3px solid #4ecdc4';
+                whiteBtn.style.transform = 'scale(1.05)';
+                blackBtn.style.border = '3px solid transparent';
+                blackBtn.style.transform = 'scale(1)';
+            }
+        }
+
+        async function createRoomWithConfig() {
+            try {
+                // Check if user is logged in
+                const token = localStorage.getItem('romgon-jwt');
+                if (!token) {
+                    alert('Please log in to create a multiplayer room');
+                    return;
+                }
+
+                // Get configuration values
+                roomConfig.variant = document.getElementById('room-variant').value;
+                roomConfig.timeControl = document.getElementById('room-time-control').value;
+
+                console.log('🎮 Creating room with config:', roomConfig);
+
+                showView('mp-create-room');
+                document.getElementById('room-code-display').textContent = 'Creating...';
+
+                // Create room with configuration
+                const room = await roomClient.createRoom({ 
+                    isPrivate: false,
+                    variant: roomConfig.variant,
+                    timeControl: roomConfig.timeControl,
+                    hostColor: roomConfig.color
+                });
+                
+                document.getElementById('room-code-display').textContent = room.code;
+                console.log('✅ Room created:', room);
+
+                // Try to connect WebSocket in background
                 if (!roomClient.socket || !roomClient.socket.connected) {
                     console.log('🔌 Connecting to WebSocket in background...');
                     roomClient.connect();

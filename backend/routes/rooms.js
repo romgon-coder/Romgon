@@ -25,11 +25,14 @@ const matchmakingQueue = new Map();
 router.post('/create', authenticateToken, async (req, res) => {
     try {
         const { userId, username } = req.user;
-        const { isPrivate = false, timeControl = null, variant = 'standard' } = req.body;
+        const { isPrivate = false, timeControl = null, variant = 'standard', hostColor = 'white' } = req.body;
 
         // Generate unique room code (6 characters)
         const roomCode = generateRoomCode();
         const roomId = uuidv4();
+
+        // Validate hostColor
+        const color = hostColor === 'black' ? 'black' : 'white';
 
         const room = {
             id: roomId,
@@ -39,7 +42,7 @@ router.post('/create', authenticateToken, async (req, res) => {
             players: [{
                 userId,
                 username,
-                color: 'white', // Host is white (joins as second player, black moves first)
+                color: color, // Host chooses their color
                 ready: false
             }],
             isPrivate,
@@ -52,7 +55,7 @@ router.post('/create', authenticateToken, async (req, res) => {
 
         activeRooms.set(roomCode, room);
 
-        console.log(`🎮 Room created: ${roomCode} by ${username} (${userId})`);
+        console.log(`🎮 Room created: ${roomCode} by ${username} (${userId}) - Color: ${color}, Variant: ${variant}`);
 
         res.json({
             success: true,
@@ -60,7 +63,9 @@ router.post('/create', authenticateToken, async (req, res) => {
                 code: roomCode,
                 id: roomId,
                 hostUsername: username,
-                status: 'waiting'
+                status: 'waiting',
+                variant: variant,
+                timeControl: timeControl
             }
         });
     } catch (error) {
@@ -154,7 +159,9 @@ router.post('/join', authenticateToken, async (req, res) => {
             room.hostId = userId; // First player becomes host
             room.hostUsername = username;
         } else {
-            playerColor = 'black'; // Second player is black
+            // Assign opposite color to host
+            const hostColor = room.players[0]?.color || 'white';
+            playerColor = hostColor === 'white' ? 'black' : 'white';
         }
 
         // Add player
@@ -246,14 +253,16 @@ router.post('/join/guest', async (req, res) => {
             { expiresIn: '24h' }
         );
 
-        // Assign color based on join order
+        // Assign color based on join order (opposite of host)
         let playerColor;
         if (room.players.length === 0) {
             playerColor = 'white';
             room.hostId = guestId;
             room.hostUsername = guestUsername;
         } else {
-            playerColor = 'black';
+            // Assign opposite color to host
+            const hostColor = room.players[0]?.color || 'white';
+            playerColor = hostColor === 'white' ? 'black' : 'white';
         }
 
         // Add guest player
