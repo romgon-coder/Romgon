@@ -5419,36 +5419,52 @@
         /* Side Panel Styling */
         #game-buttons-panel {
             position: fixed;
-            left: 0;
+            left: 10px;
             top: 100px;
-            width: 180px;
+            width: 220px;
+            min-width: 180px;
+            max-width: 400px;
             max-height: calc(100vh - 120px);
             background-color: rgba(26, 37, 47, 0.95) !important;
             border: 2px solid #4ecdc4 !important;
-            border-left: none !important;
-            border-radius: 0 12px 12px 0 !important;
+            border-radius: 12px !important;
             padding: 10px !important;
             display: flex !important;
             flex-direction: column !important;
-            gap: 8px !important;
+            gap: 10px !important;
             z-index: 3000 !important;
             overflow-y: auto !important;
-            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.5) !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
             transition: transform 0.3s ease !important;
             transform: translateX(0) !important;
             pointer-events: auto !important;
+            resize: both !important;
+            cursor: move;
         }
         
         #game-buttons-panel.hidden {
-            transform: translateX(-200px) !important;
+            transform: translateX(-250px) !important;
             pointer-events: none !important;
         }
         
         #game-buttons-panel button {
             width: 100% !important;
-            padding: 8px 10px !important;
+            padding: 12px 10px !important;
             text-align: center !important;
-            font-size: 10px !important;
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            line-height: 1.4 !important;
+        }
+        
+        #game-buttons-panel button .game-menu-button-emoji {
+            font-size: 24px !important;
+            display: block !important;
+            margin-bottom: 4px !important;
+        }
+        
+        #game-buttons-panel button .game-menu-button-label {
+            font-size: 13px !important;
+            font-weight: 600 !important;
         }
         
         #toggle-panel-btn {
@@ -25449,6 +25465,41 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             // Append panel and turn indicator to document
             document.body.appendChild(gameButtonsPanel);
 
+            // Make game buttons panel draggable
+            let isDragging = false;
+            let currentX;
+            let currentY;
+            let initialX;
+            let initialY;
+            
+            gameButtonsPanel.addEventListener('mousedown', function(e) {
+                // Only allow dragging from empty areas (not buttons)
+                if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SPAN') {
+                    isDragging = true;
+                    initialX = e.clientX - gameButtonsPanel.offsetLeft;
+                    initialY = e.clientY - gameButtonsPanel.offsetTop;
+                    gameButtonsPanel.style.cursor = 'grabbing';
+                }
+            });
+            
+            document.addEventListener('mousemove', function(e) {
+                if (isDragging) {
+                    e.preventDefault();
+                    currentX = e.clientX - initialX;
+                    currentY = e.clientY - initialY;
+                    
+                    gameButtonsPanel.style.left = currentX + 'px';
+                    gameButtonsPanel.style.top = currentY + 'px';
+                    gameButtonsPanel.style.transform = 'none'; // Disable transform when dragging
+                }
+            });
+            
+            document.addEventListener('mouseup', function() {
+                if (isDragging) {
+                    isDragging = false;
+                    gameButtonsPanel.style.cursor = 'move';
+                }
+            });
 
             
             // ============================================
