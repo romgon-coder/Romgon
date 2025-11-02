@@ -20670,17 +20670,18 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 showView('mp-create-room');
                 document.getElementById('room-code-display').textContent = 'Creating...';
 
-                // Create room via HTTP API (don't wait for WebSocket)
+                // CRITICAL: Connect WebSocket BEFORE creating room
+                if (!roomClient.socket || !roomClient.socket.connected) {
+                    console.log('🔌 Connecting to WebSocket before room creation...');
+                    await roomClient.connect();
+                    await new Promise(resolve => setTimeout(resolve, 500)); // Give it time to connect
+                }
+
+                // Create room via HTTP API
                 const room = await roomClient.createRoom({ isPrivate: false });
                 
                 document.getElementById('room-code-display').textContent = room.code;
                 console.log('✅ Room created:', room);
-
-                // Try to connect WebSocket in background (non-blocking)
-                if (!roomClient.socket || !roomClient.socket.connected) {
-                    console.log('🔌 Connecting to WebSocket in background...');
-                    roomClient.connect();
-                }
 
                 // Setup room event handlers
                 roomClient.onPlayerJoinedRoom = (data) => {
@@ -20768,6 +20769,13 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 showView('mp-create-room');
                 document.getElementById('room-code-display').textContent = 'Creating...';
 
+                // CRITICAL: Connect WebSocket BEFORE creating room
+                if (!roomClient.socket || !roomClient.socket.connected) {
+                    console.log('🔌 Connecting to WebSocket before room creation...');
+                    await roomClient.connect();
+                    await new Promise(resolve => setTimeout(resolve, 500)); // Give it time to connect
+                }
+
                 // Create room with configuration
                 const room = await roomClient.createRoom({ 
                     isPrivate: false,
@@ -20779,12 +20787,6 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 
                 document.getElementById('room-code-display').textContent = room.code;
                 console.log('✅ Room created:', room);
-
-                // Try to connect WebSocket in background
-                if (!roomClient.socket || !roomClient.socket.connected) {
-                    console.log('🔌 Connecting to WebSocket in background...');
-                    roomClient.connect();
-                }
 
                 // Setup room event handlers
                 roomClient.onPlayerJoinedRoom = (data) => {
