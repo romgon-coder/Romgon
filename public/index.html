@@ -16635,6 +16635,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
 
         function closePVPVariantsModal() {
             document.getElementById('game-variants-pvp-modal').style.display = 'none';
+            document.getElementById('start-menu').style.display = 'flex'; // Show main menu
             // Don't reset selectedGameMode here - it's needed for startGameWithTime()
         }
         
