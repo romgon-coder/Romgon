@@ -263,9 +263,11 @@ class RoomClient {
             if (data.success) {
                 this.socket.emit('room:ready', { roomCode, ready });
                 
+                // NOTE: Don't emit room:gameStarted here - the backend will broadcast it
+                // to all players via WebSocket when the game starts
                 if (data.gameStarted) {
-                    this.socket.emit('room:gameStarted', { roomCode, gameId: data.gameId });
-                    this.onGameStarted({ gameId: data.gameId });
+                    console.log('✅ Game started! Waiting for WebSocket event with player data...');
+                    // The onGameStarted callback will be triggered by the WebSocket event
                 }
                 
                 console.log('✅ Ready status updated:', ready);

@@ -18519,14 +18519,24 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     console.log('❌ Game WebSocket disconnected');
                 });
                 
+                // Test message to verify room connection
+                gameSocket.on('game:testMessage', (data) => {
+                    console.log('🧪 TEST MESSAGE RECEIVED:', data);
+                });
+                
                 // Listen for move updates
                 gameSocket.on('game:moveUpdate', (data) => {
                     console.log('🎯 Move update received:', data);
+                    console.log('🎯 My color:', myPlayerColor);
+                    console.log('🎯 Current turn before update:', currentPlayer);
                     
                     // Get my user ID to check if this is my own move
                     const token = localStorage.getItem('romgon-jwt');
                     if (token) {
                         const payload = JSON.parse(atob(token.split('.')[1]));
+                        console.log('🎯 My userId:', payload.userId);
+                        console.log('🎯 Move by userId:', data.userId);
+                        
                         if (data.userId === payload.userId) {
                             console.log('⏭️ Skipping my own move (already applied locally)');
                             
@@ -21252,6 +21262,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             console.log('🔍 Room data:', roomClient.currentRoom);
             
             multiplayerMode = true;
+            currentPlayer = 'black'; // BLACK always moves first in Romgon
+            console.log('🎲 Set currentPlayer to:', currentPlayer);
             
             // Determine player color from room
             if (roomClient.currentRoom && roomClient.currentRoom.players) {
@@ -21302,6 +21314,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     console.log('   gameId:', gameId);
                     console.log('   userId:', payload.userId);
                     console.log('   myPlayerColor:', myPlayerColor);
+                    console.log('   gameSocket.connected:', gameSocket.connected);
                     
                     gameSocket.emit('game:join', {
                         gameId,
@@ -21313,7 +21326,28 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     console.log('   gameSocket exists:', !!gameSocket);
                     console.log('   gameSocket.connected:', gameSocket?.connected);
                     
-                    // If not connected yet, wait for connection event
+                    // Try again after a short delay
+                    setTimeout(() => {
+                        console.log('🔄 Retrying game room join after delay...');
+                        if (gameSocket && gameSocket.connected) {
+                            const token = localStorage.getItem('romgon-jwt');
+                            const payload = JSON.parse(atob(token.split('.')[1]));
+                            
+                            console.log('🔌 gameSocket now connected! Joining room...');
+                            console.log('   gameId:', gameId);
+                            console.log('   userId:', payload.userId);
+                            
+                            gameSocket.emit('game:join', {
+                                gameId,
+                                userId: payload.userId
+                            });
+                            console.log('✅ game:join emitted after retry');
+                        } else {
+                            console.error('❌ gameSocket still not connected after retry');
+                        }
+                    }, 1000);
+                    
+                    // Also listen for connection event
                     if (gameSocket) {
                         gameSocket.once('connect', () => {
                             const token = localStorage.getItem('romgon-jwt');

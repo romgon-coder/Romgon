@@ -14,6 +14,15 @@ const jwt = require('jsonwebtoken');
 const activeRooms = new Map();
 const matchmakingQueue = new Map();
 
+// Store reference to socket.io instance
+let ioInstance = null;
+
+// Function to set the io instance
+function setIOInstance(io) {
+    ioInstance = io;
+    console.log('✅ Socket.IO instance registered in rooms module');
+}
+
 // ============================================
 // ROOM CREATION
 // ============================================
@@ -458,6 +467,18 @@ router.post('/:roomCode/ready', authenticateToken, async (req, res) => {
 
             console.log(`🎮 Game started in room ${roomCode}: ${gameId}`);
 
+            // Emit game started event via WebSocket to all players in room
+            if (ioInstance) {
+                const gameNamespace = ioInstance.of('/game');
+                gameNamespace.to(`room-${roomCode}`).emit('room:gameStarted', {
+                    gameId,
+                    players: room.players,
+                    roomCode,
+                    timestamp: new Date().toISOString()
+                });
+                console.log(`📢 Emitted room:gameStarted via WebSocket to room-${roomCode}`);
+            }
+
             res.json({
                 success: true,
                 ready: true,
@@ -898,5 +919,6 @@ setInterval(() => {
 module.exports = {
     router,
     activeRooms,
-    matchmakingQueue
+    matchmakingQueue,
+    setIOInstance
 };

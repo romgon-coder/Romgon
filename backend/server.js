@@ -25,7 +25,7 @@ const statsRoutes = require('./routes/stats');
 const { router: customGamesRoutes, initCustomGames } = require('./routes/custom-games');
 const engineAnalysisRoutes = require('./routes/engine-analysis');
 const apiKeysRoutes = require('./routes/api-keys');
-const { router: roomsRoutes } = require('./routes/rooms');
+const { router: roomsRoutes, setIOInstance } = require('./routes/rooms');
 const { router: aiTrainingRoutes } = require('./routes/ai-training');
 
 // Import WebSocket handlers
@@ -42,6 +42,10 @@ const io = socketIO(server, {
         credentials: true
     }
 });
+
+// Pass Socket.IO instance to rooms module for WebSocket event emission
+setIOInstance(io);
+console.log('✅ Socket.IO instance passed to rooms module');
 
 // ============================================
 // MIDDLEWARE

@@ -13,9 +13,13 @@ function setupSocketHandlers(io) {
     
     // Track online players: Map<userId, {socketId, username, rating, status}>
     const onlinePlayers = new Map();
+    
+    // Track move counts for guest games not in DB: Map<gameId, moveCount>
+    const guestGameMoves = new Map();
 
     gameNamespace.on('connection', (socket) => {
         console.log(`🎮 Game connection: ${socket.id}`);
+        console.log(`   Total game namespace connections: ${gameNamespace.sockets.size}`);
         
         // Extract user info from auth token
         const userId = socket.handshake.auth.userId || socket.handshake.query.userId;
@@ -184,6 +188,13 @@ function setupSocketHandlers(io) {
             socket.gameId = gameId;
             socket.userId = userId;
             
+            console.log(`🔌 game:join received`);
+            console.log(`   gameId: ${gameId}`);
+            console.log(`   userId: ${userId}`);
+            console.log(`   socketId: ${socket.id}`);
+            console.log(`   Joined room: game-${gameId}`);
+            console.log(`   Room now has ${gameNamespace.adapter.rooms.get(`game-${gameId}`)?.size || 0} socket(s)`);
+            
             // Update player status
             let username = 'Unknown';
             if (onlinePlayers.has(userId)) {
@@ -205,6 +216,14 @@ function setupSocketHandlers(io) {
             socket.to(`game-${gameId}`).emit('game:playerJoined', {
                 userId,
                 username,
+                timestamp: new Date().toISOString()
+            });
+            
+            // Send a test message to verify the user can receive broadcasts
+            console.log(`🧪 Sending test message to ${userId} in game-${gameId}`);
+            socket.emit('game:testMessage', {
+                message: 'You successfully joined the game room!',
+                gameId,
                 timestamp: new Date().toISOString()
             });
         });
@@ -253,17 +272,32 @@ function setupSocketHandlers(io) {
                     console.error(`❌ Game ${gameId} not found in database!`);
                     console.log(`⚠️ Broadcasting move anyway without database info`);
                     
-                    // Broadcast anyway even if game not in DB (for guest games)
+                    // Track move count for this guest game
+                    const currentMoveCount = guestGameMoves.get(gameId) || 0;
+                    guestGameMoves.set(gameId, currentMoveCount + 1);
+                    
+                    // Calculate next turn based on move count
+                    // Move 0 = black moves, after move 0 it's white's turn
+                    // Move 1 = white moves, after move 1 it's black's turn
+                    const nextTurnIsWhite = currentMoveCount % 2 === 0;
+                    const nextTurn = nextTurnIsWhite ? 'white' : 'black';
+                    
+                    console.log(`   Guest game move count: ${currentMoveCount}`);
+                    console.log(`   Next turn: ${nextTurn}`);
+                    
+                    console.log(`📢 Broadcasting to game-${gameId}...`);
+                    console.log(`   Sockets in room:`, gameNamespace.adapter.rooms.get(`game-${gameId}`)?.size || 0);
+                    
                     gameNamespace.to(`game-${gameId}`).emit('game:moveUpdate', {
                         gameId,
                         move,
                         userId,
-                        moveCount: 0,
-                        turn: 'white', // Default to white's turn after first move
+                        moveCount: currentMoveCount + 1,
+                        turn: nextTurn,
                         timestamp: new Date().toISOString()
                     });
                     
-                    console.log(`✅ Move broadcast complete (no DB entry)`);
+                    console.log(`✅ Move broadcast complete (no DB entry), next turn: ${nextTurn}`);
                     return;
                 }
                 
@@ -272,19 +306,23 @@ function setupSocketHandlers(io) {
                 // In Romgon, BLACK moves first
                 // Move 0 (even) = black's turn, Move 1 (odd) = white's turn
                 // After a move is made, it becomes the opponent's turn
-                const isBlackTurn = moves.length % 2 === 0;
+                // So if moves.length is even (0, 2, 4...), black just moved, so now it's WHITE's turn
+                // If moves.length is odd (1, 3, 5...), white just moved, so now it's BLACK's turn
+                const nextTurnIsWhite = moves.length % 2 === 0;
 
                 console.log(`   Total moves before this: ${moves.length}`);
-                console.log(`   Turn after this move: ${isBlackTurn ? 'black' : 'white'}`);
+                console.log(`   Next turn after this move: ${nextTurnIsWhite ? 'white' : 'black'}`);
 
                 // Broadcast to all players in game
                 console.log(`📢 Broadcasting move to game-${gameId}`);
+                console.log(`   Sockets in room:`, gameNamespace.adapter.rooms.get(`game-${gameId}`)?.size || 0);
+                
                 gameNamespace.to(`game-${gameId}`).emit('game:moveUpdate', {
                     gameId,
                     move,
                     userId,
                     moveCount: game.total_moves,
-                    turn: isBlackTurn ? 'black' : 'white',
+                    turn: nextTurnIsWhite ? 'white' : 'black',
                     timestamp: new Date().toISOString()
                 });
 
