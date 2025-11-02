@@ -5604,13 +5604,12 @@
             left: 50%;
             color: var(--hex-coords-color);
             transform: translate(-50%, -50%) rotate(-90deg); /* Center and counter-rotate */
-            font-size: 48px !important;
+            font-size: 9px;
             pointer-events: none;
             z-index: 0;
-            font-weight: 900 !important;
+            font-weight: bold;
             white-space: nowrap;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.9); /* Stronger shadow for readability */
-            display: block; /* Show by default */
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7); /* Shadow for readability */
         }
         
         /* Counter-rotate coords when board is flipped */
@@ -10417,7 +10416,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 <button class="mp-button" onclick="startMatchmaking()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                     🎯 Quick Match (Matchmaking)
                 </button>
-                <button class="mp-button" onclick="createMultiplayerRoom()">
+                <button class="mp-button" onclick="showRoomConfig()">
                     🎮 Create Private Room
                 </button>
                 <button class="mp-button secondary" onclick="showJoinRoom()">
@@ -10433,6 +10432,96 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     ← Back to Menu
                 </button>
             </div>
+        </div>
+
+        <!-- Room Configuration View -->
+        <div class="multiplayer-container" id="mp-room-config" style="display: none;">
+            <h2>⚙️ Room Configuration</h2>
+            
+            <div style="margin: 20px 0;">
+                <label style="display: block; color: #4ecdc4; margin-bottom: 8px; font-weight: bold;">
+                    🎨 Choose Your Color:
+                </label>
+                <div style="display: flex; gap: 10px;">
+                    <button class="color-choice-btn" id="color-black-btn" onclick="selectColor('black')" style="
+                        flex: 1;
+                        padding: 15px;
+                        background: linear-gradient(135deg, #2c3e50 0%, #000000 100%);
+                        color: white;
+                        border: 3px solid #4ecdc4;
+                        border-radius: 8px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                    ">
+                        ⚫ Black<br>
+                        <span style="font-size: 12px; opacity: 0.8;">(Moves First)</span>
+                    </button>
+                    <button class="color-choice-btn" id="color-white-btn" onclick="selectColor('white')" style="
+                        flex: 1;
+                        padding: 15px;
+                        background: linear-gradient(135deg, #ecf0f1 0%, #bdc3c7 100%);
+                        color: #2c3e50;
+                        border: 3px solid transparent;
+                        border-radius: 8px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                    ">
+                        ⚪ White<br>
+                        <span style="font-size: 12px; opacity: 0.8;">(Moves Second)</span>
+                    </button>
+                </div>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <label style="display: block; color: #4ecdc4; margin-bottom: 8px; font-weight: bold;">
+                    🎲 Game Variant:
+                </label>
+                <select id="room-variant" style="
+                    width: 100%;
+                    padding: 12px;
+                    background: rgba(0, 0, 0, 0.3);
+                    border: 2px solid rgba(78, 205, 196, 0.3);
+                    border-radius: 8px;
+                    color: white;
+                    font-size: 14px;
+                    cursor: pointer;
+                ">
+                    <option value="standard">🎯 Standard Romgon</option>
+                    <option value="shape-defense">🛡️ Shape Defense (Rhombus protects other pieces)</option>
+                    <option value="rhombus-original">💎 Rhombus Original (Different movement)</option>
+                </select>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <label style="display: block; color: #4ecdc4; margin-bottom: 8px; font-weight: bold;">
+                    ⏱️ Time Control:
+                </label>
+                <select id="room-time-control" style="
+                    width: 100%;
+                    padding: 12px;
+                    background: rgba(0, 0, 0, 0.3);
+                    border: 2px solid rgba(78, 205, 196, 0.3);
+                    border-radius: 8px;
+                    color: white;
+                    font-size: 14px;
+                    cursor: pointer;
+                ">
+                    <option value="unlimited">♾️ Unlimited (No Time Limit)</option>
+                    <option value="5+0">⚡ Blitz: 5 minutes</option>
+                    <option value="10+0">🏃 Rapid: 10 minutes</option>
+                    <option value="15+10">🎯 Standard: 15 min + 10 sec increment</option>
+                    <option value="30+0">♟️ Classical: 30 minutes</option>
+                </select>
+            </div>
+
+            <button class="mp-button" onclick="createRoomWithConfig()">
+                ✅ Create Room
+            </button>
+            <button class="mp-back-button" onclick="backToMultiplayerMenu()">
+                ← Back
+            </button>
         </div>
 
         <!-- Matchmaking View -->
@@ -10606,7 +10695,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             <div id="room-info" style="display: none;">
                 Room: <span id="current-room-code" style="color: #4ecdc4; font-weight: bold;">------</span>
             </div>
-            <div id="player-role">Role: <span id="player-color-display" style="font-weight: bold;">-</span></div>
+            <div id="player-role">You: <span id="player-color-display" style="font-weight: bold;">-</span></div>
         </div>
     </div>
 
@@ -11736,7 +11825,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         btn.innerHTML = '🤖 Ask AI';
         btn.style.cssText = `
             position: fixed;
-            bottom: 20px;
+            bottom: 230px;
             right: 20px;
             background: linear-gradient(135deg, #10a37f 0%, #1a7f64 100%);
             color: #fff;
@@ -12914,41 +13003,41 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             right: 100px;
             background: rgba(0, 0, 0, 0.95);
             border: 2px solid rgba(255, 121, 198, 0.5);
-            border-radius: 10px;
+            border-radius: 15px;
             padding: 0;
             z-index: 1000;
             display: none;
-            width: 280px;
-            height: 380px;
+            width: 320px;
+            height: 450px;
             resize: both;
             overflow: hidden;
-            max-width: 400px;
-            max-height: 70vh;
-            min-width: 220px;
-            min-height: 250px;
+            max-width: 500px;
+            max-height: 80vh;
+            min-width: 250px;
+            min-height: 300px;
         " id="chat-panel">
             <!-- Draggable Header -->
             <div class="chat-panel-header" style="
                 display: flex; 
                 justify-content: space-between; 
                 align-items: center; 
-                padding: 8px 10px; 
+                padding: 12px 15px; 
                 background: rgba(255, 121, 198, 0.1); 
-                border-radius: 10px 10px 0 0; 
+                border-radius: 15px 15px 0 0; 
                 cursor: move; 
                 user-select: none;
                 border-bottom: 1px solid rgba(255, 121, 198, 0.2);
             ">
-                <div style="color: #ff79c6; font-weight: bold; font-size: 13px;">💬 Chat</div>
+                <div style="color: #ff79c6; font-weight: bold;">💬 Game Chat</div>
                 <button onclick="closeChatPanel()" style="
                     background: rgba(255, 121, 198, 0.2);
                     border: 1px solid #ff79c6;
                     border-radius: 50%;
-                    width: 20px;
-                    height: 20px;
+                    width: 24px;
+                    height: 24px;
                     color: #ff79c6;
                     cursor: pointer;
-                    font-size: 12px;
+                    font-size: 14px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -12958,45 +13047,45 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             <!-- Chat Messages Area -->
             <div id="chat-messages" style="
-                height: calc(100% - 82px);
+                height: calc(100% - 110px);
                 overflow-y: auto;
-                padding: 8px;
+                padding: 15px;
                 display: flex;
                 flex-direction: column;
-                gap: 6px;
+                gap: 10px;
             ">
                 <!-- Messages will appear here -->
-                <div style="color: #888; font-size: 11px; text-align: center; padding: 10px;">
+                <div style="color: #888; font-size: 12px; text-align: center; padding: 20px;">
                     No messages yet. Start chatting!
                 </div>
             </div>
             
             <!-- Chat Input Area -->
             <div style="
-                padding: 8px;
+                padding: 12px;
                 border-top: 1px solid rgba(255, 121, 198, 0.2);
                 background: rgba(0, 0, 0, 0.5);
             ">
-                <div style="display: flex; gap: 6px;">
-                    <input type="text" id="chat-input" placeholder="Type message..." style="
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="chat-input" placeholder="Type a message..." style="
                         flex: 1;
                         background: rgba(255, 255, 255, 0.1);
                         border: 1px solid rgba(255, 121, 198, 0.3);
-                        border-radius: 6px;
-                        padding: 6px 8px;
+                        border-radius: 8px;
+                        padding: 8px 12px;
                         color: white;
-                        font-size: 12px;
+                        font-size: 13px;
                         outline: none;
                     " onkeypress="if(event.key==='Enter') sendChatMessage()">
                     <button onclick="sendChatMessage()" style="
                         background: rgba(255, 121, 198, 0.3);
                         border: 1px solid #ff79c6;
-                        border-radius: 6px;
-                        padding: 6px 12px;
+                        border-radius: 8px;
+                        padding: 8px 16px;
                         color: #ff79c6;
                         cursor: pointer;
                         font-weight: bold;
-                        font-size: 12px;
+                        font-size: 13px;
                     ">Send</button>
                 </div>
             </div>
@@ -13005,7 +13094,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         <!-- 3D Camera Toggle Button -->
         <button onclick="toggleCamera3D()" id="camera-toggle-btn" style="
             position: fixed;
-            bottom: 20px;
+            bottom: 180px;
             right: 20px;
             width: 60px;
             height: 60px;
@@ -13025,7 +13114,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         <!-- Chat Toggle Button (Above Camera) -->
         <button onclick="toggleChatPanel()" id="chat-toggle-btn" style="
             position: fixed;
-            bottom: 90px;
+            bottom: 250px;
             right: 20px;
             width: 60px;
             height: 60px;
@@ -13042,11 +13131,11 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             💬
         </button>
         
-        <!-- AI/LLM Assistant Button (Bottom Left, Clear of Side Menu) -->
+        <!-- AI/LLM Assistant Button (Above Chat) -->
         <button onclick="showChatGPTModal()" id="llm-toggle-btn" style="
             position: fixed;
-            bottom: 20px;
-            left: 250px;
+            bottom: 320px;
+            right: 20px;
             width: 60px;
             height: 60px;
             background: linear-gradient(135deg, #10a37f 0%, #1a7f64 100%);
@@ -13501,15 +13590,35 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             if (!message) return;
             
-            // Add message to chat
-            addChatMessage(message, 'You', true);
+            // Get username from localStorage
+            const token = localStorage.getItem('romgon-jwt') || localStorage.getItem('token');
+            let username = 'You';
+            
+            if (token) {
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    username = payload.username || 'You';
+                } catch (e) {
+                    console.error('Failed to parse username:', e);
+                }
+            }
+            
+            // Add message to chat locally
+            addChatMessage(message, username, true);
+            
+            // Send to opponent via game socket if connected
+            if (gameSocket && gameSocket.connected && multiplayerMode) {
+                gameSocket.emit('game:chat', {
+                    gameId: roomClient.currentRoom?.id || 'practice',
+                    message: message,
+                    sender: username
+                });
+                console.log('💬 Chat message sent to opponent:', message);
+            }
             
             // Clear input
             input.value = '';
             input.focus();
-            
-            // TODO: Send to opponent via multiplayer system
-            // For now, just local display
         }
         
         function addChatMessage(text, sender, isOwn = false) {
@@ -13525,26 +13634,26 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             // Create message element
             const messageDiv = document.createElement('div');
             messageDiv.style.cssText = `
-                padding: 6px 10px;
-                border-radius: 6px;
+                padding: 8px 12px;
+                border-radius: 8px;
                 background: ${isOwn ? 'rgba(255, 121, 198, 0.2)' : 'rgba(78, 205, 196, 0.2)'};
                 border: 1px solid ${isOwn ? 'rgba(255, 121, 198, 0.3)' : 'rgba(78, 205, 196, 0.3)'};
-                margin-bottom: 5px;
+                margin-bottom: 8px;
             `;
             
             const senderSpan = document.createElement('div');
             senderSpan.style.cssText = `
                 color: ${isOwn ? '#ff79c6' : '#4ecdc4'};
                 font-weight: bold;
-                font-size: 10px;
-                margin-bottom: 2px;
+                font-size: 11px;
+                margin-bottom: 3px;
             `;
             senderSpan.textContent = sender;
             
             const textSpan = document.createElement('div');
             textSpan.style.cssText = `
                 color: #ffffff;
-                font-size: 12px;
+                font-size: 13px;
                 word-wrap: break-word;
             `;
             textSpan.textContent = text;
@@ -18410,11 +18519,114 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     console.log('❌ Game WebSocket disconnected');
                 });
                 
+                // Test message to verify room connection
+                gameSocket.on('game:testMessage', (data) => {
+                    console.log('🧪 TEST MESSAGE RECEIVED:', data);
+                });
+                
                 // Listen for move updates
                 gameSocket.on('game:moveUpdate', (data) => {
                     console.log('🎯 Move update received:', data);
+                    console.log('🎯 My color:', myPlayerColor);
+                    console.log('🎯 Current turn before update:', currentPlayer);
+                    
+                    // Get my user ID to check if this is my own move
+                    const token = localStorage.getItem('romgon-jwt');
+                    if (token) {
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        console.log('🎯 My userId:', payload.userId);
+                        console.log('🎯 Move by userId:', data.userId);
+                        
+                        if (data.userId === payload.userId) {
+                            console.log('⏭️ Skipping my own move (already applied locally)');
+                            
+                            // But still sync the turn from server
+                            if (data.turn) {
+                                currentPlayer = data.turn;
+                                console.log('🔄 Turn synchronized to:', currentPlayer);
+                                updateTurnDisplay();
+                            }
+                            
+                            return; // Don't apply our own moves again
+                        }
+                    }
+                    
+                    // Apply the opponent's move to our board
+                    if (data.move && multiplayerMode) {
+                        const { from, to, piece, captured, triangleOrientation, hexgonOrientation } = data.move;
+                        
+                        console.log('🔄 Applying opponent move:', from, '→', to);
+                        console.log('🔄 Turn from server:', data.turn);
+                        console.log('🔄 Current local turn before update:', currentPlayer);
+                        console.log('🔄 My color:', myPlayerColor);
+                        console.log('🔄 Move by userId:', data.userId);
+                        
+                        const fromHex = document.getElementById(from);
+                        const toHex = document.getElementById(to);
+                        
+                        if (!fromHex || !toHex) {
+                            console.error('❌ Could not find hexes:', from, to);
+                            return;
+                        }
+                        
+                        if (fromHex && toHex) {
+                            // Remove piece from source
+                            const movingPiece = fromHex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
+                            if (movingPiece) {
+                                console.log('✅ Found moving piece:', movingPiece.className);
+                                movingPiece.remove();
+                            } else {
+                                console.warn('⚠️ No piece found at source hex:', from);
+                            }
+                            
+                            // Remove captured piece from destination if any
+                            if (captured) {
+                                const capturedPiece = toHex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
+                                if (capturedPiece) {
+                                    addToEliminatedPieces(capturedPiece);
+                                    capturedPiece.remove();
+                                    playCapturedSound();
+                                    console.log('✅ Captured piece removed');
+                                }
+                            }
+                            
+                            // Create new piece at destination
+                            const newPiece = document.createElement('div');
+                            newPiece.className = piece;
+                            newPiece.draggable = true;
+                            toHex.appendChild(newPiece);
+                            console.log('✅ Created new piece at destination:', to, 'with classes:', piece);
+                            
+                            // Restore orientations for triangles/hexagons
+                            if (triangleOrientation !== undefined && triangleOrientation !== null) {
+                                setTriangleOrientation(to, triangleOrientation);
+                                updateTriangleVisual(to);
+                                console.log('Restored triangle orientation:', triangleOrientation);
+                            }
+                            if (hexgonOrientation !== undefined && hexgonOrientation !== null) {
+                                setHexgonOrientation(to, hexgonOrientation);
+                                updateHexgonVisual(to);
+                                console.log('Restored hexgon orientation:', hexgonOrientation);
+                            }
+                            
+                            // Sync turn from server if provided
+                            if (data.turn) {
+                                currentPlayer = data.turn;
+                                console.log('🔄 Turn synchronized to:', currentPlayer);
+                                console.log('🔄 Is it my turn now?', currentPlayer === myPlayerColor);
+                            }
+                            updateTurnDisplay();
+                            
+                            // Update highlights
+                            clearHighlights();
+                            highlightThreatenedPieces();
+                            
+                            playMoveSound();
+                            console.log('✅ Move applied successfully!');
+                        }
+                    }
+                    
                     loadActiveGames(); // Refresh active games list
-                    playMessageSound(); // Notify user
                 });
                 
                 // Listen for lobby updates
@@ -18429,6 +18641,26 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     loadActiveGames(); // Remove from active games
                     loadMatchHistory(); // Add to history
                     loadUserStats(); // Update rating
+                });
+                
+                // Listen for in-game chat messages
+                gameSocket.on('game:chatMessage', (data) => {
+                    console.log('💬 Chat message received:', data);
+                    const { message, sender } = data;
+                    addChatMessage(message, sender, false);
+                    playMessageSound(); // Play notification sound
+                });
+                
+                // Listen for opponent joining the game
+                gameSocket.on('game:playerJoined', (data) => {
+                    console.log('👤 Opponent joined game:', data);
+                    if (multiplayerMode && data.username) {
+                        // Get opponent color (opposite of mine)
+                        // Note: In Romgon, BLACK moves first (not white)
+                        const opponentColor = myPlayerColor === 'white' ? 'Black' : 'White';
+                        // Update status to show opponent
+                        updateConnectionStatus('connected', `vs ${data.username} (${opponentColor})`);
+                    }
                 });
                 
                 console.log('✅ Game socket initialized');
@@ -20480,17 +20712,18 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 showView('mp-create-room');
                 document.getElementById('room-code-display').textContent = 'Creating...';
 
-                // Create room via HTTP API (don't wait for WebSocket)
+                // CRITICAL: Connect WebSocket BEFORE creating room
+                if (!roomClient.socket || !roomClient.socket.connected) {
+                    console.log('🔌 Connecting to WebSocket before room creation...');
+                    await roomClient.connect();
+                    await new Promise(resolve => setTimeout(resolve, 500)); // Give it time to connect
+                }
+
+                // Create room via HTTP API
                 const room = await roomClient.createRoom({ isPrivate: false });
                 
                 document.getElementById('room-code-display').textContent = room.code;
                 console.log('✅ Room created:', room);
-
-                // Try to connect WebSocket in background (non-blocking)
-                if (!roomClient.socket || !roomClient.socket.connected) {
-                    console.log('🔌 Connecting to WebSocket in background...');
-                    roomClient.connect();
-                }
 
                 // Setup room event handlers
                 roomClient.onPlayerJoinedRoom = (data) => {
@@ -20505,6 +20738,124 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
 
                 roomClient.onGameStarted = (data) => {
                     console.log('🎮 Game starting!', data);
+                    closeMultiplayerModal();
+                    startMultiplayerGame(data.gameId);
+                };
+            } catch (error) {
+                console.error('❌ Error creating room:', error);
+                alert('Failed to create room: ' + error.message);
+                backToMultiplayerMenu();
+            }
+        }
+
+        // Room configuration state
+        let roomConfig = {
+            color: 'black', // Default to black (moves first)
+            variant: 'standard',
+            timeControl: 'unlimited'
+        };
+
+        function showRoomConfig() {
+            // Check if user has any kind of account (registered or guest)
+            const userId = localStorage.getItem('userId');
+            if (!userId) {
+                alert('Please join as a guest or log in to create a room');
+                return;
+            }
+            
+            showView('mp-room-config');
+            // Reset to defaults
+            selectColor('black');
+            document.getElementById('room-variant').value = 'standard';
+            document.getElementById('room-time-control').value = 'unlimited';
+        }
+
+        function selectColor(color) {
+            roomConfig.color = color;
+            
+            // Update button styles
+            const blackBtn = document.getElementById('color-black-btn');
+            const whiteBtn = document.getElementById('color-white-btn');
+            
+            if (color === 'black') {
+                blackBtn.style.border = '3px solid #4ecdc4';
+                blackBtn.style.transform = 'scale(1.05)';
+                whiteBtn.style.border = '3px solid transparent';
+                whiteBtn.style.transform = 'scale(1)';
+            } else {
+                whiteBtn.style.border = '3px solid #4ecdc4';
+                whiteBtn.style.transform = 'scale(1.05)';
+                blackBtn.style.border = '3px solid transparent';
+                blackBtn.style.transform = 'scale(1)';
+            }
+        }
+
+        async function createRoomWithConfig() {
+            try {
+                // Check if user is logged in or is a guest
+                const token = localStorage.getItem('romgon-jwt');
+                const userId = localStorage.getItem('userId');
+                const isGuest = userId && userId.startsWith('guest_');
+                
+                if (!token) {
+                    alert('Please log in or join as a guest to create a multiplayer room');
+                    return;
+                }
+
+                // Get configuration values
+                roomConfig.variant = document.getElementById('room-variant').value;
+                roomConfig.timeControl = document.getElementById('room-time-control').value;
+
+                console.log('🎮 Creating room with config:', roomConfig);
+
+                showView('mp-create-room');
+                document.getElementById('room-code-display').textContent = 'Creating...';
+
+                // CRITICAL: Connect WebSocket BEFORE creating room
+                if (!roomClient.socket || !roomClient.socket.connected) {
+                    console.log('🔌 Connecting to WebSocket before room creation...');
+                    await roomClient.connect();
+                    await new Promise(resolve => setTimeout(resolve, 500)); // Give it time to connect
+                }
+
+                // Create room with configuration
+                const room = await roomClient.createRoom({ 
+                    isPrivate: false,
+                    variant: roomConfig.variant,
+                    timeControl: roomConfig.timeControl,
+                    hostColor: roomConfig.color,
+                    allowGuests: true // Allow guests to join all rooms
+                });
+                
+                document.getElementById('room-code-display').textContent = room.code;
+                console.log('✅ Room created:', room);
+
+                // Setup room event handlers
+                roomClient.onPlayerJoinedRoom = (data) => {
+                    console.log('👤 Player joined:', data);
+                    updateRoomPlayersList(data.players);
+                    
+                    // Show ready button when both players present
+                    if (data.players && data.players.length === 2) {
+                        document.getElementById('ready-button').style.display = 'block';
+                    }
+                };
+
+                roomClient.onGameStarted = (data) => {
+                    console.log('🎮 Game starting!', data);
+                    
+                    // Update room with latest player data if provided
+                    if (data.players && Array.isArray(data.players)) {
+                        roomClient.currentRoom.players = data.players;
+                        console.log('📝 Updated room players:', roomClient.currentRoom.players);
+                    }
+                    
+                    // Store the gameId in the room object for broadcasts
+                    if (data.gameId) {
+                        roomClient.currentRoom.id = data.gameId;
+                        console.log('📝 Updated room gameId:', data.gameId);
+                    }
+                    
                     closeMultiplayerModal();
                     startMultiplayerGame(data.gameId);
                 };
@@ -20556,6 +20907,19 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
 
                     roomClient.onGameStarted = (data) => {
                         console.log('🎮 Game starting!', data);
+                        
+                        // Update room with latest player data if provided
+                        if (data.players && Array.isArray(data.players)) {
+                            roomClient.currentRoom.players = data.players;
+                            console.log('📝 Updated room players:', roomClient.currentRoom.players);
+                        }
+                        
+                        // Store the gameId in the room object for broadcasts
+                        if (data.gameId) {
+                            roomClient.currentRoom.id = data.gameId;
+                            console.log('📝 Updated room gameId:', data.gameId);
+                        }
+                        
                         closeMultiplayerModal();
                         startMultiplayerGame(data.gameId);
                     };
@@ -20664,8 +21028,53 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 
                 console.log('✅ Joined as guest:', data.guestInfo);
                 
-                // Store guest info temporarily
+                // Store guest info and token
                 localStorage.setItem('romgon-guest-info', JSON.stringify(data.guestInfo));
+                localStorage.setItem('romgon-jwt', data.guestInfo.token);  // Store token for room operations
+                localStorage.setItem('token', data.guestInfo.token);  // Also store as 'token'
+                localStorage.setItem('userId', data.guestInfo.guestId);  // Store userId
+                
+                console.log('✅ Guest token stored for ready button');
+                
+                // Initialize game socket for guest
+                initializeGameSocket();
+                console.log('✅ Game socket initialized for guest');
+                
+                // Setup WebSocket event handlers for room updates
+                if (!roomClient.socket || !roomClient.socket.connected) {
+                    await roomClient.connect();
+                }
+                
+                // Join the room via WebSocket
+                roomClient.currentRoom = data.room;
+                roomClient.socket.emit('room:join', { roomCode: data.room.code });
+                
+                // Setup room event handlers
+                roomClient.onPlayerReady = (eventData) => {
+                    console.log('✅ Player ready:', eventData);
+                    if (eventData.players) {
+                        updateWaitingRoomPlayers(eventData.players);
+                    }
+                };
+
+                roomClient.onGameStarted = (eventData) => {
+                    console.log('🎮 Game starting!', eventData);
+                    
+                    // Update room with latest player data if provided
+                    if (eventData.players && Array.isArray(eventData.players)) {
+                        roomClient.currentRoom.players = eventData.players;
+                        console.log('📝 Updated room players:', roomClient.currentRoom.players);
+                    }
+                    
+                    // Store the gameId in the room object for broadcasts
+                    if (eventData.gameId) {
+                        roomClient.currentRoom.id = eventData.gameId;
+                        console.log('📝 Updated room gameId:', eventData.gameId);
+                    }
+                    
+                    closeMultiplayerModal();
+                    startMultiplayerGame(eventData.gameId);
+                };
                 
                 // Show waiting room
                 showView('mp-waiting-room');
@@ -20687,6 +21096,38 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         
         async function joinMultiplayerRoom() {
             const roomCode = document.getElementById('room-code-input').value.trim().toUpperCase();
+            
+            // Check if user is a guest (userId starts with 'guest_')
+            const userId = localStorage.getItem('userId');
+            const token = localStorage.getItem('romgon-jwt');
+            const isGuest = userId && userId.startsWith('guest_');
+            
+            if (isGuest) {
+                // Guest users should check if room allows guests
+                try {
+                    const rooms = await roomClient.listPublicRooms();
+                    const room = rooms.find(r => r.code === roomCode);
+                    
+                    if (!room) {
+                        document.getElementById('mp-error-message').textContent = 'Room not found. Please check the code.';
+                        return;
+                    }
+                    
+                    if (!room.allowGuests) {
+                        alert('This room does not allow guest players. Only "🎭 Guest Arena" accepts guests.');
+                        return;
+                    }
+                    
+                    // Join as guest with existing username
+                    const guestInfo = JSON.parse(localStorage.getItem('romgon-guest-info') || '{}');
+                    await joinAsGuest(roomCode, guestInfo.guestUsername || 'Guest');
+                    return;
+                } catch (error) {
+                    console.error('Error checking room:', error);
+                    // Continue to regular join attempt
+                }
+            }
+            
             await joinMultiplayerRoomByCode(roomCode);
         }
 
@@ -20709,6 +21150,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     roomClient.connect();
                     await new Promise(resolve => setTimeout(resolve, 1000));
                 }
+                
+                // Initialize game socket for multiplayer
+                if (!gameSocket || !gameSocket.connected) {
+                    initializeGameSocket();
+                    console.log('✅ Game socket initialized for multiplayer');
+                }
 
                 document.getElementById('mp-error-message').textContent = '';
 
@@ -20728,12 +21175,27 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
 
                 roomClient.onGameStarted = (data) => {
                     console.log('🎮 Game starting!', data);
+                    
+                    // Update room with latest player data if provided
+                    if (data.players && Array.isArray(data.players)) {
+                        roomClient.currentRoom.players = data.players;
+                        console.log('📝 Updated room players:', roomClient.currentRoom.players);
+                    }
+                    
+                    // Store the gameId in the room object for broadcasts
+                    if (data.gameId) {
+                        roomClient.currentRoom.id = data.gameId;
+                        console.log('📝 Updated room gameId:', data.gameId);
+                    }
+                    
                     closeMultiplayerModal();
                     startMultiplayerGame(data.gameId);
                 };
             } catch (error) {
                 console.error('❌ Error joining room:', error);
-                document.getElementById('mp-error-message').textContent = error.message;
+                const errorMsg = error.message || 'Unknown error';
+                document.getElementById('mp-error-message').textContent = errorMsg;
+                document.getElementById('mp-error-message').style.display = 'block';
             }
         }
 
@@ -20797,36 +21259,152 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
 
         function startMultiplayerGame(gameId) {
             console.log('🎮 Starting multiplayer game:', gameId);
+            console.log('🔍 Room data:', roomClient.currentRoom);
             
             multiplayerMode = true;
+            currentPlayer = 'black'; // BLACK always moves first in Romgon
+            console.log('🎲 Set currentPlayer to:', currentPlayer);
             
             // Determine player color from room
             if (roomClient.currentRoom && roomClient.currentRoom.players) {
                 const token = localStorage.getItem('romgon-jwt');
                 const payload = JSON.parse(atob(token.split('.')[1]));
+                console.log('👤 My userId:', payload.userId);
+                console.log('👥 Players in room:', roomClient.currentRoom.players);
+                
                 const myPlayer = roomClient.currentRoom.players.find(p => p.userId === payload.userId);
                 
                 if (myPlayer) {
                     myPlayerColor = myPlayer.color;
-                    console.log('👤 You are playing as:', myPlayerColor);
+                    console.log('✅ You are playing as:', myPlayerColor);
+                    console.log('✅ myPlayerColor set to:', myPlayerColor);
+                } else {
+                    console.error('❌ Could not find my player in room! Using default black');
+                    myPlayerColor = 'black'; // Fallback
                 }
+            } else {
+                console.error('❌ No room data available! Using default black');
+                myPlayerColor = 'black'; // Fallback
+            }
+            
+            console.log('🎲 Final myPlayerColor:', myPlayerColor);
+            console.log('🎲 Final multiplayerMode:', multiplayerMode);
+            
+            // Auto-flip board for white player so they play from bottom
+            if (myPlayerColor === 'white') {
+                const board = document.querySelector('.board');
+                board.classList.add('flipped');
+                boardFlipped = true;
+                console.log('🔄 Board flipped for white player perspective');
             }
 
-            // Join the game room via WebSocket
-            roomClient.socket.emit('game:join', {
-                gameId,
-                userId: JSON.parse(atob(localStorage.getItem('romgon-jwt').split('.')[1])).userId
-            });
+            // Ensure gameSocket is initialized and wait for connection
+            if (!gameSocket) {
+                console.log('⚠️ Game socket not initialized, initializing now...');
+                initializeGameSocket();
+            }
+            
+            // Function to join game when socket is ready
+            const joinGameRoom = () => {
+                if (gameSocket && gameSocket.connected) {
+                    const token = localStorage.getItem('romgon-jwt');
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    
+                    console.log('🔌 Attempting to join game room...');
+                    console.log('   gameId:', gameId);
+                    console.log('   userId:', payload.userId);
+                    console.log('   myPlayerColor:', myPlayerColor);
+                    console.log('   gameSocket.connected:', gameSocket.connected);
+                    
+                    gameSocket.emit('game:join', {
+                        gameId,
+                        userId: payload.userId
+                    });
+                    console.log('✅ game:join emitted successfully');
+                } else {
+                    console.log('⏳ Waiting for gameSocket to connect...');
+                    console.log('   gameSocket exists:', !!gameSocket);
+                    console.log('   gameSocket.connected:', gameSocket?.connected);
+                    
+                    // Try again after a short delay
+                    setTimeout(() => {
+                        console.log('🔄 Retrying game room join after delay...');
+                        if (gameSocket && gameSocket.connected) {
+                            const token = localStorage.getItem('romgon-jwt');
+                            const payload = JSON.parse(atob(token.split('.')[1]));
+                            
+                            console.log('🔌 gameSocket now connected! Joining room...');
+                            console.log('   gameId:', gameId);
+                            console.log('   userId:', payload.userId);
+                            
+                            gameSocket.emit('game:join', {
+                                gameId,
+                                userId: payload.userId
+                            });
+                            console.log('✅ game:join emitted after retry');
+                        } else {
+                            console.error('❌ gameSocket still not connected after retry');
+                        }
+                    }, 1000);
+                    
+                    // Also listen for connection event
+                    if (gameSocket) {
+                        gameSocket.once('connect', () => {
+                            const token = localStorage.getItem('romgon-jwt');
+                            const payload = JSON.parse(atob(token.split('.')[1]));
+                            
+                            console.log('🔌 gameSocket connected! Joining room...');
+                            console.log('   gameId:', gameId);
+                            console.log('   userId:', payload.userId);
+                            
+                            gameSocket.emit('game:join', {
+                                gameId,
+                                userId: payload.userId
+                            });
+                            console.log('✅ game:join emitted after connection');
+                        });
+                    }
+                }
+            };
+            
+            // Try to join game room
+            joinGameRoom();
 
             // Start the game
             closeMultiplayerModal();
             document.getElementById('multiplayer-status').style.display = 'block';
             document.getElementById('room-info').style.display = 'block';
             document.getElementById('current-room-code').textContent = roomClient.currentRoom?.code || gameId.slice(0, 6);
-            document.getElementById('player-color-display').textContent = myPlayerColor || 'Unknown';
+            
+            // Display player info with username
+            const token = localStorage.getItem('romgon-jwt');
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const myUsername = payload.username || 'You';
+            const colorDisplay = myPlayerColor ? myPlayerColor.charAt(0).toUpperCase() + myPlayerColor.slice(1) : 'Unknown';
+            document.getElementById('player-color-display').textContent = `${myUsername} (${colorDisplay})`;
+            
+            // Update connection status
+            updateConnectionStatus('connected', 'Connected');
 
-            // Initialize game
-            initGame();
+            // Hide start menu and show game board
+            document.getElementById('start-menu').style.display = 'none';
+            showGlobalAccountBar(); // Show the top bar for multiplayer
+            document.getElementById('board-display-container').style.display = 'block';
+            gameInProgress = true;
+
+            // Initialize board for multiplayer
+            initializeBoard('multiplayer');
+            
+            // Reset game state
+            currentTurnPiece = null;
+            escapeRaceNotificationShown = false;
+            clearMovementHistory();
+            clearMoveRepetitions();
+            clearCoordinateLabels();
+            highlightThreatenedPieces();
+            
+            // Update global bar to show current turn
+            updateTurnDisplay();
         }
         
         function updateConnectionStatus(status, text) {
@@ -20866,22 +21444,48 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         }
         
         function broadcastMove(fromId, toId, pieceClasses, captured) {
-            // Don't broadcast in dev mode or if no socket
-            if (!multiplayerMode || !socket || myPlayerColor === 'both') return;
+            console.log('🔍 broadcastMove called');
+            console.log('   multiplayerMode:', multiplayerMode);
+            console.log('   gameSocket:', gameSocket ? 'exists' : 'null');
+            console.log('   gameSocket.connected:', gameSocket?.connected);
+            console.log('   myPlayerColor:', myPlayerColor);
             
-            socket.emit('make-move', {
+            // Don't broadcast in dev mode or if no socket
+            if (!multiplayerMode || !gameSocket || !gameSocket.connected || myPlayerColor === 'both') {
+                console.log('❌ Not broadcasting - conditions not met');
+                return;
+            }
+            
+            const token = localStorage.getItem('romgon-jwt') || localStorage.getItem('token');
+            if (!token) {
+                console.log('❌ No token found');
+                return;
+            }
+            
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const gameId = roomClient.currentRoom?.id || 'unknown';
+            
+            console.log('📤 Broadcasting move to gameSocket');
+            console.log('   gameId:', gameId);
+            console.log('   userId:', payload.userId);
+            console.log('   from:', fromId, '→ to:', toId);
+            console.log('   piece:', pieceClasses);
+            console.log('   captured:', captured || 'none');
+            
+            gameSocket.emit('game:move', {
+                gameId: gameId,
+                userId: payload.userId,
                 move: {
                     from: fromId,
                     to: toId,
                     piece: pieceClasses,
-                    captured: captured
-                },
-                gameState: {
-                    currentPlayer: currentPlayer,
-                    pieces: getPiecePositions(),
-                    triangleOrientations: Object.fromEntries(triangleOrientations)
+                    captured: captured,
+                    triangleOrientation: triangleOrientations.get(toId),
+                    hexgonOrientation: hexgonOrientations.get(toId)
                 }
             });
+            
+            console.log('✅ Move emitted to server');
         }
         
         function broadcastTurnEnd() {
@@ -20973,18 +21577,37 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         // Override switchTurn to broadcast in multiplayer
         const originalSwitchTurn = window.switchTurn;
         window.switchTurn = function() {
+            console.log('🔄 switchTurn called');
+            console.log('   multiplayerMode:', multiplayerMode);
+            console.log('   myPlayerColor:', myPlayerColor);
+            console.log('   currentPlayer:', currentPlayer);
+            
             if (multiplayerMode && myPlayerColor !== 'both') {
-                // Only allow turn switch if it's our turn (except in dev mode)
+                // In multiplayer, we can switch turns in two scenarios:
+                // 1. It's our turn (we just made a move and are ending our turn)
+                // 2. We're receiving an opponent's move (turn is already synced from server)
+                
+                // Since game:moveUpdate syncs the turn from server, 
+                // we only need to validate that the LOCAL player is switching their own turn
+                // (i.e., they just made a move and it's their turn)
+                
+                // If it's not our turn, we shouldn't be calling switchTurn locally
+                // (opponent moves are handled by game:moveUpdate which syncs turn directly)
                 if (currentPlayer !== myPlayerColor) {
-                    console.log('Not your turn!');
+                    console.log('⚠️ Not your turn! Cannot switch turns.');
+                    console.log('   You need to wait for opponent to move.');
                     return;
                 }
             }
+            
+            console.log('✅ Switching turn...');
             
             // Call original function
             if (originalSwitchTurn) {
                 originalSwitchTurn();
             }
+            
+            console.log('   Turn after switch:', currentPlayer);
             
             // Broadcast turn end in multiplayer (but not in dev mode)
             if (multiplayerMode && myPlayerColor !== 'both') {
@@ -21571,7 +22194,20 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             // In AI mode, player can ONLY play Black pieces
             if (aiEnabled && isWhite) return false;
             
-            // Return true if it's the current player's piece
+            // In multiplayer mode, check against myPlayerColor instead of currentPlayer
+            if (multiplayerMode && myPlayerColor && myPlayerColor !== 'both') {
+                // Player can only move their own pieces
+                const canMove = (myPlayerColor === 'white' && isWhite) || (myPlayerColor === 'black' && !isWhite);
+                console.log('🎮 Multiplayer piece check:', {
+                    myPlayerColor,
+                    isWhite,
+                    currentPlayer,
+                    canMove
+                });
+                return canMove;
+            }
+            
+            // In single player mode, return true if it's the current player's piece
             // Note: Board flip doesn't change piece ownership, only visual perspective
             return (currentPlayer === 'white' && isWhite) || (currentPlayer === 'black' && !isWhite);
         }
@@ -24707,6 +25343,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         
         // Function to auto-flip board based on current player
         function autoBoardFlip() {
+            // In multiplayer mode, don't auto-flip - player perspective is fixed
+            if (multiplayerMode && myPlayerColor && myPlayerColor !== 'both') {
+                console.log('🔄 Skipping auto-flip in multiplayer (fixed perspective)');
+                return;
+            }
+            
             const board = document.querySelector('.board');
             
             // White's turn: Flip board so white is at bottom
@@ -28605,6 +29247,15 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 piece.draggable = true;
                 
                 piece.addEventListener('dragstart', function(e) {
+                    // In multiplayer, check if it's our turn FIRST
+                    if (multiplayerMode && myPlayerColor && myPlayerColor !== 'both') {
+                        if (currentPlayer !== myPlayerColor) {
+                            e.preventDefault();
+                            console.log('❌ Not your turn! It\'s ' + currentPlayer + '\'s turn, you are ' + myPlayerColor);
+                            return;
+                        }
+                    }
+                    
                     // Check if it's the current player's turn and piece
                     if (gameOver || !isCurrentPlayerPiece(this)) {
                         e.preventDefault(); // Prevent drag if not current player's turn
@@ -30719,6 +31370,7 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 // IMPORTANT: Store userId and token for active games feature
                 localStorage.setItem('userId', guestData.user.id.toString());
                 localStorage.setItem('token', guestData.token);
+                localStorage.setItem('romgon-jwt', guestData.token); // Also store as romgon-jwt for room client compatibility
                 
                 console.log('✅ Guest account created:', guest);
                 console.log('✅ userId:', guestData.user.id);
@@ -31153,5 +31805,9 @@ ${moveHistory || '(No moves played yet - starting position)'}
 
     <!-- 🎮 Game Engine API - Enables external tools and AI systems to interact with the game -->
     <script src="romgon-engine-api.js"></script>
+
+    <!-- 🤖 Elfsight AI Chatbot - Free AI assistant with 50 messages -->
+    <script src="https://elfsightcdn.com/platform.js" async></script>
+    <div class="elfsight-app-2c2d7ab6-4233-413f-8115-bbe516bef732" data-elfsight-app-lazy></div>
 </body>
 </html>
