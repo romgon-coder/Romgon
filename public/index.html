@@ -12913,41 +12913,41 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             right: 100px;
             background: rgba(0, 0, 0, 0.95);
             border: 2px solid rgba(255, 121, 198, 0.5);
-            border-radius: 15px;
+            border-radius: 10px;
             padding: 0;
             z-index: 1000;
             display: none;
-            width: 320px;
-            height: 450px;
+            width: 280px;
+            height: 380px;
             resize: both;
             overflow: hidden;
-            max-width: 500px;
-            max-height: 80vh;
-            min-width: 250px;
-            min-height: 300px;
+            max-width: 400px;
+            max-height: 70vh;
+            min-width: 220px;
+            min-height: 250px;
         " id="chat-panel">
             <!-- Draggable Header -->
             <div class="chat-panel-header" style="
                 display: flex; 
                 justify-content: space-between; 
                 align-items: center; 
-                padding: 12px 15px; 
+                padding: 8px 10px; 
                 background: rgba(255, 121, 198, 0.1); 
-                border-radius: 15px 15px 0 0; 
+                border-radius: 10px 10px 0 0; 
                 cursor: move; 
                 user-select: none;
                 border-bottom: 1px solid rgba(255, 121, 198, 0.2);
             ">
-                <div style="color: #ff79c6; font-weight: bold;">💬 Game Chat</div>
+                <div style="color: #ff79c6; font-weight: bold; font-size: 13px;">💬 Chat</div>
                 <button onclick="closeChatPanel()" style="
                     background: rgba(255, 121, 198, 0.2);
                     border: 1px solid #ff79c6;
                     border-radius: 50%;
-                    width: 24px;
-                    height: 24px;
+                    width: 20px;
+                    height: 20px;
                     color: #ff79c6;
                     cursor: pointer;
-                    font-size: 14px;
+                    font-size: 12px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -12957,45 +12957,45 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             <!-- Chat Messages Area -->
             <div id="chat-messages" style="
-                height: calc(100% - 110px);
+                height: calc(100% - 82px);
                 overflow-y: auto;
-                padding: 15px;
+                padding: 8px;
                 display: flex;
                 flex-direction: column;
-                gap: 10px;
+                gap: 6px;
             ">
                 <!-- Messages will appear here -->
-                <div style="color: #888; font-size: 12px; text-align: center; padding: 20px;">
+                <div style="color: #888; font-size: 11px; text-align: center; padding: 10px;">
                     No messages yet. Start chatting!
                 </div>
             </div>
             
             <!-- Chat Input Area -->
             <div style="
-                padding: 12px;
+                padding: 8px;
                 border-top: 1px solid rgba(255, 121, 198, 0.2);
                 background: rgba(0, 0, 0, 0.5);
             ">
-                <div style="display: flex; gap: 8px;">
-                    <input type="text" id="chat-input" placeholder="Type a message..." style="
+                <div style="display: flex; gap: 6px;">
+                    <input type="text" id="chat-input" placeholder="Type message..." style="
                         flex: 1;
                         background: rgba(255, 255, 255, 0.1);
                         border: 1px solid rgba(255, 121, 198, 0.3);
-                        border-radius: 8px;
-                        padding: 8px 12px;
+                        border-radius: 6px;
+                        padding: 6px 8px;
                         color: white;
-                        font-size: 13px;
+                        font-size: 12px;
                         outline: none;
                     " onkeypress="if(event.key==='Enter') sendChatMessage()">
                     <button onclick="sendChatMessage()" style="
                         background: rgba(255, 121, 198, 0.3);
                         border: 1px solid #ff79c6;
-                        border-radius: 8px;
-                        padding: 8px 16px;
+                        border-radius: 6px;
+                        padding: 6px 12px;
                         color: #ff79c6;
                         cursor: pointer;
                         font-weight: bold;
-                        font-size: 13px;
+                        font-size: 12px;
                     ">Send</button>
                 </div>
             </div>
@@ -13503,26 +13503,26 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             // Create message element
             const messageDiv = document.createElement('div');
             messageDiv.style.cssText = `
-                padding: 8px 12px;
-                border-radius: 8px;
+                padding: 6px 10px;
+                border-radius: 6px;
                 background: ${isOwn ? 'rgba(255, 121, 198, 0.2)' : 'rgba(78, 205, 196, 0.2)'};
                 border: 1px solid ${isOwn ? 'rgba(255, 121, 198, 0.3)' : 'rgba(78, 205, 196, 0.3)'};
-                margin-bottom: 8px;
+                margin-bottom: 5px;
             `;
             
             const senderSpan = document.createElement('div');
             senderSpan.style.cssText = `
                 color: ${isOwn ? '#ff79c6' : '#4ecdc4'};
                 font-weight: bold;
-                font-size: 11px;
-                margin-bottom: 3px;
+                font-size: 10px;
+                margin-bottom: 2px;
             `;
             senderSpan.textContent = sender;
             
             const textSpan = document.createElement('div');
             textSpan.style.cssText = `
                 color: #ffffff;
-                font-size: 13px;
+                font-size: 12px;
                 word-wrap: break-word;
             `;
             textSpan.textContent = text;
