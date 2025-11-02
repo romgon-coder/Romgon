@@ -7,6 +7,7 @@ const router = express.Router();
 const { dbPromise } = require('../config/database');
 const { authenticateToken } = require('../utils/auth');
 const { v4: uuidv4 } = require('uuid');
+const jwt = require('jsonwebtoken');
 
 // In-memory room storage (for quick access)
 // In production, consider using Redis
@@ -234,6 +235,17 @@ router.post('/join/guest', async (req, res) => {
         const guestId = 'guest_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
         const guestUsername = guestName || ('Guest_' + Math.random().toString(36).substring(2, 6).toUpperCase());
 
+        // Create a JWT token for the guest
+        const guestToken = jwt.sign(
+            {
+                userId: guestId,
+                username: guestUsername,
+                isGuest: true
+            },
+            process.env.JWT_SECRET || 'romgon-secret-key-change-in-production',
+            { expiresIn: '24h' }
+        );
+
         // Assign color based on join order
         let playerColor;
         if (room.players.length === 0) {
@@ -266,7 +278,8 @@ router.post('/join/guest', async (req, res) => {
             },
             guestInfo: {
                 guestId,
-                guestUsername
+                guestUsername,
+                token: guestToken  // Add the JWT token
             }
         });
     } catch (error) {

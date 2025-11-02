@@ -20691,8 +20691,13 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 
                 console.log('✅ Joined as guest:', data.guestInfo);
                 
-                // Store guest info temporarily
+                // Store guest info and token
                 localStorage.setItem('romgon-guest-info', JSON.stringify(data.guestInfo));
+                localStorage.setItem('romgon-jwt', data.guestInfo.token);  // Store token for room operations
+                localStorage.setItem('token', data.guestInfo.token);  // Also store as 'token'
+                localStorage.setItem('userId', data.guestInfo.guestId);  // Store userId
+                
+                console.log('✅ Guest token stored for ready button');
                 
                 // Show waiting room
                 showView('mp-waiting-room');
