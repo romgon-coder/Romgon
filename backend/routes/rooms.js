@@ -114,6 +114,23 @@ router.post('/join', authenticateToken, async (req, res) => {
             });
         }
 
+        // Remove player from ANY other rooms first
+        for (const [code, r] of activeRooms.entries()) {
+            if (code !== roomCode.toUpperCase()) {
+                const playerIndex = r.players.findIndex(p => p.userId === userId);
+                if (playerIndex !== -1) {
+                    r.players.splice(playerIndex, 1);
+                    console.log(`👋 Removed ${username} from room ${code} before joining new room`);
+                    
+                    // Clean up empty non-permanent rooms
+                    if (!r.isPermanent && r.players.length === 0) {
+                        activeRooms.delete(code);
+                        console.log(`🗑️ Deleted empty room ${code}`);
+                    }
+                }
+            }
+        }
+
         // If player is already in this room, just return the room info
         if (room.players.some(p => p.userId === userId)) {
             console.log(`👤 ${username} is already in room ${roomCode}, returning room info`);
