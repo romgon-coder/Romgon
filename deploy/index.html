@@ -12906,6 +12906,101 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             </div>
         </div>
         
+        <!-- Chat Panel -->
+        <div class="chat-panel" style="
+            position: fixed;
+            bottom: 20px;
+            right: 100px;
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid rgba(255, 121, 198, 0.5);
+            border-radius: 15px;
+            padding: 0;
+            z-index: 1000;
+            display: none;
+            width: 320px;
+            height: 450px;
+            resize: both;
+            overflow: hidden;
+            max-width: 500px;
+            max-height: 80vh;
+            min-width: 250px;
+            min-height: 300px;
+        " id="chat-panel">
+            <!-- Draggable Header -->
+            <div class="chat-panel-header" style="
+                display: flex; 
+                justify-content: space-between; 
+                align-items: center; 
+                padding: 12px 15px; 
+                background: rgba(255, 121, 198, 0.1); 
+                border-radius: 15px 15px 0 0; 
+                cursor: move; 
+                user-select: none;
+                border-bottom: 1px solid rgba(255, 121, 198, 0.2);
+            ">
+                <div style="color: #ff79c6; font-weight: bold;">💬 Game Chat</div>
+                <button onclick="closeChatPanel()" style="
+                    background: rgba(255, 121, 198, 0.2);
+                    border: 1px solid #ff79c6;
+                    border-radius: 50%;
+                    width: 24px;
+                    height: 24px;
+                    color: #ff79c6;
+                    cursor: pointer;
+                    font-size: 14px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 0;
+                " title="Close chat">✕</button>
+            </div>
+            
+            <!-- Chat Messages Area -->
+            <div id="chat-messages" style="
+                height: calc(100% - 110px);
+                overflow-y: auto;
+                padding: 15px;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            ">
+                <!-- Messages will appear here -->
+                <div style="color: #888; font-size: 12px; text-align: center; padding: 20px;">
+                    No messages yet. Start chatting!
+                </div>
+            </div>
+            
+            <!-- Chat Input Area -->
+            <div style="
+                padding: 12px;
+                border-top: 1px solid rgba(255, 121, 198, 0.2);
+                background: rgba(0, 0, 0, 0.5);
+            ">
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="chat-input" placeholder="Type a message..." style="
+                        flex: 1;
+                        background: rgba(255, 255, 255, 0.1);
+                        border: 1px solid rgba(255, 121, 198, 0.3);
+                        border-radius: 8px;
+                        padding: 8px 12px;
+                        color: white;
+                        font-size: 13px;
+                        outline: none;
+                    " onkeypress="if(event.key==='Enter') sendChatMessage()">
+                    <button onclick="sendChatMessage()" style="
+                        background: rgba(255, 121, 198, 0.3);
+                        border: 1px solid #ff79c6;
+                        border-radius: 8px;
+                        padding: 8px 16px;
+                        color: #ff79c6;
+                        cursor: pointer;
+                        font-weight: bold;
+                        font-size: 13px;
+                    ">Send</button>
+                </div>
+            </div>
+        </div>
+        
         <!-- 3D Camera Toggle Button -->
         <button onclick="toggleCamera3D()" id="camera-toggle-btn" style="
             position: fixed;
@@ -12924,6 +13019,26 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             transition: all 0.3s ease;
         " title="Toggle 3D Camera">
             🎥
+        </button>
+        
+        <!-- Chat Toggle Button (Above Camera) -->
+        <button onclick="toggleChatPanel()" id="chat-toggle-btn" style="
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 121, 198, 0.9);
+            border: 2px solid #ff79c6;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 999;
+            box-shadow: 0 4px 15px rgba(255, 121, 198, 0.4);
+            transition: all 0.3s ease;
+        " title="Toggle Chat">
+            💬
         </button>
         
         <!-- 3D Camera Wrapper -->
@@ -13326,6 +13441,138 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         
         // ============================================
         // END 3D CAMERA SYSTEM
+        // ============================================
+        
+        // ============================================
+        // CHAT SYSTEM
+        // ============================================
+        
+        let chatPanelVisible = false;
+        let chatMessages = [];
+        
+        function toggleChatPanel() {
+            const panel = document.getElementById('chat-panel');
+            const toggleBtn = document.getElementById('chat-toggle-btn');
+            
+            chatPanelVisible = !chatPanelVisible;
+            panel.style.display = chatPanelVisible ? 'block' : 'none';
+            
+            if (chatPanelVisible) {
+                toggleBtn.style.background = 'rgba(255, 121, 198, 0.9)';
+                toggleBtn.style.borderColor = '#ff79c6';
+                // Focus the input
+                setTimeout(() => document.getElementById('chat-input').focus(), 100);
+            } else {
+                toggleBtn.style.background = 'rgba(255, 121, 198, 0.9)';
+                toggleBtn.style.borderColor = '#ff79c6';
+            }
+        }
+        
+        function closeChatPanel() {
+            chatPanelVisible = false;
+            document.getElementById('chat-panel').style.display = 'none';
+        }
+        
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add message to chat
+            addChatMessage(message, 'You', true);
+            
+            // Clear input
+            input.value = '';
+            input.focus();
+            
+            // TODO: Send to opponent via multiplayer system
+            // For now, just local display
+        }
+        
+        function addChatMessage(text, sender, isOwn = false) {
+            const messagesContainer = document.getElementById('chat-messages');
+            
+            // Remove "no messages" placeholder
+            if (chatMessages.length === 0) {
+                messagesContainer.innerHTML = '';
+            }
+            
+            chatMessages.push({ text, sender, isOwn, timestamp: Date.now() });
+            
+            // Create message element
+            const messageDiv = document.createElement('div');
+            messageDiv.style.cssText = `
+                padding: 8px 12px;
+                border-radius: 8px;
+                background: ${isOwn ? 'rgba(255, 121, 198, 0.2)' : 'rgba(78, 205, 196, 0.2)'};
+                border: 1px solid ${isOwn ? 'rgba(255, 121, 198, 0.3)' : 'rgba(78, 205, 196, 0.3)'};
+                margin-bottom: 8px;
+            `;
+            
+            const senderSpan = document.createElement('div');
+            senderSpan.style.cssText = `
+                color: ${isOwn ? '#ff79c6' : '#4ecdc4'};
+                font-weight: bold;
+                font-size: 11px;
+                margin-bottom: 3px;
+            `;
+            senderSpan.textContent = sender;
+            
+            const textSpan = document.createElement('div');
+            textSpan.style.cssText = `
+                color: #ffffff;
+                font-size: 13px;
+                word-wrap: break-word;
+            `;
+            textSpan.textContent = text;
+            
+            messageDiv.appendChild(senderSpan);
+            messageDiv.appendChild(textSpan);
+            messagesContainer.appendChild(messageDiv);
+            
+            // Auto-scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // Make chat panel draggable
+        window.addEventListener('DOMContentLoaded', () => {
+            const chatPanel = document.getElementById('chat-panel');
+            const chatHeader = chatPanel.querySelector('.chat-panel-header');
+            
+            let isDraggingChat = false;
+            let chatInitialX, chatInitialY, chatCurrentX, chatCurrentY;
+            
+            chatHeader.addEventListener('mousedown', function(e) {
+                isDraggingChat = true;
+                chatInitialX = e.clientX - chatPanel.offsetLeft;
+                chatInitialY = e.clientY - chatPanel.offsetTop;
+                chatHeader.style.cursor = 'grabbing';
+            });
+            
+            document.addEventListener('mousemove', function(e) {
+                if (isDraggingChat) {
+                    e.preventDefault();
+                    chatCurrentX = e.clientX - chatInitialX;
+                    chatCurrentY = e.clientY - chatInitialY;
+                    
+                    chatPanel.style.left = chatCurrentX + 'px';
+                    chatPanel.style.top = chatCurrentY + 'px';
+                    chatPanel.style.bottom = 'auto';
+                    chatPanel.style.right = 'auto';
+                }
+            });
+            
+            document.addEventListener('mouseup', function() {
+                if (isDraggingChat) {
+                    isDraggingChat = false;
+                    chatHeader.style.cursor = 'move';
+                }
+            });
+        });
+        
+        // ============================================
+        // END CHAT SYSTEM
         // ============================================
     
     </script>
