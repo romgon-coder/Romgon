@@ -429,10 +429,18 @@ router.post('/:roomCode/ready', authenticateToken, async (req, res) => {
             const whitePlayer = room.players.find(p => p.color === 'white');
             const blackPlayer = room.players.find(p => p.color === 'black');
 
-            await dbPromise.run(`
-                INSERT INTO games (id, white_player_id, black_player_id, status, moves, start_time)
-                VALUES (?, ?, ?, 'active', '[]', datetime('now'))
-            `, [gameId, whitePlayer.userId, blackPlayer.userId]);
+            try {
+                await dbPromise.run(`
+                    INSERT INTO games (id, white_player_id, black_player_id, status, moves, start_time)
+                    VALUES (?, ?, ?, 'active', '[]', datetime('now'))
+                `, [gameId, whitePlayer.userId, blackPlayer.userId]);
+                
+                console.log(`✅ Game created in database: ${gameId}`);
+            } catch (dbError) {
+                console.error('❌ Database error creating game:', dbError);
+                console.log('⚠️ Continuing without database entry (guest players may not be in users table)');
+                // Continue even if DB insert fails (e.g., for guest players)
+            }
 
             room.gameId = gameId;
             room.status = 'active';
