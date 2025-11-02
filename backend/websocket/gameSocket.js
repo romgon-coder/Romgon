@@ -246,40 +246,58 @@ function setupSocketHandlers(io) {
 
             try {
                 // Get updated game state
+                console.log(`🔍 Looking up game ${gameId} in database...`);
                 const game = await db.get('SELECT * FROM games WHERE id = ?', [gameId]);
                 
-                if (game) {
-                    const moves = JSON.parse(game.moves || '[]');
-                    // In Romgon, BLACK moves first
-                    // Move 0 (even) = black's turn, Move 1 (odd) = white's turn
-                    // After a move is made, it becomes the opponent's turn
-                    const isBlackTurn = moves.length % 2 === 0;
-
-                    console.log(`   Total moves before this: ${moves.length}`);
-                    console.log(`   Turn after this move: ${isBlackTurn ? 'black' : 'white'}`);
-
-                    // Broadcast to all players in game
-                    console.log(`📢 Broadcasting move to game-${gameId}`);
+                if (!game) {
+                    console.error(`❌ Game ${gameId} not found in database!`);
+                    console.log(`⚠️ Broadcasting move anyway without database info`);
+                    
+                    // Broadcast anyway even if game not in DB (for guest games)
                     gameNamespace.to(`game-${gameId}`).emit('game:moveUpdate', {
                         gameId,
                         move,
                         userId,
-                        moveCount: game.total_moves,
-                        turn: isBlackTurn ? 'black' : 'white',
+                        moveCount: 0,
+                        turn: 'white', // Default to white's turn after first move
                         timestamp: new Date().toISOString()
                     });
-
-                    console.log(`✅ Move broadcast complete`);
-
-                    // Notify lobby of updated game state
-                    io.of('/').emit('lobby:gameUpdate', {
-                        gameId,
-                        moveCount: game.total_moves,
-                        updatedAt: game.updated_at
-                    });
+                    
+                    console.log(`✅ Move broadcast complete (no DB entry)`);
+                    return;
                 }
+                
+                console.log(`✅ Game found in database`);
+                const moves = JSON.parse(game.moves || '[]');
+                // In Romgon, BLACK moves first
+                // Move 0 (even) = black's turn, Move 1 (odd) = white's turn
+                // After a move is made, it becomes the opponent's turn
+                const isBlackTurn = moves.length % 2 === 0;
+
+                console.log(`   Total moves before this: ${moves.length}`);
+                console.log(`   Turn after this move: ${isBlackTurn ? 'black' : 'white'}`);
+
+                // Broadcast to all players in game
+                console.log(`📢 Broadcasting move to game-${gameId}`);
+                gameNamespace.to(`game-${gameId}`).emit('game:moveUpdate', {
+                    gameId,
+                    move,
+                    userId,
+                    moveCount: game.total_moves,
+                    turn: isBlackTurn ? 'black' : 'white',
+                    timestamp: new Date().toISOString()
+                });
+
+                console.log(`✅ Move broadcast complete`);
+
+                // Notify lobby of updated game state
+                io.of('/').emit('lobby:gameUpdate', {
+                    gameId,
+                    moveCount: game.total_moves,
+                    updatedAt: game.updated_at
+                });
             } catch (error) {
-                console.error('Error broadcasting move:', error);
+                console.error('❌ Error broadcasting move:', error);
                 socket.emit('game:error', { error: error.message });
             }
         });
