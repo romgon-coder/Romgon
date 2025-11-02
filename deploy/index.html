@@ -22128,7 +22128,20 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             // In AI mode, player can ONLY play Black pieces
             if (aiEnabled && isWhite) return false;
             
-            // Return true if it's the current player's piece
+            // In multiplayer mode, check against myPlayerColor instead of currentPlayer
+            if (multiplayerMode && myPlayerColor && myPlayerColor !== 'both') {
+                // Player can only move their own pieces
+                const canMove = (myPlayerColor === 'white' && isWhite) || (myPlayerColor === 'black' && !isWhite);
+                console.log('🎮 Multiplayer piece check:', {
+                    myPlayerColor,
+                    isWhite,
+                    currentPlayer,
+                    canMove
+                });
+                return canMove;
+            }
+            
+            // In single player mode, return true if it's the current player's piece
             // Note: Board flip doesn't change piece ownership, only visual perspective
             return (currentPlayer === 'white' && isWhite) || (currentPlayer === 'black' && !isWhite);
         }
@@ -29162,6 +29175,15 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 piece.draggable = true;
                 
                 piece.addEventListener('dragstart', function(e) {
+                    // In multiplayer, check if it's our turn FIRST
+                    if (multiplayerMode && myPlayerColor && myPlayerColor !== 'both') {
+                        if (currentPlayer !== myPlayerColor) {
+                            e.preventDefault();
+                            console.log('❌ Not your turn! It\'s ' + currentPlayer + '\'s turn, you are ' + myPlayerColor);
+                            return;
+                        }
+                    }
+                    
                     // Check if it's the current player's turn and piece
                     if (gameOver || !isCurrentPlayerPiece(this)) {
                         e.preventDefault(); // Prevent drag if not current player's turn
