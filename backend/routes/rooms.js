@@ -242,7 +242,7 @@ router.post('/join/guest', async (req, res) => {
                 username: guestUsername,
                 isGuest: true
             },
-            process.env.JWT_SECRET || 'romgon-secret-key-change-in-production',
+            process.env.JWT_SECRET || 'your-secret-key-change-in-production',
             { expiresIn: '24h' }
         );
 
