@@ -20882,7 +20882,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
 
             // Hide start menu and show game board
             document.getElementById('start-menu').style.display = 'none';
-            hideGlobalAccountBar();
+            showGlobalAccountBar(); // Show the top bar for multiplayer
             document.getElementById('board-display-container').style.display = 'block';
             gameInProgress = true;
 
@@ -20896,6 +20896,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             clearMoveRepetitions();
             clearCoordinateLabels();
             highlightThreatenedPieces();
+            
+            // Update global bar to show current turn
+            updateTurnDisplay();
         }
         
         function updateConnectionStatus(status, text) {
