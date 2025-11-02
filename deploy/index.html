@@ -20699,6 +20699,29 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 
                 console.log('✅ Guest token stored for ready button');
                 
+                // Setup WebSocket event handlers for room updates
+                if (!roomClient.socket || !roomClient.socket.connected) {
+                    await roomClient.connect();
+                }
+                
+                // Join the room via WebSocket
+                roomClient.currentRoom = data.room;
+                roomClient.socket.emit('room:join', { roomCode: data.room.code });
+                
+                // Setup room event handlers
+                roomClient.onPlayerReady = (eventData) => {
+                    console.log('✅ Player ready:', eventData);
+                    if (eventData.players) {
+                        updateWaitingRoomPlayers(eventData.players);
+                    }
+                };
+
+                roomClient.onGameStarted = (eventData) => {
+                    console.log('🎮 Game starting!', eventData);
+                    closeMultiplayerModal();
+                    startMultiplayerGame(eventData.gameId);
+                };
+                
                 // Show waiting room
                 showView('mp-waiting-room');
                 document.getElementById('waiting-room-code').textContent = data.room.code;
