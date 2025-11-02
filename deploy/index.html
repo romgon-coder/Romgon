@@ -18523,6 +18523,24 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 gameSocket.on('game:moveUpdate', (data) => {
                     console.log('🎯 Move update received:', data);
                     
+                    // Get my user ID to check if this is my own move
+                    const token = localStorage.getItem('romgon-jwt');
+                    if (token) {
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        if (data.userId === payload.userId) {
+                            console.log('⏭️ Skipping my own move (already applied locally)');
+                            
+                            // But still sync the turn from server
+                            if (data.turn) {
+                                currentPlayer = data.turn;
+                                console.log('🔄 Turn synchronized to:', currentPlayer);
+                                updateTurnDisplay();
+                            }
+                            
+                            return; // Don't apply our own moves again
+                        }
+                    }
+                    
                     // Apply the opponent's move to our board
                     if (data.move && multiplayerMode) {
                         const { from, to, piece, captured, triangleOrientation, hexgonOrientation } = data.move;
@@ -18530,15 +18548,25 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         console.log('🔄 Applying opponent move:', from, '→', to);
                         console.log('🔄 Turn from server:', data.turn);
                         console.log('🔄 Current local turn before update:', currentPlayer);
+                        console.log('🔄 My color:', myPlayerColor);
+                        console.log('🔄 Move by userId:', data.userId);
                         
                         const fromHex = document.getElementById(from);
                         const toHex = document.getElementById(to);
+                        
+                        if (!fromHex || !toHex) {
+                            console.error('❌ Could not find hexes:', from, to);
+                            return;
+                        }
                         
                         if (fromHex && toHex) {
                             // Remove piece from source
                             const movingPiece = fromHex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
                             if (movingPiece) {
+                                console.log('✅ Found moving piece:', movingPiece.className);
                                 movingPiece.remove();
+                            } else {
+                                console.warn('⚠️ No piece found at source hex:', from);
                             }
                             
                             // Remove captured piece from destination if any
@@ -18548,6 +18576,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                                     addToEliminatedPieces(capturedPiece);
                                     capturedPiece.remove();
                                     playCapturedSound();
+                                    console.log('✅ Captured piece removed');
                                 }
                             }
                             
@@ -18556,6 +18585,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                             newPiece.className = piece;
                             newPiece.draggable = true;
                             toHex.appendChild(newPiece);
+                            console.log('✅ Created new piece at destination:', to, 'with classes:', piece);
                             
                             // Restore orientations for triangles/hexagons
                             if (triangleOrientation !== undefined && triangleOrientation !== null) {
@@ -18573,6 +18603,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                             if (data.turn) {
                                 currentPlayer = data.turn;
                                 console.log('🔄 Turn synchronized to:', currentPlayer);
+                                console.log('🔄 Is it my turn now?', currentPlayer === myPlayerColor);
                             }
                             updateTurnDisplay();
                             
@@ -18581,6 +18612,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                             highlightThreatenedPieces();
                             
                             playMoveSound();
+                            console.log('✅ Move applied successfully!');
                         }
                     }
                     
@@ -20801,6 +20833,13 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
 
                 roomClient.onGameStarted = (data) => {
                     console.log('🎮 Game starting!', data);
+                    
+                    // Update room with latest player data if provided
+                    if (data.players && Array.isArray(data.players)) {
+                        roomClient.currentRoom.players = data.players;
+                        console.log('📝 Updated room players:', roomClient.currentRoom.players);
+                    }
+                    
                     closeMultiplayerModal();
                     startMultiplayerGame(data.gameId);
                 };
@@ -20852,6 +20891,13 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
 
                     roomClient.onGameStarted = (data) => {
                         console.log('🎮 Game starting!', data);
+                        
+                        // Update room with latest player data if provided
+                        if (data.players && Array.isArray(data.players)) {
+                            roomClient.currentRoom.players = data.players;
+                            console.log('📝 Updated room players:', roomClient.currentRoom.players);
+                        }
+                        
                         closeMultiplayerModal();
                         startMultiplayerGame(data.gameId);
                     };
@@ -20991,6 +21037,13 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
 
                 roomClient.onGameStarted = (eventData) => {
                     console.log('🎮 Game starting!', eventData);
+                    
+                    // Update room with latest player data if provided
+                    if (eventData.players && Array.isArray(eventData.players)) {
+                        roomClient.currentRoom.players = eventData.players;
+                        console.log('📝 Updated room players:', roomClient.currentRoom.players);
+                    }
+                    
                     closeMultiplayerModal();
                     startMultiplayerGame(eventData.gameId);
                 };
@@ -21094,6 +21147,13 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
 
                 roomClient.onGameStarted = (data) => {
                     console.log('🎮 Game starting!', data);
+                    
+                    // Update room with latest player data if provided
+                    if (data.players && Array.isArray(data.players)) {
+                        roomClient.currentRoom.players = data.players;
+                        console.log('📝 Updated room players:', roomClient.currentRoom.players);
+                    }
+                    
                     closeMultiplayerModal();
                     startMultiplayerGame(data.gameId);
                 };
@@ -21165,6 +21225,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
 
         function startMultiplayerGame(gameId) {
             console.log('🎮 Starting multiplayer game:', gameId);
+            console.log('🔍 Room data:', roomClient.currentRoom);
             
             multiplayerMode = true;
             
@@ -21172,12 +21233,21 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             if (roomClient.currentRoom && roomClient.currentRoom.players) {
                 const token = localStorage.getItem('romgon-jwt');
                 const payload = JSON.parse(atob(token.split('.')[1]));
+                console.log('👤 My userId:', payload.userId);
+                console.log('👥 Players in room:', roomClient.currentRoom.players);
+                
                 const myPlayer = roomClient.currentRoom.players.find(p => p.userId === payload.userId);
                 
                 if (myPlayer) {
                     myPlayerColor = myPlayer.color;
-                    console.log('👤 You are playing as:', myPlayerColor);
+                    console.log('✅ You are playing as:', myPlayerColor);
+                } else {
+                    console.error('❌ Could not find my player in room! Using default black');
+                    myPlayerColor = 'black'; // Fallback
                 }
+            } else {
+                console.error('❌ No room data available! Using default black');
+                myPlayerColor = 'black'; // Fallback
             }
 
             // Ensure gameSocket is initialized and wait for connection
@@ -21292,16 +21362,33 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         }
         
         function broadcastMove(fromId, toId, pieceClasses, captured) {
+            console.log('🔍 broadcastMove called');
+            console.log('   multiplayerMode:', multiplayerMode);
+            console.log('   gameSocket:', gameSocket ? 'exists' : 'null');
+            console.log('   gameSocket.connected:', gameSocket?.connected);
+            console.log('   myPlayerColor:', myPlayerColor);
+            
             // Don't broadcast in dev mode or if no socket
-            if (!multiplayerMode || !gameSocket || !gameSocket.connected || myPlayerColor === 'both') return;
+            if (!multiplayerMode || !gameSocket || !gameSocket.connected || myPlayerColor === 'both') {
+                console.log('❌ Not broadcasting - conditions not met');
+                return;
+            }
             
             const token = localStorage.getItem('romgon-jwt') || localStorage.getItem('token');
-            if (!token) return;
+            if (!token) {
+                console.log('❌ No token found');
+                return;
+            }
             
             const payload = JSON.parse(atob(token.split('.')[1]));
             const gameId = roomClient.currentRoom?.id || 'unknown';
             
-            console.log('📤 Broadcasting move:', { fromId, toId, pieceClasses, captured });
+            console.log('📤 Broadcasting move to gameSocket');
+            console.log('   gameId:', gameId);
+            console.log('   userId:', payload.userId);
+            console.log('   from:', fromId, '→ to:', toId);
+            console.log('   piece:', pieceClasses);
+            console.log('   captured:', captured || 'none');
             
             gameSocket.emit('game:move', {
                 gameId: gameId,
@@ -21315,6 +21402,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     hexgonOrientation: hexgonOrientations.get(toId)
                 }
             });
+            
+            console.log('✅ Move emitted to server');
         }
         
         function broadcastTurnEnd() {
@@ -21406,18 +21495,37 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         // Override switchTurn to broadcast in multiplayer
         const originalSwitchTurn = window.switchTurn;
         window.switchTurn = function() {
+            console.log('🔄 switchTurn called');
+            console.log('   multiplayerMode:', multiplayerMode);
+            console.log('   myPlayerColor:', myPlayerColor);
+            console.log('   currentPlayer:', currentPlayer);
+            
             if (multiplayerMode && myPlayerColor !== 'both') {
-                // Only allow turn switch if it's our turn (except in dev mode)
+                // In multiplayer, we can switch turns in two scenarios:
+                // 1. It's our turn (we just made a move and are ending our turn)
+                // 2. We're receiving an opponent's move (turn is already synced from server)
+                
+                // Since game:moveUpdate syncs the turn from server, 
+                // we only need to validate that the LOCAL player is switching their own turn
+                // (i.e., they just made a move and it's their turn)
+                
+                // If it's not our turn, we shouldn't be calling switchTurn locally
+                // (opponent moves are handled by game:moveUpdate which syncs turn directly)
                 if (currentPlayer !== myPlayerColor) {
-                    console.log('Not your turn!');
+                    console.log('⚠️ Not your turn! Cannot switch turns.');
+                    console.log('   You need to wait for opponent to move.');
                     return;
                 }
             }
+            
+            console.log('✅ Switching turn...');
             
             // Call original function
             if (originalSwitchTurn) {
                 originalSwitchTurn();
             }
+            
+            console.log('   Turn after switch:', currentPlayer);
             
             // Broadcast turn end in multiplayer (but not in dev mode)
             if (multiplayerMode && myPlayerColor !== 'both') {

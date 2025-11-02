@@ -135,12 +135,27 @@ function setupSocketHandlers(io) {
         // Game started in room
         socket.on('room:gameStarted', (data) => {
             const { roomCode, gameId } = data;
+            console.log(`🎮 room:gameStarted event received for room ${roomCode}, game ${gameId}`);
             
-            // Notify all in room
+            // Get room data to send player information
+            const room = activeRooms?.get(roomCode.toUpperCase());
+            
+            if (!room) {
+                console.error(`❌ Room ${roomCode} not found in activeRooms`);
+                console.log('Available rooms:', Array.from(activeRooms.keys()));
+            } else {
+                console.log(`✅ Found room ${roomCode} with ${room.players.length} players`);
+            }
+            
+            // Notify all in room with player information
             gameNamespace.to(`room-${roomCode}`).emit('room:gameStarted', {
                 gameId,
+                players: room ? room.players : [],
+                roomCode,
                 timestamp: new Date().toISOString()
             });
+            
+            console.log(`📢 Game started event emitted for room ${roomCode}, game ${gameId}`);
         });
 
         // ============================================
@@ -224,7 +239,10 @@ function setupSocketHandlers(io) {
         socket.on('game:move', async (data) => {
             const { gameId, move, userId } = data;
 
-            console.log(`🎯 Move in game ${gameId} by ${userId}:`, move);
+            console.log(`🎯 Move received in game ${gameId} by user ${userId}`);
+            console.log(`   From: ${move.from} → To: ${move.to}`);
+            console.log(`   Piece: ${move.piece}`);
+            console.log(`   Captured: ${move.captured || 'none'}`);
 
             try {
                 // Get updated game state
@@ -237,7 +255,11 @@ function setupSocketHandlers(io) {
                     // After a move is made, it becomes the opponent's turn
                     const isBlackTurn = moves.length % 2 === 0;
 
+                    console.log(`   Total moves before this: ${moves.length}`);
+                    console.log(`   Turn after this move: ${isBlackTurn ? 'black' : 'white'}`);
+
                     // Broadcast to all players in game
+                    console.log(`📢 Broadcasting move to game-${gameId}`);
                     gameNamespace.to(`game-${gameId}`).emit('game:moveUpdate', {
                         gameId,
                         move,
@@ -246,6 +268,8 @@ function setupSocketHandlers(io) {
                         turn: isBlackTurn ? 'black' : 'white',
                         timestamp: new Date().toISOString()
                     });
+
+                    console.log(`✅ Move broadcast complete`);
 
                     // Notify lobby of updated game state
                     io.of('/').emit('lobby:gameUpdate', {
