@@ -10605,7 +10605,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             <div id="room-info" style="display: none;">
                 Room: <span id="current-room-code" style="color: #4ecdc4; font-weight: bold;">------</span>
             </div>
-            <div id="player-role">Role: <span id="player-color-display" style="font-weight: bold;">-</span></div>
+            <div id="player-role">You: <span id="player-color-display" style="font-weight: bold;">-</span></div>
         </div>
     </div>
 
@@ -18514,6 +18514,17 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     playMessageSound(); // Play notification sound
                 });
                 
+                // Listen for opponent joining the game
+                gameSocket.on('game:playerJoined', (data) => {
+                    console.log('👤 Opponent joined game:', data);
+                    if (multiplayerMode && data.username) {
+                        // Get opponent color (opposite of mine)
+                        const opponentColor = myPlayerColor === 'white' ? 'Black' : 'White';
+                        // Update status to show opponent
+                        updateConnectionStatus('connected', `vs ${data.username} (${opponentColor})`);
+                    }
+                });
+                
                 console.log('✅ Game socket initialized');
             } catch (error) {
                 console.error('❌ Failed to initialize game socket:', error);
@@ -20976,7 +20987,16 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             document.getElementById('multiplayer-status').style.display = 'block';
             document.getElementById('room-info').style.display = 'block';
             document.getElementById('current-room-code').textContent = roomClient.currentRoom?.code || gameId.slice(0, 6);
-            document.getElementById('player-color-display').textContent = myPlayerColor || 'Unknown';
+            
+            // Display player info with username
+            const token = localStorage.getItem('romgon-jwt');
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const myUsername = payload.username || 'You';
+            const colorDisplay = myPlayerColor ? myPlayerColor.charAt(0).toUpperCase() + myPlayerColor.slice(1) : 'Unknown';
+            document.getElementById('player-color-display').textContent = `${myUsername} (${colorDisplay})`;
+            
+            // Update connection status
+            updateConnectionStatus('connected', 'Connected');
 
             // Hide start menu and show game board
             document.getElementById('start-menu').style.display = 'none';

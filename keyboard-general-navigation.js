@@ -74,6 +74,9 @@ class GeneralNavigationSystem {
     
     if (!this.enabled) return;
     
+    // Safety check for event.key
+    if (!event || !event.key) return;
+    
     const key = event.key.toLowerCase();
     
     // Only handle WASD, E, and Escape

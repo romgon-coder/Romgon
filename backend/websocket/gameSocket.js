@@ -170,8 +170,10 @@ function setupSocketHandlers(io) {
             socket.userId = userId;
             
             // Update player status
+            let username = 'Unknown';
             if (onlinePlayers.has(userId)) {
                 const player = onlinePlayers.get(userId);
+                username = player.username;
                 player.status = 'in-game';
                 onlinePlayers.set(userId, player);
                 
@@ -182,11 +184,12 @@ function setupSocketHandlers(io) {
                 });
             }
 
-            console.log(`👤 User ${userId} joined game ${gameId}`);
+            console.log(`👤 User ${userId} (${username}) joined game ${gameId}`);
 
-            // Notify others in the game
+            // Notify others in the game with username
             socket.to(`game-${gameId}`).emit('game:playerJoined', {
                 userId,
+                username,
                 timestamp: new Date().toISOString()
             });
         });
