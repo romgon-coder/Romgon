@@ -21253,6 +21253,14 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             console.log('🎲 Final myPlayerColor:', myPlayerColor);
             console.log('🎲 Final multiplayerMode:', multiplayerMode);
+            
+            // Auto-flip board for white player so they play from bottom
+            if (myPlayerColor === 'white') {
+                const board = document.querySelector('.board');
+                board.classList.add('flipped');
+                boardFlipped = true;
+                console.log('🔄 Board flipped for white player perspective');
+            }
 
             // Ensure gameSocket is initialized and wait for connection
             if (!gameSocket) {
@@ -25277,6 +25285,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         
         // Function to auto-flip board based on current player
         function autoBoardFlip() {
+            // In multiplayer mode, don't auto-flip - player perspective is fixed
+            if (multiplayerMode && myPlayerColor && myPlayerColor !== 'both') {
+                console.log('🔄 Skipping auto-flip in multiplayer (fixed perspective)');
+                return;
+            }
+            
             const board = document.querySelector('.board');
             
             // White's turn: Flip board so white is at bottom
