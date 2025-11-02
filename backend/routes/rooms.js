@@ -39,7 +39,7 @@ router.post('/create', authenticateToken, async (req, res) => {
             players: [{
                 userId,
                 username,
-                color: 'white', // Host is always white
+                color: 'white', // Host is white (joins as second player, black moves first)
                 ready: false
             }],
             isPrivate,
@@ -639,13 +639,13 @@ router.post('/matchmaking/join', authenticateToken, async (req, res) => {
                     {
                         userId: match.player1.userId,
                         username: match.player1.username,
-                        color: 'white',
+                        color: 'white', // Second to move
                         ready: true
                     },
                     {
                         userId: match.player2.userId,
                         username: match.player2.username,
-                        color: 'black',
+                        color: 'black', // Moves first in Romgon
                         ready: true
                     }
                 ],

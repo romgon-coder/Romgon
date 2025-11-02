@@ -18519,6 +18519,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     console.log('👤 Opponent joined game:', data);
                     if (multiplayerMode && data.username) {
                         // Get opponent color (opposite of mine)
+                        // Note: In Romgon, BLACK moves first (not white)
                         const opponentColor = myPlayerColor === 'white' ? 'Black' : 'White';
                         // Update status to show opponent
                         updateConnectionStatus('connected', `vs ${data.username} (${opponentColor})`);
