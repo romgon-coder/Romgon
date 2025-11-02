@@ -25,7 +25,7 @@ const matchmakingQueue = new Map();
 router.post('/create', authenticateToken, async (req, res) => {
     try {
         const { userId, username } = req.user;
-        const { isPrivate = false, timeControl = null, variant = 'standard', hostColor = 'white' } = req.body;
+        const { isPrivate = false, timeControl = null, variant = 'standard', hostColor = 'white', allowGuests = false } = req.body;
 
         // Generate unique room code (6 characters)
         const roomCode = generateRoomCode();
@@ -46,6 +46,7 @@ router.post('/create', authenticateToken, async (req, res) => {
                 ready: false
             }],
             isPrivate,
+            allowGuests: allowGuests, // Allow guests if specified
             timeControl,
             variant,
             status: 'waiting', // waiting, active, finished
@@ -55,7 +56,7 @@ router.post('/create', authenticateToken, async (req, res) => {
 
         activeRooms.set(roomCode, room);
 
-        console.log(`🎮 Room created: ${roomCode} by ${username} (${userId}) - Color: ${color}, Variant: ${variant}`);
+        console.log(`🎮 Room created: ${roomCode} by ${username} (${userId}) - Color: ${color}, Variant: ${variant}, Guests: ${allowGuests}`);
 
         res.json({
             success: true,
@@ -65,7 +66,8 @@ router.post('/create', authenticateToken, async (req, res) => {
                 hostUsername: username,
                 status: 'waiting',
                 variant: variant,
-                timeControl: timeControl
+                timeControl: timeControl,
+                allowGuests: allowGuests
             }
         });
     } catch (error) {

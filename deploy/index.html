@@ -20713,6 +20713,13 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         };
 
         function showRoomConfig() {
+            // Check if user has any kind of account (registered or guest)
+            const userId = localStorage.getItem('userId');
+            if (!userId) {
+                alert('Please join as a guest or log in to create a room');
+                return;
+            }
+            
             showView('mp-room-config');
             // Reset to defaults
             selectColor('black');
@@ -20742,10 +20749,13 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
 
         async function createRoomWithConfig() {
             try {
-                // Check if user is logged in
+                // Check if user is logged in or is a guest
                 const token = localStorage.getItem('romgon-jwt');
+                const userId = localStorage.getItem('userId');
+                const isGuest = userId && userId.startsWith('guest_');
+                
                 if (!token) {
-                    alert('Please log in to create a multiplayer room');
+                    alert('Please log in or join as a guest to create a multiplayer room');
                     return;
                 }
 
@@ -20763,7 +20773,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     isPrivate: false,
                     variant: roomConfig.variant,
                     timeControl: roomConfig.timeControl,
-                    hostColor: roomConfig.color
+                    hostColor: roomConfig.color,
+                    allowGuests: true // Allow guests to join all rooms
                 });
                 
                 document.getElementById('room-code-display').textContent = room.code;
@@ -21002,6 +21013,38 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         
         async function joinMultiplayerRoom() {
             const roomCode = document.getElementById('room-code-input').value.trim().toUpperCase();
+            
+            // Check if user is a guest (userId starts with 'guest_')
+            const userId = localStorage.getItem('userId');
+            const token = localStorage.getItem('romgon-jwt');
+            const isGuest = userId && userId.startsWith('guest_');
+            
+            if (isGuest) {
+                // Guest users should check if room allows guests
+                try {
+                    const rooms = await roomClient.listPublicRooms();
+                    const room = rooms.find(r => r.code === roomCode);
+                    
+                    if (!room) {
+                        document.getElementById('mp-error-message').textContent = 'Room not found. Please check the code.';
+                        return;
+                    }
+                    
+                    if (!room.allowGuests) {
+                        alert('This room does not allow guest players. Only "🎭 Guest Arena" accepts guests.');
+                        return;
+                    }
+                    
+                    // Join as guest with existing username
+                    const guestInfo = JSON.parse(localStorage.getItem('romgon-guest-info') || '{}');
+                    await joinAsGuest(roomCode, guestInfo.guestUsername || 'Guest');
+                    return;
+                } catch (error) {
+                    console.error('Error checking room:', error);
+                    // Continue to regular join attempt
+                }
+            }
+            
             await joinMultiplayerRoomByCode(roomCode);
         }
 
@@ -21054,7 +21097,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 };
             } catch (error) {
                 console.error('❌ Error joining room:', error);
-                document.getElementById('mp-error-message').textContent = error.message;
+                const errorMsg = error.message || 'Unknown error';
+                document.getElementById('mp-error-message').textContent = errorMsg;
+                document.getElementById('mp-error-message').style.display = 'block';
             }
         }
 
