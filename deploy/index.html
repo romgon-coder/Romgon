@@ -13041,6 +13041,27 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             💬
         </button>
         
+        <!-- AI/LLM Assistant Button (Bottom Left, Clear of Side Menu) -->
+        <button onclick="showChatGPTModal()" id="llm-toggle-btn" style="
+            position: fixed;
+            bottom: 20px;
+            left: 250px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #10a37f 0%, #1a7f64 100%);
+            border: 2px solid #10a37f;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 9999;
+            box-shadow: 0 4px 15px rgba(16, 163, 127, 0.4);
+            transition: all 0.3s ease;
+            display: block !important;
+        " title="AI Move Suggestions (ChatGPT/Claude/Gemini)" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+            🤖
+        </button>
+        
         <!-- 3D Camera Wrapper -->
         <div id="board-3d-container" style="
             perspective: 1200px;
