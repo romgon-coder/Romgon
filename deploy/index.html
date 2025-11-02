@@ -20880,8 +20880,22 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             document.getElementById('current-room-code').textContent = roomClient.currentRoom?.code || gameId.slice(0, 6);
             document.getElementById('player-color-display').textContent = myPlayerColor || 'Unknown';
 
-            // Initialize game
-            initGame();
+            // Hide start menu and show game board
+            document.getElementById('start-menu').style.display = 'none';
+            hideGlobalAccountBar();
+            document.getElementById('board-display-container').style.display = 'block';
+            gameInProgress = true;
+
+            // Initialize board for multiplayer
+            initializeBoard('multiplayer');
+            
+            // Reset game state
+            currentTurnPiece = null;
+            escapeRaceNotificationShown = false;
+            clearMovementHistory();
+            clearMoveRepetitions();
+            clearCoordinateLabels();
+            highlightThreatenedPieces();
         }
         
         function updateConnectionStatus(status, text) {
