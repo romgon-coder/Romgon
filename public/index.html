@@ -26961,13 +26961,13 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             } else if (centerRow === 3) {
                 switch (centerCol) {
                     case 0: targets = [[3,2],[3,1]]; break;
-                    case 1: targets = [[1,0],[5,0],[3,2],[3,3]]; break;
+                    case 1: targets = [[1,0],[5,0],[3,0],[3,2],[3,3]]; break; // Added 3-0 for black rhombus escape
                     case 2: targets = [[1,1],[5,1],[3,1],[3,0],[3,3],[3,4]]; break;
                     case 3: targets = [[1,2],[5,2],[3,2],[3,1],[3,4],[3,5]]; break;
                     case 4: targets = [[1,3],[5,3],[3,3],[3,2],[3,5],[3,6]]; break;
                     case 5: targets = [[1,4],[5,4],[3,4],[3,3],[3,6],[3,7]]; break;
                     case 6: targets = [[1,5],[5,5],[3,5],[3,4],[3,7],[3,8]]; break;
-                    case 7: targets = [[1,6],[5,6],[3,6],[3,5],[3,8]]; break;
+                    case 7: targets = [[1,6],[5,6],[3,6],[3,5],[3,8]]; break; // 3-8 already present for white rhombus escape
                     case 8: targets = [[3,7],[3,6]]; break;
                 }
             } else if (centerRow === 4) {
