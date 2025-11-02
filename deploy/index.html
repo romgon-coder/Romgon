@@ -18432,8 +18432,64 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 // Listen for move updates
                 gameSocket.on('game:moveUpdate', (data) => {
                     console.log('🎯 Move update received:', data);
+                    
+                    // Apply the opponent's move to our board
+                    if (data.move && multiplayerMode) {
+                        const { from, to, piece, captured, triangleOrientation, hexgonOrientation } = data.move;
+                        
+                        console.log('🔄 Applying opponent move:', from, '→', to);
+                        
+                        const fromHex = document.getElementById(from);
+                        const toHex = document.getElementById(to);
+                        
+                        if (fromHex && toHex) {
+                            // Remove piece from source
+                            const movingPiece = fromHex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
+                            if (movingPiece) {
+                                movingPiece.remove();
+                            }
+                            
+                            // Remove captured piece from destination if any
+                            if (captured) {
+                                const capturedPiece = toHex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
+                                if (capturedPiece) {
+                                    addToEliminatedPieces(capturedPiece);
+                                    capturedPiece.remove();
+                                    playCapturedSound();
+                                }
+                            }
+                            
+                            // Create new piece at destination
+                            const newPiece = document.createElement('div');
+                            newPiece.className = piece;
+                            newPiece.draggable = true;
+                            toHex.appendChild(newPiece);
+                            
+                            // Restore orientations for triangles/hexagons
+                            if (triangleOrientation !== undefined && triangleOrientation !== null) {
+                                setTriangleOrientation(to, triangleOrientation);
+                                updateTriangleVisual(to);
+                                console.log('Restored triangle orientation:', triangleOrientation);
+                            }
+                            if (hexgonOrientation !== undefined && hexgonOrientation !== null) {
+                                setHexgonOrientation(to, hexgonOrientation);
+                                updateHexgonVisual(to);
+                                console.log('Restored hexgon orientation:', hexgonOrientation);
+                            }
+                            
+                            // Switch turn
+                            currentPlayer = currentPlayer === 'white' ? 'black' : 'white';
+                            updateTurnDisplay();
+                            
+                            // Update highlights
+                            clearHighlights();
+                            highlightThreatenedPieces();
+                            
+                            playMoveSound();
+                        }
+                    }
+                    
                     loadActiveGames(); // Refresh active games list
-                    playMessageSound(); // Notify user
                 });
                 
                 // Listen for lobby updates
@@ -20868,10 +20924,15 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             }
 
             // Join the game room via WebSocket
-            roomClient.socket.emit('game:join', {
-                gameId,
-                userId: JSON.parse(atob(localStorage.getItem('romgon-jwt').split('.')[1])).userId
-            });
+            if (gameSocket && gameSocket.connected) {
+                gameSocket.emit('game:join', {
+                    gameId,
+                    userId: JSON.parse(atob(localStorage.getItem('romgon-jwt').split('.')[1])).userId
+                });
+                console.log('🔌 Joined game room via gameSocket:', gameId);
+            } else {
+                console.error('❌ gameSocket not connected!');
+            }
 
             // Start the game
             closeMultiplayerModal();
@@ -20939,19 +21000,26 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         
         function broadcastMove(fromId, toId, pieceClasses, captured) {
             // Don't broadcast in dev mode or if no socket
-            if (!multiplayerMode || !socket || myPlayerColor === 'both') return;
+            if (!multiplayerMode || !gameSocket || !gameSocket.connected || myPlayerColor === 'both') return;
             
-            socket.emit('make-move', {
+            const token = localStorage.getItem('romgon-jwt') || localStorage.getItem('token');
+            if (!token) return;
+            
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const gameId = roomClient.currentRoom?.id || 'unknown';
+            
+            console.log('📤 Broadcasting move:', { fromId, toId, pieceClasses, captured });
+            
+            gameSocket.emit('game:move', {
+                gameId: gameId,
+                userId: payload.userId,
                 move: {
                     from: fromId,
                     to: toId,
                     piece: pieceClasses,
-                    captured: captured
-                },
-                gameState: {
-                    currentPlayer: currentPlayer,
-                    pieces: getPiecePositions(),
-                    triangleOrientations: Object.fromEntries(triangleOrientations)
+                    captured: captured,
+                    triangleOrientation: triangleOrientations.get(toId),
+                    hexgonOrientation: hexgonOrientations.get(toId)
                 }
             });
         }
