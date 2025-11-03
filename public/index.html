@@ -22238,6 +22238,11 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             document.getElementById('mp-public-rooms').style.display = 'none';
             document.getElementById('mp-waiting-room').style.display = 'none';
             
+            // Show account bar for waiting room (so users can chat before game starts)
+            if (viewId === 'mp-waiting-room') {
+                showGlobalAccountBar();
+            }
+            
             // Show requested view
             const viewElement = document.getElementById(viewId);
             if (viewElement) {
@@ -22341,6 +22346,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 alert('Please join as a guest or log in to create a room');
                 return;
             }
+            
+            // Show account bar so users can access chat
+            showGlobalAccountBar();
             
             showView('mp-room-config');
             // Reset to defaults
@@ -22453,6 +22461,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     alert('Please log in to use matchmaking');
                     return;
                 }
+
+                // Show account bar so users can access chat
+                showGlobalAccountBar();
 
                 // Connect to WebSocket
                 if (!roomClient.socket || !roomClient.socket.connected) {
@@ -22668,6 +22679,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         }
         
         function showJoinRoom() {
+            // Show account bar so users can access chat
+            showGlobalAccountBar();
+            
             showView('mp-join-room');
             document.getElementById('mp-error-message').textContent = '';
             document.getElementById('room-code-input').value = '';
