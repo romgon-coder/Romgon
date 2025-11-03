@@ -11750,11 +11750,13 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             console.log('👥 Online count update:', data);
             updateOnlineCount(data.count);
             
-            // If this is the initial connection with user list, request details for each
-            if (data.users && Array.isArray(data.users) && data.users.length > 0) {
-                console.log('📋 Requesting details for', data.users.length, 'online users');
+            // Always request the full user list when count changes
+            if (data.count > 0) {
+                console.log('📋 Requesting details for all online users');
                 // Request current online users details from server
-                chatSocket.emit('chat:requestOnlineUsers');
+                setTimeout(() => {
+                    chatSocket.emit('chat:requestOnlineUsers');
+                }, 100); // Small delay to ensure server has processed everything
             }
         });
         
@@ -11893,6 +11895,8 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     function addOnlinePlayer(playerData) {
         const { userId, displayName, avatar, avatarType } = playerData;
         
+        console.log('➕ Adding online player:', displayName, '(', userId, ')');
+        
         // Store in map
         onlinePlayersList.set(userId, {
             userId,
@@ -11900,6 +11904,8 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             avatar: avatar || '👤',
             avatarType: avatarType || 'emoji'
         });
+        
+        console.log('📊 Total players in list:', onlinePlayersList.size);
         
         // Update UI
         renderOnlinePlayers();
@@ -11912,7 +11918,12 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     
     function renderOnlinePlayers() {
         const listContainer = document.getElementById('online-players-list');
-        if (!listContainer) return;
+        if (!listContainer) {
+            console.log('⚠️ Online players list container not found');
+            return;
+        }
+        
+        console.log('🎨 Rendering', onlinePlayersList.size, 'online players');
         
         // Clear existing
         listContainer.innerHTML = '';
