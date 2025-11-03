@@ -13102,23 +13102,106 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             `;
             
             // Show tooltip on hover
+            const tooltip = playerHead.querySelector('div:last-child');
             playerHead.addEventListener('mouseenter', function() {
-                const tooltip = this.querySelector('div:last-child');
                 tooltip.style.opacity = '1';
             });
             
             playerHead.addEventListener('mouseleave', function() {
-                const tooltip = this.querySelector('div:last-child');
                 tooltip.style.opacity = '0';
             });
             
-            // Click to open chat/challenge
-            playerHead.addEventListener('click', function() {
-                console.log('👤 Clicked on player:', player.displayName);
-                // You can add functionality here to open DM or challenge
+            // Add action buttons below the head
+            const actionsDiv = document.createElement('div');
+            actionsDiv.style.cssText = `
+                display: flex;
+                gap: 4px;
+                margin-top: 8px;
+                opacity: 0;
+                transition: opacity 0.2s;
+            `;
+            
+            // Chat button
+            const chatBtn = document.createElement('button');
+            chatBtn.innerHTML = '💬';
+            chatBtn.title = 'Direct Message';
+            chatBtn.style.cssText = `
+                background: rgba(78, 205, 196, 0.2);
+                border: 1px solid rgba(78, 205, 196, 0.5);
+                color: #4ecdc4;
+                border-radius: 6px;
+                padding: 4px 8px;
+                cursor: pointer;
+                font-size: 0.9em;
+                transition: all 0.2s;
+            `;
+            chatBtn.onmouseover = function() {
+                this.style.background = 'rgba(78, 205, 196, 0.4)';
+                this.style.transform = 'scale(1.1)';
+            };
+            chatBtn.onmouseout = function() {
+                this.style.background = 'rgba(78, 205, 196, 0.2)';
+                this.style.transform = 'scale(1)';
+            };
+            chatBtn.onclick = function(e) {
+                e.stopPropagation();
+                console.log('💬 Opening DM with:', player.displayName);
+                openDirectMessage(player.userId, player.displayName);
+            };
+            
+            // Add friend button
+            const friendBtn = document.createElement('button');
+            friendBtn.innerHTML = '👤+';
+            friendBtn.title = 'Add Friend';
+            friendBtn.style.cssText = `
+                background: rgba(255, 121, 198, 0.2);
+                border: 1px solid rgba(255, 121, 198, 0.5);
+                color: #ff79c6;
+                border-radius: 6px;
+                padding: 4px 8px;
+                cursor: pointer;
+                font-size: 0.9em;
+                transition: all 0.2s;
+            `;
+            friendBtn.onmouseover = function() {
+                this.style.background = 'rgba(255, 121, 198, 0.4)';
+                this.style.transform = 'scale(1.1)';
+            };
+            friendBtn.onmouseout = function() {
+                this.style.background = 'rgba(255, 121, 198, 0.2)';
+                this.style.transform = 'scale(1)';
+            };
+            friendBtn.onclick = function(e) {
+                e.stopPropagation();
+                console.log('👤 Adding friend:', player.displayName);
+                // TODO: Implement add friend functionality
+                alert(`Add friend feature coming soon! (${player.displayName})`);
+            };
+            
+            actionsDiv.appendChild(chatBtn);
+            actionsDiv.appendChild(friendBtn);
+            
+            // Show buttons on hover
+            playerHead.addEventListener('mouseenter', function() {
+                actionsDiv.style.opacity = '1';
             });
             
-            listContainer.appendChild(playerHead);
+            playerHead.addEventListener('mouseleave', function() {
+                actionsDiv.style.opacity = '0';
+            });
+            
+            // Wrap playerHead and actions in a container
+            const playerContainer = document.createElement('div');
+            playerContainer.style.cssText = `
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            `;
+            
+            playerContainer.appendChild(playerHead);
+            playerContainer.appendChild(actionsDiv);
+            
+            listContainer.appendChild(playerContainer);
         });
     }
     
