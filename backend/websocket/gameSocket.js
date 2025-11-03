@@ -264,76 +264,32 @@ function setupSocketHandlers(io) {
             console.log(`   Captured: ${move.captured || 'none'}`);
 
             try {
-                // Get updated game state
-                console.log(`🔍 Looking up game ${gameId} in database...`);
-                const game = await db.get('SELECT * FROM games WHERE id = ?', [gameId]);
+                // Track move count for this game (works for both DB and non-DB games)
+                const currentMoveCount = guestGameMoves.get(gameId) || 0;
+                guestGameMoves.set(gameId, currentMoveCount + 1);
                 
-                if (!game) {
-                    console.error(`❌ Game ${gameId} not found in database!`);
-                    console.log(`⚠️ Broadcasting move anyway without database info`);
-                    
-                    // Track move count for this guest game
-                    const currentMoveCount = guestGameMoves.get(gameId) || 0;
-                    guestGameMoves.set(gameId, currentMoveCount + 1);
-                    
-                    // Calculate next turn based on move count
-                    // Move 0 = black moves, after move 0 it's white's turn
-                    // Move 1 = white moves, after move 1 it's black's turn
-                    const nextTurnIsWhite = currentMoveCount % 2 === 0;
-                    const nextTurn = nextTurnIsWhite ? 'white' : 'black';
-                    
-                    console.log(`   Guest game move count: ${currentMoveCount}`);
-                    console.log(`   Next turn: ${nextTurn}`);
-                    
-                    console.log(`📢 Broadcasting to game-${gameId}...`);
-                    console.log(`   Sockets in room:`, gameNamespace.adapter.rooms.get(`game-${gameId}`)?.size || 0);
-                    
-                    gameNamespace.to(`game-${gameId}`).emit('game:moveUpdate', {
-                        gameId,
-                        move,
-                        userId,
-                        moveCount: currentMoveCount + 1,
-                        turn: nextTurn,
-                        timestamp: new Date().toISOString()
-                    });
-                    
-                    console.log(`✅ Move broadcast complete (no DB entry), next turn: ${nextTurn}`);
-                    return;
-                }
+                // Calculate next turn based on move count
+                // Move 0 = black moves, after move 0 it's white's turn
+                // Move 1 = white moves, after move 1 it's black's turn
+                const nextTurnIsWhite = currentMoveCount % 2 === 0;
+                const nextTurn = nextTurnIsWhite ? 'white' : 'black';
                 
-                console.log(`✅ Game found in database`);
-                const moves = JSON.parse(game.moves || '[]');
-                // In Romgon, BLACK moves first
-                // Move 0 (even) = black's turn, Move 1 (odd) = white's turn
-                // After a move is made, it becomes the opponent's turn
-                // So if moves.length is even (0, 2, 4...), black just moved, so now it's WHITE's turn
-                // If moves.length is odd (1, 3, 5...), white just moved, so now it's BLACK's turn
-                const nextTurnIsWhite = moves.length % 2 === 0;
-
-                console.log(`   Total moves before this: ${moves.length}`);
-                console.log(`   Next turn after this move: ${nextTurnIsWhite ? 'white' : 'black'}`);
-
-                // Broadcast to all players in game
-                console.log(`📢 Broadcasting move to game-${gameId}`);
+                console.log(`   Move count: ${currentMoveCount}`);
+                console.log(`   Next turn: ${nextTurn}`);
+                console.log(`📢 Broadcasting to game-${gameId}...`);
                 console.log(`   Sockets in room:`, gameNamespace.adapter.rooms.get(`game-${gameId}`)?.size || 0);
                 
+                // Always broadcast the move regardless of database status
                 gameNamespace.to(`game-${gameId}`).emit('game:moveUpdate', {
                     gameId,
                     move,
                     userId,
-                    moveCount: game.total_moves,
-                    turn: nextTurnIsWhite ? 'white' : 'black',
+                    moveCount: currentMoveCount + 1,
+                    turn: nextTurn,
                     timestamp: new Date().toISOString()
                 });
-
-                console.log(`✅ Move broadcast complete`);
-
-                // Notify lobby of updated game state
-                io.of('/').emit('lobby:gameUpdate', {
-                    gameId,
-                    moveCount: game.total_moves,
-                    updatedAt: game.updated_at
-                });
+                
+                console.log(`✅ Move broadcast complete, next turn: ${nextTurn}`);
             } catch (error) {
                 console.error('❌ Error broadcasting move:', error);
                 socket.emit('game:error', { error: error.message });
