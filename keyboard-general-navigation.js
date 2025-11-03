@@ -66,6 +66,13 @@ class GeneralNavigationSystem {
   }
 
   handleKeyPress(event) {
+    // PRIORITY: If chat panel is open, skip all keyboard nav
+    const chatPanel = document.getElementById('chat-panel-modal');
+    if (chatPanel && chatPanel.style.display === 'flex') {
+      this.logDebug('🚫 Chat panel is open, skipping keyboard nav');
+      return;
+    }
+    
     // PRIORITY: If PVP system is active and enabled, ALWAYS skip
     if (window.keyboardNav && window.keyboardNav.enabled) {
       this.logDebug('🚫 PVP system is active and enabled, skipping all General Nav input');
