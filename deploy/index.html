@@ -7096,6 +7096,38 @@
         ⌨️ KB: Loaded
     </div>
 
+    <!-- Online Players Indicator (Top Right) -->
+    <div id="online-players-indicator" onclick="openOnlinePlayersPanel()" style="
+        display: none;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 18px;
+        background: linear-gradient(135deg, #26de81 0%, #20bf6b 100%);
+        color: white;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.95em;
+        z-index: 10000;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(38, 222, 129, 0.4);
+        transition: all 0.3s ease;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(38, 222, 129, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(38, 222, 129, 0.4)'">
+        <div style="
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        "></div>
+        <span id="top-online-count">0</span>
+        <span style="font-size: 1.1em;">🌐</span>
+    </div>
+
     <!-- Keyboard Navigation Help -->
     <div id="kb-help-overlay" style="display: none !important; position: fixed; bottom: 20px; left: 20px; background: rgba(20, 24, 32, 0.95); border: 2px solid #4ecdc4; border-radius: 8px; padding: 15px; font-size: 12px; color: #4ecdc4; max-width: 250px; z-index: 9998; line-height: 1.6; font-family: 'Courier New', monospace;">
         <strong>⌨️ KEYBOARD CONTROLS</strong><br>
@@ -11724,6 +11756,24 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         if (menuCountEl) {
             menuCountEl.textContent = `${count} online`;
             menuCountEl.style.color = count > 0 ? '#26de81' : '#666';
+        }
+        
+        // Update top indicator
+        const topIndicator = document.getElementById('online-players-indicator');
+        const topCountEl = document.getElementById('top-online-count');
+        if (topIndicator && topCountEl) {
+            topCountEl.textContent = count;
+            
+            // Check if we're in game (menu is hidden)
+            const startMenu = document.getElementById('start-menu');
+            const inMenu = startMenu && startMenu.style.display === 'flex';
+            
+            // Show indicator if online players exist and not in menu
+            if (count > 0 && !inMenu) {
+                topIndicator.style.display = 'flex';
+            } else if (inMenu) {
+                topIndicator.style.display = 'none';
+            }
         }
     }
     
@@ -31768,10 +31818,30 @@ ${moveHistory || '(No moves played yet - starting position)'}
             document.addEventListener('DOMContentLoaded', () => {
                 console.log('✅ DOMContentLoaded fired, calling initializeSplashPage in 200ms...');
                 setTimeout(initializeSplashPage, 200);
+                
+                // Auto-connect to chat socket for online players tracking
+                if (typeof io !== 'undefined' && typeof initializeChatSocket === 'function') {
+                    console.log('🌐 Auto-connecting to chat socket for online players...');
+                    setTimeout(() => {
+                        if (!window.chatSocket || !window.chatSocket.connected) {
+                            initializeChatSocket();
+                        }
+                    }, 1000);
+                }
             });
         } else {
             console.log('✅ Document already loaded, calling initializeSplashPage in 200ms...');
             setTimeout(initializeSplashPage, 200);
+            
+            // Auto-connect to chat socket for online players tracking
+            if (typeof io !== 'undefined' && typeof initializeChatSocket === 'function') {
+                console.log('🌐 Auto-connecting to chat socket for online players...');
+                setTimeout(() => {
+                    if (!window.chatSocket || !window.chatSocket.connected) {
+                        initializeChatSocket();
+                    }
+                }, 1000);
+            }
         }
 
         // ============================================
