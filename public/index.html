@@ -3307,11 +3307,24 @@
             document.body.classList.add(`theme-${themeName}`);
         }
         
+        // Force update start menu background
+        const startMenu = document.getElementById('start-menu');
+        if (startMenu && themeName !== 'default') {
+            // The CSS will handle it, but we can force a repaint
+            startMenu.style.display = 'flex';
+        }
+        
+        // Update all buttons to use theme colors
+        updateButtonColors(themeName);
+        
         // Save to localStorage
         localStorage.setItem('romgon-theme', themeName);
         
         // Close dropdown
-        document.getElementById('theme-selector-dropdown').style.display = 'none';
+        const dropdown = document.getElementById('theme-selector-dropdown');
+        if (dropdown) {
+            dropdown.style.display = 'none';
+        }
         
         // Highlight selected theme
         document.querySelectorAll('.theme-option').forEach(opt => {
@@ -3324,6 +3337,16 @@
         }
         
         console.log('✅ Theme applied:', themeName);
+    }
+    
+    // Update button colors based on theme
+    function updateButtonColors(themeName) {
+        // This will be handled by CSS, but we can add dynamic updates if needed
+        const buttons = document.querySelectorAll('button, .menu-button, .option-button');
+        buttons.forEach(btn => {
+            // Force browser to recalculate styles
+            btn.style.display = btn.style.display;
+        });
     }
     
     // Load saved theme on page load
@@ -6154,12 +6177,101 @@
             background: linear-gradient(135deg, #fd79a8 0%, #a29bfe 100%);
         }
 
-        /* Apply theme colors to modals and panels */
+        /* Apply theme colors to everything */
+        
+        /* Main page background */
+        body[class*="theme-"] #start-menu {
+            background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-secondary) 100%) !important;
+        }
+        
+        /* All modals */
         body[class*="theme-"] .modal-content,
         body[class*="theme-"] #play-options-modal > div,
         body[class*="theme-"] #offline-lan-modal > div,
-        body[class*="theme-"] #download-instructions-modal > div {
+        body[class*="theme-"] #download-instructions-modal > div,
+        body[class*="theme-"] #account-modal > div,
+        body[class*="theme-"] #preferences-modal > div,
+        body[class*="theme-"] #friends-modal > div {
             background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-secondary) 100%) !important;
+        }
+        
+        /* All buttons with gradient */
+        body[class*="theme-"] button,
+        body[class*="theme-"] .menu-button,
+        body[class*="theme-"] .option-button,
+        body[class*="theme-"] .play-button,
+        body[class*="theme-"] .action-button {
+            background: linear-gradient(135deg, var(--theme-accent) 0%, var(--theme-primary) 100%) !important;
+            color: white !important;
+            border-color: rgba(255, 255, 255, 0.3) !important;
+        }
+        
+        body[class*="theme-"] button:hover,
+        body[class*="theme-"] .menu-button:hover,
+        body[class*="theme-"] .option-button:hover,
+        body[class*="theme-"] .play-button:hover,
+        body[class*="theme-"] .action-button:hover {
+            background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-accent) 100%) !important;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
+            transform: translateY(-2px) !important;
+        }
+        
+        /* Game board background */
+        body[class*="theme-"] #game-board-container {
+            background: rgba(0, 0, 0, 0.2) !important;
+        }
+        
+        /* Hexagons */
+        body[class*="theme-"] .hexagon {
+            background-color: var(--theme-hex-bg) !important;
+            border-color: var(--theme-hex-border) !important;
+        }
+        
+        /* Panels */
+        body[class*="theme-"] .draggable-panel,
+        body[class*="theme-"] #chat-panel,
+        body[class*="theme-"] #online-players-panel,
+        body[class*="theme-"] #friends-panel {
+            background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-secondary) 100%) !important;
+            border-color: rgba(255, 255, 255, 0.3) !important;
+        }
+        
+        /* Ensure all text is white on dark themes */
+        body.theme-midnight,
+        body.theme-monotone {
+            color: white !important;
+        }
+        
+        body.theme-midnight *:not(button):not(.highlight-green):not(.highlight-red):not(.highlight-blue),
+        body.theme-monotone *:not(button):not(.highlight-green):not(.highlight-red):not(.highlight-blue) {
+            color: white !important;
+        }
+        
+        /* Account bar adjustments */
+        body[class*="theme-"] #account-bar {
+            background: rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        /* Menu cards/boxes */
+        body[class*="theme-"] .menu-card,
+        body[class*="theme-"] .info-box,
+        body[class*="theme-"] .feature-card {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-color: rgba(255, 255, 255, 0.3) !important;
+        }
+        
+        /* Input fields */
+        body[class*="theme-"] input,
+        body[class*="theme-"] textarea,
+        body[class*="theme-"] select {
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+            border-color: rgba(255, 255, 255, 0.3) !important;
+        }
+        
+        body[class*="theme-"] input::placeholder,
+        body[class*="theme-"] textarea::placeholder {
+            color: rgba(255, 255, 255, 0.6) !important;
         }
 
         /* Wooden Board Theme */
