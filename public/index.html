@@ -20752,6 +20752,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         }
         
         function renderOnlinePlayersOld() { // This renders the compact list in the PANEL/MODAL
+            console.log('🎨 renderOnlinePlayersOld called');
             const countEl = document.getElementById('online-players-count');
             const listEl = document.getElementById('online-players-panel-list');
             
@@ -20761,27 +20762,67 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             }
             
             const count = onlinePlayers.size;
+            console.log('📊 onlinePlayers Map size:', count);
+            console.log('📊 onlinePlayers contents:', Array.from(onlinePlayers.entries()));
+            
             countEl.textContent = count;
             
             if (count === 0) {
-                listEl.innerHTML = '<span style="color: #888; font-size: 0.9em;">No other players online</span>';
+                console.log('⚠️ onlinePlayers Map is empty');
+                listEl.innerHTML = '<span style="color: #888; font-size: 0.9em;">No players online - connecting...</span>';
                 return;
             }
             
             // Get current user ID to exclude from list
             const currentUserId = localStorage.getItem('userId');
+            console.log('👤 Current user ID:', currentUserId);
             
-            // Convert to array and filter out current user
-            const playersArray = Array.from(onlinePlayers.values())
-                .filter(p => p.userId !== currentUserId)
-                .slice(0, 10); // Show max 10 players
+            // Convert to array - show ALL players including self (styled differently)
+            const allPlayers = Array.from(onlinePlayers.values());
             
-            if (playersArray.length === 0) {
+            console.log('📊 Total players in list:', allPlayers.length);
+            
+            if (allPlayers.length === 0) {
                 listEl.innerHTML = '<span style="color: #888; font-size: 0.9em;">You\'re the only one online</span>';
                 return;
             }
             
-            listEl.innerHTML = playersArray.map(player => {
+            // Separate current user and other players
+            const currentUser = allPlayers.find(p => p.userId === currentUserId);
+            const otherPlayers = allPlayers.filter(p => p.userId !== currentUserId).slice(0, 20);
+            
+            let html = '';
+            
+            // Show current user first (if found) with special styling
+            if (currentUser) {
+                html += `
+                <div style="
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    background: rgba(78, 205, 196, 0.25);
+                    border: 2px solid rgba(78, 205, 196, 0.6);
+                    border-radius: 20px;
+                    padding: 6px 12px;
+                    margin-bottom: 12px;
+                ">
+                    <div style="
+                        width: 8px;
+                        height: 8px;
+                        border-radius: 50%;
+                        background: #4ecdc4;
+                    "></div>
+                    <span style="color: white; font-size: 0.9em; font-weight: 600;">${escapeHtml(currentUser.username)} (You)</span>
+                    <span style="color: #888; font-size: 0.8em;">(${currentUser.rating || '?'})</span>
+                </div>
+            `;
+            }
+            
+            // Show other players
+            if (otherPlayers.length === 0) {
+                html += '<span style="color: #888; font-size: 0.9em;">No other players online</span>';
+            } else {
+                html += otherPlayers.map(player => {
                 const isGuest = player.username.toLowerCase().startsWith('guest');
                 const guestBadge = isGuest ? '<span style="font-size: 0.7em; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 10px; margin-left: 4px;">👤 Guest</span>' : '';
                 const borderColor = isGuest ? 'rgba(156, 136, 255, 0.3)' : 'rgba(78, 205, 196, 0.3)';
@@ -20812,16 +20853,19 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     ${guestBadge}
                 </div>
             `;
-            }).join('');
-            
-            // If there are more players, show count
-            if (onlinePlayers.size - 1 > playersArray.length) {
-                listEl.innerHTML += `
-                    <span style="color: #888; font-size: 0.85em;">
-                        +${onlinePlayers.size - 1 - playersArray.length} more
-                    </span>
-                `;
+                }).join('');
+                
+                // If there are more players, show count
+                if (otherPlayers.length === 20 && onlinePlayers.size > 21) {
+                    html += `
+                        <span style="color: #888; font-size: 0.85em; display: block; margin-top: 8px;">
+                            +${onlinePlayers.size - 21} more
+                        </span>
+                    `;
+                }
             }
+            
+            listEl.innerHTML = html;
         }
         
         // Make renderOnlinePlayersOld globally accessible
