@@ -2999,7 +2999,13 @@
             console.error('❌ Modal element not found!');
             return;
         }
+        
+        console.log('📍 Modal found, current display:', modal.style.display);
         modal.style.display = 'block';
+        console.log('📍 Modal display set to:', modal.style.display);
+        console.log('📍 Modal computed style:', window.getComputedStyle(modal).display);
+        console.log('📍 Modal z-index:', window.getComputedStyle(modal).zIndex);
+        
         currentGamesPage = 1;
         currentGamesSearch = '';
         const searchInput = document.getElementById('games-search-input');
