@@ -13746,12 +13746,15 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             
             // Helper function to generate random SVG avatar
             const generateRandomAvatar = (userId) => {
+                // Ensure userId is a string
+                const userIdStr = String(userId || 'guest');
+                
                 const colors = [
                     ['#FF6B6B', '#4ECDC4'], ['#A8E6CF', '#FFD3B6'], ['#FF8B94', '#A8E6CF'],
                     ['#95E1D3', '#F38181'], ['#AA96DA', '#FCBAD3'], ['#667eea', '#764ba2'],
                     ['#f093fb', '#f5576c'], ['#4facfe', '#00f2fe'], ['#43e97b', '#38f9d7']
                 ];
-                const hash = userId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                const hash = userIdStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
                 const colorPair = colors[hash % colors.length];
                 
                 return `
