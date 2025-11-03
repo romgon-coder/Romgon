@@ -1,8 +1,8 @@
 {
   "version": 2,
   "framework": null,
-  "installCommand": "npm install",
-  "buildCommand": "node build-frontend.js",
+  "installCommand": "echo 'No install needed'",
+  "buildCommand": "echo 'No build needed - using public/ directly'",
   "outputDirectory": "public",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
