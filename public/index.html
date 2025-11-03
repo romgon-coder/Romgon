@@ -3302,20 +3302,95 @@
             'theme-rose'
         );
         
-        // Add new theme class (unless it's default)
+        // Add new theme class
         if (themeName !== 'default') {
             document.body.classList.add(`theme-${themeName}`);
         }
         
-        // Force update start menu background
+        // Define theme colors
+        const themes = {
+            default: {
+                primary: '#667eea',
+                secondary: '#764ba2',
+                gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+            },
+            monotone: {
+                primary: '#2c3e50',
+                secondary: '#95a5a6',
+                gradient: 'linear-gradient(135deg, #2c3e50 0%, #95a5a6 100%)'
+            },
+            ocean: {
+                primary: '#0984e3',
+                secondary: '#74b9ff',
+                gradient: 'linear-gradient(135deg, #0984e3 0%, #74b9ff 100%)'
+            },
+            forest: {
+                primary: '#00b894',
+                secondary: '#55efc4',
+                gradient: 'linear-gradient(135deg, #00b894 0%, #55efc4 100%)'
+            },
+            sunset: {
+                primary: '#ff6348',
+                secondary: '#ffa502',
+                gradient: 'linear-gradient(135deg, #ff6348 0%, #ffa502 100%)'
+            },
+            midnight: {
+                primary: '#1e272e',
+                secondary: '#485460',
+                gradient: 'linear-gradient(135deg, #1e272e 0%, #485460 100%)'
+            },
+            rose: {
+                primary: '#fd79a8',
+                secondary: '#a29bfe',
+                gradient: 'linear-gradient(135deg, #fd79a8 0%, #a29bfe 100%)'
+            }
+        };
+        
+        const currentTheme = themes[themeName];
+        
+        // Update start menu background directly
         const startMenu = document.getElementById('start-menu');
-        if (startMenu && themeName !== 'default') {
-            // The CSS will handle it, but we can force a repaint
-            startMenu.style.display = 'flex';
+        if (startMenu && currentTheme) {
+            startMenu.style.background = currentTheme.gradient;
         }
         
-        // Update all buttons to use theme colors
-        updateButtonColors(themeName);
+        // Update all modals
+        const modals = [
+            'play-options-modal',
+            'offline-lan-modal', 
+            'download-instructions-modal',
+            'account-modal',
+            'preferences-modal',
+            'friends-modal',
+            'online-players-modal'
+        ];
+        
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal && currentTheme) {
+                const modalContent = modal.querySelector('div');
+                if (modalContent) {
+                    modalContent.style.background = currentTheme.gradient;
+                }
+            }
+        });
+        
+        // Update all buttons
+        const buttons = document.querySelectorAll('button, .menu-button, .option-button, .play-button');
+        buttons.forEach(btn => {
+            if (currentTheme && !btn.classList.contains('theme-option')) {
+                btn.style.background = currentTheme.gradient;
+                btn.style.color = 'white';
+            }
+        });
+        
+        // Update panels
+        const panels = document.querySelectorAll('.draggable-panel');
+        panels.forEach(panel => {
+            if (currentTheme) {
+                panel.style.background = currentTheme.gradient;
+            }
+        });
         
         // Save to localStorage
         localStorage.setItem('romgon-theme', themeName);
@@ -3329,6 +3404,7 @@
         // Highlight selected theme
         document.querySelectorAll('.theme-option').forEach(opt => {
             opt.style.borderColor = 'transparent';
+            opt.style.borderWidth = '2px';
         });
         const selectedOption = document.querySelector(`[data-theme="${themeName}"]`);
         if (selectedOption) {
@@ -3336,17 +3412,7 @@
             selectedOption.style.borderWidth = '3px';
         }
         
-        console.log('✅ Theme applied:', themeName);
-    }
-    
-    // Update button colors based on theme
-    function updateButtonColors(themeName) {
-        // This will be handled by CSS, but we can add dynamic updates if needed
-        const buttons = document.querySelectorAll('button, .menu-button, .option-button');
-        buttons.forEach(btn => {
-            // Force browser to recalculate styles
-            btn.style.display = btn.style.display;
-        });
+        console.log('✅ Theme applied:', themeName, 'with colors:', currentTheme);
     }
     
     // Load saved theme on page load
