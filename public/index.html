@@ -19632,14 +19632,14 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             gameSocket.on('lobby:playerJoined', (player) => {
                 console.log('✅ Player joined:', player);
                 onlinePlayers.set(player.userId, player);
-                renderOnlinePlayers();
+                renderOnlinePlayersOld();
             });
             
             // Listen for player left
             gameSocket.on('lobby:playerLeft', (userId) => {
                 console.log('👋 Player left:', userId);
                 onlinePlayers.delete(userId);
-                renderOnlinePlayers();
+                renderOnlinePlayersOld();
             });
             
             // Request initial online players list (wait for connection)
@@ -19657,7 +19657,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 // User went offline - remove from list
                 console.log(`👋 User ${userId} went offline`);
                 onlinePlayers.delete(userId);
-                renderOnlinePlayers();
+                renderOnlinePlayersOld();
             }
         }
         
@@ -19666,10 +19666,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             players.forEach(player => {
                 onlinePlayers.set(player.userId, player);
             });
-            renderOnlinePlayers();
+            renderOnlinePlayersOld(); // Renamed to avoid conflict with new chat system
         }
         
-        function renderOnlinePlayers() {
+        function renderOnlinePlayersOld() { // Renamed - this is the old user-home page function
             const countEl = document.getElementById('online-players-count');
             const listEl = document.getElementById('online-players-list');
             
