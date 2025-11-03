@@ -12036,8 +12036,46 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     let totalUnreadCount = 0;
     
     function openChatPanel() {
+        console.log('📂 Opening chat panel');
         document.getElementById('chat-panel-modal').style.display = 'flex';
         renderConversationsList();
+        
+        // Setup event listeners each time panel opens
+        setTimeout(() => {
+            const chatInput = document.getElementById('chat-message-input');
+            const chatSendBtn = document.querySelector('#active-chat-container button');
+            
+            console.log('🔧 Setting up listeners - input:', !!chatInput, 'button:', !!chatSendBtn);
+            
+            if (chatInput && !chatInput.dataset.listenerAdded) {
+                chatInput.dataset.listenerAdded = 'true';
+                chatInput.addEventListener('keydown', function(e) {
+                    console.log('⌨️ Key in chat input:', e.key);
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        console.log('⚡ ENTER - calling sendChatMessage');
+                        sendChatMessage();
+                        return false;
+                    }
+                }, true);
+                console.log('✅ Input listener added');
+            }
+            
+            if (chatSendBtn && !chatSendBtn.dataset.listenerAdded) {
+                chatSendBtn.dataset.listenerAdded = 'true';
+                chatSendBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    console.log('⚡ BUTTON - calling sendChatMessage');
+                    sendChatMessage();
+                    return false;
+                }, true);
+                console.log('✅ Button listener added');
+            }
+        }, 500);
     }
     
     function closeChatPanel() {
