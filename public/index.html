@@ -12024,6 +12024,20 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             console.log('💬 Direct message received:', data);
             handleIncomingDirectMessage(data);
         });
+        
+        // Global Enter key handler for chat input
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const chatInput = document.getElementById('chat-message-input');
+                if (chatInput && document.activeElement === chatInput) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    console.log('🎯 ENTER IN CHAT INPUT - sending message');
+                    sendChatMessage();
+                }
+            }
+        }, true); // Capture phase
     }
     
     // Notification helper
