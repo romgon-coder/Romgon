@@ -246,6 +246,14 @@ class GeneralNavigationSystem {
    * Update list of navigable elements
    */
   updateNavigationElements() {
+    // Don't update elements if chat panel is open
+    const chatPanel = document.getElementById('chat-panel-modal');
+    if (chatPanel && chatPanel.style.display === 'flex') {
+      this.logDebug('🚫 Chat panel is open, clearing navigation elements');
+      this.navigationElements = [];
+      return;
+    }
+    
     // Get all selectable elements visible on screen
     const elements = Array.from(document.querySelectorAll(this.config.selectableElements));
     
