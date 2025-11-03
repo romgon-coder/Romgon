@@ -11660,14 +11660,19 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     let onlinePlayersList = new Map(); // Map<userId, playerData>
     
     function openOnlinePlayersPanel() {
+        console.log('🎯 Opening online players panel');
+        console.log('📊 Current players in list:', onlinePlayersList.size);
+        
         document.getElementById('online-players-modal').style.display = 'flex';
         
         // Connect to chat socket if not already connected
         if (!chatSocket || !chatSocket.connected) {
+            console.log('🔌 Chat socket not connected, initializing...');
             initializeChatSocket();
         }
         
         // Refresh the players list
+        console.log('🔄 Refreshing players list...');
         loadOnlinePlayers();
     }
     
@@ -11924,12 +11929,15 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         }
         
         console.log('🎨 Rendering', onlinePlayersList.size, 'online players');
+        console.log('📍 Container element:', listContainer);
+        console.log('📍 Container parent visible?', listContainer.parentElement?.style.display);
         
         // Clear existing
         listContainer.innerHTML = '';
         
         // Check if empty
         if (onlinePlayersList.size === 0) {
+            console.log('⚠️ Player list is empty');
             listContainer.innerHTML = `
                 <div style="text-align: center; color: #999; padding: 40px 20px;">
                     <div style="font-size: 3em; margin-bottom: 15px;">😴</div>
@@ -11939,6 +11947,8 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             `;
             return;
         }
+        
+        console.log('✅ Creating player cards for', onlinePlayersList.size, 'players');
         
         // Render each player
         const sortedPlayers = Array.from(onlinePlayersList.values()).sort((a, b) => 
@@ -12117,6 +12127,9 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             
             listContainer.appendChild(playerCard);
         });
+        
+        console.log('✅ Finished rendering', sortedPlayers.length, 'player cards');
+        console.log('📊 List container now has', listContainer.children.length, 'children');
     }
     
     function filterOnlinePlayers(searchTerm) {
