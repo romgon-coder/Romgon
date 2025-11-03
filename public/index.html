@@ -7236,7 +7236,7 @@
             
             <!-- Chat Messages Indicator -->
             <div id="account-bar-chat-indicator" onclick="openChatPanel()" style="
-                display: none;
+                display: flex;
                 align-items: center;
                 gap: 8px;
                 padding: 4px 12px;
@@ -7247,7 +7247,7 @@
                 transition: all 0.3s ease;
                 margin-right: 8px;
                 position: relative;
-            " onmouseover="this.style.background='rgba(78, 205, 196, 0.2)'; this.style.borderColor='#4ecdc4'" onmouseout="this.style.background='rgba(78, 205, 196, 0.1)'; this.style.borderColor='rgba(78, 205, 196, 0.3)'">
+            " onmouseover="this.style.background='rgba(78, 205, 196, 0.2)'; this.style.borderColor='#4ecdc4'" onmouseout="this.style.background='rgba(78, 205, 196, 0.1)'; this.style.borderColor='rgba(78, 205, 196, 0.3)'" title="Direct Messages">
                 <span style="font-size: 1.1em;">💬</span>
                 <div id="chat-unread-badge" style="
                     position: absolute;
@@ -12008,12 +12008,6 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     function openChatPanel() {
         document.getElementById('chat-panel-modal').style.display = 'flex';
         renderConversationsList();
-        
-        // Show chat indicator
-        const chatIndicator = document.getElementById('account-bar-chat-indicator');
-        if (chatIndicator) {
-            chatIndicator.style.display = 'flex';
-        }
     }
     
     function closeChatPanel() {
@@ -12194,12 +12188,10 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     
     function updateChatBadge() {
         const badge = document.getElementById('chat-unread-badge');
-        const indicator = document.getElementById('account-bar-chat-indicator');
         
         if (totalUnreadCount > 0) {
             badge.textContent = totalUnreadCount;
             badge.style.display = 'flex';
-            indicator.style.display = 'flex';
         } else {
             badge.style.display = 'none';
         }
