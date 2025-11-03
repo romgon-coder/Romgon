@@ -11634,16 +11634,20 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             } catch (e) {
                 console.error('Error parsing token:', e);
                 userId = 'guest_' + Date.now();
-                displayName = 'Guest';
+                displayName = 'Guest ' + Date.now();
                 avatar = '👤';
                 avatarType = 'emoji';
             }
         } else {
+            // Guest user - create unique ID based on timestamp
             userId = 'guest_' + Date.now();
-            displayName = 'Guest';
+            displayName = 'Guest ' + userId.slice(-6);
             avatar = '👤';
             avatarType = 'emoji';
         }
+        
+        // Store current user info globally
+        window.currentChatUser = { userId, displayName, avatar, avatarType };
         
         // Connect to chat namespace
         const backendURL = 'https://api.romgon.net';
@@ -11664,6 +11668,14 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 avatar,
                 avatarType
             });
+            
+            // Add yourself to the local list immediately
+            addOnlinePlayer({
+                userId,
+                displayName,
+                avatar,
+                avatarType
+            });
         });
         
         chatSocket.on('disconnect', () => {
@@ -11672,13 +11684,18 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         
         // Listen for online count updates
         chatSocket.on('chat:onlineCount', (data) => {
-            console.log('👥 Online count:', data.count);
+            console.log('👥 Online count:', data.count, 'Users:', data.users);
             updateOnlineCount(data.count);
+            
+            // If users array is provided, we can see who's online (but without their details)
+            if (data.users && Array.isArray(data.users)) {
+                console.log('📋 Online user IDs:', data.users);
+            }
         });
         
-        // Listen for user online events
+        // Listen for user online events (including yourself)
         chatSocket.on('chat:userOnline', (data) => {
-            console.log('✅ User online:', data.displayName);
+            console.log('✅ User online:', data.displayName, '(', data.userId, ')');
             addOnlinePlayer(data);
         });
         
