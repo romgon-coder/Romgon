@@ -78,6 +78,26 @@ module.exports = (io) => {
             socket.emit('chat:friendRequests', { requests });
         });
 
+        // Handle request for online users details
+        socket.on('chat:requestOnlineUsers', () => {
+            const onlineUsersList = [];
+            
+            // Collect details for all online users
+            chatNamespace.sockets.forEach((sock) => {
+                if (sock.userId && onlineUsers.has(sock.userId)) {
+                    onlineUsersList.push({
+                        userId: sock.userId,
+                        displayName: sock.displayName || 'Unknown',
+                        avatar: sock.avatar || '👤',
+                        avatarType: sock.avatarType || 'emoji'
+                    });
+                }
+            });
+            
+            console.log(`📤 Sending ${onlineUsersList.length} online users to ${socket.userId}`);
+            socket.emit('chat:onlineUsersList', { users: onlineUsersList });
+        });
+
         // ============================================
         // GLOBAL CHAT
         // ============================================
