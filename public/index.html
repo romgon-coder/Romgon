@@ -6839,6 +6839,20 @@
                 letter-spacing: 2px;
                 cursor: pointer;
             " onclick="window.location.href='/'">ROMGON</h1>
+            
+            <!-- Multiplayer Status (shown only in multiplayer games) -->
+            <div id="multiplayer-status-bar" style="display: none; align-items: center; gap: 10px; margin-left: 20px; padding-left: 20px; border-left: 1px solid rgba(245, 125, 45, 0.3);">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <span class="status-indicator" id="connection-indicator"></span>
+                    <span id="connection-text" style="font-size: 0.85em; color: #ccc;">Disconnected</span>
+                </div>
+                <div id="room-info-bar" style="display: none; font-size: 0.85em; color: #ccc;">
+                    Room: <span id="current-room-code-bar" style="color: #4ecdc4; font-weight: bold;">------</span>
+                </div>
+                <div id="player-role-bar" style="font-size: 0.85em; color: #ccc;">
+                    You: <span id="player-color-display-bar" style="font-weight: bold; color: #f57d2d;">-</span>
+                </div>
+            </div>
         </div>
         
         <!-- Account Status -->
@@ -21416,8 +21430,11 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             // Start the game
             closeMultiplayerModal();
             document.getElementById('multiplayer-status').style.display = 'block';
+            document.getElementById('multiplayer-status-bar').style.display = 'flex';
             document.getElementById('room-info').style.display = 'block';
+            document.getElementById('room-info-bar').style.display = 'block';
             document.getElementById('current-room-code').textContent = roomClient.currentRoom?.code || gameId.slice(0, 6);
+            document.getElementById('current-room-code-bar').textContent = roomClient.currentRoom?.code || gameId.slice(0, 6);
             
             // Display player info with username
             const token = localStorage.getItem('romgon-jwt');
@@ -21425,6 +21442,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             const myUsername = payload.username || 'You';
             const colorDisplay = myPlayerColor ? myPlayerColor.charAt(0).toUpperCase() + myPlayerColor.slice(1) : 'Unknown';
             document.getElementById('player-color-display').textContent = `${myUsername} (${colorDisplay})`;
+            document.getElementById('player-color-display-bar').textContent = `${myUsername} (${colorDisplay})`;
             
             // Update connection status
             updateConnectionStatus('connected', 'Connected');
@@ -21466,8 +21484,14 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             if (document.getElementById('multiplayer-status')) {
                 document.getElementById('multiplayer-status').style.display = 'none';
             }
+            if (document.getElementById('multiplayer-status-bar')) {
+                document.getElementById('multiplayer-status-bar').style.display = 'none';
+            }
             if (document.getElementById('room-info')) {
                 document.getElementById('room-info').style.display = 'none';
+            }
+            if (document.getElementById('room-info-bar')) {
+                document.getElementById('room-info-bar').style.display = 'none';
             }
         }
         
