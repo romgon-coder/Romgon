@@ -2976,6 +2976,99 @@
         </div>
     </div>
 
+    <!-- Play Local/Online Options Modal -->
+    <div id="play-options-modal" style="
+        display: none;
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(20, 24, 32, 0.98);
+        z-index: 999999;
+        justify-content: center;
+        align-items: center;
+    ">
+        <div style="
+            max-width: 600px;
+            background: linear-gradient(135deg, #23272e 0%, #2d3139 100%);
+            border-radius: 20px;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+            padding: 40px;
+            color: #fff;
+            position: relative;
+        ">
+            <button onclick="hidePlayOptionsModal()" style="
+                position: absolute; top: 15px; right: 15px;
+                background: transparent;
+                color: #fff;
+                border: 2px solid rgba(255,255,255,0.3);
+                border-radius: 8px;
+                font-size: 1.1em;
+                padding: 5px 12px;
+                cursor: pointer;
+                transition: all 0.2s;
+            " onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">✖️</button>
+            
+            <h2 style="color: #4ecdc4; margin-top: 0; margin-bottom: 10px; font-size: 1.8em;">🎮 Play Local/Online</h2>
+            <p style="color: #999; margin-bottom: 30px;">Choose how you want to play</p>
+
+            <!-- Options -->
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <!-- Local PvP -->
+                <button onclick="openGameVariantsModal('pvp'); hidePlayOptionsModal();" style="
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: #fff;
+                    border: none;
+                    padding: 20px;
+                    border-radius: 12px;
+                    cursor: pointer;
+                    font-weight: 700;
+                    font-size: 1.1em;
+                    text-align: left;
+                    transition: all 0.3s;
+                    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+                " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.4)'">
+                    <div style="font-size: 1.3em; margin-bottom: 5px;">🏠 Local PvP</div>
+                    <div style="font-size: 0.85em; opacity: 0.9; font-weight: 400;">Play against a friend on the same device</div>
+                </button>
+
+                <!-- Create Private Room -->
+                <button onclick="showMultiplayerSection('create'); hidePlayOptionsModal();" style="
+                    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+                    color: #fff;
+                    border: none;
+                    padding: 20px;
+                    border-radius: 12px;
+                    cursor: pointer;
+                    font-weight: 700;
+                    font-size: 1.1em;
+                    text-align: left;
+                    transition: all 0.3s;
+                    box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+                " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(245, 87, 108, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(245, 87, 108, 0.4)'">
+                    <div style="font-size: 1.3em; margin-bottom: 5px;">🔐 Create Private Room</div>
+                    <div style="font-size: 0.85em; opacity: 0.9; font-weight: 400;">Create a room and invite friends with a code</div>
+                </button>
+
+                <!-- Join Public Rooms -->
+                <button onclick="showMultiplayerSection('public'); hidePlayOptionsModal();" style="
+                    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                    color: #fff;
+                    border: none;
+                    padding: 20px;
+                    border-radius: 12px;
+                    cursor: pointer;
+                    font-weight: 700;
+                    font-size: 1.1em;
+                    text-align: left;
+                    transition: all 0.3s;
+                    box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+                " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(79, 172, 254, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(79, 172, 254, 0.4)'">
+                    <div style="font-size: 1.3em; margin-bottom: 5px;">🌐 Public Rooms</div>
+                    <div style="font-size: 0.85em; opacity: 0.9; font-weight: 400;">Browse and join public game rooms</div>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
     // Show/hide Opening Book modal
     function showOpeningBook() {
@@ -3027,6 +3120,36 @@
 
     function hideAllGamesHistory() {
         document.getElementById('all-games-modal').style.display = 'none';
+    }
+
+    // Play Options Modal Functions
+    function showPlayOptionsModal() {
+        const modal = document.getElementById('play-options-modal');
+        if (modal) {
+            modal.style.display = 'flex';
+        }
+    }
+
+    function hidePlayOptionsModal() {
+        const modal = document.getElementById('play-options-modal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    // Navigate to multiplayer section
+    function showMultiplayerSection(section) {
+        // Open multiplayer modal
+        openMultiplayerModal();
+        
+        // Navigate to specific section after a brief delay to ensure modal is open
+        setTimeout(() => {
+            if (section === 'create') {
+                showRoomConfig();
+            } else if (section === 'public') {
+                showPublicRooms();
+            }
+        }, 100);
     }
 
     async function loadAllGames(page = 1) {
@@ -8021,7 +8144,7 @@
                         🤖 vs AI
                     </button>
                     
-                    <button onclick="startGameWithTime(10)" style="
+                    <button onclick="showPlayOptionsModal()" style="
                         background: rgba(255, 255, 255, 0.95);
                         color: #1a1e26;
                         border: none;
@@ -8033,7 +8156,7 @@
                         transition: all 0.3s;
                         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
                     " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(0, 0, 0, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0, 0, 0, 0.2)'">
-                        👥 vs Human
+                        👥 Play Local/Online
                     </button>
                     
                     <button onclick="alert('Online matchmaking coming soon!');" style="
