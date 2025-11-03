@@ -19495,6 +19495,14 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     return;
                 }
 
+                // Validate response data
+                if (!data || !data.message) {
+                    console.error('❌ Invalid response from server:', data);
+                    showNotification('❌ Failed to send message (invalid response)', 'error');
+                    input.value = message;
+                    return;
+                }
+
                 // Add message to UI immediately
                 const messageData = data.message;
                 addGlobalMessageToUI({

@@ -110,11 +110,22 @@ router.post('/send', authenticateToken, async (req, res) => {
             [userId, username, trimmedMessage, user?.avatar || '😀', user?.avatar_type || 'emoji']
         );
 
+        // Get the ID of the inserted message
+        const messageId = result.lastID || result.id;
+        console.log('📝 Inserted message with ID:', messageId);
+
         // Get the created message
         const messageData = await dbPromise.get(
             'SELECT * FROM chat_messages WHERE id = ?',
-            [result.id]
+            [messageId]
         );
+
+        if (!messageData) {
+            console.error('❌ Failed to retrieve message after insert');
+            return res.status(500).json({ error: 'Failed to save message' });
+        }
+
+        console.log('✅ Message retrieved:', messageData);
 
         // Broadcast to all connected clients via WebSocket
         if (ioInstance) {
