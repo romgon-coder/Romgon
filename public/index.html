@@ -3045,6 +3045,9 @@
             const date = new Date(game.date);
             const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             
+            // Handle null winner color
+            const winnerColor = game.winner.color ? game.winner.color.toUpperCase() : 'UNKNOWN';
+            
             html += `
                 <div style="
                     background: #23272e;
@@ -3070,22 +3073,22 @@
                         
                         <div style="text-align: center;">
                             <div style="color: #4ecdc4; font-weight: 600; font-size: 1.1em; margin-bottom: 5px;">
-                                🏆 ${game.winner.name}
+                                🏆 ${game.winner.name || 'Unknown'}
                             </div>
                             <div style="color: #999; font-size: 0.85em;">
-                                ${game.winner.color.toUpperCase()} wins
+                                ${winnerColor} wins
                             </div>
                             <div style="color: #999; font-size: 0.85em; margin-top: 5px;">
-                                ${game.reason.replace(/_/g, ' ')}
+                                ${(game.reason || 'unknown').replace(/_/g, ' ')}
                             </div>
                         </div>
                         
                         <div style="text-align: right; min-width: 120px;">
                             <div style="color: #999; font-size: 0.85em; margin-bottom: 5px;">
-                                ${game.moves} moves
+                                ${game.moves || 0} moves
                             </div>
                             <div style="color: #999; font-size: 0.85em;">
-                                ${game.duration}
+                                ${game.duration || 'Unknown'}
                             </div>
                             <div style="color: #666; font-size: 0.8em; margin-top: 5px;">
                                 ${dateStr}
