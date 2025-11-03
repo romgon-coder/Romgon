@@ -13102,126 +13102,6 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             listContainer.appendChild(playerHead);
         });
     }
-                flex-direction: column;
-                gap: 4px;
-            `;
-            
-            const nameEl = document.createElement('div');
-            nameEl.style.cssText = `
-                color: white;
-                font-weight: 600;
-                font-size: 1.05em;
-            `;
-            nameEl.textContent = player.displayName;
-            
-            const statusEl = document.createElement('div');
-            statusEl.style.cssText = `
-                color: #26de81;
-                font-size: 0.85em;
-            `;
-            statusEl.textContent = '● Online';
-            
-            infoDiv.appendChild(nameEl);
-            infoDiv.appendChild(statusEl);
-            
-            // Action buttons container
-            const actionsDiv = document.createElement('div');
-            actionsDiv.style.cssText = `
-                display: flex;
-                gap: 8px;
-                flex-shrink: 0;
-            `;
-            
-            // Don't show buttons for yourself
-            const isMe = player.userId === window.currentChatUser?.userId;
-            
-            if (!isMe) {
-                // Message button
-                const messageBtn = document.createElement('button');
-                messageBtn.textContent = '💬';
-                messageBtn.title = 'Send Message';
-                messageBtn.style.cssText = `
-                    background: rgba(78, 205, 196, 0.1);
-                    border: 2px solid #4ecdc4;
-                    color: #4ecdc4;
-                    padding: 8px 12px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-size: 1em;
-                    transition: all 0.3s ease;
-                    flex-shrink: 0;
-                `;
-                messageBtn.onmouseover = function() {
-                    this.style.background = '#4ecdc4';
-                    this.style.color = 'white';
-                };
-                messageBtn.onmouseout = function() {
-                    this.style.background = 'rgba(78, 205, 196, 0.1)';
-                    this.style.color = '#4ecdc4';
-                };
-                messageBtn.onclick = function(e) {
-                    console.log('🔶🔶🔶 SEND MESSAGE BUTTON CLICKED! 🔶🔶🔶');
-                    console.log('🔶 Player userId:', player.userId);
-                    console.log('🔶 Player displayName:', player.displayName);
-                    e.stopPropagation();
-                    console.log('🔶 About to call openDirectMessage...');
-                    openDirectMessage(player.userId, player.displayName);
-                    console.log('🔶 openDirectMessage returned');
-                };
-                
-                // Add Friend button
-                const addBtn = document.createElement('button');
-                addBtn.textContent = '+ Friend';
-                addBtn.style.cssText = `
-                    background: rgba(38, 222, 129, 0.1);
-                    border: 2px solid #26de81;
-                    color: #26de81;
-                    padding: 8px 16px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-weight: 600;
-                    font-size: 0.9em;
-                    transition: all 0.3s ease;
-                    flex-shrink: 0;
-                `;
-                addBtn.onmouseover = function() {
-                    this.style.background = '#26de81';
-                    this.style.color = 'white';
-                };
-                addBtn.onmouseout = function() {
-                    this.style.background = 'rgba(38, 222, 129, 0.1)';
-                    this.style.color = '#26de81';
-                };
-                addBtn.onclick = function(e) {
-                    e.stopPropagation();
-                    sendFriendRequest(player.userId, player.displayName);
-                };
-                
-                actionsDiv.appendChild(messageBtn);
-                actionsDiv.appendChild(addBtn);
-            } else {
-                // Show "You" badge for current user
-                const youBadge = document.createElement('div');
-                youBadge.textContent = '(You)';
-                youBadge.style.cssText = `
-                    color: #4ecdc4;
-                    font-size: 0.85em;
-                    font-weight: 600;
-                    padding: 8px 12px;
-                `;
-                actionsDiv.appendChild(youBadge);
-            }
-            
-            playerCard.appendChild(avatarEl);
-            playerCard.appendChild(infoDiv);
-            playerCard.appendChild(actionsDiv);
-            
-            listContainer.appendChild(playerCard);
-        });
-        
-        console.log('✅ Finished rendering', sortedPlayers.length, 'player cards');
-        console.log('📊 List container now has', listContainer.children.length, 'children');
-    }
     
     function filterOnlinePlayers(searchTerm) {
         const cards = document.querySelectorAll('.online-player-card');
@@ -20834,8 +20714,23 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             console.log('🔔 Updated both onlinePlayers and onlinePlayersList');
             console.log('🔔 onlinePlayers size:', onlinePlayers.size);
             console.log('🔔 onlinePlayersList size:', onlinePlayersList.size);
-            console.log('🔔 Calling renderOnlinePlayers (NEW function with chat)');
-            renderOnlinePlayers(); // Use NEW function with message buttons!
+            // Update top-menu counter if present
+            const menuCount = document.getElementById('online-count-menu');
+            if (menuCount) menuCount.textContent = `${onlinePlayersList.size} online`;
+
+            console.log('🔔 Calling renderOnlinePlayers (NEW function with chat) and renderOnlinePlayersOld (top-bar)');
+            // Call both renderers: new graphical lobby view and the old compact top-bar view
+            try {
+                renderOnlinePlayers(); // Lobby graphical heads
+            } catch (e) {
+                console.warn('⚠️ renderOnlinePlayers failed:', e);
+            }
+
+            try {
+                renderOnlinePlayersOld(); // Top-bar / compact list
+            } catch (e) {
+                console.warn('⚠️ renderOnlinePlayersOld failed:', e);
+            }
         }
         
         function renderOnlinePlayersOld() { // Renamed - this is the old user-home page function
@@ -29320,12 +29215,20 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
+                // Ensure response is JSON
+                const contentType = response.headers.get('content-type') || '';
+                if (!contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error(`❌ Tablebase ${name} did not return JSON. Response snippet:`, text.slice(0, 200));
+                    throw new Error('Tablebase response not JSON');
+                }
+
                 const data = await response.json();
                 loadedTablebases[name] = data.tablebase;
-                
+
                 console.log(`✅ Tablebase ${name} loaded: ${Object.keys(data.tablebase).length} positions`);
-                console.log(`   Stats:`, data.metadata.stats);
-                
+                console.log(`   Stats:`, data.metadata?.stats);
+
                 return data;
             } catch (error) {
                 console.error(`❌ Failed to load tablebase ${name}:`, error);
