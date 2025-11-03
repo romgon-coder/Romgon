@@ -22083,6 +22083,27 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 console.log('✅ Connected to multiplayer server');
                 updateConnectionStatus('connected', 'Connected');
             });
+
+            // Global lobby chat listener - receive messages from all users in real-time
+            socket.on('chat:globalMessage', (data) => {
+                console.log('📩 Received global chat message:', data);
+                
+                // Don't add the message if it's from the current user (already added by sendGlobalMessage)
+                const currentUserId = localStorage.getItem('userId');
+                if (data.user_id && data.user_id === currentUserId) {
+                    console.log('⏭️ Skipping own message (already displayed)');
+                    return;
+                }
+                
+                // Add to UI for all other users
+                addGlobalMessageToUI(data, true);
+                
+                // Play notification sound if lobby is not active
+                const lobbyPanel = document.getElementById('lobby-panel');
+                if (!lobbyPanel || lobbyPanel.style.display === 'none') {
+                    playNotificationSound();
+                }
+            });
             
             socket.on('disconnect', () => {
                 console.log('❌ Disconnected from server');
