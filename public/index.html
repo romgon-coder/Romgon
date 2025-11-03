@@ -12957,6 +12957,12 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         
         console.log('🎨 Rendering', onlinePlayersList.size, 'online players');
         
+        // Update the counter in the top of the section
+        const countEl = document.getElementById('online-players-count');
+        if (countEl) {
+            countEl.textContent = onlinePlayersList.size;
+        }
+        
         // Clear existing
         listContainer.innerHTML = '';
         
@@ -13071,7 +13077,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     z-index: 10;
                     border: 1px solid rgba(78, 205, 196, 0.3);
                 ">
-                    ${player.displayName}
+                    ${escapeHtml(player.displayName)}
                     ${player.rating ? `<br><span style="color: #4ecdc4;">⭐ ${player.rating}</span>` : ''}
                 </div>
             `;
