@@ -13840,24 +13840,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 endTurnSound.volume = 0.4; // Set volume to 40% for end turn sound
                 endTurnSound.preload = 'auto';
                 
-                // Load menu button sound with detailed error logging
-                menuButtonSound = new Audio();
+                // Load menu button sound (OGG format for better browser compatibility)
+                menuButtonSound = new Audio('ASSETS/menubuttonsound.ogg');
                 menuButtonSound.volume = 0.3;
                 menuButtonSound.preload = 'auto';
-                
-                // Add event listeners to debug loading
-                menuButtonSound.addEventListener('loadeddata', function() {
-                    console.log('Menu button sound loaded successfully');
-                });
-                menuButtonSound.addEventListener('error', function(e) {
-                    console.error('Menu button sound error:', e);
-                    console.error('Error details:', this.error);
-                });
-                menuButtonSound.addEventListener('canplay', function() {
-                    console.log('Menu button sound can play');
-                });
-                
-                menuButtonSound.src = 'ASSETS/menubuttonsound.mp3';
                 
                 // Background music tracks
                 backgroundMusic1 = new Audio('ASSETS/background1.mp3');
@@ -13988,7 +13974,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         }
         
         function playMenuButtonSound() {
-            console.log('playMenuButtonSound called, menuButtonSound:', menuButtonSound);
+            console.log('playMenuButtonSound called');
             if (menuButtonSound) {
                 try {
                     menuButtonSound.currentTime = 0; // Reset to beginning
