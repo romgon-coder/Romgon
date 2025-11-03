@@ -2882,9 +2882,11 @@
         position: fixed;
         top: 0; left: 0; width: 100vw; height: 100vh;
         background: rgba(20, 24, 32, 0.98);
-        z-index: 3000;
+        z-index: 999999;
         overflow-y: auto;
         padding: 0; margin: 0;
+        visibility: visible;
+        opacity: 1;
     ">
         <div style="
             max-width: 1200px;
@@ -3002,9 +3004,19 @@
         
         console.log('📍 Modal found, current display:', modal.style.display);
         modal.style.display = 'block';
+        modal.style.visibility = 'visible';
+        modal.style.opacity = '1';
         console.log('📍 Modal display set to:', modal.style.display);
         console.log('📍 Modal computed style:', window.getComputedStyle(modal).display);
         console.log('📍 Modal z-index:', window.getComputedStyle(modal).zIndex);
+        console.log('📍 Modal visibility:', window.getComputedStyle(modal).visibility);
+        console.log('📍 Modal opacity:', window.getComputedStyle(modal).opacity);
+        console.log('📍 Modal position:', window.getComputedStyle(modal).position);
+        console.log('📍 Modal top:', window.getComputedStyle(modal).top);
+        console.log('📍 Modal left:', window.getComputedStyle(modal).left);
+        console.log('📍 Modal width:', window.getComputedStyle(modal).width);
+        console.log('📍 Modal height:', window.getComputedStyle(modal).height);
+        console.log('📍 Modal bounding rect:', modal.getBoundingClientRect());
         
         currentGamesPage = 1;
         currentGamesSearch = '';
