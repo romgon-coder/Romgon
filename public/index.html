@@ -13864,16 +13864,17 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             } catch (error) {
                 console.log('Audio not available:', error);
             }
+            
+            // Add global button click listener for menu button sound after audio initialization
+            document.addEventListener('click', function(event) {
+                // Check if clicked element is a button or has button parent
+                const button = event.target.closest('button');
+                if (button) {
+                    console.log('Button clicked, playing menu sound');
+                    playMenuButtonSound();
+                }
+            }, true); // Use capture phase to catch all button clicks
         }
-        
-        // Add global button click listener for menu button sound
-        document.addEventListener('click', function(event) {
-            // Check if clicked element is a button or has button parent
-            const button = event.target.closest('button');
-            if (button) {
-                playMenuButtonSound();
-            }
-        }, true); // Use capture phase to catch all button clicks
         
         // Play click sound
         function playClickSound() {
@@ -13972,6 +13973,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         }
         
         function playMenuButtonSound() {
+            console.log('playMenuButtonSound called, menuButtonSound:', menuButtonSound);
             if (menuButtonSound) {
                 try {
                     menuButtonSound.currentTime = 0; // Reset to beginning
@@ -13981,6 +13983,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 } catch (error) {
                     console.log('Menu button audio play error:', error);
                 }
+            } else {
+                console.log('menuButtonSound not initialized');
             }
         }
         

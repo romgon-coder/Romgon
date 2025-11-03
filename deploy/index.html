@@ -13797,6 +13797,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         let flipboardSound = null;
         let rotationSound = null;
         let endTurnSound = null;
+        let menuButtonSound = null;
         
         // Background music
         let backgroundMusic1 = null;
@@ -13839,6 +13840,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 endTurnSound.volume = 0.4; // Set volume to 40% for end turn sound
                 endTurnSound.preload = 'auto';
                 
+                menuButtonSound = new Audio('ASSETS/menubuttonsound.mp3');
+                menuButtonSound.volume = 0.3; // Set volume to 30% for menu button sound
+                menuButtonSound.preload = 'auto';
+                
                 // Background music tracks
                 backgroundMusic1 = new Audio('ASSETS/background1.mp3');
                 backgroundMusic1.volume = 0.2; // Set volume to 20%
@@ -13859,6 +13864,16 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             } catch (error) {
                 console.log('Audio not available:', error);
             }
+            
+            // Add global button click listener for menu button sound after audio initialization
+            document.addEventListener('click', function(event) {
+                // Check if clicked element is a button or has button parent
+                const button = event.target.closest('button');
+                if (button) {
+                    console.log('Button clicked, playing menu sound');
+                    playMenuButtonSound();
+                }
+            }, true); // Use capture phase to catch all button clicks
         }
         
         // Play click sound
@@ -13954,6 +13969,22 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 } catch (error) {
                     console.log('End turn audio play error:', error);
                 }
+            }
+        }
+        
+        function playMenuButtonSound() {
+            console.log('playMenuButtonSound called, menuButtonSound:', menuButtonSound);
+            if (menuButtonSound) {
+                try {
+                    menuButtonSound.currentTime = 0; // Reset to beginning
+                    menuButtonSound.play().catch(error => {
+                        console.log('Menu button audio play error:', error);
+                    });
+                } catch (error) {
+                    console.log('Menu button audio play error:', error);
+                }
+            } else {
+                console.log('menuButtonSound not initialized');
             }
         }
         
