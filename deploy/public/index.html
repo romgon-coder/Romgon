@@ -33494,6 +33494,26 @@ ${moveHistory || '(No moves played yet - starting position)'}
             }
         }, 500);
 
+        // 🔍 GLOBAL CLICK DETECTOR - Test if clicks work at all
+        document.addEventListener('click', function(e) {
+            console.log('🎯 GLOBAL CLICK DETECTED:', e.target.id || e.target.className || e.target.tagName);
+        }, true);
+
+        // 🔍 Test the chat button specifically
+        setTimeout(() => {
+            const chatBtn = document.getElementById('account-bar-chat-indicator');
+            console.log('🔍 Chat button element:', chatBtn);
+            console.log('🔍 Chat button onclick:', chatBtn?.onclick);
+            console.log('🔍 Chat button display:', chatBtn?.style.display);
+            
+            if (chatBtn) {
+                chatBtn.addEventListener('click', function(e) {
+                    console.log('🎯🎯🎯 CHAT BUTTON CLICK LISTENER FIRED 🎯🎯🎯');
+                    console.log('Event:', e);
+                }, true);
+            }
+        }, 1000);
+
     </script>
 
     <!-- 🎮 Game Engine API - Enables external tools and AI systems to interact with the game -->
