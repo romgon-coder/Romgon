@@ -66,6 +66,13 @@ class GeneralNavigationSystem {
   }
 
   handleKeyPress(event) {
+    // PRIORITY: If chat panel is open, skip all keyboard nav
+    const chatPanel = document.getElementById('chat-panel-modal');
+    if (chatPanel && chatPanel.style.display === 'flex') {
+      this.logDebug('🚫 Chat panel is open, skipping keyboard nav');
+      return;
+    }
+    
     // PRIORITY: If PVP system is active and enabled, ALWAYS skip
     if (window.keyboardNav && window.keyboardNav.enabled) {
       this.logDebug('🚫 PVP system is active and enabled, skipping all General Nav input');
@@ -112,6 +119,13 @@ class GeneralNavigationSystem {
    * Navigate to adjacent elements
    */
   navigate(direction) {
+    // Don't navigate if chat panel is open
+    const chatPanel = document.getElementById('chat-panel-modal');
+    if (chatPanel && chatPanel.style.display === 'flex') {
+      this.logDebug('🚫 Chat panel is open, skipping navigation');
+      return;
+    }
+    
     // Scan for navigable elements if not cached
     this.updateNavigationElements();
     
@@ -177,6 +191,13 @@ class GeneralNavigationSystem {
    * Confirm/Select current focused element
    */
   confirmSelection() {
+    // Don't confirm if chat panel is open
+    const chatPanel = document.getElementById('chat-panel-modal');
+    if (chatPanel && chatPanel.style.display === 'flex') {
+      this.logDebug('🚫 Chat panel is open, skipping confirmation');
+      return;
+    }
+    
     if (!this.focusedElement) {
       this.logDebug('No element focused for confirmation');
       return;
