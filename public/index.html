@@ -3310,9 +3310,9 @@
         // Define theme colors
         const themes = {
             default: {
-                primary: '#667eea',
-                secondary: '#764ba2',
-                gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                primary: '#0f1419',
+                secondary: '#1a1f2e',
+                gradient: 'linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #0f1419 100%)'
             },
             monotone: {
                 primary: '#2c3e50',
@@ -6282,16 +6282,13 @@
             transform: translateY(-2px) !important;
         }
         
-        /* Game board background */
+        /* Game board background - keep subtle */
         body[class*="theme-"] #game-board-container {
             background: rgba(0, 0, 0, 0.2) !important;
         }
         
-        /* Hexagons */
-        body[class*="theme-"] .hexagon {
-            background-color: var(--theme-hex-bg) !important;
-            border-color: var(--theme-hex-border) !important;
-        }
+        /* DO NOT change hexagon colors - they need original colors for highlights to work! */
+        /* Hexagons are excluded from theme changes to preserve game visibility */
         
         /* Panels */
         body[class*="theme-"] .draggable-panel,
