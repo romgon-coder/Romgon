@@ -358,6 +358,12 @@ router.get('/active/:playerId',
 
             const { playerId } = req.params;
 
+            // Check if this is a guest user
+            if (playerId.startsWith('guest_')) {
+                // Guests don't have persistent games
+                return res.json({ games: [] });
+            }
+
             // Get active games where player is involved
             const games = await dbPromise.all(
                 `SELECT 
@@ -509,6 +515,16 @@ router.get('/history/:playerId',
             const { playerId } = req.params;
             const limit = parseInt(req.query.limit) || 10;
             const offset = parseInt(req.query.offset) || 0;
+
+            // Check if this is a guest user
+            if (playerId.startsWith('guest_')) {
+                // Guests don't have persistent game history
+                return res.json({
+                    games: [],
+                    total: 0,
+                    hasMore: false
+                });
+            }
 
             // Get finished games
             const games = await dbPromise.all(

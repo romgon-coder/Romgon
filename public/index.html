@@ -12528,6 +12528,12 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         );
         
         sortedPlayers.forEach(player => {
+            // Skip players without displayName
+            if (!player || !player.displayName) {
+                console.warn('⚠️ Skipping player with missing displayName:', player);
+                return;
+            }
+            
             const playerCard = document.createElement('div');
             playerCard.className = 'online-player-card';
             playerCard.setAttribute('data-username', player.displayName.toLowerCase());
@@ -19570,7 +19576,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         // Load chat history from backend
         async function loadChatHistory() {
             try {
-                const response = await fetch(`${API_URL}/api/chat/history?limit=100`);
+                const response = await fetch(`${BACKEND_API_URL}/api/chat/history?limit=100`);
                 const data = await response.json();
 
                 if (data.success && data.messages) {

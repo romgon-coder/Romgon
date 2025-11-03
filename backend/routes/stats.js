@@ -215,6 +215,24 @@ router.get('/player/:userId',
 
             const { userId } = req.params;
 
+            // Check if this is a guest user
+            if (userId.startsWith('guest_')) {
+                // Return minimal stats for guest users
+                return res.json({
+                    userId: userId,
+                    username: 'Guest',
+                    rating: 1600,
+                    tier: { name: 'Guest', min: 0, max: 9999 },
+                    memberLevel: 'guest',
+                    stats: {
+                        games: { total: 0, wins: 0, losses: 0, winRate: 0 },
+                        performance: { avgMovesPerGame: 0, avgCapturesPerGame: 0 },
+                        achievements: { winsByReason: {}, bestWinStreak: 0, bestRating: 1600 }
+                    },
+                    recentGames: []
+                });
+            }
+
             // Get user
             const user = await dbPromise.get('SELECT * FROM users WHERE id = ?', [userId]);
             if (!user) {
