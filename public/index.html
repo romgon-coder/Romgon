@@ -19472,7 +19472,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
 
             try {
                 // Send to backend API
-                const response = await fetch(`${API_URL}/api/chat/send`, {
+                const response = await fetch(`${BACKEND_API_URL}/api/chat/send`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

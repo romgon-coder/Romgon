@@ -122,49 +122,6 @@ router.post('/:gameId/join',
 );
 
 /**
- * Get game state
- * GET /api/games/:gameId
- */
-router.get('/:gameId',
-    [param('gameId').isUUID()],
-    async (req, res) => {
-        try {
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).json({ errors: errors.array() });
-            }
-
-            const { gameId } = req.params;
-
-            const game = await dbPromise.get('SELECT * FROM games WHERE id = ?', [gameId]);
-            if (!game) {
-                return res.status(404).json({ error: 'Game not found' });
-            }
-
-            // Parse moves
-            const moves = JSON.parse(game.moves || '[]');
-
-            res.json({
-                gameId: game.id,
-                whitePlayerId: game.white_player_id,
-                blackPlayerId: game.black_player_id,
-                status: game.status,
-                moves,
-                totalMoves: game.total_moves,
-                winner: game.winner_id,
-                winnerColor: game.winner_color,
-                reason: game.reason,
-                createdAt: game.created_at,
-                updatedAt: game.updated_at
-            });
-        } catch (error) {
-            console.error('Error getting game:', error);
-            res.status(500).json({ error: error.message });
-        }
-    }
-);
-
-/**
  * Make a move
  * POST /api/games/:gameId/move
  */
@@ -711,6 +668,49 @@ router.post('/submit-result',
 
         } catch (error) {
             console.error('Error submitting game result:', error);
+            res.status(500).json({ error: error.message });
+        }
+    }
+);
+
+/**
+ * Get game state (MUST BE LAST - catches all unmatched routes)
+ * GET /api/games/:gameId
+ */
+router.get('/:gameId',
+    [param('gameId').isUUID()],
+    async (req, res) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+
+            const { gameId } = req.params;
+
+            const game = await dbPromise.get('SELECT * FROM games WHERE id = ?', [gameId]);
+            if (!game) {
+                return res.status(404).json({ error: 'Game not found' });
+            }
+
+            // Parse moves
+            const moves = JSON.parse(game.moves || '[]');
+
+            res.json({
+                gameId: game.id,
+                whitePlayerId: game.white_player_id,
+                blackPlayerId: game.black_player_id,
+                status: game.status,
+                moves,
+                totalMoves: game.total_moves,
+                winner: game.winner_id,
+                winnerColor: game.winner_color,
+                reason: game.reason,
+                createdAt: game.created_at,
+                updatedAt: game.updated_at
+            });
+        } catch (error) {
+            console.error('Error getting game:', error);
             res.status(500).json({ error: error.message });
         }
     }
