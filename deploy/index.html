@@ -18643,10 +18643,6 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                             }
                             updateTurnDisplay();
                             
-                            // Update highlights
-                            clearHighlights();
-                            highlightThreatenedPieces();
-                            
                             playMoveSound();
                             console.log('✅ Move applied successfully!');
                         }
@@ -26104,7 +26100,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     // End turn
                     if (!gameOver) {
                         console.log('Ending turn after keep');
-                        switchTurn();
+                        // In multiplayer, wait for server to sync turn
+                        if (!multiplayerMode || myPlayerColor === 'both') {
+                            switchTurn();
+                        }
                         // Update base defence display
                         updateBaseDefenceDisplay();
                         // Update attack highlights for all pieces
@@ -29893,12 +29892,18 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     
                     if (isCapture) {
                         console.log('📋 Turn ending due to CAPTURE');
-                        switchTurn();
+                        // In multiplayer, wait for server to sync turn
+                        if (!multiplayerMode || myPlayerColor === 'both') {
+                            switchTurn();
+                        }
                         updateBaseDefenceDisplay();
                     } else if (!newPiece.classList.contains('triangle-piece') && !newPiece.classList.contains('hexgon-piece')) {
                         // Non-rotatable pieces end the turn automatically
                         console.log('📋 Turn ending - non-rotatable piece moved');
-                        switchTurn();
+                        // In multiplayer, wait for server to sync turn
+                        if (!multiplayerMode || myPlayerColor === 'both') {
+                            switchTurn();
+                        }
                         updateBaseDefenceDisplay();
                     } else {
                         console.log('📋 Turn NOT ending yet - rotatable piece (triangle/hexagon) can still rotate');
