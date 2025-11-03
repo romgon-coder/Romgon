@@ -12956,8 +12956,6 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         }
         
         console.log('🎨 Rendering', onlinePlayersList.size, 'online players');
-        console.log('📍 Container element:', listContainer);
-        console.log('📍 Container parent visible?', listContainer.parentElement?.style.display);
         
         // Clear existing
         listContainer.innerHTML = '';
@@ -12966,18 +12964,14 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         if (onlinePlayersList.size === 0) {
             console.log('⚠️ Player list is empty');
             listContainer.innerHTML = `
-                <div style="text-align: center; color: #999; padding: 40px 20px;">
-                    <div style="font-size: 3em; margin-bottom: 15px;">😴</div>
-                    <p>No players online right now</p>
-                    <p style="font-size: 0.85em; margin-top: 10px;">Be the first to start a game!</p>
-                </div>
+                <span style="color: #888; font-size: 0.9em;">No players online</span>
             `;
             return;
         }
         
-        console.log('✅ Creating player cards for', onlinePlayersList.size, 'players');
+        console.log('✅ Creating Minecraft-style player heads for', onlinePlayersList.size, 'players');
         
-        // Render each player
+        // Render each player as a Minecraft-style head
         const sortedPlayers = Array.from(onlinePlayersList.values()).sort((a, b) => 
             a.displayName.localeCompare(b.displayName)
         );
@@ -12989,66 +12983,119 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 return;
             }
             
-            const playerCard = document.createElement('div');
-            playerCard.className = 'online-player-card';
-            playerCard.setAttribute('data-username', player.displayName.toLowerCase());
-            playerCard.style.cssText = `
-                background: #2a2e36;
-                border: 2px solid #3a3e46;
-                border-radius: 12px;
-                padding: 16px;
-                display: flex;
-                align-items: center;
-                gap: 16px;
-                transition: all 0.3s ease;
-                cursor: pointer;
-            `;
-            
-            playerCard.onmouseover = function() {
-                this.style.background = '#3a3e46';
-                this.style.borderColor = '#26de81';
-            };
-            playerCard.onmouseout = function() {
-                this.style.background = '#2a2e36';
-                this.style.borderColor = '#3a3e46';
-            };
-            
-            // Avatar
-            const avatarEl = document.createElement('div');
-            avatarEl.style.cssText = `
-                width: 50px;
-                height: 50px;
-                border-radius: 50%;
-                background: linear-gradient(135deg, #26de81 0%, #20bf6b 100%);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 1.8em;
-                flex-shrink: 0;
+            const playerHead = document.createElement('div');
+            playerHead.style.cssText = `
                 position: relative;
+                cursor: pointer;
+                transition: all 0.2s ease;
             `;
-            avatarEl.textContent = player.avatar;
             
-            // Online indicator (green dot)
-            const onlineDot = document.createElement('div');
-            onlineDot.style.cssText = `
-                position: absolute;
-                bottom: 2px;
-                right: 2px;
-                width: 12px;
-                height: 12px;
-                background: #26de81;
-                border: 2px solid #1a1e26;
-                border-radius: 50%;
-                box-shadow: 0 0 10px rgba(38, 222, 129, 0.8);
+            playerHead.onmouseover = function() {
+                this.style.transform = 'translateY(-5px) scale(1.1)';
+            };
+            playerHead.onmouseout = function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            };
+            
+            // Helper function to render avatar
+            const renderAvatar = (avatar) => {
+                if (avatar && avatar.startsWith('data:image')) {
+                    return `<img src="${avatar}" style="width: 100%; height: 100%; border-radius: 8px; object-fit: cover;">`;
+                }
+                return `<span style="font-size: 2em;">${avatar || '😀'}</span>`;
+            };
+            
+            playerHead.innerHTML = `
+                <!-- Minecraft-style player head -->
+                <div style="
+                    width: 50px;
+                    height: 50px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    border-radius: 8px;
+                    box-shadow: 
+                        0 4px 0 rgba(0, 0, 0, 0.3),
+                        0 6px 12px rgba(0, 0, 0, 0.4),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    position: relative;
+                    border: 2px solid rgba(0, 0, 0, 0.3);
+                    overflow: hidden;
+                ">
+                    ${renderAvatar(player.avatar)}
+                    
+                    <!-- 3D effect layers -->
+                    <div style="
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        height: 50%;
+                        background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, transparent 100%);
+                        pointer-events: none;
+                    "></div>
+                    
+                    <!-- Green online indicator -->
+                    <div style="
+                        position: absolute;
+                        bottom: -3px;
+                        right: -3px;
+                        width: 14px;
+                        height: 14px;
+                        background: #26de81;
+                        border: 3px solid #1a1e26;
+                        border-radius: 50%;
+                        box-shadow: 0 0 10px rgba(38, 222, 129, 0.8);
+                        animation: pulse 2s infinite;
+                    "></div>
+                </div>
+                
+                <!-- Player name tooltip (appears on hover) -->
+                <div style="
+                    position: absolute;
+                    bottom: -35px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: rgba(0, 0, 0, 0.9);
+                    color: #fff;
+                    padding: 6px 12px;
+                    border-radius: 6px;
+                    font-size: 0.8em;
+                    font-weight: 600;
+                    white-space: nowrap;
+                    pointer-events: none;
+                    opacity: 0;
+                    transition: opacity 0.2s;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+                    z-index: 10;
+                    border: 1px solid rgba(78, 205, 196, 0.3);
+                ">
+                    ${player.displayName}
+                    ${player.rating ? `<br><span style="color: #4ecdc4;">⭐ ${player.rating}</span>` : ''}
+                </div>
             `;
-            avatarEl.appendChild(onlineDot);
             
-            // Player info
-            const infoDiv = document.createElement('div');
-            infoDiv.style.cssText = `
-                flex: 1;
-                display: flex;
+            // Show tooltip on hover
+            playerHead.addEventListener('mouseenter', function() {
+                const tooltip = this.querySelector('div:last-child');
+                tooltip.style.opacity = '1';
+            });
+            
+            playerHead.addEventListener('mouseleave', function() {
+                const tooltip = this.querySelector('div:last-child');
+                tooltip.style.opacity = '0';
+            });
+            
+            // Click to open chat/challenge
+            playerHead.addEventListener('click', function() {
+                console.log('👤 Clicked on player:', player.displayName);
+                // You can add functionality here to open DM or challenge
+            });
+            
+            listContainer.appendChild(playerHead);
+        });
+    }
                 flex-direction: column;
                 gap: 4px;
             `;
