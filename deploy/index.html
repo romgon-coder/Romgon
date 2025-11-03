@@ -18643,6 +18643,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                             }
                             updateTurnDisplay();
                             
+                            // Update highlights after opponent's move
+                            highlightLastMove(from, to);
+                            highlightAllPiecesUnderAttack();
+                            
                             playMoveSound();
                             console.log('✅ Move applied successfully!');
                         }
@@ -20599,10 +20603,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 document.getElementById('room-code-display').textContent = data.roomCode;
                 showView('mp-create-room');
                 updateConnectionStatus('waiting', 'Waiting for opponent...');
-                document.getElementById('player-color-display').textContent = myPlayerColor.toUpperCase();
-                document.getElementById('current-room-code').textContent = data.roomCode;
-                document.getElementById('room-info').style.display = 'block';
-                document.getElementById('multiplayer-status').style.display = 'block';
+                document.getElementById('player-color-display-bar').textContent = myPlayerColor.toUpperCase();
+                document.getElementById('current-room-code-bar').textContent = data.roomCode;
+                document.getElementById('room-info-bar').style.display = 'block';
+                document.getElementById('multiplayer-status-bar').style.display = 'flex';
             });
             
             // Opponent joined
@@ -20622,10 +20626,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 
                 // Update UI
                 updateConnectionStatus('connected', 'Connected to game');
-                document.getElementById('player-color-display').textContent = myPlayerColor.toUpperCase();
-                document.getElementById('current-room-code').textContent = data.roomCode;
-                document.getElementById('room-info').style.display = 'block';
-                document.getElementById('multiplayer-status').style.display = 'block';
+                document.getElementById('player-color-display-bar').textContent = myPlayerColor.toUpperCase();
+                document.getElementById('current-room-code-bar').textContent = data.roomCode;
+                document.getElementById('room-info-bar').style.display = 'block';
+                document.getElementById('multiplayer-status-bar').style.display = 'flex';
                 
                 showNotification(`✅ Joined as ${myPlayerColor.toUpperCase()}!`, 'success');
             });
@@ -21440,11 +21444,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
 
             // Start the game
             closeMultiplayerModal();
-            document.getElementById('multiplayer-status').style.display = 'block';
+            // Only show top bar, not the old left panel
             document.getElementById('multiplayer-status-bar').style.display = 'flex';
-            document.getElementById('room-info').style.display = 'block';
             document.getElementById('room-info-bar').style.display = 'block';
-            document.getElementById('current-room-code').textContent = roomClient.currentRoom?.code || gameId.slice(0, 6);
             document.getElementById('current-room-code-bar').textContent = roomClient.currentRoom?.code || gameId.slice(0, 6);
             
             // Display player info with username
@@ -21452,7 +21454,6 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             const payload = JSON.parse(atob(token.split('.')[1]));
             const myUsername = payload.username || 'You';
             const colorDisplay = myPlayerColor ? myPlayerColor.charAt(0).toUpperCase() + myPlayerColor.slice(1) : 'Unknown';
-            document.getElementById('player-color-display').textContent = `${myUsername} (${colorDisplay})`;
             document.getElementById('player-color-display-bar').textContent = `${myUsername} (${colorDisplay})`;
             
             // Update connection status
@@ -21795,8 +21796,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             updateConnectionStatus('connected', 'Dev Mode Active');
             document.getElementById('player-color-display').textContent = 'BOTH (DEV)';
             document.getElementById('current-room-code').textContent = 'DEV-MODE';
-            document.getElementById('room-info').style.display = 'block';
-            document.getElementById('multiplayer-status').style.display = 'block';
+            document.getElementById('room-info-bar').style.display = 'block';
+            document.getElementById('multiplayer-status-bar').style.display = 'flex';
             
             // Close modal and start game
             closeMultiplayerModal();
