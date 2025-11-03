@@ -13778,6 +13778,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         let lockRhombusSound = null;
         let flipboardSound = null;
         let rotationSound = null;
+        let endTurnSound = null;
         
         // Background music
         let backgroundMusic1 = null;
@@ -13815,6 +13816,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 rotationSound = new Audio('ASSETS/rotationSound.mp3');
                 rotationSound.volume = 0.3; // Set volume to 30% for rotation sound
                 rotationSound.preload = 'auto';
+                
+                endTurnSound = new Audio('ASSETS/end turnSound.mp3');
+                endTurnSound.volume = 0.4; // Set volume to 40% for end turn sound
+                endTurnSound.preload = 'auto';
                 
                 // Background music tracks
                 backgroundMusic1 = new Audio('ASSETS/background1.mp3');
@@ -13917,6 +13922,19 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     });
                 } catch (error) {
                     console.log('Rotation audio play error:', error);
+                }
+            }
+        }
+        
+        function playEndTurnSound() {
+            if (endTurnSound) {
+                try {
+                    endTurnSound.currentTime = 0; // Reset to beginning
+                    endTurnSound.play().catch(error => {
+                        console.log('End turn audio play error:', error);
+                    });
+                } catch (error) {
+                    console.log('End turn audio play error:', error);
                 }
             }
         }
@@ -25469,6 +25487,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         function switchTurn() {
             currentPlayer = currentPlayer === 'black' ? 'white' : 'black';
             updateTurnDisplay();
+            
+            // Play end turn sound
+            playEndTurnSound();
             
             // Auto-flip board based on current player
             autoBoardFlip();
