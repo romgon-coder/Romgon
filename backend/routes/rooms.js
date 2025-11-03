@@ -707,6 +707,43 @@ router.post('/matchmaking/join', authenticateToken, async (req, res) => {
 
             console.log(`🎯 Match found! Room ${roomCode} created for ${match.player1.username} vs ${match.player2.username}`);
 
+            // Notify BOTH players via WebSocket if connected
+            if (ioInstance) {
+                const gameNamespace = ioInstance.of('/game');
+                
+                // Emit to Player 1 (who was waiting)
+                gameNamespace.emit('matchmaking:matched', {
+                    userId: match.player1.userId,
+                    room: {
+                        code: roomCode,
+                        id: roomId,
+                        gameId,
+                        players: room.players
+                    },
+                    opponent: {
+                        username: match.player2.username,
+                        rating: match.player2.rating
+                    }
+                });
+                
+                // Emit to Player 2 (who just joined)
+                gameNamespace.emit('matchmaking:matched', {
+                    userId: match.player2.userId,
+                    room: {
+                        code: roomCode,
+                        id: roomId,
+                        gameId,
+                        players: room.players
+                    },
+                    opponent: {
+                        username: match.player1.username,
+                        rating: match.player1.rating
+                    }
+                });
+                
+                console.log(`📡 WebSocket notifications sent to both players`);
+            }
+
             res.json({
                 success: true,
                 matched: true,

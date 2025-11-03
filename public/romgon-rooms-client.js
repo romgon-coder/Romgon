@@ -126,6 +126,33 @@ class RoomClient {
         this.socket.on('matchmaking:status', (data) => {
             console.log('🔍 Matchmaking status:', data);
         });
+
+        this.socket.on('matchmaking:matched', (data) => {
+            console.log('🎯 Matchmaking match found via WebSocket!', data);
+            
+            // Check if this event is for current user
+            const token = localStorage.getItem('romgon-jwt');
+            if (token) {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                if (data.userId === payload.userId) {
+                    // This match is for us!
+                    this.isInMatchmaking = false;
+                    this.stopMatchmakingPolling();
+                    this.currentRoom = data.room;
+                    
+                    // Join the room via WebSocket
+                    this.socket.emit('room:join', { roomCode: data.room.code });
+                    
+                    // Trigger game start
+                    if (this.onGameStarted) {
+                        this.onGameStarted({
+                            gameId: data.room.gameId,
+                            players: data.room.players
+                        });
+                    }
+                }
+            }
+        });
     }
 
     disconnect() {
