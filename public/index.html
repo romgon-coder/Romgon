@@ -20771,14 +20771,27 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             gameSocket.on('lobby:playerJoined', (player) => {
                 console.log('✅ Player joined:', player);
                 onlinePlayers.set(player.userId, player);
+                
+                // Also add to onlinePlayersList with proper format
+                onlinePlayersList.set(player.userId, {
+                    userId: player.userId,
+                    displayName: player.username || 'Unknown',
+                    avatar: player.avatar || '👤',
+                    avatarType: player.avatarType || 'emoji',
+                    rating: player.rating
+                });
+                
                 renderOnlinePlayersOld();
+                renderOnlinePlayers(); // Also update lobby graphical view
             });
             
             // Listen for player left
             gameSocket.on('lobby:playerLeft', (userId) => {
                 console.log('👋 Player left:', userId);
                 onlinePlayers.delete(userId);
+                onlinePlayersList.delete(userId);
                 renderOnlinePlayersOld();
+                renderOnlinePlayers(); // Also update lobby graphical view
             });
             
             // Request initial online players list (wait for connection)
@@ -20802,6 +20815,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         
         function updateOnlinePlayersList(players) {
             console.log('🔔 updateOnlinePlayersList called with', players.length, 'players');
+            console.log('🔔 Sample player data:', players[0]);
             
             // Update BOTH maps (old and new system)
             onlinePlayers.clear();
@@ -20809,7 +20823,15 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             players.forEach(player => {
                 onlinePlayers.set(player.userId, player);
-                onlinePlayersList.set(player.userId, player);
+                
+                // Transform to onlinePlayersList format
+                onlinePlayersList.set(player.userId, {
+                    userId: player.userId,
+                    displayName: player.username || 'Unknown',
+                    avatar: player.avatar || '👤',
+                    avatarType: player.avatarType || 'emoji',
+                    rating: player.rating
+                });
             });
             
             console.log('🔔 Updated both onlinePlayers and onlinePlayersList');
