@@ -12633,8 +12633,13 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     this.style.color = '#4ecdc4';
                 };
                 messageBtn.onclick = function(e) {
+                    console.log('🔶🔶🔶 SEND MESSAGE BUTTON CLICKED! 🔶🔶🔶');
+                    console.log('🔶 Player userId:', player.userId);
+                    console.log('🔶 Player displayName:', player.displayName);
                     e.stopPropagation();
+                    console.log('🔶 About to call openDirectMessage...');
                     openDirectMessage(player.userId, player.displayName);
+                    console.log('🔶 openDirectMessage returned');
                 };
                 
                 // Add Friend button
@@ -12750,12 +12755,19 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     }
     
     function openDirectMessage(userId, displayName) {
+        console.log('🟠🟠🟠 openDirectMessage FUNCTION CALLED! 🟠🟠🟠');
+        console.log('🟠 userId:', userId);
+        console.log('🟠 displayName:', displayName);
         // Get avatar from online players list
         const playerData = onlinePlayersList.get(userId);
+        console.log('🟠 playerData:', playerData);
         const avatar = playerData?.avatar || '👤';
+        console.log('🟠 avatar:', avatar);
         
         // Open the chat panel directly
+        console.log('🟠 About to call openDirectMessageChat...');
         openDirectMessageChat(userId, displayName, avatar);
+        console.log('🟠 openDirectMessageChat returned');
     }
     
     function sendDirectMessage(userId, message) {
