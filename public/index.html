@@ -2993,10 +2993,17 @@
     const gamesPerPage = 50;
 
     async function showAllGamesHistory() {
-        document.getElementById('all-games-modal').style.display = 'block';
+        console.log('🎮 Opening All Games History modal...');
+        const modal = document.getElementById('all-games-modal');
+        if (!modal) {
+            console.error('❌ Modal element not found!');
+            return;
+        }
+        modal.style.display = 'block';
         currentGamesPage = 1;
         currentGamesSearch = '';
-        document.getElementById('games-search-input').value = '';
+        const searchInput = document.getElementById('games-search-input');
+        if (searchInput) searchInput.value = '';
         await loadAllGames();
     }
 
@@ -3006,11 +3013,19 @@
 
     async function loadAllGames(page = 1) {
         const contentDiv = document.getElementById('all-games-content');
+        if (!contentDiv) {
+            console.error('❌ Content div not found!');
+            return;
+        }
+        
         contentDiv.innerHTML = '<div style="text-align: center; color: #999; padding: 40px;">Loading games...</div>';
 
         try {
             const offset = (page - 1) * gamesPerPage;
-            let url = `${BACKEND_API_URL}/api/games/all-history?limit=${gamesPerPage}&offset=${offset}`;
+            const apiUrl = typeof BACKEND_API_URL !== 'undefined' ? BACKEND_API_URL : 'https://api.romgon.net';
+            let url = `${apiUrl}/api/games/all-history?limit=${gamesPerPage}&offset=${offset}`;
+            
+            console.log('📡 Fetching games from:', url);
             
             if (currentGamesSearch) {
                 url += `&player=${encodeURIComponent(currentGamesSearch)}`;
@@ -3019,8 +3034,10 @@
             const response = await fetch(url);
             const data = await response.json();
 
+            console.log('✅ Response:', response.status, data);
+
             if (!response.ok || !data.success) {
-                throw new Error('Failed to load games');
+                throw new Error(data.error || 'Failed to load games');
             }
 
             if (data.games.length === 0) {
@@ -3028,6 +3045,7 @@
                 return;
             }
 
+            console.log(`📊 Loaded ${data.games.length} games`);
             renderAllGames(data.games);
             renderGamesPagination(data.pagination);
         } catch (error) {
