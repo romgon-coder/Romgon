@@ -3084,6 +3084,17 @@
             // Handle null winner color
             const winnerColor = game.winner.color ? game.winner.color.toUpperCase() : 'UNKNOWN';
             
+            // Handle avatar rendering - check if it's a base64 image or emoji
+            const renderAvatar = (avatar) => {
+                if (avatar && avatar.startsWith('data:image')) {
+                    return `<img src="${avatar}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">`;
+                }
+                return `<span style="font-size: 1.5em;">${avatar || '😀'}</span>`;
+            };
+            
+            const whiteAvatar = renderAvatar(game.whitePlayer.avatar);
+            const blackAvatar = renderAvatar(game.blackPlayer.avatar);
+            
             html += `
                 <div style="
                     background: #23272e;
@@ -3095,13 +3106,13 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
                         <div style="flex: 1; min-width: 250px;">
                             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                                <span style="font-size: 1.5em;">${game.whitePlayer.avatar}</span>
+                                ${whiteAvatar}
                                 <span style="color: #fff; font-weight: 600;">${game.whitePlayer.name}</span>
                                 <span style="color: #999; font-size: 0.9em;">(${game.whitePlayer.rating})</span>
                             </div>
                             <div style="color: #999; font-size: 0.9em; margin-left: 40px;">vs</div>
                             <div style="display: flex; align-items: center; gap: 10px; margin-top: 8px;">
-                                <span style="font-size: 1.5em;">${game.blackPlayer.avatar}</span>
+                                ${blackAvatar}
                                 <span style="color: #fff; font-weight: 600;">${game.blackPlayer.name}</span>
                                 <span style="color: #999; font-size: 0.9em;">(${game.blackPlayer.rating})</span>
                             </div>
