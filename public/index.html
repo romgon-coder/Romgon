@@ -3101,6 +3101,113 @@
                     <div style="font-size: 1.3em; margin-bottom: 5px;">🖧 LAN Multiplayer</div>
                     <div style="font-size: 0.85em; opacity: 0.9; font-weight: 400;">Create room for local network play (2 computers)</div>
                 </button>
+
+                <!-- Offline LAN (Guest Mode) -->
+                <button onclick="showOfflineLanInstructions();" style="
+                    background: linear-gradient(135deg, #9575cd 0%, #7e57c2 100%);
+                    color: #fff;
+                    border: none;
+                    padding: 20px;
+                    border-radius: 12px;
+                    cursor: pointer;
+                    font-weight: 700;
+                    font-size: 1.1em;
+                    text-align: left;
+                    transition: all 0.3s;
+                    box-shadow: 0 4px 15px rgba(149, 117, 205, 0.4);
+                " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(149, 117, 205, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(149, 117, 205, 0.4)'">
+                    <div style="font-size: 1.3em; margin-bottom: 5px;">📡 Offline LAN (No Internet)</div>
+                    <div style="font-size: 0.85em; opacity: 0.9; font-weight: 400;">Play without backend server - guest mode only</div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Offline LAN Instructions Modal -->
+    <div id="offline-lan-modal" style="
+        display: none;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        background: rgba(10, 12, 15, 0.95);
+        z-index: 10000;
+        padding: 20px;
+        overflow-y: auto;
+        backdrop-filter: blur(8px);
+    ">
+        <div style="
+            max-width: 700px;
+            margin: 50px auto;
+            background: #1a1e26;
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            border: 2px solid rgba(149, 117, 205, 0.3);
+        ">
+            <button onclick="document.getElementById('offline-lan-modal').style.display='none'" style="
+                float: right;
+                background: transparent;
+                color: #fff;
+                border: 2px solid rgba(255,255,255,0.3);
+                border-radius: 8px;
+                font-size: 1.1em;
+                padding: 5px 12px;
+                cursor: pointer;
+                transition: all 0.2s;
+            " onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">✖️</button>
+            
+            <h2 style="color: #9575cd; margin-top: 0; margin-bottom: 15px; font-size: 1.8em;">📡 Offline LAN Setup</h2>
+            <p style="color: #999; margin-bottom: 30px; font-size: 0.95em;">Play Romgon on your local network without internet</p>
+
+            <div style="background: rgba(149, 117, 205, 0.1); padding: 20px; border-radius: 12px; border-left: 4px solid #9575cd; margin-bottom: 25px;">
+                <h3 style="color: #9575cd; margin-top: 0; font-size: 1.2em;">⚠️ Requirements</h3>
+                <ul style="color: #ccc; line-height: 1.8;">
+                    <li>Both computers must be on the same local network (WiFi/Ethernet)</li>
+                    <li>Both players will play as <strong>guests</strong> (no account needed)</li>
+                    <li>Game data won't be saved online</li>
+                </ul>
+            </div>
+
+            <div style="background: rgba(78, 205, 196, 0.1); padding: 20px; border-radius: 12px; margin-bottom: 25px;">
+                <h3 style="color: #4ecdc4; margin-top: 0; font-size: 1.2em;">🎮 How to Play</h3>
+                <ol style="color: #ccc; line-height: 2;">
+                    <li><strong>Computer 1</strong> (Host):
+                        <ul style="margin-top: 8px;">
+                            <li>Close this modal and click <strong>"Local PvP"</strong></li>
+                            <li>Start a game and share the screen/position with Player 2</li>
+                        </ul>
+                    </li>
+                    <li style="margin-top: 12px;"><strong>Computer 2</strong> (Player 2):
+                        <ul style="margin-top: 8px;">
+                            <li>View the same screen and make moves when it's your turn</li>
+                            <li>Players alternate turns on the same game board</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+
+            <div style="background: rgba(255, 193, 7, 0.1); padding: 20px; border-radius: 12px; border-left: 4px solid #ffc107;">
+                <h3 style="color: #ffc107; margin-top: 0; font-size: 1.1em;">💡 Alternative: Run Backend Locally</h3>
+                <p style="color: #ccc; margin: 0; line-height: 1.8;">
+                    For true multiplayer on LAN with separate screens, run the Romgon backend on one computer and both players connect to that computer's IP address (e.g., <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;">http://192.168.1.5:3000</code>). Then use the regular <strong>"LAN Multiplayer"</strong> or <strong>"Create Private Room"</strong> options.
+                </p>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button onclick="openGameVariantsModal('pvp'); document.getElementById('offline-lan-modal').style.display='none'; hidePlayOptionsModal();" style="
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: #fff;
+                    border: none;
+                    padding: 15px 40px;
+                    border-radius: 12px;
+                    cursor: pointer;
+                    font-weight: 700;
+                    font-size: 1.1em;
+                    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+                    transition: all 0.3s;
+                " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.4)'">
+                    Start Local PvP Game
+                </button>
             </div>
         </div>
     </div>
@@ -3170,6 +3277,14 @@
         const modal = document.getElementById('play-options-modal');
         if (modal) {
             modal.style.display = 'none';
+        }
+    }
+
+    // Show offline LAN instructions
+    function showOfflineLanInstructions() {
+        const modal = document.getElementById('offline-lan-modal');
+        if (modal) {
+            modal.style.display = 'block';
         }
     }
 
