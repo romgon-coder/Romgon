@@ -136,8 +136,12 @@ app.use('/api/rooms', roomsRoutes);
 app.use('/api/ai-training', aiTrainingRoutes);
 
 // Global Chat routes
-const chatRoutes = require('./routes/chat');
+const { router: chatRoutes, setIOInstance: setChatIO } = require('./routes/chat');
 app.use('/api/chat', chatRoutes);
+
+// Pass Socket.IO instance to chat routes for broadcasting
+setChatIO(io);
+console.log('✅ Socket.IO instance passed to chat routes');
 
 // Initialize custom games with database
 initCustomGames(dbPromise);

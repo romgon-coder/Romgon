@@ -7,6 +7,15 @@ const router = express.Router();
 const { dbPromise } = require('../config/database');
 const { authenticateToken } = require('../utils/auth');
 
+// Store Socket.IO instance for broadcasting
+let ioInstance = null;
+
+// Function to set Socket.IO instance
+function setIOInstance(io) {
+    ioInstance = io;
+    console.log('✅ Socket.IO instance set for global chat');
+}
+
 // Rate limiting map: userId -> { count, resetTime }
 const rateLimitMap = new Map();
 const RATE_LIMIT = 5; // messages per window
@@ -107,6 +116,12 @@ router.post('/send', authenticateToken, async (req, res) => {
             [result.id]
         );
 
+        // Broadcast to all connected clients via WebSocket
+        if (ioInstance) {
+            ioInstance.emit('chat:globalMessage', messageData);
+            console.log('📢 Broadcasting global chat message to all clients');
+        }
+
         res.json({
             success: true,
             message: messageData
@@ -197,4 +212,4 @@ router.delete('/clear', authenticateToken, async (req, res) => {
     }
 });
 
-module.exports = router;
+module.exports = { router, setIOInstance };
