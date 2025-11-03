@@ -18785,6 +18785,36 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                                 console.log('Restored hexgon orientation:', hexgonOrientation);
                             }
                             
+                            // Record opponent's move in the move list
+                            const [, fromRow, fromCol] = from.match(/hex-(\d+)-(\d+)/);
+                            const [, toRow, toCol] = to.match(/hex-(\d+)-(\d+)/);
+                            const isWhite = newPiece.classList.contains('white-piece') || 
+                                           newPiece.classList.contains('white-triangle') || 
+                                           newPiece.classList.contains('white-rhombus') ||
+                                           newPiece.classList.contains('white-circle') ||
+                                           newPiece.classList.contains('white-hexgon');
+                            const pieceType = newPiece.classList.contains('square-piece') ? 'square' : 
+                                             newPiece.classList.contains('triangle-piece') ? 'triangle' : 
+                                             newPiece.classList.contains('rhombus-piece') ? 'rhombus' : 
+                                             newPiece.classList.contains('circle-piece') ? 'circle' : 'hexgon';
+                            const isCapture = captured || false;
+                            
+                            // Check repetition BEFORE recording move
+                            const repetitionCount = checkRepetition(parseInt(fromRow), parseInt(fromCol), parseInt(toRow), parseInt(toCol), pieceType, isWhite, isCapture);
+                            
+                            // Record move with repetition count
+                            recordMove(parseInt(fromRow), parseInt(fromCol), parseInt(toRow), parseInt(toCol), pieceType, isWhite, isCapture, repetitionCount);
+                            
+                            // Check position repetition
+                            checkPositionRepetition(isWhite);
+                            
+                            // Record move in RPN format for export/import
+                            const fromHexEl = document.getElementById(from);
+                            const toHexEl = document.getElementById(to);
+                            if (fromHexEl && toHexEl) {
+                                recordMoveRPN(from, to, newPiece, isCapture, false, '');
+                            }
+                            
                             // Sync turn from server if provided
                             if (data.turn) {
                                 currentPlayer = data.turn;
