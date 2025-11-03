@@ -13840,16 +13840,24 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 endTurnSound.volume = 0.4; // Set volume to 40% for end turn sound
                 endTurnSound.preload = 'auto';
                 
-                // Try to load menu button sound, fallback to click sound if it fails
-                menuButtonSound = new Audio('ASSETS/menubuttonsound.mp3');
-                menuButtonSound.volume = 0.3; // Set volume to 30% for menu button sound
+                // Load menu button sound with detailed error logging
+                menuButtonSound = new Audio();
+                menuButtonSound.volume = 0.3;
                 menuButtonSound.preload = 'auto';
-                menuButtonSound.onerror = function() {
-                    console.log('Failed to load menubuttonsound.mp3, using click.mp3 as fallback');
-                    menuButtonSound = new Audio('ASSETS/click.mp3');
-                    menuButtonSound.volume = 0.3;
-                    menuButtonSound.preload = 'auto';
-                };
+                
+                // Add event listeners to debug loading
+                menuButtonSound.addEventListener('loadeddata', function() {
+                    console.log('Menu button sound loaded successfully');
+                });
+                menuButtonSound.addEventListener('error', function(e) {
+                    console.error('Menu button sound error:', e);
+                    console.error('Error details:', this.error);
+                });
+                menuButtonSound.addEventListener('canplay', function() {
+                    console.log('Menu button sound can play');
+                });
+                
+                menuButtonSound.src = 'ASSETS/menubuttonsound.mp3';
                 
                 // Background music tracks
                 backgroundMusic1 = new Audio('ASSETS/background1.mp3');
