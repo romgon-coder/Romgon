@@ -12141,11 +12141,24 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     
     function loadActiveChat(userId) {
         console.log('🔵 loadActiveChat called for userId:', userId);
+        
+        // SET THE ACTIVE CHAT USER ID
+        activeChatUserId = userId;
+        console.log('🔵 activeChatUserId set to:', activeChatUserId);
+        
         const conversation = activeConversations.get(userId);
         console.log('🔵 Conversation found:', !!conversation);
         if (!conversation) {
             console.error('❌ No conversation found for userId:', userId);
             return;
+        }
+        
+        // Reset unread count
+        if (conversation.unreadCount > 0) {
+            totalUnreadCount -= conversation.unreadCount;
+            conversation.unreadCount = 0;
+            updateChatBadge();
+            console.log('🔵 Unread count reset');
         }
         
         const { userInfo, messages } = conversation;
