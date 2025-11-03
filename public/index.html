@@ -14226,7 +14226,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 border-bottom: 1px solid rgba(255, 121, 198, 0.2);
             ">
                 <div style="color: #ff79c6; font-weight: bold;">💬 Game Chat</div>
-                <button onclick="closeChatPanel()" style="
+                <button onclick="closeChatPanelOld()" style="
                     background: rgba(255, 121, 198, 0.2);
                     border: 1px solid #ff79c6;
                     border-radius: 50%;
@@ -14273,8 +14273,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         color: white;
                         font-size: 13px;
                         outline: none;
-                    " onkeypress="if(event.key==='Enter') sendChatMessage()">
-                    <button onclick="sendChatMessage()" style="
+                    " onkeypress="if(event.key==='Enter') sendChatMessageOld()">
+                    <button onclick="sendChatMessageOld()" style="
                         background: rgba(255, 121, 198, 0.3);
                         border: 1px solid #ff79c6;
                         border-radius: 8px;
@@ -14309,7 +14309,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         </button>
         
         <!-- Chat Toggle Button (Above Camera) -->
-        <button onclick="toggleChatPanel()" id="chat-toggle-btn" style="
+        <button onclick="toggleChatPanelOld()" id="chat-toggle-btn" style="
             position: fixed;
             bottom: 250px;
             right: 20px;
