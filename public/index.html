@@ -3212,7 +3212,59 @@
         </div>
     </div>
 
+    <!-- Download Instructions Modal -->
+    <div id="download-instructions-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:10000; justify-content:center; align-items:center;">
+        <div style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding:30px; border-radius:15px; max-width:600px; max-height:80vh; overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+            <h2 style="color:white; margin:0 0 20px 0; font-size:28px; text-align:center;">📥 Download Romgon</h2>
+            
+            <div style="background:rgba(255,255,255,0.1); padding:20px; border-radius:10px; margin-bottom:20px;">
+                <h3 style="color:white; margin:0 0 15px 0; font-size:20px;">✨ Easiest Method: Save This Page</h3>
+                <ol style="color:white; line-height:1.8; margin:0; padding-left:20px;">
+                    <li>Right-click anywhere on this page</li>
+                    <li>Select <strong>"Save Page As..."</strong></li>
+                    <li>Save as <code style="background:rgba(0,0,0,0.3); padding:2px 8px; border-radius:4px;">romgon.html</code></li>
+                    <li>Open the file in any browser - works offline!</li>
+                </ol>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.1); padding:20px; border-radius:10px; margin-bottom:20px;">
+                <h3 style="color:white; margin:0 0 15px 0; font-size:20px;">📦 Download from GitHub</h3>
+                <ol style="color:white; line-height:1.8; margin:0; padding-left:20px;">
+                    <li>Visit <a href="https://github.com/romgon-coder/Romgon" target="_blank" style="color:#a5d6ff; text-decoration:underline;">GitHub Repo</a></li>
+                    <li>Click green <strong>"Code"</strong> button</li>
+                    <li>Select <strong>"Download ZIP"</strong></li>
+                    <li>Extract and open <code style="background:rgba(0,0,0,0.3); padding:2px 8px; border-radius:4px;">public/index.html</code></li>
+                </ol>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.1); padding:20px; border-radius:10px; margin-bottom:20px;">
+                <h3 style="color:white; margin:0 0 15px 0; font-size:20px;">🎮 What Works Offline?</h3>
+                <div style="color:white; line-height:1.8;">
+                    <div style="margin-bottom:8px;">✅ Local PvP (same device)</div>
+                    <div style="margin-bottom:8px;">✅ All game variants</div>
+                    <div style="margin-bottom:8px;">✅ Opening book & rules</div>
+                    <div style="margin-bottom:8px;">❌ Online multiplayer (needs server)</div>
+                    <div>❌ User accounts (needs server)</div>
+                </div>
+            </div>
+
+            <div style="text-align:center;">
+                <button onclick="hideDownloadInstructions()" style="background:linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color:white; border:none; padding:15px 40px; border-radius:8px; cursor:pointer; font-size:16px; font-weight:bold; box-shadow:0 4px 15px rgba(0,0,0,0.3);">
+                    Got It!
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
+    // Show/hide Download Instructions modal
+    function showDownloadInstructions() {
+        document.getElementById('download-instructions-modal').style.display = 'flex';
+    }
+    function hideDownloadInstructions() {
+        document.getElementById('download-instructions-modal').style.display = 'none';
+    }
+
     // Show/hide Opening Book modal
     function showOpeningBook() {
         document.getElementById('opening-book-modal').style.display = 'block';
@@ -7800,7 +7852,7 @@
             </div>
             
             <!-- Download Game Button (for offline LAN play) -->
-            <div onclick="window.open('https://github.com/romgon-coder/Romgon', '_blank')" style="
+            <div onclick="showDownloadInstructions()" style="
                 display: flex;
                 align-items: center;
                 gap: 8px;
