@@ -8260,7 +8260,7 @@
                         No games played yet. Your match history will appear here.
                     </div>
                 </div>
-                <button onclick="alert('Full history coming soon!');" style="
+                <button onclick="showAllGamesHistory();" style="
                     width: 100%;
                     margin-top: 15px;
                     background: transparent;
@@ -20869,31 +20869,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         }
         
         /**
-         * Load match history from backend
+         * Load match history from backend - shows last 10 games from ALL users
          */
         async function loadMatchHistory(limit = 10, offset = 0) {
-            const userId = localStorage.getItem('userId');
-            const token = localStorage.getItem('token');
-            
-            if (!userId) {
-                console.log('⚠️ No userId, skipping match history load');
-                renderMatchHistory([], false);
-                return;
-            }
-            
-            // Check if offline guest
-            if (userId.startsWith('guest_') && token === 'guest-offline-mode') {
-                console.log('👤 Guest in offline mode - no backend history');
-                renderMatchHistory([], false);
-                return;
-            }
-            
             try {
-                const response = await fetch(`${BACKEND_API_URL}/api/games/history/${userId}?limit=${limit}&offset=${offset}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+                const apiUrl = typeof BACKEND_API_URL !== 'undefined' ? BACKEND_API_URL : 'https://api.romgon.net';
+                const response = await fetch(`${apiUrl}/api/games/all-history?limit=${limit}&offset=${offset}`);
                 
                 if (response.ok) {
                     const data = await response.json();
@@ -20925,11 +20906,36 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 return;
             }
             
+            // Helper function to render avatar
+            const renderAvatar = (avatar) => {
+                if (avatar && avatar.startsWith('data:image')) {
+                    return `<img src="${avatar}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;">`;
+                }
+                return `<span style="font-size: 1.2em;">${avatar || '😀'}</span>`;
+            };
+            
             container.innerHTML = games.map(game => {
-                const isWin = game.result === 'win';
-                const resultColor = isWin ? '#26de81' : '#ff6b6b';
-                const resultIcon = isWin ? '🏆' : '❌';
-                const resultText = isWin ? 'Victory' : 'Defeat';
+                const whiteAvatar = renderAvatar(game.whitePlayer.avatar);
+                const blackAvatar = renderAvatar(game.blackPlayer.avatar);
+                
+                // Determine winner
+                const winnerColor = game.winner?.color?.toUpperCase() || 'DRAW';
+                const isDraw = winnerColor === 'DRAW';
+                
+                let resultIcon, resultText, resultColor;
+                if (isDraw) {
+                    resultIcon = '🤝';
+                    resultText = 'Draw';
+                    resultColor = '#888';
+                } else if (winnerColor === 'WHITE') {
+                    resultIcon = '👑';
+                    resultText = `${game.whitePlayer.name} won`;
+                    resultColor = '#26de81';
+                } else {
+                    resultIcon = '👑';
+                    resultText = `${game.blackPlayer.name} won`;
+                    resultColor = '#26de81';
+                }
                 
                 return `
                     <div style="
@@ -20943,15 +20949,14 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                             <div style="display: flex; align-items: center; gap: 12px;">
                                 <div style="font-size: 1.5em;">${resultIcon}</div>
                                 <div>
-                                    <div style="color: white; font-weight: 600;">vs ${escapeHtml(game.opponent.name)}</div>
-                                    <div style="color: #888; font-size: 0.85em;">${game.duration} • ${game.moveCount} moves</div>
+                                    <div style="color: white; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                                        ${whiteAvatar} ${escapeHtml(game.whitePlayer.name)} vs ${blackAvatar} ${escapeHtml(game.blackPlayer.name)}
+                                    </div>
+                                    <div style="color: #888; font-size: 0.85em;">${game.duration || 'N/A'} • ${game.moveCount || 0} moves</div>
                                 </div>
                             </div>
                             <div style="text-align: right;">
                                 <div style="color: ${resultColor}; font-weight: 700; font-size: 1.1em;">${resultText}</div>
-                                <div style="color: ${game.ratingChange > 0 ? '#26de81' : '#ff6b6b'}; font-size: 0.9em; font-weight: 600;">
-                                    ${game.ratingChange > 0 ? '+' : ''}${game.ratingChange}
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -20960,7 +20965,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             if (hasMore) {
                 container.innerHTML += `
-                    <button onclick="loadMoreHistory()" style="
+                    <button onclick="showAllGamesHistory()" style="
                         width: 100%;
                         padding: 12px;
                         background: rgba(78, 205, 196, 0.2);
@@ -20971,16 +20976,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         cursor: pointer;
                         transition: all 0.2s;
                     " onmouseover="this.style.background='rgba(78, 205, 196, 0.3)'" onmouseout="this.style.background='rgba(78, 205, 196, 0.2)'">
-                        Load More
+                        View All Games →
                     </button>
                 `;
             }
-        }
-        
-        let historyOffset = 0;
-        function loadMoreHistory() {
-            historyOffset += 10;
-            loadMatchHistory(10, historyOffset);
         }
         
         /**
