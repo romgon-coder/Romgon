@@ -20869,9 +20869,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         }
         
         /**
-         * Load match history from backend - shows last 10 games from ALL users
+         * Load match history from backend - shows last 3 games from ALL users
          */
-        async function loadMatchHistory(limit = 10, offset = 0) {
+        async function loadMatchHistory(limit = 3, offset = 0) {
             try {
                 const apiUrl = typeof BACKEND_API_URL !== 'undefined' ? BACKEND_API_URL : 'https://api.romgon.net';
                 const response = await fetch(`${apiUrl}/api/games/all-history?limit=${limit}&offset=${offset}`);
