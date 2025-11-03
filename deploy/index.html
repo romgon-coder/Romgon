@@ -18815,6 +18815,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         currentPlayer = data.turn;
                         console.log('🔄 Turn synchronized to:', currentPlayer);
                         console.log('🔄 Is it my turn now?', currentPlayer === myPlayerColor);
+                        
+                        // Play end turn sound for turn changes
+                        playEndTurnSound();
+                        
                         updateTurnDisplay();
                     }
                 });
@@ -26269,6 +26273,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     // End turn
                     if (!gameOver) {
                         console.log('Ending turn after keep');
+                        
+                        // Play end turn sound
+                        playEndTurnSound();
                         
                         // In multiplayer, broadcast turn end to server instead of switching locally
                         if (multiplayerMode && myPlayerColor !== 'both') {
