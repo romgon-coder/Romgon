@@ -12036,16 +12036,25 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     let totalUnreadCount = 0;
     
     function openChatPanel() {
-        console.log('📂 Opening chat panel');
-        document.getElementById('chat-panel-modal').style.display = 'flex';
+        console.log('�🚨🚨 OPEN CHAT PANEL CALLED 🚨🚨🚨');
+        console.log('�📂 Opening chat panel');
+        const modal = document.getElementById('chat-panel-modal');
+        console.log('📂 Modal element:', !!modal);
+        modal.style.display = 'flex';
+        console.log('📂 Modal display set to flex');
         renderConversationsList();
+        console.log('📂 Conversations list rendered');
         
         // Setup event listeners each time panel opens
+        console.log('📂 Setting up timeout for event listeners');
         setTimeout(() => {
+            console.log('📂 Timeout fired, looking for elements');
             const chatInput = document.getElementById('chat-message-input');
             const chatSendBtn = document.querySelector('#active-chat-container button');
             
             console.log('🔧 Setting up listeners - input:', !!chatInput, 'button:', !!chatSendBtn);
+            console.log('🔧 Input element:', chatInput);
+            console.log('🔧 Button element:', chatSendBtn);
             
             if (chatInput && !chatInput.dataset.listenerAdded) {
                 chatInput.dataset.listenerAdded = 'true';
