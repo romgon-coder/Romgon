@@ -12106,8 +12106,12 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     }
     
     function openDirectMessageChat(userId, displayName, avatar = '👤') {
+        console.log('🟢 openDirectMessageChat called');
+        console.log('🟢 userId:', userId, 'displayName:', displayName, 'avatar:', avatar);
+        
         // Create conversation if it doesn't exist
         if (!activeConversations.has(userId)) {
+            console.log('🟢 Creating new conversation');
             activeConversations.set(userId, {
                 messages: [],
                 unreadCount: 0,
@@ -12120,14 +12124,18 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         totalUnreadCount -= conversation.unreadCount;
         conversation.unreadCount = 0;
         updateChatBadge();
+        console.log('🟢 Marked as read');
         
         // Set as active
         activeChatUserId = userId;
+        console.log('🟢 activeChatUserId set to:', activeChatUserId);
         
         // Open chat panel
+        console.log('🟢 Calling openChatPanel');
         openChatPanel();
         
         // Load this conversation
+        console.log('🟢 Calling loadActiveChat');
         loadActiveChat(userId);
     }
     
