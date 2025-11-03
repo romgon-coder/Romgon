@@ -72,6 +72,13 @@ class GeneralNavigationSystem {
       this.logDebug('🚫 Chat panel is open, skipping keyboard nav');
       return;
     }
+
+    // PRIORITY: If global chat input is focused, skip all keyboard nav
+    const globalChatInput = document.getElementById('global-chat-input');
+    if (globalChatInput && document.activeElement === globalChatInput) {
+      this.logDebug('🚫 Global chat input is focused, skipping keyboard nav');
+      return;
+    }
     
     // PRIORITY: If PVP system is active and enabled, ALWAYS skip
     if (window.keyboardNav && window.keyboardNav.enabled) {
@@ -123,6 +130,13 @@ class GeneralNavigationSystem {
     const chatPanel = document.getElementById('chat-panel-modal');
     if (chatPanel && chatPanel.style.display === 'flex') {
       this.logDebug('🚫 Chat panel is open, skipping navigation');
+      return;
+    }
+
+    // Don't navigate if global chat input is focused
+    const globalChatInput = document.getElementById('global-chat-input');
+    if (globalChatInput && document.activeElement === globalChatInput) {
+      this.logDebug('🚫 Global chat input is focused, skipping navigation');
       return;
     }
     
@@ -197,6 +211,13 @@ class GeneralNavigationSystem {
       this.logDebug('🚫 Chat panel is open, skipping confirmation');
       return;
     }
+
+    // Don't confirm if global chat input is focused
+    const globalChatInput = document.getElementById('global-chat-input');
+    if (globalChatInput && document.activeElement === globalChatInput) {
+      this.logDebug('🚫 Global chat input is focused, skipping confirmation');
+      return;
+    }
     
     if (!this.focusedElement) {
       this.logDebug('No element focused for confirmation');
@@ -250,6 +271,14 @@ class GeneralNavigationSystem {
     const chatPanel = document.getElementById('chat-panel-modal');
     if (chatPanel && chatPanel.style.display === 'flex') {
       this.logDebug('🚫 Chat panel is open, clearing navigation elements');
+      this.navigationElements = [];
+      return;
+    }
+
+    // Don't update if global chat input is focused
+    const globalChatInput = document.getElementById('global-chat-input');
+    if (globalChatInput && document.activeElement === globalChatInput) {
+      this.logDebug('🚫 Global chat input is focused, clearing navigation elements');
       this.navigationElements = [];
       return;
     }
