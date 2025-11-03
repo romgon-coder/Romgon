@@ -1482,6 +1482,8 @@
                             align-items: center;
                         ">
                             <input type="text" id="chat-message-input" placeholder="Type a message..." 
+                                onclick="console.log('🟡 INPUT CLICKED');"
+                                onfocus="console.log('🟡 INPUT FOCUSED');"
                                 onkeypress="console.log('🟢 KEY PRESSED:', event.key); if(event.key==='Enter') { console.log('🟢 ENTER PRESSED'); sendChatMessage(); }"
                                 style="
                                 flex: 1;
