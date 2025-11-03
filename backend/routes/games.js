@@ -674,6 +674,135 @@ router.post('/submit-result',
 );
 
 /**
+ * Get all games history from all users (public leaderboard/history view)
+ * GET /api/games/all-history
+ */
+router.get('/all-history',
+    [
+        query('limit').optional().isInt({ min: 1, max: 100 }),
+        query('offset').optional().isInt({ min: 0 }),
+        query('player').optional().isString(),
+        query('result').optional().isIn(['win', 'loss', 'all'])
+    ],
+    async (req, res) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+
+            const limit = parseInt(req.query.limit) || 50;
+            const offset = parseInt(req.query.offset) || 0;
+            const playerFilter = req.query.player;
+            const resultFilter = req.query.result;
+
+            // Build the query
+            let whereClause = "g.status = 'finished'";
+            const params = [];
+
+            // Filter by player if specified
+            if (playerFilter) {
+                whereClause += " AND (w.username LIKE ? OR b.username LIKE ?)";
+                params.push(`%${playerFilter}%`, `%${playerFilter}%`);
+            }
+
+            // Get all finished games with player info
+            const games = await dbPromise.all(
+                `SELECT 
+                    g.id,
+                    g.white_player_id,
+                    g.black_player_id,
+                    g.winner_id,
+                    g.winner_color,
+                    g.reason,
+                    g.total_moves,
+                    g.status,
+                    g.start_time,
+                    g.end_time,
+                    g.created_at,
+                    g.updated_at,
+                    w.username as white_username,
+                    w.rating as white_rating,
+                    w.avatar as white_avatar,
+                    b.username as black_username,
+                    b.rating as black_rating,
+                    b.avatar as black_avatar
+                 FROM games g
+                 LEFT JOIN users w ON g.white_player_id = w.id
+                 LEFT JOIN users b ON g.black_player_id = b.id
+                 WHERE ${whereClause}
+                 ORDER BY g.updated_at DESC
+                 LIMIT ? OFFSET ?`,
+                [...params, limit, offset]
+            );
+
+            // Get total count
+            const countResult = await dbPromise.get(
+                `SELECT COUNT(*) as total FROM games g
+                 LEFT JOIN users w ON g.white_player_id = w.id
+                 LEFT JOIN users b ON g.black_player_id = b.id
+                 WHERE ${whereClause}`,
+                params
+            );
+
+            // Format the games
+            const formattedGames = games.map(game => {
+                const winnerName = game.winner_color === 'white' 
+                    ? (game.white_username || 'Unknown')
+                    : (game.black_username || 'Unknown');
+
+                const loserName = game.winner_color === 'white'
+                    ? (game.black_username || 'Unknown')
+                    : (game.white_username || 'Unknown');
+
+                return {
+                    gameId: game.id,
+                    whitePlayer: {
+                        id: game.white_player_id,
+                        name: game.white_username || 'Unknown',
+                        rating: game.white_rating || 1600,
+                        avatar: game.white_avatar || '😀'
+                    },
+                    blackPlayer: {
+                        id: game.black_player_id,
+                        name: game.black_username || 'Unknown',
+                        rating: game.black_rating || 1600,
+                        avatar: game.black_avatar || '😀'
+                    },
+                    winner: {
+                        color: game.winner_color,
+                        name: winnerName
+                    },
+                    loser: {
+                        name: loserName
+                    },
+                    reason: game.reason || 'Unknown',
+                    moves: game.total_moves || 0,
+                    date: game.end_time || game.updated_at,
+                    duration: calculateGameDuration(game.start_time, game.end_time)
+                };
+            });
+
+            res.json({
+                success: true,
+                games: formattedGames,
+                total: countResult.total,
+                hasMore: (offset + limit) < countResult.total,
+                pagination: {
+                    limit,
+                    offset,
+                    currentPage: Math.floor(offset / limit) + 1,
+                    totalPages: Math.ceil(countResult.total / limit)
+                }
+            });
+        } catch (error) {
+            console.error('Error getting all games history:', error);
+            res.status(500).json({ error: error.message });
+        }
+    }
+);
+
+/**
  * Get game state (MUST BE LAST - catches all unmatched routes)
  * GET /api/games/:gameId
  */
