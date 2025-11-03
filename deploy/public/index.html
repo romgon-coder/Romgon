@@ -1482,7 +1482,7 @@
                             align-items: center;
                         ">
                             <input type="text" id="chat-message-input" placeholder="Type a message..." 
-                                onkeypress="if(event.key==='Enter') sendChatMessage()"
+                                onkeypress="console.log('🟢 KEY PRESSED:', event.key); if(event.key==='Enter') { console.log('🟢 ENTER PRESSED'); sendChatMessage(); }"
                                 style="
                                 flex: 1;
                                 padding: 12px 16px;
@@ -1492,7 +1492,7 @@
                                 color: white;
                                 font-size: 0.95em;
                             ">
-                            <button onclick="sendChatMessage()" style="
+                            <button onclick="console.log('🔴 BUTTON CLICKED'); sendChatMessage();" style="
                                 background: linear-gradient(135deg, #4ecdc4 0%, #44a3a3 100%);
                                 color: white;
                                 border: none;
