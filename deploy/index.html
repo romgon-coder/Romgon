@@ -1334,6 +1334,182 @@
         </div>
     </div>
 
+    <!-- Chat Panel Modal -->
+    <div id="chat-panel-modal" style="
+        display: none;
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(10, 12, 15, 0.98);
+        z-index: 3002;
+        overflow: hidden;
+        backdrop-filter: blur(4px);
+    ">
+        <div style="
+            max-width: 900px;
+            width: 95vw;
+            height: 85vh;
+            margin: 40px auto;
+            background: #1a1e26;
+            border-radius: 20px;
+            box-shadow: 0 10px 50px #0009;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        ">
+            <!-- Header -->
+            <div style="
+                background: linear-gradient(135deg, #4ecdc4 0%, #44a3a3 100%);
+                padding: 20px 28px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 2px solid #4ecdc4;
+            ">
+                <div>
+                    <h2 style="margin: 0; font-size: 1.6em; color: #fff;">💬 Direct Messages</h2>
+                    <p style="margin: 5px 0 0 0; font-size: 0.85em; color: rgba(255,255,255,0.8);">Chat with online players</p>
+                </div>
+                <button onclick="closeChatPanel()" style="
+                    background: rgba(255, 255, 255, 0.2);
+                    color: white;
+                    border: 2px solid rgba(255, 255, 255, 0.5);
+                    border-radius: 50%;
+                    font-size: 1.2em;
+                    width: 38px;
+                    height: 38px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                " onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">✖</button>
+            </div>
+
+            <!-- Chat Content: Split Layout -->
+            <div style="display: flex; flex: 1; overflow: hidden;">
+                
+                <!-- Conversations List (Left Sidebar) -->
+                <div style="
+                    width: 280px;
+                    background: #23272e;
+                    border-right: 2px solid #2a2e36;
+                    display: flex;
+                    flex-direction: column;
+                    overflow: hidden;
+                ">
+                    <div style="padding: 16px; border-bottom: 2px solid #2a2e36;">
+                        <h3 style="margin: 0; font-size: 0.95em; color: #aaa; text-transform: uppercase; letter-spacing: 1px;">Conversations</h3>
+                    </div>
+                    <div id="conversations-list" style="flex: 1; overflow-y: auto; padding: 8px;">
+                        <div style="text-align: center; color: #666; padding: 40px 20px; font-size: 0.9em;">
+                            <p>💬</p>
+                            <p>No conversations yet</p>
+                            <p style="font-size: 0.85em; margin-top: 10px;">Send a message to start chatting!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Chat (Right Panel) -->
+                <div id="active-chat-panel" style="
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    overflow: hidden;
+                ">
+                    <!-- No conversation selected -->
+                    <div id="no-chat-selected" style="
+                        flex: 1;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        flex-direction: column;
+                        color: #666;
+                        gap: 12px;
+                    ">
+                        <div style="font-size: 4em;">💬</div>
+                        <p style="font-size: 1.1em;">Select a conversation</p>
+                        <p style="font-size: 0.9em;">or send a message from the Online Players list</p>
+                    </div>
+
+                    <!-- Active chat (hidden by default) -->
+                    <div id="active-chat-container" style="display: none; flex-direction: column; height: 100%;">
+                        <!-- Chat header -->
+                        <div id="active-chat-header" style="
+                            padding: 16px 20px;
+                            background: #23272e;
+                            border-bottom: 2px solid #2a2e36;
+                            display: flex;
+                            align-items: center;
+                            gap: 12px;
+                        ">
+                            <div style="
+                                width: 40px;
+                                height: 40px;
+                                border-radius: 50%;
+                                background: linear-gradient(135deg, #4ecdc4, #44a3a3);
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                font-size: 1.5em;
+                            " id="active-chat-avatar">👤</div>
+                            <div>
+                                <div id="active-chat-name" style="font-weight: 600; font-size: 1.05em;">User</div>
+                                <div id="active-chat-status" style="font-size: 0.8em; color: #26de81;">● Online</div>
+                            </div>
+                        </div>
+
+                        <!-- Messages area -->
+                        <div id="chat-messages-area" style="
+                            flex: 1;
+                            overflow-y: auto;
+                            padding: 20px;
+                            background: #1a1e26;
+                            display: flex;
+                            flex-direction: column;
+                            gap: 12px;
+                        ">
+                            <!-- Messages will be added here -->
+                        </div>
+
+                        <!-- Message input -->
+                        <div style="
+                            padding: 16px 20px;
+                            background: #23272e;
+                            border-top: 2px solid #2a2e36;
+                            display: flex;
+                            gap: 12px;
+                            align-items: center;
+                        ">
+                            <input type="text" id="chat-message-input" placeholder="Type a message..." 
+                                onkeypress="if(event.key==='Enter') sendChatMessage()"
+                                style="
+                                flex: 1;
+                                padding: 12px 16px;
+                                background: #2a2e36;
+                                border: 2px solid #3a3e46;
+                                border-radius: 12px;
+                                color: white;
+                                font-size: 0.95em;
+                            ">
+                            <button onclick="sendChatMessage()" style="
+                                background: linear-gradient(135deg, #4ecdc4 0%, #44a3a3 100%);
+                                color: white;
+                                border: none;
+                                padding: 12px 24px;
+                                border-radius: 12px;
+                                cursor: pointer;
+                                font-weight: 600;
+                                font-size: 0.95em;
+                                transition: all 0.3s ease;
+                            " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Settings Modal -->
     <div id="settings-modal" style="
         display: none;
@@ -7058,6 +7234,40 @@
                 <span style="font-size: 1em;">🌐</span>
             </div>
             
+            <!-- Chat Messages Indicator -->
+            <div id="account-bar-chat-indicator" onclick="openChatPanel()" style="
+                display: none;
+                align-items: center;
+                gap: 8px;
+                padding: 4px 12px;
+                background: rgba(78, 205, 196, 0.1);
+                border: 1px solid rgba(78, 205, 196, 0.3);
+                border-radius: 12px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                margin-right: 8px;
+                position: relative;
+            " onmouseover="this.style.background='rgba(78, 205, 196, 0.2)'; this.style.borderColor='#4ecdc4'" onmouseout="this.style.background='rgba(78, 205, 196, 0.1)'; this.style.borderColor='rgba(78, 205, 196, 0.3)'">
+                <span style="font-size: 1.1em;">💬</span>
+                <div id="chat-unread-badge" style="
+                    position: absolute;
+                    top: -4px;
+                    right: -4px;
+                    background: #ff6b6b;
+                    color: white;
+                    border-radius: 50%;
+                    width: 18px;
+                    height: 18px;
+                    display: none;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 0.7em;
+                    font-weight: bold;
+                    border: 2px solid #141820;
+                    animation: pulse 1s infinite;
+                ">0</div>
+            </div>
+            
             <!-- Quick Action Buttons -->
             <button onclick="showSettingsModal()" style="
                 background: transparent;
@@ -11787,6 +11997,259 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     }
     
     // Notification helper
+    // ============================================
+    // CHAT PANEL SYSTEM
+    // ============================================
+    
+    let activeConversations = new Map(); // Map<userId, {messages: [], unreadCount: 0, userInfo: {}}>
+    let activeChatUserId = null;
+    let totalUnreadCount = 0;
+    
+    function openChatPanel() {
+        document.getElementById('chat-panel-modal').style.display = 'flex';
+        renderConversationsList();
+        
+        // Show chat indicator
+        const chatIndicator = document.getElementById('account-bar-chat-indicator');
+        if (chatIndicator) {
+            chatIndicator.style.display = 'flex';
+        }
+    }
+    
+    function closeChatPanel() {
+        document.getElementById('chat-panel-modal').style.display = 'none';
+    }
+    
+    function openDirectMessageChat(userId, displayName, avatar = '👤') {
+        // Create conversation if it doesn't exist
+        if (!activeConversations.has(userId)) {
+            activeConversations.set(userId, {
+                messages: [],
+                unreadCount: 0,
+                userInfo: { userId, displayName, avatar }
+            });
+        }
+        
+        // Mark as read
+        const conversation = activeConversations.get(userId);
+        totalUnreadCount -= conversation.unreadCount;
+        conversation.unreadCount = 0;
+        updateChatBadge();
+        
+        // Set as active
+        activeChatUserId = userId;
+        
+        // Open chat panel
+        openChatPanel();
+        
+        // Load this conversation
+        loadActiveChat(userId);
+    }
+    
+    function loadActiveChat(userId) {
+        const conversation = activeConversations.get(userId);
+        if (!conversation) return;
+        
+        const { userInfo, messages } = conversation;
+        
+        // Hide "no chat selected" message
+        document.getElementById('no-chat-selected').style.display = 'none';
+        document.getElementById('active-chat-container').style.display = 'flex';
+        
+        // Update header
+        document.getElementById('active-chat-avatar').textContent = userInfo.avatar;
+        document.getElementById('active-chat-name').textContent = userInfo.displayName;
+        document.getElementById('active-chat-status').textContent = '● Online';
+        
+        // Render messages
+        const messagesArea = document.getElementById('chat-messages-area');
+        messagesArea.innerHTML = '';
+        
+        messages.forEach(msg => {
+            appendMessageToChat(msg, messagesArea);
+        });
+        
+        // Scroll to bottom
+        messagesArea.scrollTop = messagesArea.scrollHeight;
+    }
+    
+    function appendMessageToChat(msg, container) {
+        const isMe = msg.fromUserId === window.currentChatUser?.userId;
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.style.cssText = `
+            display: flex;
+            justify-content: ${isMe ? 'flex-end' : 'flex-start'};
+            margin-bottom: 8px;
+        `;
+        
+        const bubble = document.createElement('div');
+        bubble.style.cssText = `
+            max-width: 70%;
+            padding: 10px 14px;
+            border-radius: 16px;
+            background: ${isMe ? 'linear-gradient(135deg, #4ecdc4 0%, #44a3a3 100%)' : '#2a2e36'};
+            color: white;
+            font-size: 0.95em;
+            word-wrap: break-word;
+        `;
+        bubble.textContent = msg.message;
+        
+        messageDiv.appendChild(bubble);
+        container.appendChild(messageDiv);
+    }
+    
+    function sendChatMessage() {
+        const input = document.getElementById('chat-message-input');
+        const message = input.value.trim();
+        
+        if (!message || !activeChatUserId) return;
+        
+        // Send via socket
+        sendDirectMessage(activeChatUserId, message);
+        
+        // Add to local conversation
+        const conversation = activeConversations.get(activeChatUserId);
+        if (conversation) {
+            conversation.messages.push({
+                fromUserId: window.currentChatUser.userId,
+                message,
+                timestamp: new Date().toISOString()
+            });
+        }
+        
+        // Append to UI
+        const messagesArea = document.getElementById('chat-messages-area');
+        appendMessageToChat({
+            fromUserId: window.currentChatUser.userId,
+            message
+        }, messagesArea);
+        
+        // Scroll to bottom
+        messagesArea.scrollTop = messagesArea.scrollHeight;
+        
+        // Clear input
+        input.value = '';
+    }
+    
+    function renderConversationsList() {
+        const list = document.getElementById('conversations-list');
+        
+        if (activeConversations.size === 0) {
+            list.innerHTML = `
+                <div style="text-align: center; color: #666; padding: 40px 20px; font-size: 0.9em;">
+                    <p>💬</p>
+                    <p>No conversations yet</p>
+                    <p style="font-size: 0.85em; margin-top: 10px;">Send a message to start chatting!</p>
+                </div>
+            `;
+            return;
+        }
+        
+        list.innerHTML = '';
+        
+        activeConversations.forEach((conversation, userId) => {
+            const { userInfo, unreadCount, messages } = conversation;
+            const lastMessage = messages[messages.length - 1];
+            
+            const convDiv = document.createElement('div');
+            convDiv.onclick = () => loadActiveChat(userId);
+            convDiv.style.cssText = `
+                padding: 12px;
+                cursor: pointer;
+                border-radius: 8px;
+                margin-bottom: 4px;
+                background: ${userId === activeChatUserId ? '#2a2e36' : 'transparent'};
+                border: 2px solid ${userId === activeChatUserId ? '#4ecdc4' : 'transparent'};
+                transition: all 0.3s ease;
+            `;
+            
+            convDiv.onmouseover = function() {
+                if (userId !== activeChatUserId) {
+                    this.style.background = '#2a2e36';
+                }
+            };
+            convDiv.onmouseout = function() {
+                if (userId !== activeChatUserId) {
+                    this.style.background = 'transparent';
+                }
+            };
+            
+            convDiv.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="font-size: 1.8em;">${userInfo.avatar}</div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 600; font-size: 0.95em; color: white; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${userInfo.displayName}</span>
+                            ${unreadCount > 0 ? `<div style="background: #ff6b6b; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.75em; font-weight: bold;">${unreadCount}</div>` : ''}
+                        </div>
+                        <div style="font-size: 0.85em; color: #888; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${lastMessage ? lastMessage.message : 'No messages yet'}</div>
+                    </div>
+                </div>
+            `;
+            
+            list.appendChild(convDiv);
+        });
+    }
+    
+    function updateChatBadge() {
+        const badge = document.getElementById('chat-unread-badge');
+        const indicator = document.getElementById('account-bar-chat-indicator');
+        
+        if (totalUnreadCount > 0) {
+            badge.textContent = totalUnreadCount;
+            badge.style.display = 'flex';
+            indicator.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+    
+    // Handle incoming direct message
+    function handleIncomingDirectMessage(data) {
+        const { fromUserId, fromUsername, message, timestamp } = data;
+        
+        console.log('💬 Incoming message from', fromUsername, ':', message);
+        
+        // Get or create conversation
+        if (!activeConversations.has(fromUserId)) {
+            activeConversations.set(fromUserId, {
+                messages: [],
+                unreadCount: 0,
+                userInfo: { 
+                    userId: fromUserId, 
+                    displayName: fromUsername, 
+                    avatar: onlinePlayersList.get(fromUserId)?.avatar || '👤'
+                }
+            });
+        }
+        
+        const conversation = activeConversations.get(fromUserId);
+        conversation.messages.push({
+            fromUserId,
+            message,
+            timestamp
+        });
+        
+        // If chat is open and this is the active conversation, append message
+        const chatPanel = document.getElementById('chat-panel-modal');
+        if (chatPanel.style.display === 'flex' && activeChatUserId === fromUserId) {
+            const messagesArea = document.getElementById('chat-messages-area');
+            appendMessageToChat({ fromUserId, message }, messagesArea);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        } else {
+            // Increment unread
+            conversation.unreadCount++;
+            totalUnreadCount++;
+            updateChatBadge();
+        }
+        
+        // Update conversations list if chat panel is open
+        if (chatPanel.style.display === 'flex') {
+            renderConversationsList();
+        }
+    }
+    
     function showNotification(message, type = 'info') {
         // Simple alert for now - can be improved with toast notifications
         alert(message);
@@ -11799,21 +12262,6 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         
         if (accept) {
             acceptFriendRequest(fromUserId);
-        }
-    }
-    
-    // Handle incoming direct message
-    function handleIncomingDirectMessage(data) {
-        const { fromUserId, fromUsername, message, timestamp } = data;
-        
-        // For now, just show an alert - later we'll add a proper chat UI
-        const reply = confirm(`💬 Message from ${fromUsername}:\n\n"${message}"\n\nReply?`);
-        
-        if (reply) {
-            const replyMessage = prompt(`Reply to ${fromUsername}:`);
-            if (replyMessage && replyMessage.trim()) {
-                sendDirectMessage(fromUserId, replyMessage);
-            }
         }
     }
     
@@ -12141,11 +12589,12 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     }
     
     function openDirectMessage(userId, displayName) {
-        const message = prompt(`💬 Send message to ${displayName}:`);
+        // Get avatar from online players list
+        const playerData = onlinePlayersList.get(userId);
+        const avatar = playerData?.avatar || '👤';
         
-        if (message && message.trim()) {
-            sendDirectMessage(userId, message);
-        }
+        // Open the chat panel directly
+        openDirectMessageChat(userId, displayName, avatar);
     }
     
     function sendDirectMessage(userId, message) {
@@ -12161,7 +12610,8 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             message: message.trim()
         });
         
-        alert('✅ Message sent!');
+        // Message is added to UI in sendChatMessage() function
+        console.log('✅ Message sent via socket');
     }
     
     // ============================================
