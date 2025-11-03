@@ -332,7 +332,8 @@ module.exports = (io) => {
         // ============================================
 
         socket.on('chat:sendDirectMessage', (data) => {
-            const { recipientId, message } = data;
+            const { targetUserId, message } = data;
+            const recipientId = targetUserId; // Support both parameter names
             const senderId = socket.userId;
             const senderName = socket.displayName;
             const senderAvatar = socket.avatar;
@@ -341,10 +342,8 @@ module.exports = (io) => {
                 return socket.emit('chat:error', { error: 'Message cannot be empty' });
             }
             
-            // Check if users are friends
-            const friends = userFriends.get(senderId) || [];
-            if (!friends.includes(recipientId)) {
-                return socket.emit('chat:error', { error: 'Can only message friends' });
+            if (!recipientId) {
+                return socket.emit('chat:error', { error: 'Recipient ID required' });
             }
             
             // Create DM room ID (consistent ordering)
@@ -352,6 +351,8 @@ module.exports = (io) => {
             
             const messageData = {
                 id: `dm_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                fromUserId: senderId,
+                fromUsername: senderName,
                 senderId,
                 senderName,
                 senderAvatar,
@@ -377,12 +378,15 @@ module.exports = (io) => {
             console.log(`💌 DM: ${senderName} → ${recipientId}: ${message.substring(0, 50)}...`);
             
             // Send to sender (confirmation)
-            socket.emit('chat:directMessage', messageData);
+            socket.emit('chat:directMessageSent', messageData);
             
             // Send to recipient if online
             const recipientSocketId = userSockets.get(recipientId);
             if (recipientSocketId) {
                 chatNamespace.to(recipientSocketId).emit('chat:directMessage', messageData);
+                console.log(`✅ Message delivered to ${recipientId}`);
+            } else {
+                console.log(`⚠️ Recipient ${recipientId} is offline`);
             }
         });
 
