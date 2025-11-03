@@ -12068,7 +12068,13 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     }
     
     function appendMessageToChat(msg, container) {
+        console.log('💬 appendMessageToChat called');
+        console.log('💬 Message:', msg);
+        console.log('💬 From userId:', msg.fromUserId);
+        console.log('💬 Current user:', window.currentChatUser);
+        
         const isMe = msg.fromUserId === window.currentChatUser?.userId;
+        console.log('💬 Is this my message?', isMe);
         
         const messageDiv = document.createElement('div');
         messageDiv.style.cssText = `
@@ -12091,39 +12097,56 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         
         messageDiv.appendChild(bubble);
         container.appendChild(messageDiv);
+        console.log('✅ Message bubble appended to container');
     }
     
     function sendChatMessage() {
         const input = document.getElementById('chat-message-input');
         const message = input.value.trim();
         
-        if (!message || !activeChatUserId) return;
+        console.log('📤 sendChatMessage called');
+        console.log('📤 Message:', message);
+        console.log('📤 activeChatUserId:', activeChatUserId);
+        console.log('📤 window.currentChatUser:', window.currentChatUser);
+        
+        if (!message || !activeChatUserId) {
+            console.warn('⚠️ Cannot send: message empty or no active chat');
+            return;
+        }
         
         // Send via socket
+        console.log('📤 Sending via socket to:', activeChatUserId);
         sendDirectMessage(activeChatUserId, message);
         
         // Add to local conversation
         const conversation = activeConversations.get(activeChatUserId);
+        console.log('📤 Local conversation found?', !!conversation);
         if (conversation) {
             conversation.messages.push({
                 fromUserId: window.currentChatUser.userId,
                 message,
                 timestamp: new Date().toISOString()
             });
+            console.log('📤 Message added to local conversation, total messages:', conversation.messages.length);
         }
         
         // Append to UI
         const messagesArea = document.getElementById('chat-messages-area');
+        console.log('📤 Messages area found?', !!messagesArea);
+        console.log('📤 About to append message from userId:', window.currentChatUser.userId);
         appendMessageToChat({
             fromUserId: window.currentChatUser.userId,
             message
         }, messagesArea);
+        
+        console.log('📤 Message appended to UI');
         
         // Scroll to bottom
         messagesArea.scrollTop = messagesArea.scrollHeight;
         
         // Clear input
         input.value = '';
+        console.log('✅ sendChatMessage complete');
     }
     
     function renderConversationsList() {
@@ -14760,7 +14783,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         let unreadMessagesCount = 0;
         let chatMessages = [];
         
-        function toggleChatPanel() {
+        function toggleChatPanelOld() {
             const panel = document.getElementById('chat-panel');
             const toggleBtn = document.getElementById('chat-toggle-btn');
             const badge = document.getElementById('chat-notification-badge');
@@ -14787,7 +14810,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             document.getElementById('chat-panel').style.display = 'none';
         }
         
-        function sendChatMessage() {
+        function sendChatMessageOld() {
             const input = document.getElementById('chat-input');
             const message = input.value.trim();
             
@@ -14807,7 +14830,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             }
             
             // Add message to chat locally
-            addChatMessage(message, username, true);
+            addChatMessageOld(message, username, true);
             
             // Send to opponent via game socket if connected
             if (gameSocket && gameSocket.connected && multiplayerMode) {
@@ -14824,7 +14847,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             input.focus();
         }
         
-        function addChatMessage(text, sender, isOwn = false) {
+        function addChatMessageOld(text, sender, isOwn = false) {
             const messagesContainer = document.getElementById('chat-messages');
             
             // Remove "no messages" placeholder
