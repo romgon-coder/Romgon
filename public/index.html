@@ -12298,8 +12298,12 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     function openOnlinePlayersPanel() {
         console.log('🎯 Opening online players panel');
         console.log('📊 Current players in list:', onlinePlayersList.size);
+        console.log('📊 Current players in onlinePlayers:', window.onlinePlayers?.size || 'undefined');
         
-        document.getElementById('online-players-modal').style.display = 'flex';
+        const modal = document.getElementById('online-players-modal');
+        if (modal) {
+            modal.style.display = 'flex';
+        }
         
         // Connect to chat socket if not already connected
         if (!chatSocket || !chatSocket.connected) {
@@ -12307,9 +12311,22 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             initializeChatSocket();
         }
         
-        // Refresh the players list
-        console.log('🔄 Refreshing players list...');
-        loadOnlinePlayers();
+        // Refresh BOTH lists (lobby graphical + panel compact)
+        console.log('🔄 Refreshing both player lists...');
+        try {
+            renderOnlinePlayers(); // Lobby graphical
+        } catch (e) {
+            console.warn('⚠️ renderOnlinePlayers failed:', e);
+        }
+        try {
+            if (window.renderOnlinePlayersOld) {
+                window.renderOnlinePlayersOld(); // Panel compact list
+            } else {
+                console.warn('⚠️ renderOnlinePlayersOld not available yet');
+            }
+        } catch (e) {
+            console.warn('⚠️ renderOnlinePlayersOld failed:', e);
+        }
     }
     
     function closeOnlinePlayersPanel() {
@@ -20642,6 +20659,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
          */
         let onlinePlayers = new Map(); // Store online players: userId -> {username, rating, status}
         
+        // Make onlinePlayers accessible globally
+        window.onlinePlayers = onlinePlayers;
+        
         function initializeOnlinePlayers() {
             console.log('👥 Initializing online players tracking...');
             
@@ -20803,6 +20823,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 `;
             }
         }
+        
+        // Make renderOnlinePlayersOld globally accessible
+        window.renderOnlinePlayersOld = renderOnlinePlayersOld;
         
         function challengePlayer(userId) {
             alert(`Challenge player feature coming soon! Player ID: ${userId}`);
