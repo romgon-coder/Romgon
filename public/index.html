@@ -12132,22 +12132,37 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     }
     
     function loadActiveChat(userId) {
+        console.log('🔵 loadActiveChat called for userId:', userId);
         const conversation = activeConversations.get(userId);
-        if (!conversation) return;
+        console.log('🔵 Conversation found:', !!conversation);
+        if (!conversation) {
+            console.error('❌ No conversation found for userId:', userId);
+            return;
+        }
         
         const { userInfo, messages } = conversation;
+        console.log('🔵 User info:', userInfo);
+        console.log('🔵 Messages count:', messages.length);
         
         // Hide "no chat selected" message
-        document.getElementById('no-chat-selected').style.display = 'none';
-        document.getElementById('active-chat-container').style.display = 'flex';
+        const noChatDiv = document.getElementById('no-chat-selected');
+        const activeContainer = document.getElementById('active-chat-container');
+        console.log('🔵 no-chat-selected element:', !!noChatDiv);
+        console.log('🔵 active-chat-container element:', !!activeContainer);
+        
+        noChatDiv.style.display = 'none';
+        activeContainer.style.display = 'flex';
+        console.log('🔵 Container display set to flex');
         
         // Update header
         document.getElementById('active-chat-avatar').textContent = userInfo.avatar;
         document.getElementById('active-chat-name').textContent = userInfo.displayName;
         document.getElementById('active-chat-status').textContent = '● Online';
+        console.log('🔵 Header updated');
         
         // Render messages
         const messagesArea = document.getElementById('chat-messages-area');
+        console.log('🔵 Messages area found:', !!messagesArea);
         messagesArea.innerHTML = '';
         
         messages.forEach(msg => {
@@ -12156,6 +12171,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         
         // Scroll to bottom
         messagesArea.scrollTop = messagesArea.scrollHeight;
+        console.log('🔵 loadActiveChat complete');
     }
     
     function appendMessageToChat(msg, container) {
