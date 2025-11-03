@@ -12099,6 +12099,14 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     function loadOnlinePlayers() {
         // Players are loaded automatically via socket events
         // Just render what we have
+        console.log('🔄 loadOnlinePlayers called, current list size:', onlinePlayersList.size);
+        console.log('🔍 Checking for list container...');
+        const testContainer = document.getElementById('online-players-list');
+        console.log('📦 Container found?', testContainer ? 'YES' : 'NO');
+        if (testContainer) {
+            console.log('📦 Container parent:', testContainer.parentElement?.tagName);
+            console.log('📦 Container grandparent:', testContainer.parentElement?.parentElement?.tagName);
+        }
         renderOnlinePlayers();
     }
     
