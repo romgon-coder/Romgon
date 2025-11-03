@@ -13717,11 +13717,13 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 
                 // Play notification sound
                 try {
-                    const audio = new Audio('assets/chatMessage.mp3');
+                    const audio = new Audio('ASSETS/chatMessage.mp3');
                     audio.volume = 0.5;
-                    audio.play().catch(() => {});
+                    audio.play().catch((err) => {
+                        console.log('Chat notification sound play failed:', err);
+                    });
                 } catch (e) {
-                    console.log('Could not play chat notification sound');
+                    console.log('Could not play chat notification sound:', e);
                 }
             }
         }
@@ -18320,11 +18322,13 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         function playMessageSound() {
             // Play chat notification sound
             try {
-                const audio = new Audio('assets/chatMessage.mp3');
+                const audio = new Audio('ASSETS/chatMessage.mp3');
                 audio.volume = 0.5;
-                audio.play().catch(() => {});
+                audio.play().catch((err) => {
+                    console.log('Message sound play failed:', err);
+                });
             } catch (e) {
-                console.log('Could not play message sound');
+                console.log('Could not play message sound:', e);
             }
         }
 
