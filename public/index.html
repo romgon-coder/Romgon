@@ -3263,6 +3263,86 @@
     </div>
 
     <script>
+    // ============================================
+    // THEME SYSTEM FUNCTIONS
+    // ============================================
+    
+    // Toggle theme selector dropdown
+    function toggleThemeSelector() {
+        const dropdown = document.getElementById('theme-selector-dropdown');
+        if (dropdown.style.display === 'none' || dropdown.style.display === '') {
+            dropdown.style.display = 'block';
+        } else {
+            dropdown.style.display = 'none';
+        }
+    }
+    
+    // Close theme selector when clicking outside
+    document.addEventListener('click', function(event) {
+        const themeBtn = document.getElementById('theme-toggle-btn');
+        const dropdown = document.getElementById('theme-selector-dropdown');
+        
+        if (dropdown && themeBtn && !themeBtn.contains(event.target) && !dropdown.contains(event.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+    
+    // Apply theme
+    function applyTheme(themeName) {
+        console.log('🎨 Applying theme:', themeName);
+        
+        // Remove all theme classes
+        document.body.classList.remove(
+            'theme-default',
+            'theme-monotone',
+            'theme-ocean',
+            'theme-forest',
+            'theme-sunset',
+            'theme-midnight',
+            'theme-rose'
+        );
+        
+        // Add new theme class (unless it's default)
+        if (themeName !== 'default') {
+            document.body.classList.add(`theme-${themeName}`);
+        }
+        
+        // Save to localStorage
+        localStorage.setItem('romgon-theme', themeName);
+        
+        // Close dropdown
+        document.getElementById('theme-selector-dropdown').style.display = 'none';
+        
+        // Highlight selected theme
+        document.querySelectorAll('.theme-option').forEach(opt => {
+            opt.style.borderColor = 'transparent';
+        });
+        const selectedOption = document.querySelector(`[data-theme="${themeName}"]`);
+        if (selectedOption) {
+            selectedOption.style.borderColor = '#ffd700';
+            selectedOption.style.borderWidth = '3px';
+        }
+        
+        console.log('✅ Theme applied:', themeName);
+    }
+    
+    // Load saved theme on page load
+    function loadSavedTheme() {
+        const savedTheme = localStorage.getItem('romgon-theme');
+        if (savedTheme) {
+            console.log('📂 Loading saved theme:', savedTheme);
+            applyTheme(savedTheme);
+        } else {
+            console.log('🎨 No saved theme, using default');
+            applyTheme('default');
+        }
+    }
+    
+    // Initialize theme on page load
+    window.addEventListener('DOMContentLoaded', function() {
+        loadSavedTheme();
+    });
+    
     // Show/hide Download Instructions modal
     function showDownloadInstructions() {
         document.getElementById('download-instructions-modal').style.display = 'flex';
@@ -5900,18 +5980,32 @@
             --hex-size: 48px;
             --hex-gap: 1px;
             
+            /* Theme System - Customizable Colors */
+            --theme-primary: #667eea;
+            --theme-secondary: #764ba2;
+            --theme-accent: #4ecdc4;
+            --theme-bg-light: #f0f0f0;
+            --theme-bg-dark: #1a1a1a;
+            --theme-text-light: #ffffff;
+            --theme-text-dark: #333333;
+            --theme-board-bg: #ffffff;
+            --theme-hex-bg: #e8e8e8;
+            --theme-hex-border: #cccccc;
+            --theme-modal-bg: #ffffff;
+            --theme-button-bg: #4ecdc4;
+            
             /* Light Mode Colors */
-            --body-bg: #f0f0f0;
-            --board-bg: #ffffff;
-            --text-color: #333333;
-            --hex-bg: #e8e8e8;
-            --hex-border: #cccccc;
-            --modal-bg: #ffffff;
+            --body-bg: var(--theme-bg-light);
+            --board-bg: var(--theme-board-bg);
+            --text-color: var(--theme-text-dark);
+            --hex-bg: var(--theme-hex-bg);
+            --hex-border: var(--theme-hex-border);
+            --modal-bg: var(--theme-modal-bg);
             --modal-overlay: rgba(0, 0, 0, 0.7);
-            --button-bg: #4ecdc4;
-            --button-text: #ffffff;
+            --button-bg: var(--theme-button-bg);
+            --button-text: var(--theme-text-light);
             --turn-indicator-bg: rgba(255, 255, 255, 0.95);
-            --turn-indicator-text: #333333;
+            --turn-indicator-text: var(--theme-text-dark);
             
             /* Legacy colors (kept for compatibility) */
             --bg-color: #1a1a1a;
@@ -5964,6 +6058,108 @@
             --turn-indicator-bg: rgba(38, 36, 33, 0.95);
             --turn-indicator-text: #ffffff;
             --hex-coords-color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* ========== NEW THEME SYSTEM ========== */
+        
+        /* Monotone Black/White/Gray Theme */
+        body.theme-monotone {
+            --theme-primary: #2c3e50;
+            --theme-secondary: #95a5a6;
+            --theme-accent: #34495e;
+            --theme-bg-light: #ecf0f1;
+            --theme-bg-dark: #2c3e50;
+            --theme-board-bg: #ffffff;
+            --theme-hex-bg: #bdc3c7;
+            --theme-hex-border: #7f8c8d;
+            --theme-modal-bg: #34495e;
+            --theme-button-bg: #7f8c8d;
+            background: linear-gradient(135deg, #2c3e50 0%, #95a5a6 100%);
+        }
+        
+        /* Ocean Blue Theme */
+        body.theme-ocean {
+            --theme-primary: #0984e3;
+            --theme-secondary: #74b9ff;
+            --theme-accent: #00cec9;
+            --theme-bg-light: #dfe6e9;
+            --theme-bg-dark: #2d3436;
+            --theme-board-bg: #f8f9fa;
+            --theme-hex-bg: #a8dadc;
+            --theme-hex-border: #457b9d;
+            --theme-modal-bg: #0984e3;
+            --theme-button-bg: #00cec9;
+            background: linear-gradient(135deg, #0984e3 0%, #74b9ff 100%);
+        }
+        
+        /* Forest Green Theme */
+        body.theme-forest {
+            --theme-primary: #00b894;
+            --theme-secondary: #55efc4;
+            --theme-accent: #00cec9;
+            --theme-bg-light: #e8f5e9;
+            --theme-bg-dark: #1b4332;
+            --theme-board-bg: #f1f8f4;
+            --theme-hex-bg: #a7c957;
+            --theme-hex-border: #6a994e;
+            --theme-modal-bg: #2d6a4f;
+            --theme-button-bg: #52b788;
+            background: linear-gradient(135deg, #00b894 0%, #55efc4 100%);
+        }
+        
+        /* Sunset Orange Theme */
+        body.theme-sunset {
+            --theme-primary: #ff6348;
+            --theme-secondary: #ffa502;
+            --theme-accent: #ff7979;
+            --theme-bg-light: #fff3e0;
+            --theme-bg-dark: #bf360c;
+            --theme-board-bg: #fffaf0;
+            --theme-hex-bg: #ffb347;
+            --theme-hex-border: #ff6b35;
+            --theme-modal-bg: #d84315;
+            --theme-button-bg: #ff6348;
+            background: linear-gradient(135deg, #ff6348 0%, #ffa502 100%);
+        }
+        
+        /* Midnight Dark Theme */
+        body.theme-midnight {
+            --theme-primary: #1e272e;
+            --theme-secondary: #485460;
+            --theme-accent: #808e9b;
+            --theme-bg-light: #2c3e50;
+            --theme-bg-dark: #0a0e27;
+            --theme-board-bg: #1e272e;
+            --theme-hex-bg: #34495e;
+            --theme-hex-border: #2c3e50;
+            --theme-modal-bg: #1e272e;
+            --theme-button-bg: #485460;
+            background: linear-gradient(135deg, #1e272e 0%, #485460 100%);
+            --text-color: #ffffff;
+            --turn-indicator-text: #ffffff;
+        }
+        
+        /* Rose Pink Theme */
+        body.theme-rose {
+            --theme-primary: #fd79a8;
+            --theme-secondary: #a29bfe;
+            --theme-accent: #fab1a0;
+            --theme-bg-light: #ffe5ec;
+            --theme-bg-dark: #d63031;
+            --theme-board-bg: #fff0f6;
+            --theme-hex-bg: #ffc8dd;
+            --theme-hex-border: #ff9ebb;
+            --theme-modal-bg: #e84393;
+            --theme-button-bg: #fd79a8;
+            background: linear-gradient(135deg, #fd79a8 0%, #a29bfe 100%);
+        }
+
+        /* Apply theme colors to modals and panels */
+        body[class*="theme-"] .modal-content,
+        body[class*="theme-"] #play-options-modal > div,
+        body[class*="theme-"] #offline-lan-modal > div,
+        body[class*="theme-"] #download-instructions-modal > div {
+            background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-secondary) 100%) !important;
         }
 
         /* Wooden Board Theme */
@@ -7853,6 +8049,152 @@
                         <span><span style="color: #ff6b6b;" id="global-losses">0</span>L</span>
                         <span style="color: #555;">·</span>
                         <span id="global-winrate" style="color: #4ecdc4;">0%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Theme Selector Button -->
+            <div id="theme-toggle-btn" onclick="toggleThemeSelector()" style="
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 4px 12px;
+                background: rgba(255, 255, 255, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                border-radius: 12px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                margin-right: 8px;
+                position: relative;
+            " onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.borderColor='rgba(255, 255, 255, 0.5)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.borderColor='rgba(255, 255, 255, 0.3)'" title="Change Theme">
+                <span style="font-size: 1.1em;">🎨</span>
+                <span style="
+                    font-size: 0.75em;
+                    color: #fff;
+                    font-weight: 600;
+                ">Theme</span>
+            </div>
+            
+            <!-- Theme Selector Dropdown -->
+            <div id="theme-selector-dropdown" style="
+                display: none;
+                position: absolute;
+                top: 50px;
+                right: 280px;
+                background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+                border: 2px solid rgba(255, 255, 255, 0.2);
+                border-radius: 15px;
+                padding: 15px;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+                z-index: 10001;
+                min-width: 280px;
+            ">
+                <div style="color: white; font-weight: bold; margin-bottom: 15px; font-size: 16px; border-bottom: 2px solid rgba(255, 255, 255, 0.2); padding-bottom: 10px;">
+                    🎨 Choose Your Theme
+                </div>
+                
+                <div class="theme-option" data-theme="default" style="
+                    padding: 12px;
+                    margin: 8px 0;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    border: 2px solid transparent;
+                    transition: all 0.3s ease;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                " onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='#ffd700'" onmouseout="this.style.transform='scale(1)'; this.style.borderColor='transparent'" onclick="applyTheme('default')">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: 2px solid white;"></div>
+                        <div style="color: white; font-weight: 600;">Default Purple</div>
+                    </div>
+                </div>
+                
+                <div class="theme-option" data-theme="monotone" style="
+                    padding: 12px;
+                    margin: 8px 0;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    border: 2px solid transparent;
+                    transition: all 0.3s ease;
+                    background: linear-gradient(135deg, #2c3e50 0%, #95a5a6 100%);
+                " onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='#ffd700'" onmouseout="this.style.transform='scale(1)'; this.style.borderColor='transparent'" onclick="applyTheme('monotone')">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, #2c3e50 0%, #95a5a6 100%); border: 2px solid white;"></div>
+                        <div style="color: white; font-weight: 600;">Monotone B/W</div>
+                    </div>
+                </div>
+                
+                <div class="theme-option" data-theme="ocean" style="
+                    padding: 12px;
+                    margin: 8px 0;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    border: 2px solid transparent;
+                    transition: all 0.3s ease;
+                    background: linear-gradient(135deg, #0984e3 0%, #74b9ff 100%);
+                " onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='#ffd700'" onmouseout="this.style.transform='scale(1)'; this.style.borderColor='transparent'" onclick="applyTheme('ocean')">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, #0984e3 0%, #74b9ff 100%); border: 2px solid white;"></div>
+                        <div style="color: white; font-weight: 600;">Ocean Blue</div>
+                    </div>
+                </div>
+                
+                <div class="theme-option" data-theme="forest" style="
+                    padding: 12px;
+                    margin: 8px 0;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    border: 2px solid transparent;
+                    transition: all 0.3s ease;
+                    background: linear-gradient(135deg, #00b894 0%, #55efc4 100%);
+                " onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='#ffd700'" onmouseout="this.style.transform='scale(1)'; this.style.borderColor='transparent'" onclick="applyTheme('forest')">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, #00b894 0%, #55efc4 100%); border: 2px solid white;"></div>
+                        <div style="color: white; font-weight: 600;">Forest Green</div>
+                    </div>
+                </div>
+                
+                <div class="theme-option" data-theme="sunset" style="
+                    padding: 12px;
+                    margin: 8px 0;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    border: 2px solid transparent;
+                    transition: all 0.3s ease;
+                    background: linear-gradient(135deg, #ff6348 0%, #ffa502 100%);
+                " onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='#ffd700'" onmouseout="this.style.transform='scale(1)'; this.style.borderColor='transparent'" onclick="applyTheme('sunset')">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, #ff6348 0%, #ffa502 100%); border: 2px solid white;"></div>
+                        <div style="color: white; font-weight: 600;">Sunset Orange</div>
+                    </div>
+                </div>
+                
+                <div class="theme-option" data-theme="midnight" style="
+                    padding: 12px;
+                    margin: 8px 0;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    border: 2px solid transparent;
+                    transition: all 0.3s ease;
+                    background: linear-gradient(135deg, #1e272e 0%, #485460 100%);
+                " onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='#ffd700'" onmouseout="this.style.transform='scale(1)'; this.style.borderColor='transparent'" onclick="applyTheme('midnight')">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, #1e272e 0%, #485460 100%); border: 2px solid white;"></div>
+                        <div style="color: white; font-weight: 600;">Midnight Dark</div>
+                    </div>
+                </div>
+                
+                <div class="theme-option" data-theme="rose" style="
+                    padding: 12px;
+                    margin: 8px 0;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    border: 2px solid transparent;
+                    transition: all 0.3s ease;
+                    background: linear-gradient(135deg, #fd79a8 0%, #a29bfe 100%);
+                " onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='#ffd700'" onmouseout="this.style.transform='scale(1)'; this.style.borderColor='transparent'" onclick="applyTheme('rose')">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, #fd79a8 0%, #a29bfe 100%); border: 2px solid white;"></div>
+                        <div style="color: white; font-weight: 600;">Rose Pink</div>
                     </div>
                 </div>
             </div>
