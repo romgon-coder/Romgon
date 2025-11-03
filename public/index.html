@@ -13022,12 +13022,38 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 this.style.transform = 'translateY(0) scale(1)';
             };
             
+            // Helper function to generate random SVG avatar
+            const generateRandomAvatar = (userId) => {
+                const colors = [
+                    ['#FF6B6B', '#4ECDC4'], ['#A8E6CF', '#FFD3B6'], ['#FF8B94', '#A8E6CF'],
+                    ['#95E1D3', '#F38181'], ['#AA96DA', '#FCBAD3'], ['#667eea', '#764ba2'],
+                    ['#f093fb', '#f5576c'], ['#4facfe', '#00f2fe'], ['#43e97b', '#38f9d7']
+                ];
+                const hash = userId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                const colorPair = colors[hash % colors.length];
+                
+                return `
+                    <svg width="100%" height="100%" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="grad${hash}" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:${colorPair[0]};stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:${colorPair[1]};stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <rect width="80" height="80" fill="url(#grad${hash})" rx="8"/>
+                        <circle cx="40" cy="30" r="12" fill="rgba(255,255,255,0.9)"/>
+                        <ellipse cx="40" cy="65" rx="20" ry="18" fill="rgba(255,255,255,0.9)"/>
+                    </svg>
+                `;
+            };
+            
             // Helper function to render avatar
-            const renderAvatar = (avatar) => {
+            const renderAvatar = (avatar, userId) => {
                 if (avatar && avatar.startsWith('data:image')) {
                     return `<img src="${avatar}" style="width: 100%; height: 100%; border-radius: 8px; object-fit: cover;">`;
                 }
-                return `<span style="font-size: 2em;">${avatar || '😀'}</span>`;
+                // Use random SVG avatar instead of emoji
+                return generateRandomAvatar(userId);
             };
             
             playerHead.innerHTML = `
@@ -13048,7 +13074,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     border: 2px solid rgba(0, 0, 0, 0.3);
                     overflow: hidden;
                 ">
-                    ${renderAvatar(player.avatar)}
+                    ${renderAvatar(player.avatar, player.userId)}
                     
                     <!-- 3D effect layers -->
                     <div style="
@@ -13115,32 +13141,31 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             const actionsDiv = document.createElement('div');
             actionsDiv.style.cssText = `
                 display: flex;
-                gap: 4px;
-                margin-top: 8px;
-                opacity: 0;
-                transition: opacity 0.2s;
+                gap: 3px;
+                margin-top: 4px;
             `;
             
-            // Chat button
+            // Chat button - smaller and always visible
             const chatBtn = document.createElement('button');
             chatBtn.innerHTML = '💬';
-            chatBtn.title = 'Direct Message';
+            chatBtn.title = 'Chat';
             chatBtn.style.cssText = `
-                background: rgba(78, 205, 196, 0.2);
+                background: rgba(78, 205, 196, 0.3);
                 border: 1px solid rgba(78, 205, 196, 0.5);
                 color: #4ecdc4;
-                border-radius: 6px;
-                padding: 4px 8px;
+                border-radius: 4px;
+                padding: 2px 4px;
                 cursor: pointer;
-                font-size: 0.9em;
+                font-size: 0.65em;
                 transition: all 0.2s;
+                line-height: 1;
             `;
             chatBtn.onmouseover = function() {
-                this.style.background = 'rgba(78, 205, 196, 0.4)';
+                this.style.background = 'rgba(78, 205, 196, 0.5)';
                 this.style.transform = 'scale(1.1)';
             };
             chatBtn.onmouseout = function() {
-                this.style.background = 'rgba(78, 205, 196, 0.2)';
+                this.style.background = 'rgba(78, 205, 196, 0.3)';
                 this.style.transform = 'scale(1)';
             };
             chatBtn.onclick = function(e) {
@@ -13149,26 +13174,27 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 openDirectMessage(player.userId, player.displayName);
             };
             
-            // Add friend button
+            // Add friend button - smaller and always visible
             const friendBtn = document.createElement('button');
-            friendBtn.innerHTML = '👤+';
-            friendBtn.title = 'Add Friend';
+            friendBtn.innerHTML = '👤';
+            friendBtn.title = 'Add';
             friendBtn.style.cssText = `
-                background: rgba(255, 121, 198, 0.2);
+                background: rgba(255, 121, 198, 0.3);
                 border: 1px solid rgba(255, 121, 198, 0.5);
                 color: #ff79c6;
-                border-radius: 6px;
-                padding: 4px 8px;
+                border-radius: 4px;
+                padding: 2px 4px;
                 cursor: pointer;
-                font-size: 0.9em;
+                font-size: 0.65em;
                 transition: all 0.2s;
+                line-height: 1;
             `;
             friendBtn.onmouseover = function() {
-                this.style.background = 'rgba(255, 121, 198, 0.4)';
+                this.style.background = 'rgba(255, 121, 198, 0.5)';
                 this.style.transform = 'scale(1.1)';
             };
             friendBtn.onmouseout = function() {
-                this.style.background = 'rgba(255, 121, 198, 0.2)';
+                this.style.background = 'rgba(255, 121, 198, 0.3)';
                 this.style.transform = 'scale(1)';
             };
             friendBtn.onclick = function(e) {
@@ -13180,15 +13206,6 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             
             actionsDiv.appendChild(chatBtn);
             actionsDiv.appendChild(friendBtn);
-            
-            // Show buttons on hover
-            playerHead.addEventListener('mouseenter', function() {
-                actionsDiv.style.opacity = '1';
-            });
-            
-            playerHead.addEventListener('mouseleave', function() {
-                actionsDiv.style.opacity = '0';
-            });
             
             // Wrap playerHead and actions in a container
             const playerContainer = document.createElement('div');
