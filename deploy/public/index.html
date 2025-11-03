@@ -12101,7 +12101,13 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     }
     
     function sendChatMessage() {
+        console.log('🚨🚨🚨 SEND CHAT MESSAGE FUNCTION CALLED 🚨🚨🚨');
+        console.log('🚨 Function exists?', typeof sendChatMessage);
+        
         const input = document.getElementById('chat-message-input');
+        console.log('🚨 Input element found?', !!input);
+        console.log('🚨 Input value:', input?.value);
+        
         const message = input.value.trim();
         
         console.log('📤 sendChatMessage called');
