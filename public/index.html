@@ -18682,6 +18682,21 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     }
                 });
                 
+                // Listen for turn change (when KEEP button pressed or turn passed)
+                gameSocket.on('game:turnChange', (data) => {
+                    console.log('⏭️ Turn change received:', data);
+                    console.log('   New turn:', data.turn);
+                    console.log('   Current local turn:', currentPlayer);
+                    
+                    // Update turn
+                    if (data.turn) {
+                        currentPlayer = data.turn;
+                        console.log('🔄 Turn synchronized to:', currentPlayer);
+                        console.log('🔄 Is it my turn now?', currentPlayer === myPlayerColor);
+                        updateTurnDisplay();
+                    }
+                });
+                
                 // Listen for lobby updates
                 gameSocket.on('lobby:gameUpdate', (data) => {
                     console.log('🔄 Lobby game update:', data);
@@ -21590,6 +21605,38 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             });
             
             console.log('✅ Rotation emitted to server');
+        }
+        
+        function broadcastTurnEndMultiplayer() {
+            console.log('🔍 broadcastTurnEndMultiplayer called');
+            console.log('   multiplayerMode:', multiplayerMode);
+            console.log('   gameSocket:', gameSocket ? 'exists' : 'null');
+            console.log('   gameSocket.connected:', gameSocket?.connected);
+            
+            if (!multiplayerMode || !gameSocket || !gameSocket.connected || myPlayerColor === 'both') {
+                console.log('❌ Not broadcasting turn end - conditions not met');
+                return;
+            }
+            
+            const token = localStorage.getItem('romgon-jwt') || localStorage.getItem('token');
+            if (!token) {
+                console.log('❌ No token found');
+                return;
+            }
+            
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const gameId = roomClient.currentRoom?.id || 'unknown';
+            
+            console.log('📤 Broadcasting turn end to gameSocket');
+            console.log('   gameId:', gameId);
+            console.log('   userId:', payload.userId);
+            
+            gameSocket.emit('game:turnEnd', {
+                gameId: gameId,
+                userId: payload.userId
+            });
+            
+            console.log('✅ Turn end emitted to server');
         }
         
         function broadcastTurnEnd() {
@@ -26100,10 +26147,15 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     // End turn
                     if (!gameOver) {
                         console.log('Ending turn after keep');
-                        // In multiplayer, wait for server to sync turn
-                        if (!multiplayerMode || myPlayerColor === 'both') {
+                        
+                        // In multiplayer, broadcast turn end to server instead of switching locally
+                        if (multiplayerMode && myPlayerColor !== 'both') {
+                            broadcastTurnEndMultiplayer();
+                        } else {
+                            // Single player mode - switch locally
                             switchTurn();
                         }
+                        
                         // Update base defence display
                         updateBaseDefenceDisplay();
                         // Update attack highlights for all pieces

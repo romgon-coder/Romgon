@@ -324,6 +324,41 @@ function setupSocketHandlers(io) {
             }
         });
 
+        // Turn ended without a move (e.g., KEEP button pressed)
+        socket.on('game:turnEnd', (data) => {
+            const { gameId, userId } = data;
+
+            console.log(`⏭️ Turn end received in game ${gameId} by user ${userId}`);
+
+            try {
+                // Track this as a "pass" move for turn counting
+                const currentMoveCount = guestGameMoves.get(gameId) || 0;
+                guestGameMoves.set(gameId, currentMoveCount + 1);
+                
+                // Calculate next turn
+                const nextTurnIsWhite = currentMoveCount % 2 === 0;
+                const nextTurn = nextTurnIsWhite ? 'white' : 'black';
+                
+                console.log(`   Move count: ${currentMoveCount} (turn pass)`);
+                console.log(`   Next turn: ${nextTurn}`);
+                console.log(`📢 Broadcasting turn change to game-${gameId}`);
+                
+                // Broadcast turn change to all players
+                gameNamespace.to(`game-${gameId}`).emit('game:turnChange', {
+                    gameId,
+                    turn: nextTurn,
+                    userId,
+                    moveCount: currentMoveCount + 1,
+                    timestamp: new Date().toISOString()
+                });
+                
+                console.log(`✅ Turn change broadcast complete, next turn: ${nextTurn}`);
+            } catch (error) {
+                console.error('❌ Error broadcasting turn end:', error);
+                socket.emit('game:error', { error: error.message });
+            }
+        });
+
         // Game ended
         socket.on('game:end', async (data) => {
             const { gameId, reason, winnerId } = data;
