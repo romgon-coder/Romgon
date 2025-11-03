@@ -13777,6 +13777,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         let winSound = null;
         let lockRhombusSound = null;
         let flipboardSound = null;
+        let rotationSound = null;
         
         // Background music
         let backgroundMusic1 = null;
@@ -13810,6 +13811,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 flipboardSound = new Audio('ASSETS/flipboard.mp3');
                 flipboardSound.volume = 0.4; // Set volume to 40% for board flip sound
                 flipboardSound.preload = 'auto';
+                
+                rotationSound = new Audio('ASSETS/rotationSound.mp3');
+                rotationSound.volume = 0.3; // Set volume to 30% for rotation sound
+                rotationSound.preload = 'auto';
                 
                 // Background music tracks
                 backgroundMusic1 = new Audio('ASSETS/background1.mp3');
@@ -13899,6 +13904,19 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     });
                 } catch (error) {
                     console.log('Flipboard audio play error:', error);
+                }
+            }
+        }
+        
+        function playRotationSound() {
+            if (rotationSound) {
+                try {
+                    rotationSound.currentTime = 0; // Reset to beginning
+                    rotationSound.play().catch(error => {
+                        console.log('Rotation audio play error:', error);
+                    });
+                } catch (error) {
+                    console.log('Rotation audio play error:', error);
                 }
             }
         }
@@ -15049,6 +15067,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             setTriangleOrientation(hexId, newOrientation);
             updateTriangleVisual(hexId);
             
+            // Play rotation sound
+            playRotationSound();
+            
             // Broadcast rotation in multiplayer
             broadcastRotation(hexId, 'triangle', newOrientation);
             
@@ -15104,6 +15125,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             }
             setTriangleOrientation(hexId, newOrientation);
             updateTriangleVisual(hexId);
+            
+            // Play rotation sound
+            playRotationSound();
             
             // Broadcast rotation in multiplayer
             broadcastRotation(hexId, 'triangle', newOrientation);
@@ -15185,6 +15209,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             setHexgonOrientation(hexId, newOrientation);
             updateHexgonVisual(hexId);
             
+            // Play rotation sound
+            playRotationSound();
+            
             // Broadcast rotation in multiplayer
             broadcastRotation(hexId, 'hexgon', newOrientation);
             
@@ -15241,6 +15268,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             setHexgonOrientation(hexId, newOrientation);
             updateHexgonVisual(hexId);
+            
+            // Play rotation sound
+            playRotationSound();
             
             // Broadcast rotation in multiplayer
             broadcastRotation(hexId, 'hexgon', newOrientation);
