@@ -30106,16 +30106,24 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     
                     if (isCapture) {
                         console.log('📋 Turn ending due to CAPTURE');
-                        // In multiplayer, wait for server to sync turn
-                        if (!multiplayerMode || myPlayerColor === 'both') {
+                        // Play end turn sound
+                        playEndTurnSound();
+                        // In multiplayer, broadcast turn end to server
+                        if (multiplayerMode && myPlayerColor !== 'both') {
+                            broadcastTurnEndMultiplayer();
+                        } else {
                             switchTurn();
                         }
                         updateBaseDefenceDisplay();
                     } else if (!newPiece.classList.contains('triangle-piece') && !newPiece.classList.contains('hexgon-piece')) {
                         // Non-rotatable pieces end the turn automatically
                         console.log('📋 Turn ending - non-rotatable piece moved');
-                        // In multiplayer, wait for server to sync turn
-                        if (!multiplayerMode || myPlayerColor === 'both') {
+                        // Play end turn sound
+                        playEndTurnSound();
+                        // In multiplayer, broadcast turn end to server
+                        if (multiplayerMode && myPlayerColor !== 'both') {
+                            broadcastTurnEndMultiplayer();
+                        } else {
                             switchTurn();
                         }
                         updateBaseDefenceDisplay();
