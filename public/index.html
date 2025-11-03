@@ -1318,8 +1318,8 @@
                     ">
                 </div>
 
-                <!-- Online Players List -->
-                <div id="online-players-list" style="
+                <!-- Online Players List (Panel/Modal Context) -->
+                <div id="online-players-panel-list" style="
                     display: flex;
                     flex-direction: column;
                     gap: 12px;
@@ -8103,7 +8103,8 @@
                     </div>
                 </div>
                 
-                <div id="online-players-list" style="
+                <!-- Online Players List (Lobby Graphical Context) -->
+                <div id="online-players-lobby-list" style="
                     display: flex;
                     gap: 10px;
                     flex-wrap: wrap;
@@ -12949,13 +12950,14 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     }
     
     function renderOnlinePlayers() {
-        const listContainer = document.getElementById('online-players-list');
+        // This renders the graphical Minecraft-style heads in the LOBBY
+        const listContainer = document.getElementById('online-players-lobby-list');
         if (!listContainer) {
-            console.log('⚠️ Online players list container not found');
+            console.log('⚠️ Online players lobby list container not found');
             return;
         }
         
-        console.log('🎨 Rendering', onlinePlayersList.size, 'online players');
+        console.log('🎨 Rendering', onlinePlayersList.size, 'online players in lobby');
         
         // Update the counter in the top of the section
         const countEl = document.getElementById('online-players-count');
@@ -13121,13 +13123,11 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         // Players are loaded automatically via socket events
         // Just render what we have
         console.log('🔄 loadOnlinePlayers called, current list size:', onlinePlayersList.size);
-        console.log('🔍 Checking for list container...');
-        const testContainer = document.getElementById('online-players-list');
-        console.log('📦 Container found?', testContainer ? 'YES' : 'NO');
-        if (testContainer) {
-            console.log('📦 Container parent:', testContainer.parentElement?.tagName);
-            console.log('📦 Container grandparent:', testContainer.parentElement?.parentElement?.tagName);
-        }
+        console.log('🔍 Checking for list containers...');
+        const lobbyContainer = document.getElementById('online-players-lobby-list');
+        const panelContainer = document.getElementById('online-players-panel-list');
+        console.log('📦 Lobby container found?', lobbyContainer ? 'YES' : 'NO');
+        console.log('📦 Panel container found?', panelContainer ? 'YES' : 'NO');
         renderOnlinePlayers();
     }
     
@@ -14660,8 +14660,6 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             <!-- Draggable Header with close button -->
             <div class="camera-panel-header" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: rgba(78, 205, 196, 0.1); border-radius: 15px 15px 0 0; cursor: move; user-select: none;">
                 <div style="color: #4ecdc4; font-weight: bold;">🎥 3D Camera (Drag to Move)</div>
-                <button onclick="closeCameraPanel()" style="
-                    background: rgba(255, 121, 198, 0.2);
                 <button onclick="closeCameraPanel()" style="
                     background: rgba(255, 121, 198, 0.2);
                     border: 1px solid #ff79c6;
@@ -20733,11 +20731,14 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             }
         }
         
-        function renderOnlinePlayersOld() { // Renamed - this is the old user-home page function
+        function renderOnlinePlayersOld() { // This renders the compact list in the PANEL/MODAL
             const countEl = document.getElementById('online-players-count');
-            const listEl = document.getElementById('online-players-list');
+            const listEl = document.getElementById('online-players-panel-list');
             
-            if (!countEl || !listEl) return;
+            if (!countEl || !listEl) {
+                console.log('⚠️ Panel list elements not found');
+                return;
+            }
             
             const count = onlinePlayers.size;
             countEl.textContent = count;
