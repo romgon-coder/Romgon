@@ -1335,7 +1335,7 @@
     </div>
 
     <!-- Chat Panel Modal -->
-    <div id="chat-panel-modal" style="
+    <div id="chat-panel-modal" onclick="console.log('🟠 MODAL BACKGROUND CLICKED');" style="
         display: none;
         position: fixed;
         top: 0; left: 0; width: 100vw; height: 100vh;
@@ -1344,7 +1344,7 @@
         overflow: hidden;
         backdrop-filter: blur(4px);
     ">
-        <div style="
+        <div onclick="event.stopPropagation(); console.log('🟣 INNER PANEL CLICKED');" style="
             max-width: 900px;
             width: 95vw;
             height: 85vh;
