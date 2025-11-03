@@ -18788,6 +18788,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                             // Sync turn from server if provided
                             if (data.turn) {
                                 currentPlayer = data.turn;
+                                playEndTurnSound(); // Play sound when turn changes
                                 console.log('🔄 Turn synchronized to:', currentPlayer);
                                 console.log('🔄 Is it my turn now?', currentPlayer === myPlayerColor);
                             }
@@ -30108,10 +30109,9 @@ ${moveHistory || '(No moves played yet - starting position)'}
                         console.log('📋 Turn ending due to CAPTURE');
                         // Play end turn sound
                         playEndTurnSound();
-                        // In multiplayer, broadcast turn end to server
-                        if (multiplayerMode && myPlayerColor !== 'both') {
-                            broadcastTurnEndMultiplayer();
-                        } else {
+                        // In multiplayer, the turn was already broadcast via broadcastMove()
+                        // Just switch turn locally for single player
+                        if (!multiplayerMode || myPlayerColor === 'both') {
                             switchTurn();
                         }
                         updateBaseDefenceDisplay();
@@ -30120,10 +30120,9 @@ ${moveHistory || '(No moves played yet - starting position)'}
                         console.log('📋 Turn ending - non-rotatable piece moved');
                         // Play end turn sound
                         playEndTurnSound();
-                        // In multiplayer, broadcast turn end to server
-                        if (multiplayerMode && myPlayerColor !== 'both') {
-                            broadcastTurnEndMultiplayer();
-                        } else {
+                        // In multiplayer, the turn was already broadcast via broadcastMove()
+                        // Just switch turn locally for single player
+                        if (!multiplayerMode || myPlayerColor === 'both') {
                             switchTurn();
                         }
                         updateBaseDefenceDisplay();
