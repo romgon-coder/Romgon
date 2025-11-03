@@ -14987,6 +14987,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             setTriangleOrientation(hexId, newOrientation);
             updateTriangleVisual(hexId);
             
+            // Broadcast rotation in multiplayer
+            broadcastRotation(hexId, 'triangle', newOrientation);
+            
             console.log('New orientation:', newOrientation);
             const angleMap = [270, 330, 30, 90, 150, 210];
             const rotation = angleMap[newOrientation % 6];
@@ -15039,6 +15042,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             }
             setTriangleOrientation(hexId, newOrientation);
             updateTriangleVisual(hexId);
+            
+            // Broadcast rotation in multiplayer
+            broadcastRotation(hexId, 'triangle', newOrientation);
             
             console.log('New orientation:', newOrientation);
             const angleMap = [270, 330, 30, 90, 150, 210];
@@ -15117,6 +15123,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             setHexgonOrientation(hexId, newOrientation);
             updateHexgonVisual(hexId);
             
+            // Broadcast rotation in multiplayer
+            broadcastRotation(hexId, 'hexgon', newOrientation);
+            
             // Mark as rotated to track turn actions
             const actions2 = pieceActions.get(hexId) || {moved: false, attacked: false, rotated: false};
             actions2.rotated = true;
@@ -15170,6 +15179,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             setHexgonOrientation(hexId, newOrientation);
             updateHexgonVisual(hexId);
+            
+            // Broadcast rotation in multiplayer
+            broadcastRotation(hexId, 'hexgon', newOrientation);
             
             // Mark as rotated to track turn actions
             const actions2 = pieceActions.get(hexId) || {moved: false, attacked: false, rotated: false};
@@ -18629,6 +18641,37 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     loadActiveGames(); // Refresh active games list
                 });
                 
+                // Listen for rotation updates
+                gameSocket.on('game:rotationUpdate', (data) => {
+                    console.log('🔄 Rotation update received:', data);
+                    
+                    // Get my user ID to check if this is my own rotation
+                    const token = localStorage.getItem('romgon-jwt');
+                    if (token) {
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        if (data.userId === payload.userId) {
+                            console.log('⏭️ Skipping my own rotation (already applied locally)');
+                            return;
+                        }
+                    }
+                    
+                    // Apply the opponent's rotation
+                    if (data.rotation && multiplayerMode) {
+                        const { hexId, pieceType, orientation } = data.rotation;
+                        console.log(`🔄 Applying opponent rotation: ${pieceType} at ${hexId} to orientation ${orientation}`);
+                        
+                        if (pieceType === 'triangle') {
+                            setTriangleOrientation(hexId, orientation);
+                            updateTriangleVisual(hexId);
+                            console.log('✅ Triangle rotation applied');
+                        } else if (pieceType === 'hexgon') {
+                            setHexgonOrientation(hexId, orientation);
+                            updateHexgonVisual(hexId);
+                            console.log('✅ Hexgon rotation applied');
+                        }
+                    }
+                });
+                
                 // Listen for lobby updates
                 gameSocket.on('lobby:gameUpdate', (data) => {
                     console.log('🔄 Lobby game update:', data);
@@ -21486,6 +21529,47 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             });
             
             console.log('✅ Move emitted to server');
+        }
+        
+        function broadcastRotation(hexId, pieceType, newOrientation) {
+            console.log('🔍 broadcastRotation called');
+            console.log('   multiplayerMode:', multiplayerMode);
+            console.log('   gameSocket:', gameSocket ? 'exists' : 'null');
+            console.log('   gameSocket.connected:', gameSocket?.connected);
+            console.log('   myPlayerColor:', myPlayerColor);
+            
+            if (!multiplayerMode || !gameSocket || !gameSocket.connected || myPlayerColor === 'both') {
+                console.log('❌ Not broadcasting rotation - conditions not met');
+                return;
+            }
+            
+            const token = localStorage.getItem('romgon-jwt') || localStorage.getItem('token');
+            if (!token) {
+                console.log('❌ No token found');
+                return;
+            }
+            
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const gameId = roomClient.currentRoom?.id || 'unknown';
+            
+            console.log('📤 Broadcasting rotation to gameSocket');
+            console.log('   gameId:', gameId);
+            console.log('   userId:', payload.userId);
+            console.log('   hexId:', hexId);
+            console.log('   pieceType:', pieceType);
+            console.log('   newOrientation:', newOrientation);
+            
+            gameSocket.emit('game:rotation', {
+                gameId: gameId,
+                userId: payload.userId,
+                rotation: {
+                    hexId: hexId,
+                    pieceType: pieceType,
+                    orientation: newOrientation
+                }
+            });
+            
+            console.log('✅ Rotation emitted to server');
         }
         
         function broadcastTurnEnd() {

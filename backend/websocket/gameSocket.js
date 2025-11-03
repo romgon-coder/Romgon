@@ -296,6 +296,34 @@ function setupSocketHandlers(io) {
             }
         });
 
+        // Rotation made - broadcast to opponent
+        socket.on('game:rotation', (data) => {
+            const { gameId, rotation, userId } = data;
+
+            console.log(`🔄 Rotation received in game ${gameId} by user ${userId}`);
+            console.log(`   HexId: ${rotation.hexId}`);
+            console.log(`   PieceType: ${rotation.pieceType}`);
+            console.log(`   Orientation: ${rotation.orientation}`);
+
+            try {
+                console.log(`📢 Broadcasting rotation to game-${gameId}`);
+                console.log(`   Sockets in room:`, gameNamespace.adapter.rooms.get(`game-${gameId}`)?.size || 0);
+                
+                // Broadcast to all players in game
+                gameNamespace.to(`game-${gameId}`).emit('game:rotationUpdate', {
+                    gameId,
+                    rotation,
+                    userId,
+                    timestamp: new Date().toISOString()
+                });
+
+                console.log(`✅ Rotation broadcast complete`);
+            } catch (error) {
+                console.error('❌ Error broadcasting rotation:', error);
+                socket.emit('game:error', { error: error.message });
+            }
+        });
+
         // Game ended
         socket.on('game:end', async (data) => {
             const { gameId, reason, winnerId } = data;
