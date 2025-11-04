@@ -20760,8 +20760,28 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     }
                 }
                 
+                // Check if user is actually logged in via token
+                const token = localStorage.getItem('token');
+                if (!userId && token) {
+                    console.warn('⚠️ User has token but no userId - attempting to extract from token');
+                    try {
+                        // JWT tokens have format: header.payload.signature
+                        const payload = token.split('.')[1];
+                        if (payload) {
+                            const decoded = JSON.parse(atob(payload));
+                            if (decoded.userId || decoded.id) {
+                                userId = (decoded.userId || decoded.id).toString();
+                                console.log('🔍 Extracted userId from JWT token:', userId);
+                            }
+                        }
+                    } catch (e) {
+                        console.error('❌ Failed to decode token:', e);
+                    }
+                }
+                
                 if (!userId) {
                     console.error('❌ No userId found - cannot connect to game socket');
+                    console.error('💡 Try logging out and logging in again to fix this issue');
                     return;
                 }
                 
