@@ -23695,10 +23695,11 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         const allReady = data.players.every(p => p.ready);
                         if (allReady) {
                             console.log('🎮 Both players ready, starting game automatically...');
-                            // Start the game (backend will handle via ready check)
+                            // Start the game - use gameId property for challenge rooms
                             setTimeout(() => {
-                                if (roomClient.currentRoom && roomClient.currentRoom.id) {
-                                    startMultiplayerGame(roomClient.currentRoom.id);
+                                const gameId = roomClient.currentRoom?.gameId || roomClient.currentRoom?.id;
+                                if (gameId) {
+                                    startMultiplayerGame(gameId);
                                 }
                             }, 1000);
                         }
@@ -23710,9 +23711,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     const allReady = room.players.every(p => p.ready);
                     if (allReady) {
                         console.log('🎮 Challenge room with both players ready, starting game...');
+                        console.log('🎮 Room object:', room);
+                        const gameId = room.gameId || room.id;
+                        console.log('🎮 Using gameId:', gameId);
                         setTimeout(() => {
                             closeMultiplayerModal();
-                            startMultiplayerGame(room.id);
+                            startMultiplayerGame(gameId);
                         }, 1500);
                     }
                 }
