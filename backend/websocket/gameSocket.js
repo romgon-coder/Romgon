@@ -88,6 +88,8 @@ function setupSocketHandlers(io) {
             
             console.log(`⚔️ Challenge from ${challengerName} (${challengerUserId}) to ${opponentName} (${opponentId})`);
             console.log(`   Mode: ${gameMode}, Time: ${timeControl}, Ranked: ${isRanked}`);
+            console.log(`   OpponentId type: ${typeof opponentId}, value: "${opponentId}"`);
+            console.log(`   Online players:`, Array.from(onlinePlayers.keys()));
             
             // Generate unique challenge ID
             const challengeId = `challenge-${Date.now()}-${challengeIdCounter++}`;
@@ -105,8 +107,12 @@ function setupSocketHandlers(io) {
                 timestamp: new Date().toISOString()
             });
             
-            // Find opponent's socket
-            const opponent = onlinePlayers.get(opponentId?.toString());
+            // Find opponent's socket - try both with and without toString
+            const opponentIdStr = opponentId?.toString();
+            const opponent = onlinePlayers.get(opponentIdStr);
+            
+            console.log(`   Looking for opponentId: "${opponentIdStr}"`);
+            console.log(`   Found opponent:`, opponent ? `${opponent.username} (${opponent.socketId})` : 'NOT FOUND');
             
             if (opponent && opponent.socketId) {
                 // Send challenge to opponent
@@ -121,8 +127,16 @@ function setupSocketHandlers(io) {
                 });
                 
                 console.log(`✅ Challenge sent to ${opponentName}'s socket ${opponent.socketId}`);
+                
+                // Confirm to sender
+                socket.emit('challenge:sent', {
+                    challengeId,
+                    opponentName,
+                    message: 'Challenge sent successfully'
+                });
             } else {
                 console.log(`❌ Opponent ${opponentName} not found online`);
+                console.log(`   All online players:`, Array.from(onlinePlayers.entries()).map(([id, p]) => `${id} => ${p.username}`));
                 socket.emit('challenge:error', { 
                     message: `${opponentName} is not currently online` 
                 });

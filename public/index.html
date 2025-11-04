@@ -21656,6 +21656,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 showNotification(`${data.opponentName} declined your challenge`, 'info');
             });
             
+            // Listen for challenge errors
+            gameSocket.on('challenge:error', (data) => {
+                console.error('❌ Challenge error:', data);
+                showNotification(`Challenge error: ${data.message}`, 'error');
+            });
+            
             // Request initial online players list (wait for connection)
             setTimeout(() => {
                 console.log('📡 Requesting online players list...');
