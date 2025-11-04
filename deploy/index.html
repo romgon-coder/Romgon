@@ -23664,8 +23664,11 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 showNotification(`✅ Joined room ${roomCode}!`, 'success');
                 
                 // Update UI
-                document.getElementById('joined-room-code').textContent = roomCode;
-                showView('mp-waiting');
+                const roomCodeEl = document.getElementById('waiting-room-code');
+                if (roomCodeEl) {
+                    roomCodeEl.textContent = roomCode;
+                }
+                showView('mp-waiting-room');
                 
                 // Setup event handlers
                 roomClient.onGameStarted = (data) => {
