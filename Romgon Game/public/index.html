@@ -33959,15 +33959,19 @@ ${moveHistory || '(No moves played yet - starting position)'}
                         email: payload.email || null,
                         type: 'registered',
                         id: payload.userId,
-                        token: token
+                        token: token,
+                        rating: 1600
                     };
                     
-                    // Save to localStorage
+                    // Save to localStorage (multiple places for redundancy)
                     localStorage.setItem('romgon-user', JSON.stringify(user));
+                    localStorage.setItem('userId', payload.userId.toString()); // Separate userId for easy access
+                    localStorage.setItem('token', token); // Also save as 'token' for compatibility
                     localStorage.setItem('romgon-jwt', token); // ⚠️ CRITICAL: Save JWT token separately
                     window.currentUser = user;
                     
                     console.log('✅ Google OAuth login successful:', user.name);
+                    console.log('✅ User data saved:', { userId: payload.userId, username: payload.username });
                     console.log('✅ JWT token saved to localStorage');
                     
                     // Clean URL and redirect to lobby
