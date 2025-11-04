@@ -13421,6 +13421,35 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 openDirectMessage(player.userId, player.displayName);
             };
             
+            // Challenge button - smaller and always visible
+            const challengeBtn = document.createElement('button');
+            challengeBtn.innerHTML = '⚔️';
+            challengeBtn.title = 'Challenge';
+            challengeBtn.style.cssText = `
+                background: rgba(255, 184, 0, 0.3);
+                border: 1px solid rgba(255, 184, 0, 0.5);
+                color: #ffb800;
+                border-radius: 4px;
+                padding: 2px 4px;
+                cursor: pointer;
+                font-size: 0.65em;
+                transition: all 0.2s;
+                line-height: 1;
+            `;
+            challengeBtn.onmouseover = function() {
+                this.style.background = 'rgba(255, 184, 0, 0.5)';
+                this.style.transform = 'scale(1.1)';
+            };
+            challengeBtn.onmouseout = function() {
+                this.style.background = 'rgba(255, 184, 0, 0.3)';
+                this.style.transform = 'scale(1)';
+            };
+            challengeBtn.onclick = function(e) {
+                e.stopPropagation();
+                console.log('⚔️ Challenge button clicked for:', player.displayName);
+                challengePlayer(player.userId);
+            };
+            
             // Add friend button - smaller and always visible
             const friendBtn = document.createElement('button');
             friendBtn.innerHTML = '👤';
@@ -13451,6 +13480,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 alert(`Add friend feature coming soon! (${player.displayName})`);
             };
             
+            actionsDiv.appendChild(challengeBtn);
             actionsDiv.appendChild(chatBtn);
             actionsDiv.appendChild(friendBtn);
             
