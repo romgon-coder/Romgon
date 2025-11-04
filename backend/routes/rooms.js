@@ -127,7 +127,7 @@ router.post('/join', authenticateToken, async (req, res) => {
 
         // If player is already in this room, just return the room info (important for challenge rooms)
         if (room.players.some(p => p.userId === userId)) {
-            console.log(`👤 ${username} is already in room ${roomCode}, returning room info`);
+            console.log(`👤 ${username} (${userId}) is already in room ${roomCode}, returning room info`);
             return res.json({
                 success: true,
                 room: {
@@ -139,6 +139,9 @@ router.post('/join', authenticateToken, async (req, res) => {
                 }
             });
         }
+
+        console.log(`🔍 Player ${username} (${userId}) not found in room ${roomCode}`);
+        console.log(`🔍 Room players:`, room.players.map(p => `${p.username} (${p.userId})`));
 
         if (room.players.length >= 2) {
             return res.status(400).json({
