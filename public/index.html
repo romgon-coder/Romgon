@@ -6834,6 +6834,22 @@
             50% { opacity: 0.5; }
         }
         
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes scaleIn {
+            from { 
+                transform: scale(0.7);
+                opacity: 0;
+            }
+            to { 
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
         @keyframes turnPulse {
             0%, 100% { 
                 transform: scale(1);
@@ -21942,6 +21958,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             const { challengeId, challengerUserId, challengerName, gameMode, timeControl, isRanked } = challengeData;
             
             console.log('🎯 Showing challenge notification modal...');
+            console.log('Challenge data:', challengeData);
             
             // Format game info
             const gameModeText = gameMode === 'classic' ? 'Classic' : gameMode === 'fog' ? 'Fog of War' : 'Custom';
@@ -21952,48 +21969,61 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             // Create or update challenge notification modal
             let notificationModal = document.getElementById('challenge-notification-modal');
             if (!notificationModal) {
+                console.log('Creating new challenge notification modal...');
                 notificationModal = document.createElement('div');
                 notificationModal.id = 'challenge-notification-modal';
+                notificationModal.style.position = 'fixed';
+                notificationModal.style.top = '0';
+                notificationModal.style.left = '0';
+                notificationModal.style.width = '100%';
+                notificationModal.style.height = '100%';
+                notificationModal.style.background = 'rgba(0,0,0,0.85)';
+                notificationModal.style.zIndex = '10001';
+                notificationModal.style.display = 'flex';
+                notificationModal.style.justifyContent = 'center';
+                notificationModal.style.alignItems = 'center';
+                notificationModal.style.animation = 'fadeIn 0.3s';
                 document.body.appendChild(notificationModal);
+            } else {
+                console.log('Reusing existing modal...');
+                notificationModal.style.display = 'flex';
             }
             
             notificationModal.innerHTML = `
-                <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10001; display:flex; justify-content:center; align-items:center; animation: fadeIn 0.3s;">
-                    <div style="background:linear-gradient(135deg, #ffd700 0%, #ff6348 100%); padding:30px; border-radius:15px; max-width:500px; box-shadow:0 10px 40px rgba(0,0,0,0.5); animation: scaleIn 0.3s;">
-                        <div style="color:white; font-size:24px; font-weight:bold; margin-bottom:15px; text-align:center;">
-                            ⚔️ Challenge Received!
+                <div style="background:linear-gradient(135deg, #ffd700 0%, #ff6348 100%); padding:30px; border-radius:15px; max-width:500px; width:90%; box-shadow:0 10px 40px rgba(0,0,0,0.5); animation: scaleIn 0.3s;">
+                    <div style="color:white; font-size:24px; font-weight:bold; margin-bottom:15px; text-align:center;">
+                        ⚔️ Challenge Received!
+                    </div>
+                    <div style="background:rgba(0,0,0,0.3); padding:15px; border-radius:10px; margin-bottom:15px;">
+                        <div style="color:white; font-size:18px; font-weight:600; text-align:center; margin-bottom:10px;">
+                            From: ${challengerName}
                         </div>
-                        <div style="background:rgba(0,0,0,0.3); padding:15px; border-radius:10px; margin-bottom:15px;">
-                            <div style="color:white; font-size:18px; font-weight:600; text-align:center; margin-bottom:10px;">
-                                From: ${challengerName}
-                            </div>
-                            <div style="color:white; font-size:14px; margin:8px 0;">
-                                🎮 Mode: <strong>${gameModeText}</strong>
-                            </div>
-                            <div style="color:white; font-size:14px; margin:8px 0;">
-                                ⏱️ Time: <strong>${timeText}</strong>
-                            </div>
-                            <div style="color:white; font-size:14px; margin:8px 0;">
-                                ${rankedText}
-                            </div>
+                        <div style="color:white; font-size:14px; margin:8px 0;">
+                            🎮 Mode: <strong>${gameModeText}</strong>
                         </div>
-                        <div style="display:flex; gap:12px; justify-content:center;">
-                            <button onclick="acceptChallengeFromModal('${challengeId}', '${challengerUserId}', '${challengerName}')" 
-                                    style="background:linear-gradient(135deg, #26de81 0%, #20bf6b 100%); color:white; border:none; padding:14px 28px; border-radius:10px; cursor:pointer; font-weight:bold; font-size:16px; flex:1; transition: transform 0.2s;"
-                                    onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                                ✅ Accept Challenge
-                            </button>
-                            <button onclick="declineChallengeFromModal('${challengeId}', '${challengerUserId}', '${challengerName}')" 
-                                    style="background:rgba(255,255,255,0.2); color:white; border:2px solid rgba(255,255,255,0.4); padding:14px 28px; border-radius:10px; cursor:pointer; font-weight:bold; font-size:16px; flex:1; transition: transform 0.2s;"
-                                    onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                                ❌ Decline
-                            </button>
+                        <div style="color:white; font-size:14px; margin:8px 0;">
+                            ⏱️ Time: <strong>${timeText}</strong>
                         </div>
+                        <div style="color:white; font-size:14px; margin:8px 0;">
+                            ${rankedText}
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:12px; justify-content:center;">
+                        <button onclick="acceptChallengeFromModal('${challengeId}', '${challengerUserId}', '${challengerName}')" 
+                                style="background:linear-gradient(135deg, #26de81 0%, #20bf6b 100%); color:white; border:none; padding:14px 28px; border-radius:10px; cursor:pointer; font-weight:bold; font-size:16px; flex:1; transition: transform 0.2s;"
+                                onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            ✅ Accept Challenge
+                        </button>
+                        <button onclick="declineChallengeFromModal('${challengeId}', '${challengerUserId}', '${challengerName}')" 
+                                style="background:rgba(255,255,255,0.2); color:white; border:2px solid rgba(255,255,255,0.4); padding:14px 28px; border-radius:10px; cursor:pointer; font-weight:bold; font-size:16px; flex:1; transition: transform 0.2s;"
+                                onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            ❌ Decline
+                        </button>
                     </div>
                 </div>
             `;
             
-            notificationModal.style.display = 'block';
+            console.log('✅ Modal should now be visible');
             
             // Also show system notification
             showNotification(`⚔️ ${challengerName} challenged you to a game!`, 'info');
