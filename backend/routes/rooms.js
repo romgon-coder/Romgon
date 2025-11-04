@@ -126,7 +126,8 @@ router.post('/join', authenticateToken, async (req, res) => {
         }
 
         // If player is already in this room, just return the room info (important for challenge rooms)
-        if (room.players.some(p => p.userId === userId)) {
+        // Use type-safe comparison (== instead of ===) to handle string/number mismatches
+        if (room.players.some(p => p.userId == userId || String(p.userId) === String(userId))) {
             console.log(`👤 ${username} (${userId}) is already in room ${roomCode}, returning room info`);
             return res.json({
                 success: true,
@@ -141,7 +142,8 @@ router.post('/join', authenticateToken, async (req, res) => {
         }
 
         console.log(`🔍 Player ${username} (${userId}) not found in room ${roomCode}`);
-        console.log(`🔍 Room players:`, room.players.map(p => `${p.username} (${p.userId})`));
+        console.log(`🔍 Room players:`, room.players.map(p => `${p.username} (${p.userId}) [type: ${typeof p.userId}]`));
+        console.log(`🔍 Comparing with userId: ${userId} [type: ${typeof userId}]`);
 
         if (room.players.length >= 2) {
             return res.status(400).json({
