@@ -84,10 +84,14 @@ function setupSocketHandlers(io) {
 
         // Receive challenge from player
         socket.on('challenge:send', (data) => {
-            const { challengerUserId, challengerName, opponentId, opponentName, gameMode, timeControl, isRanked } = data;
+            const { opponentId, opponentName, gameMode, timeControl, ranked } = data;
+            
+            // Get challenger info from socket's authenticated user (userId and username from connection)
+            const challengerUserId = userId;
+            const challengerName = username;
             
             console.log(`⚔️ Challenge from ${challengerName} (${challengerUserId}) to ${opponentName} (${opponentId})`);
-            console.log(`   Mode: ${gameMode}, Time: ${timeControl}, Ranked: ${isRanked}`);
+            console.log(`   Mode: ${gameMode}, Time: ${timeControl}, Ranked: ${ranked}`);
             console.log(`   OpponentId type: ${typeof opponentId}, value: "${opponentId}"`);
             console.log(`   Online players:`, Array.from(onlinePlayers.keys()));
             
@@ -103,7 +107,7 @@ function setupSocketHandlers(io) {
                 opponentName,
                 gameMode,
                 timeControl,
-                isRanked,
+                isRanked: ranked,
                 timestamp: new Date().toISOString()
             });
             
@@ -122,7 +126,7 @@ function setupSocketHandlers(io) {
                     challengerName,
                     gameMode,
                     timeControl,
-                    isRanked,
+                    isRanked: ranked,
                     timestamp: new Date().toISOString()
                 });
                 
