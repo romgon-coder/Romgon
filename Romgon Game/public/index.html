@@ -23555,6 +23555,83 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             }
         }
 
+        /**
+         * Join a room by code (used for challenge system)
+         */
+        async function joinRoomByCode(roomCode) {
+            try {
+                console.log('🎮 Attempting to join room:', roomCode);
+                
+                // Check if user is logged in
+                const token = localStorage.getItem('romgon-jwt');
+                const userId = localStorage.getItem('userId');
+                
+                if (!token || !userId) {
+                    showNotification('Please log in to join the game', 'error');
+                    return;
+                }
+                
+                // Show multiplayer modal and join view
+                showMultiplayerModal();
+                showView('mp-join-room');
+                
+                // Set the room code in the input
+                const roomCodeInput = document.getElementById('room-code-input');
+                if (roomCodeInput) {
+                    roomCodeInput.value = roomCode;
+                }
+                
+                // Connect WebSocket if not connected
+                if (!roomClient.socket || !roomClient.socket.connected) {
+                    console.log('🔌 Connecting to WebSocket...');
+                    await roomClient.connect();
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                // Join the room
+                console.log('🚪 Joining room:', roomCode);
+                const room = await roomClient.joinRoom(roomCode);
+                
+                console.log('✅ Room joined successfully:', room);
+                showNotification(`✅ Joined room ${roomCode}!`, 'success');
+                
+                // Update UI
+                document.getElementById('joined-room-code').textContent = roomCode;
+                showView('mp-waiting');
+                
+                // Setup event handlers
+                roomClient.onGameStarted = (data) => {
+                    console.log('🎮 Game starting!', data);
+                    
+                    if (data.players && Array.isArray(data.players)) {
+                        roomClient.currentRoom.players = data.players;
+                    }
+                    
+                    if (data.gameId) {
+                        roomClient.currentRoom.id = data.gameId;
+                    }
+                    
+                    closeMultiplayerModal();
+                    startMultiplayerGame(data.gameId);
+                };
+                
+                roomClient.onPlayerJoinedRoom = (data) => {
+                    console.log('👤 Player joined room:', data);
+                    if (data.players && data.players.length === 2) {
+                        showNotification('Both players ready! Starting game...', 'success');
+                    }
+                };
+                
+            } catch (error) {
+                console.error('❌ Error joining room:', error);
+                showNotification(`❌ Failed to join room: ${error.message}`, 'error');
+                backToMultiplayerMenu();
+            }
+        }
+        
+        // Expose globally
+        window.joinRoomByCode = joinRoomByCode;
+
         async function startMatchmaking() {
             try {
                 // Check if user is logged in
@@ -33861,6 +33938,40 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 } catch (e) {
                     console.error('❌ Failed to process OAuth token:', e);
                     window.history.replaceState({}, '', window.location.pathname);
+                }
+            }
+            
+            // Check for ?room= parameter (from challenge accepted)
+            const roomCode = urlParams.get('room');
+            if (roomCode) {
+                console.log('🎮 Room code detected in URL:', roomCode);
+                
+                // Make sure user is logged in
+                const user = JSON.parse(localStorage.getItem('romgon-user') || 'null');
+                if (user) {
+                    console.log('✅ User logged in, joining room automatically...');
+                    window.currentUser = user;
+                    
+                    // Clean URL first
+                    window.history.replaceState({}, '', window.location.pathname);
+                    
+                    // Hide splash and show lobby
+                    hideSplashPage();
+                    
+                    // Wait for socket to connect, then join room
+                    setTimeout(() => {
+                        if (typeof joinRoomByCode === 'function') {
+                            console.log('🎮 Calling joinRoomByCode with:', roomCode);
+                            joinRoomByCode(roomCode);
+                        } else {
+                            console.error('❌ joinRoomByCode function not found');
+                            showNotification('❌ Failed to join room', 'error');
+                        }
+                    }, 2000);
+                    return;
+                } else {
+                    console.log('⚠️ User not logged in, cannot join room');
+                    showNotification('Please sign in to join the game', 'info');
                 }
             }
             
