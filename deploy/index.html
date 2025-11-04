@@ -5902,10 +5902,10 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="cache-bust" content="2025-11-04-16:30:00-USERID-FIX">
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <link rel="shortcut icon" href="favicon.ico">
-    <link rel="apple-touch-icon" href="favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg?v=20251104">
+    <link rel="icon" type="image/x-icon" href="favicon.ico?v=20251104">
+    <link rel="shortcut icon" href="favicon.ico?v=20251104">
+    <link rel="apple-touch-icon" href="favicon.svg?v=20251104">
     <title>ROMGON</title>
     <!-- Version: 2025-11-04-CHALLENGE-SYSTEM-COMPLETE-v3 -->
     <script>
@@ -13276,7 +13276,8 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                     ['#95E1D3', '#F38181'], ['#AA96DA', '#FCBAD3'], ['#667eea', '#764ba2'],
                     ['#f093fb', '#f5576c'], ['#4facfe', '#00f2fe'], ['#43e97b', '#38f9d7']
                 ];
-                const hash = userId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                const userIdStr = String(userId || 'default');
+                const hash = userIdStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
                 const colorPair = colors[hash % colors.length];
                 
                 return `
