@@ -13078,6 +13078,12 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             initializeChatSocket();
         }
         
+        // Request fresh online players list from server
+        if (gameSocket && gameSocket.connected) {
+            console.log('📡 Requesting fresh online players list...');
+            gameSocket.emit('lobby:getOnlinePlayers');
+        }
+        
         // Refresh BOTH lists (lobby graphical + panel compact)
         console.log('🔄 Refreshing both player lists...');
         try {
@@ -21935,51 +21941,59 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         function showChallengeNotification(challengeData) {
             const { challengeId, challengerUserId, challengerName, gameMode, timeControl, isRanked } = challengeData;
             
+            console.log('🎯 Showing challenge notification modal...');
+            
             // Format game info
             const gameModeText = gameMode === 'classic' ? 'Classic' : gameMode === 'fog' ? 'Fog of War' : 'Custom';
             const timeText = timeControl === 'untimed' ? 'Untimed' : timeControl === 'blitz' ? 'Blitz (3 min)' : 
                            timeControl === 'rapid' ? 'Rapid (10 min)' : 'Standard (30 min)';
             const rankedText = isRanked ? '⭐ Ranked' : 'Casual';
             
-            // Create notification HTML
-            const notificationHTML = `
-                <div style="background:linear-gradient(135deg, #ffd700 0%, #ff6348 100%); padding:20px; border-radius:12px; margin:10px; box-shadow:0 4px 15px rgba(0,0,0,0.3); animation: slideIn 0.3s;">
-                    <div style="color:white; font-size:18px; font-weight:bold; margin-bottom:10px;">
-                        ⚔️ Challenge from ${challengerName}
-                    </div>
-                    <div style="background:rgba(0,0,0,0.2); padding:12px; border-radius:8px; margin-bottom:12px;">
-                        <div style="color:white; font-size:14px; margin:5px 0;">
-                            🎮 Mode: <strong>${gameModeText}</strong>
+            // Create or update challenge notification modal
+            let notificationModal = document.getElementById('challenge-notification-modal');
+            if (!notificationModal) {
+                notificationModal = document.createElement('div');
+                notificationModal.id = 'challenge-notification-modal';
+                document.body.appendChild(notificationModal);
+            }
+            
+            notificationModal.innerHTML = `
+                <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10001; display:flex; justify-content:center; align-items:center; animation: fadeIn 0.3s;">
+                    <div style="background:linear-gradient(135deg, #ffd700 0%, #ff6348 100%); padding:30px; border-radius:15px; max-width:500px; box-shadow:0 10px 40px rgba(0,0,0,0.5); animation: scaleIn 0.3s;">
+                        <div style="color:white; font-size:24px; font-weight:bold; margin-bottom:15px; text-align:center;">
+                            ⚔️ Challenge Received!
                         </div>
-                        <div style="color:white; font-size:14px; margin:5px 0;">
-                            ⏱️ Time: <strong>${timeText}</strong>
+                        <div style="background:rgba(0,0,0,0.3); padding:15px; border-radius:10px; margin-bottom:15px;">
+                            <div style="color:white; font-size:18px; font-weight:600; text-align:center; margin-bottom:10px;">
+                                From: ${challengerName}
+                            </div>
+                            <div style="color:white; font-size:14px; margin:8px 0;">
+                                🎮 Mode: <strong>${gameModeText}</strong>
+                            </div>
+                            <div style="color:white; font-size:14px; margin:8px 0;">
+                                ⏱️ Time: <strong>${timeText}</strong>
+                            </div>
+                            <div style="color:white; font-size:14px; margin:8px 0;">
+                                ${rankedText}
+                            </div>
                         </div>
-                        <div style="color:white; font-size:14px; margin:5px 0;">
-                            ${rankedText}
+                        <div style="display:flex; gap:12px; justify-content:center;">
+                            <button onclick="acceptChallengeFromModal('${challengeId}', '${challengerUserId}', '${challengerName}')" 
+                                    style="background:linear-gradient(135deg, #26de81 0%, #20bf6b 100%); color:white; border:none; padding:14px 28px; border-radius:10px; cursor:pointer; font-weight:bold; font-size:16px; flex:1; transition: transform 0.2s;"
+                                    onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                ✅ Accept Challenge
+                            </button>
+                            <button onclick="declineChallengeFromModal('${challengeId}', '${challengerUserId}', '${challengerName}')" 
+                                    style="background:rgba(255,255,255,0.2); color:white; border:2px solid rgba(255,255,255,0.4); padding:14px 28px; border-radius:10px; cursor:pointer; font-weight:bold; font-size:16px; flex:1; transition: transform 0.2s;"
+                                    onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                ❌ Decline
+                            </button>
                         </div>
-                    </div>
-                    <div style="display:flex; gap:10px; justify-content:center;">
-                        <button onclick="acceptChallenge('${challengeId}', '${challengerUserId}', '${challengerName}')" 
-                                style="background:linear-gradient(135deg, #26de81 0%, #20bf6b 100%); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold; flex:1;">
-                            ✅ Accept
-                        </button>
-                        <button onclick="declineChallenge('${challengeId}', '${challengerUserId}', '${challengerName}')" 
-                                style="background:rgba(255,255,255,0.2); color:white; border:2px solid rgba(255,255,255,0.4); padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold; flex:1;">
-                            ❌ Decline
-                        </button>
                     </div>
                 </div>
             `;
             
-            // Add to chat if chat panel exists
-            const chatMessages = document.getElementById('chat-messages');
-            if (chatMessages) {
-                const msgDiv = document.createElement('div');
-                msgDiv.id = `challenge-notification-${challengeId}`;
-                msgDiv.innerHTML = notificationHTML;
-                chatMessages.appendChild(msgDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
+            notificationModal.style.display = 'block';
             
             // Also show system notification
             showNotification(`⚔️ ${challengerName} challenged you to a game!`, 'info');
@@ -21987,6 +22001,32 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             // Play sound if available
             if (typeof playNotificationSound === 'function') {
                 playNotificationSound();
+            }
+        }
+        
+        /**
+         * Accept challenge from modal
+         */
+        function acceptChallengeFromModal(challengeId, challengerUserId, challengerName) {
+            acceptChallenge(challengeId, challengerUserId, challengerName);
+            
+            // Close modal
+            const modal = document.getElementById('challenge-notification-modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        /**
+         * Decline challenge from modal
+         */
+        function declineChallengeFromModal(challengeId, challengerUserId, challengerName) {
+            declineChallenge(challengeId, challengerUserId, challengerName);
+            
+            // Close modal
+            const modal = document.getElementById('challenge-notification-modal');
+            if (modal) {
+                modal.style.display = 'none';
             }
         }
         
@@ -22043,6 +22083,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         window.challengePlayer = challengePlayer;
         window.acceptChallenge = acceptChallenge;
         window.declineChallenge = declineChallenge;
+        window.acceptChallengeFromModal = acceptChallengeFromModal;
+        window.declineChallengeFromModal = declineChallengeFromModal;
         
         /**
          * Load active games from backend
