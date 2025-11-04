@@ -16,6 +16,20 @@ function setupSocketHandlers(io) {
     
     // Track move counts for guest games not in DB: Map<gameId, moveCount>
     const guestGameMoves = new Map();
+    
+    // Track active challenges: Map<challengeId, {challengerId, challengerName, opponentId, gameMode, timeControl, isRanked, timestamp}>
+    const activeChallenges = new Map();
+    let challengeIdCounter = 0;
+    
+    // Helper function to generate unique room codes
+    function generateRoomCode() {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let code = '';
+        for (let i = 0; i < 6; i++) {
+            code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return code;
+    }
 
     gameNamespace.on('connection', (socket) => {
         console.log(`🎮 Game connection: ${socket.id}`);
@@ -62,6 +76,182 @@ function setupSocketHandlers(io) {
         socket.on('lobby:getOnlinePlayers', () => {
             console.log(`📋 Online players requested by ${username}`);
             socket.emit('lobby:onlinePlayers', Array.from(onlinePlayers.values()));
+        });
+
+        // ============================================
+        // CHALLENGE SYSTEM
+        // ============================================
+
+        // Receive challenge from player
+        socket.on('challenge:send', (data) => {
+            const { challengerUserId, challengerName, opponentId, opponentName, gameMode, timeControl, isRanked } = data;
+            
+            console.log(`⚔️ Challenge from ${challengerName} (${challengerUserId}) to ${opponentName} (${opponentId})`);
+            console.log(`   Mode: ${gameMode}, Time: ${timeControl}, Ranked: ${isRanked}`);
+            
+            // Generate unique challenge ID
+            const challengeId = `challenge-${Date.now()}-${challengeIdCounter++}`;
+            
+            // Store challenge
+            activeChallenges.set(challengeId, {
+                challengeId,
+                challengerUserId: challengerUserId?.toString(),
+                challengerName,
+                opponentId: opponentId?.toString(),
+                opponentName,
+                gameMode,
+                timeControl,
+                isRanked,
+                timestamp: new Date().toISOString()
+            });
+            
+            // Find opponent's socket
+            const opponent = onlinePlayers.get(opponentId?.toString());
+            
+            if (opponent && opponent.socketId) {
+                // Send challenge to opponent
+                gameNamespace.to(opponent.socketId).emit('challenge:received', {
+                    challengeId,
+                    challengerUserId: challengerUserId?.toString(),
+                    challengerName,
+                    gameMode,
+                    timeControl,
+                    isRanked,
+                    timestamp: new Date().toISOString()
+                });
+                
+                console.log(`✅ Challenge sent to ${opponentName}'s socket ${opponent.socketId}`);
+            } else {
+                console.log(`❌ Opponent ${opponentName} not found online`);
+                socket.emit('challenge:error', { 
+                    message: `${opponentName} is not currently online` 
+                });
+            }
+        });
+
+        // Accept challenge
+        socket.on('challenge:accept', async (data) => {
+            const { challengeId, challengerUserId } = data;
+            
+            const challenge = activeChallenges.get(challengeId);
+            
+            if (!challenge) {
+                console.log(`❌ Challenge ${challengeId} not found`);
+                socket.emit('challenge:error', { message: 'Challenge not found or expired' });
+                return;
+            }
+            
+            console.log(`✅ Challenge ${challengeId} accepted by ${username}`);
+            console.log(`   Creating game: ${challenge.challengerName} vs ${challenge.opponentName}`);
+            
+            try {
+                // Create a new game room
+                const roomCode = generateRoomCode();
+                const gameId = `game-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                
+                // Determine time control settings
+                const timeSettings = {
+                    'untimed': { enabled: false },
+                    'blitz': { enabled: true, minutes: 3 },
+                    'rapid': { enabled: true, minutes: 10 },
+                    'standard': { enabled: true, minutes: 30 }
+                }[challenge.timeControl] || { enabled: false };
+                
+                // Create room in activeRooms
+                const room = {
+                    code: roomCode,
+                    gameId: gameId,
+                    hostUserId: challenge.challengerUserId,
+                    hostUsername: challenge.challengerName,
+                    players: [
+                        {
+                            userId: challenge.challengerUserId,
+                            username: challenge.challengerName,
+                            color: 'black',
+                            ready: true
+                        },
+                        {
+                            userId: challenge.opponentId,
+                            username: challenge.opponentName,
+                            color: 'white',
+                            ready: true
+                        }
+                    ],
+                    status: 'ready',
+                    gameMode: challenge.gameMode,
+                    isRanked: challenge.isRanked,
+                    timeControl: timeSettings,
+                    createdAt: new Date().toISOString()
+                };
+                
+                activeRooms.set(roomCode, room);
+                console.log(`🎮 Created room ${roomCode} for challenge game ${gameId}`);
+                
+                // Notify challenger
+                const challenger = onlinePlayers.get(challenge.challengerUserId);
+                if (challenger && challenger.socketId) {
+                    gameNamespace.to(challenger.socketId).emit('challenge:accepted', {
+                        challengeId,
+                        opponentId: challenge.opponentId,
+                        opponentName: challenge.opponentName,
+                        roomId: roomCode,
+                        gameId: gameId,
+                        timestamp: new Date().toISOString()
+                    });
+                }
+                
+                // Notify accepter (current socket)
+                socket.emit('challenge:accepted', {
+                    challengeId,
+                    opponentId: challenge.challengerUserId,
+                    opponentName: challenge.challengerName,
+                    roomId: roomCode,
+                    gameId: gameId,
+                    timestamp: new Date().toISOString()
+                });
+                
+                // Remove challenge from active list
+                activeChallenges.delete(challengeId);
+                
+                console.log(`✅ Both players notified, room ${roomCode} ready`);
+                
+            } catch (error) {
+                console.error('❌ Error creating challenge game:', error);
+                socket.emit('challenge:error', { 
+                    message: 'Failed to create game room',
+                    error: error.message 
+                });
+            }
+        });
+
+        // Decline challenge
+        socket.on('challenge:decline', (data) => {
+            const { challengeId, challengerUserId } = data;
+            
+            const challenge = activeChallenges.get(challengeId);
+            
+            if (!challenge) {
+                console.log(`❌ Challenge ${challengeId} not found`);
+                return;
+            }
+            
+            console.log(`❌ Challenge ${challengeId} declined by ${username}`);
+            
+            // Notify challenger
+            const challenger = onlinePlayers.get(challenge.challengerUserId);
+            if (challenger && challenger.socketId) {
+                gameNamespace.to(challenger.socketId).emit('challenge:declined', {
+                    challengeId,
+                    opponentId: challenge.opponentId,
+                    opponentName: challenge.opponentName,
+                    timestamp: new Date().toISOString()
+                });
+            }
+            
+            // Remove challenge
+            activeChallenges.delete(challengeId);
+            
+            console.log(`✅ Challenger ${challenge.challengerName} notified of decline`);
         });
 
         // ============================================
