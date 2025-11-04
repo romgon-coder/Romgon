@@ -23690,8 +23690,32 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     console.log('👤 Player joined room:', data);
                     if (data.players && data.players.length === 2) {
                         showNotification('Both players ready! Starting game...', 'success');
+                        
+                        // Check if both players are ready (challenge rooms pre-mark as ready)
+                        const allReady = data.players.every(p => p.ready);
+                        if (allReady) {
+                            console.log('🎮 Both players ready, starting game automatically...');
+                            // Start the game (backend will handle via ready check)
+                            setTimeout(() => {
+                                if (roomClient.currentRoom && roomClient.currentRoom.id) {
+                                    startMultiplayerGame(roomClient.currentRoom.id);
+                                }
+                            }, 1000);
+                        }
                     }
                 };
+                
+                // Also check immediately after joining if both players are ready
+                if (room.players && room.players.length === 2) {
+                    const allReady = room.players.every(p => p.ready);
+                    if (allReady) {
+                        console.log('🎮 Challenge room with both players ready, starting game...');
+                        setTimeout(() => {
+                            closeMultiplayerModal();
+                            startMultiplayerGame(room.id);
+                        }, 1500);
+                    }
+                }
                 
             } catch (error) {
                 console.error('❌ Error joining room:', error);
