@@ -117,10 +117,26 @@ router.post('/join', authenticateToken, async (req, res) => {
             });
         }
 
-        if (room.status !== 'waiting') {
+        // Allow joining rooms in 'waiting' or 'ready' status (ready = challenge rooms with pre-assigned players)
+        if (room.status !== 'waiting' && room.status !== 'ready') {
             return res.status(400).json({
                 success: false,
                 error: 'Room is not available'
+            });
+        }
+
+        // If player is already in this room, just return the room info (important for challenge rooms)
+        if (room.players.some(p => p.userId === userId)) {
+            console.log(`👤 ${username} is already in room ${roomCode}, returning room info`);
+            return res.json({
+                success: true,
+                room: {
+                    code: roomCode,
+                    id: room.id,
+                    hostUsername: room.hostUsername,
+                    players: room.players,
+                    status: room.status
+                }
             });
         }
 
@@ -146,21 +162,6 @@ router.post('/join', authenticateToken, async (req, res) => {
                     }
                 }
             }
-        }
-
-        // If player is already in this room, just return the room info
-        if (room.players.some(p => p.userId === userId)) {
-            console.log(`👤 ${username} is already in room ${roomCode}, returning room info`);
-            return res.json({
-                success: true,
-                room: {
-                    code: roomCode,
-                    id: room.id,
-                    hostUsername: room.hostUsername,
-                    players: room.players,
-                    status: room.status
-                }
-            });
         }
 
         // For permanent rooms, assign colors based on join order
