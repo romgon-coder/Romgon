@@ -20726,8 +20726,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             try {
                 // Get user info for WebSocket authentication
-                const userId = localStorage.getItem('userId');
                 const userStr = localStorage.getItem('romgon-user');
+                let userId = localStorage.getItem('userId'); // Try separate userId first
                 let username = 'Guest';
                 let rating = 1600;
                 
@@ -20738,9 +20738,14 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 if (userStr) {
                     try {
                         const user = JSON.parse(userStr);
+                        // Get userId from user object if not found separately
+                        if (!userId && user.id) {
+                            userId = user.id.toString();
+                            console.log('🔍 Using userId from romgon-user object:', userId);
+                        }
                         username = user.username || user.name || 'Guest';
                         rating = user.rating || 1600;
-                        console.log('🔍 Parsed user:', { username, rating });
+                        console.log('🔍 Parsed user:', { userId, username, rating });
                     } catch (e) {
                         console.error('❌ Failed to parse user:', e);
                     }
