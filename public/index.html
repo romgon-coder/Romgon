@@ -1512,6 +1512,86 @@
         </div>
     </div>
 
+    <!-- Challenge Configuration Modal -->
+    <div id="challenge-modal" style="
+        display: none;
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(10, 12, 15, 0.95);
+        z-index: 10000;
+        backdrop-filter: blur(4px);
+    ">
+        <div onclick="event.stopPropagation();" style="
+            max-width: 500px;
+            margin: 100px auto;
+            background: linear-gradient(135deg, #23272e 0%, #1a1e26 100%);
+            border-radius: 20px;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.7);
+            padding: 30px;
+            color: #fff;
+        ">
+            <div style="text-align: center; margin-bottom: 25px;">
+                <h2 style="margin: 0; font-size: 2em; background: linear-gradient(135deg, #ffd700 0%, #ff6348 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">⚔️ Challenge Player</h2>
+                <p id="challenge-opponent-name" style="color: #4ecdc4; font-size: 1.1em; margin: 10px 0 0 0;"></p>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                <div>
+                    <label style="display: block; color: #ffd700; font-weight: 600; margin-bottom: 8px;">Game Mode</label>
+                    <select id="challenge-game-mode" style="
+                        width: 100%; padding: 12px; background: #1a1e26;
+                        border: 2px solid #ffd700; border-radius: 10px;
+                        color: #fff; font-size: 1em; cursor: pointer;
+                    ">
+                        <option value="classic">Classic Romgon</option>
+                        <option value="fog-of-war">Fog of War</option>
+                        <option value="custom">Custom Rules</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label style="display: block; color: #ffd700; font-weight: 600; margin-bottom: 8px;">Time Control</label>
+                    <select id="challenge-time-control" style="
+                        width: 100%; padding: 12px; background: #1a1e26;
+                        border: 2px solid #ffd700; border-radius: 10px;
+                        color: #fff; font-size: 1em; cursor: pointer;
+                    ">
+                        <option value="untimed">Untimed</option>
+                        <option value="1min">⚡ Bullet (1 min)</option>
+                        <option value="3min">🚀 Blitz (3 min)</option>
+                        <option value="5min" selected>⏱️ Rapid (5 min)</option>
+                        <option value="10min">🎯 Standard (10 min)</option>
+                        <option value="30min">♟️ Classical (30 min)</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" id="challenge-ranked" style="width: 18px; height: 18px; cursor: pointer;">
+                        <span style="color: #fff; font-weight: 600;">🏆 Ranked Game</span>
+                    </label>
+                    <p style="color: #999; font-size: 0.9em; margin: 8px 0 0 28px;">Affects your rating</p>
+                </div>
+                
+                <div style="display: flex; gap: 12px; margin-top: 10px;">
+                    <button onclick="hideChallengeModal()" style="
+                        flex: 1; padding: 14px; background: #666;
+                        border: none; border-radius: 12px; color: #fff;
+                        font-size: 1em; font-weight: 600; cursor: pointer;
+                        transition: all 0.3s ease;
+                    " onmouseover="this.style.background='#777'" onmouseout="this.style.background='#666'">Cancel</button>
+                    <button onclick="sendChallengeWithSettings()" style="
+                        flex: 1; padding: 14px;
+                        background: linear-gradient(135deg, #ffd700 0%, #ff6348 100%);
+                        border: none; border-radius: 12px; color: #fff;
+                        font-size: 1em; font-weight: 600; cursor: pointer;
+                        transition: all 0.3s ease;
+                    " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">⚔️ Send Challenge</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Settings Modal -->
     <div id="settings-modal" style="
         display: none;
@@ -3212,282 +3292,7 @@
         </div>
     </div>
 
-    <!-- Download Instructions Modal -->
-    <div id="download-instructions-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:10000; justify-content:center; align-items:center;">
-        <div style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding:30px; border-radius:15px; max-width:600px; max-height:80vh; overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
-            <h2 style="color:white; margin:0 0 20px 0; font-size:28px; text-align:center;">📥 Download Romgon for Offline Play</h2>
-            
-            <div style="background:rgba(255,255,255,0.15); padding:20px; border-radius:10px; margin-bottom:20px; border:2px solid rgba(255,255,255,0.3);">
-                <h3 style="color:#ffd700; margin:0 0 15px 0; font-size:20px;">⭐ Recommended: Download Full ZIP</h3>
-                <ol style="color:white; line-height:1.8; margin:0 0 15px 0; padding-left:20px;">
-                    <li>Visit <a href="https://github.com/romgon-coder/Romgon" target="_blank" style="color:#a5d6ff; text-decoration:underline; font-weight:bold;">GitHub Repository</a></li>
-                    <li>Click the green <strong>"&lt;&gt; Code"</strong> button</li>
-                    <li>Select <strong>"Download ZIP"</strong></li>
-                    <li>Extract the ZIP file</li>
-                    <li>Open <code style="background:rgba(0,0,0,0.4); padding:2px 8px; border-radius:4px;">public/index.html</code> in your browser</li>
-                </ol>
-                <div style="background:rgba(255,215,0,0.2); padding:10px; border-radius:6px; border-left:4px solid #ffd700;">
-                    <small style="color:white;"><strong>✅ Includes game piece images and all assets</strong></small>
-                </div>
-            </div>
-
-            <div style="background:rgba(255,255,255,0.1); padding:20px; border-radius:10px; margin-bottom:20px;">
-                <h3 style="color:white; margin:0 0 15px 0; font-size:20px;">⚠️ Quick Save (Limited)</h3>
-                <ol style="color:white; line-height:1.8; margin:0 0 15px 0; padding-left:20px;">
-                    <li>Right-click anywhere on this page</li>
-                    <li>Select <strong>"Save Page As..."</strong></li>
-                    <li>Save as <code style="background:rgba(0,0,0,0.3); padding:2px 8px; border-radius:4px;">romgon.html</code></li>
-                </ol>
-                <div style="background:rgba(255,100,100,0.2); padding:10px; border-radius:6px; border-left:4px solid #ff6464;">
-                    <small style="color:#ffcccc;"><strong>⚠️ Note:</strong> Game pieces won't display properly without images. Use ZIP download for full experience.</small>
-                </div>
-            </div>
-
-            <div style="background:rgba(255,255,255,0.1); padding:20px; border-radius:10px; margin-bottom:20px;">
-                <h3 style="color:white; margin:0 0 15px 0; font-size:20px;">🎮 What Works Offline?</h3>
-                <div style="color:white; line-height:1.8;">
-                    <div style="margin-bottom:8px;">✅ Local PvP (same device)</div>
-                    <div style="margin-bottom:8px;">✅ All game variants</div>
-                    <div style="margin-bottom:8px;">✅ Opening book & rules</div>
-                    <div style="margin-bottom:8px;">❌ Online multiplayer (needs server)</div>
-                    <div>❌ User accounts (needs server)</div>
-                </div>
-            </div>
-
-            <div style="text-align:center;">
-                <button onclick="hideDownloadInstructions()" style="background:linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color:white; border:none; padding:15px 40px; border-radius:8px; cursor:pointer; font-size:16px; font-weight:bold; box-shadow:0 4px 15px rgba(0,0,0,0.3);">
-                    Got It!
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Challenge Player Modal -->
-    <div id="challenge-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:10000; justify-content:center; align-items:center;">
-        <div style="background:linear-gradient(135deg, #ffd700 0%, #ff6348 100%); padding:30px; border-radius:15px; max-width:500px; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
-            <h2 style="color:white; margin:0 0 20px 0; font-size:28px; text-align:center;">⚔️ Challenge Player</h2>
-            
-            <div style="background:rgba(0,0,0,0.3); padding:15px; border-radius:10px; margin-bottom:20px;">
-                <div style="color:white; font-size:18px; font-weight:bold; text-align:center;">
-                    Challenge: <span id="challenge-opponent-name" style="color:#ffd700;">Player</span>
-                </div>
-            </div>
-            
-            <div style="background:rgba(255,255,255,0.1); padding:20px; border-radius:10px; margin-bottom:20px;">
-                <div style="margin-bottom:15px;">
-                    <label style="color:white; font-weight:600; display:block; margin-bottom:5px;">Game Mode:</label>
-                    <select id="challenge-game-mode" style="width:100%; padding:10px; border-radius:8px; border:2px solid rgba(255,255,255,0.3); background:rgba(0,0,0,0.3); color:white; font-size:14px;">
-                        <option value="classic">Classic</option>
-                        <option value="fog">Fog of War</option>
-                        <option value="custom">Custom Variant</option>
-                    </select>
-                </div>
-                
-                <div style="margin-bottom:15px;">
-                    <label style="color:white; font-weight:600; display:block; margin-bottom:5px;">Time Control:</label>
-                    <select id="challenge-time-control" style="width:100%; padding:10px; border-radius:8px; border:2px solid rgba(255,255,255,0.3); background:rgba(0,0,0,0.3); color:white; font-size:14px;">
-                        <option value="untimed">Untimed</option>
-                        <option value="blitz">Blitz (3 min)</option>
-                        <option value="rapid">Rapid (10 min)</option>
-                        <option value="standard">Standard (30 min)</option>
-                    </select>
-                </div>
-                
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <input type="checkbox" id="challenge-ranked" checked style="width:20px; height:20px; cursor:pointer;">
-                    <label for="challenge-ranked" style="color:white; font-weight:600; cursor:pointer;">Ranked Game (affects rating)</label>
-                </div>
-            </div>
-
-            <div style="display:flex; gap:10px; justify-content:center;">
-                <button onclick="sendChallengeWithSettings()" style="background:linear-gradient(135deg, #26de81 0%, #20bf6b 100%); color:white; border:none; padding:12px 30px; border-radius:8px; cursor:pointer; font-size:16px; font-weight:bold; box-shadow:0 4px 15px rgba(0,0,0,0.3); transition:all 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                    ⚔️ Send Challenge
-                </button>
-                <button onclick="hideChallengeModal()" style="background:rgba(255,255,255,0.2); color:white; border:2px solid rgba(255,255,255,0.3); padding:12px 30px; border-radius:8px; cursor:pointer; font-size:16px; font-weight:bold; transition:all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-                    Cancel
-                </button>
-            </div>
-        </div>
-    </div>
-
     <script>
-    // ============================================
-    // THEME SYSTEM FUNCTIONS
-    // ============================================
-    
-    // Toggle theme selector dropdown
-    function toggleThemeSelector() {
-        const dropdown = document.getElementById('theme-selector-dropdown');
-        if (dropdown.style.display === 'none' || dropdown.style.display === '') {
-            dropdown.style.display = 'block';
-        } else {
-            dropdown.style.display = 'none';
-        }
-    }
-    
-    // Close theme selector when clicking outside
-    document.addEventListener('click', function(event) {
-        const themeBtn = document.getElementById('theme-toggle-btn');
-        const dropdown = document.getElementById('theme-selector-dropdown');
-        
-        if (dropdown && themeBtn && !themeBtn.contains(event.target) && !dropdown.contains(event.target)) {
-            dropdown.style.display = 'none';
-        }
-    });
-    
-    // Apply theme
-    function applyTheme(themeName) {
-        console.log('🎨 Applying theme:', themeName);
-        
-        // Remove all theme classes
-        document.body.classList.remove(
-            'theme-default',
-            'theme-monotone',
-            'theme-ocean',
-            'theme-forest',
-            'theme-sunset',
-            'theme-midnight',
-            'theme-rose'
-        );
-        
-        // Add new theme class
-        if (themeName !== 'default') {
-            document.body.classList.add(`theme-${themeName}`);
-        }
-        
-        // Define theme colors
-        const themes = {
-            default: {
-                primary: '#0f1419',
-                secondary: '#1a1f2e',
-                gradient: 'linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #0f1419 100%)'
-            },
-            monotone: {
-                primary: '#2c3e50',
-                secondary: '#95a5a6',
-                gradient: 'linear-gradient(135deg, #2c3e50 0%, #95a5a6 100%)'
-            },
-            ocean: {
-                primary: '#0984e3',
-                secondary: '#74b9ff',
-                gradient: 'linear-gradient(135deg, #0984e3 0%, #74b9ff 100%)'
-            },
-            forest: {
-                primary: '#00b894',
-                secondary: '#55efc4',
-                gradient: 'linear-gradient(135deg, #00b894 0%, #55efc4 100%)'
-            },
-            sunset: {
-                primary: '#ff6348',
-                secondary: '#ffa502',
-                gradient: 'linear-gradient(135deg, #ff6348 0%, #ffa502 100%)'
-            },
-            midnight: {
-                primary: '#1e272e',
-                secondary: '#485460',
-                gradient: 'linear-gradient(135deg, #1e272e 0%, #485460 100%)'
-            },
-            rose: {
-                primary: '#fd79a8',
-                secondary: '#a29bfe',
-                gradient: 'linear-gradient(135deg, #fd79a8 0%, #a29bfe 100%)'
-            }
-        };
-        
-        const currentTheme = themes[themeName];
-        
-        // Update start menu background directly
-        const startMenu = document.getElementById('start-menu');
-        if (startMenu && currentTheme) {
-            startMenu.style.background = currentTheme.gradient;
-        }
-        
-        // Update all modals
-        const modals = [
-            'play-options-modal',
-            'offline-lan-modal', 
-            'download-instructions-modal',
-            'account-modal',
-            'preferences-modal',
-            'friends-modal',
-            'online-players-modal'
-        ];
-        
-        modals.forEach(modalId => {
-            const modal = document.getElementById(modalId);
-            if (modal && currentTheme) {
-                const modalContent = modal.querySelector('div');
-                if (modalContent) {
-                    modalContent.style.background = currentTheme.gradient;
-                }
-            }
-        });
-        
-        // Update all buttons
-        const buttons = document.querySelectorAll('button, .menu-button, .option-button, .play-button');
-        buttons.forEach(btn => {
-            if (currentTheme && !btn.classList.contains('theme-option')) {
-                btn.style.background = currentTheme.gradient;
-                btn.style.color = 'white';
-            }
-        });
-        
-        // Update panels
-        const panels = document.querySelectorAll('.draggable-panel');
-        panels.forEach(panel => {
-            if (currentTheme) {
-                panel.style.background = currentTheme.gradient;
-            }
-        });
-        
-        // Save to localStorage
-        localStorage.setItem('romgon-theme', themeName);
-        
-        // Close dropdown
-        const dropdown = document.getElementById('theme-selector-dropdown');
-        if (dropdown) {
-            dropdown.style.display = 'none';
-        }
-        
-        // Highlight selected theme
-        document.querySelectorAll('.theme-option').forEach(opt => {
-            opt.style.borderColor = 'transparent';
-            opt.style.borderWidth = '2px';
-        });
-        const selectedOption = document.querySelector(`[data-theme="${themeName}"]`);
-        if (selectedOption) {
-            selectedOption.style.borderColor = '#ffd700';
-            selectedOption.style.borderWidth = '3px';
-        }
-        
-        console.log('✅ Theme applied:', themeName, 'with colors:', currentTheme);
-    }
-    
-    // Load saved theme on page load
-    function loadSavedTheme() {
-        const savedTheme = localStorage.getItem('romgon-theme');
-        if (savedTheme) {
-            console.log('📂 Loading saved theme:', savedTheme);
-            applyTheme(savedTheme);
-        } else {
-            console.log('🎨 No saved theme, using default');
-            applyTheme('default');
-        }
-    }
-    
-    // Initialize theme on page load
-    window.addEventListener('DOMContentLoaded', function() {
-        loadSavedTheme();
-    });
-    
-    // Show/hide Download Instructions modal
-    function showDownloadInstructions() {
-        document.getElementById('download-instructions-modal').style.display = 'flex';
-    }
-    function hideDownloadInstructions() {
-        document.getElementById('download-instructions-modal').style.display = 'none';
-    }
-
     // Show/hide Opening Book modal
     function showOpeningBook() {
         document.getElementById('opening-book-modal').style.display = 'block';
@@ -6096,12 +5901,25 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <meta name="cache-bust" content="2025-11-04-16:30:00-USERID-FIX">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="shortcut icon" href="favicon.ico">
     <link rel="apple-touch-icon" href="favicon.svg">
     <title>ROMGON</title>
-    <!-- Version: 2025-10-26-PREFS-FIX-v4-DUPEBOOK -->
+    <!-- Version: 2025-11-04-CHALLENGE-SYSTEM-COMPLETE-v3 -->
+    <script>
+        // Version check - forces cache clear if needed
+        console.log('%c🎮 ROMGON Version: 2025-11-04-CHALLENGE-SYSTEM-COMPLETE-v3', 'background: #4ecdc4; color: white; padding: 8px; font-weight: bold; font-size: 14px;');
+        console.log('%c✅ Challenge system fully implemented with userId fixes', 'color: #4ecdc4; font-weight: bold;');
+        
+        // Force check - alert if still on old version
+        setTimeout(() => {
+            if (typeof window.joinGame !== 'undefined') {
+                alert('⚠️ CACHE ERROR: You are viewing OLD CACHED CODE!\n\n1. Press F12\n2. Go to Application tab\n3. Click "Clear site data"\n4. Refresh page');
+            }
+        }, 2000);
+    </script>
     <!-- Keyboard Navigation Systems -->
     <script src="keyboard-navigation-v2.js"></script>
     <script src="keyboard-general-navigation.js"></script>
@@ -6117,32 +5935,18 @@
             --hex-size: 48px;
             --hex-gap: 1px;
             
-            /* Theme System - Customizable Colors */
-            --theme-primary: #667eea;
-            --theme-secondary: #764ba2;
-            --theme-accent: #4ecdc4;
-            --theme-bg-light: #f0f0f0;
-            --theme-bg-dark: #1a1a1a;
-            --theme-text-light: #ffffff;
-            --theme-text-dark: #333333;
-            --theme-board-bg: #ffffff;
-            --theme-hex-bg: #e8e8e8;
-            --theme-hex-border: #cccccc;
-            --theme-modal-bg: #ffffff;
-            --theme-button-bg: #4ecdc4;
-            
             /* Light Mode Colors */
-            --body-bg: var(--theme-bg-light);
-            --board-bg: var(--theme-board-bg);
-            --text-color: var(--theme-text-dark);
-            --hex-bg: var(--theme-hex-bg);
-            --hex-border: var(--theme-hex-border);
-            --modal-bg: var(--theme-modal-bg);
+            --body-bg: #f0f0f0;
+            --board-bg: #ffffff;
+            --text-color: #333333;
+            --hex-bg: #e8e8e8;
+            --hex-border: #cccccc;
+            --modal-bg: #ffffff;
             --modal-overlay: rgba(0, 0, 0, 0.7);
-            --button-bg: var(--theme-button-bg);
-            --button-text: var(--theme-text-light);
+            --button-bg: #4ecdc4;
+            --button-text: #ffffff;
             --turn-indicator-bg: rgba(255, 255, 255, 0.95);
-            --turn-indicator-text: var(--theme-text-dark);
+            --turn-indicator-text: #333333;
             
             /* Legacy colors (kept for compatibility) */
             --bg-color: #1a1a1a;
@@ -6195,194 +5999,6 @@
             --turn-indicator-bg: rgba(38, 36, 33, 0.95);
             --turn-indicator-text: #ffffff;
             --hex-coords-color: rgba(255, 255, 255, 0.8);
-        }
-
-        /* ========== NEW THEME SYSTEM ========== */
-        
-        /* Monotone Black/White/Gray Theme */
-        body.theme-monotone {
-            --theme-primary: #2c3e50;
-            --theme-secondary: #95a5a6;
-            --theme-accent: #34495e;
-            --theme-bg-light: #ecf0f1;
-            --theme-bg-dark: #2c3e50;
-            --theme-board-bg: #ffffff;
-            --theme-hex-bg: #bdc3c7;
-            --theme-hex-border: #7f8c8d;
-            --theme-modal-bg: #34495e;
-            --theme-button-bg: #7f8c8d;
-            background: linear-gradient(135deg, #2c3e50 0%, #95a5a6 100%);
-        }
-        
-        /* Ocean Blue Theme */
-        body.theme-ocean {
-            --theme-primary: #0984e3;
-            --theme-secondary: #74b9ff;
-            --theme-accent: #00cec9;
-            --theme-bg-light: #dfe6e9;
-            --theme-bg-dark: #2d3436;
-            --theme-board-bg: #f8f9fa;
-            --theme-hex-bg: #a8dadc;
-            --theme-hex-border: #457b9d;
-            --theme-modal-bg: #0984e3;
-            --theme-button-bg: #00cec9;
-            background: linear-gradient(135deg, #0984e3 0%, #74b9ff 100%);
-        }
-        
-        /* Forest Green Theme */
-        body.theme-forest {
-            --theme-primary: #00b894;
-            --theme-secondary: #55efc4;
-            --theme-accent: #00cec9;
-            --theme-bg-light: #e8f5e9;
-            --theme-bg-dark: #1b4332;
-            --theme-board-bg: #f1f8f4;
-            --theme-hex-bg: #a7c957;
-            --theme-hex-border: #6a994e;
-            --theme-modal-bg: #2d6a4f;
-            --theme-button-bg: #52b788;
-            background: linear-gradient(135deg, #00b894 0%, #55efc4 100%);
-        }
-        
-        /* Sunset Orange Theme */
-        body.theme-sunset {
-            --theme-primary: #ff6348;
-            --theme-secondary: #ffa502;
-            --theme-accent: #ff7979;
-            --theme-bg-light: #fff3e0;
-            --theme-bg-dark: #bf360c;
-            --theme-board-bg: #fffaf0;
-            --theme-hex-bg: #ffb347;
-            --theme-hex-border: #ff6b35;
-            --theme-modal-bg: #d84315;
-            --theme-button-bg: #ff6348;
-            background: linear-gradient(135deg, #ff6348 0%, #ffa502 100%);
-        }
-        
-        /* Midnight Dark Theme */
-        body.theme-midnight {
-            --theme-primary: #1e272e;
-            --theme-secondary: #485460;
-            --theme-accent: #808e9b;
-            --theme-bg-light: #2c3e50;
-            --theme-bg-dark: #0a0e27;
-            --theme-board-bg: #1e272e;
-            --theme-hex-bg: #34495e;
-            --theme-hex-border: #2c3e50;
-            --theme-modal-bg: #1e272e;
-            --theme-button-bg: #485460;
-            background: linear-gradient(135deg, #1e272e 0%, #485460 100%);
-            --text-color: #ffffff;
-            --turn-indicator-text: #ffffff;
-        }
-        
-        /* Rose Pink Theme */
-        body.theme-rose {
-            --theme-primary: #fd79a8;
-            --theme-secondary: #a29bfe;
-            --theme-accent: #fab1a0;
-            --theme-bg-light: #ffe5ec;
-            --theme-bg-dark: #d63031;
-            --theme-board-bg: #fff0f6;
-            --theme-hex-bg: #ffc8dd;
-            --theme-hex-border: #ff9ebb;
-            --theme-modal-bg: #e84393;
-            --theme-button-bg: #fd79a8;
-            background: linear-gradient(135deg, #fd79a8 0%, #a29bfe 100%);
-        }
-
-        /* Apply theme colors to everything */
-        
-        /* Main page background */
-        body[class*="theme-"] #start-menu {
-            background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-secondary) 100%) !important;
-        }
-        
-        /* All modals */
-        body[class*="theme-"] .modal-content,
-        body[class*="theme-"] #play-options-modal > div,
-        body[class*="theme-"] #offline-lan-modal > div,
-        body[class*="theme-"] #download-instructions-modal > div,
-        body[class*="theme-"] #account-modal > div,
-        body[class*="theme-"] #preferences-modal > div,
-        body[class*="theme-"] #friends-modal > div {
-            background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-secondary) 100%) !important;
-        }
-        
-        /* All buttons with gradient */
-        body[class*="theme-"] button,
-        body[class*="theme-"] .menu-button,
-        body[class*="theme-"] .option-button,
-        body[class*="theme-"] .play-button,
-        body[class*="theme-"] .action-button {
-            background: linear-gradient(135deg, var(--theme-accent) 0%, var(--theme-primary) 100%) !important;
-            color: white !important;
-            border-color: rgba(255, 255, 255, 0.3) !important;
-        }
-        
-        body[class*="theme-"] button:hover,
-        body[class*="theme-"] .menu-button:hover,
-        body[class*="theme-"] .option-button:hover,
-        body[class*="theme-"] .play-button:hover,
-        body[class*="theme-"] .action-button:hover {
-            background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-accent) 100%) !important;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
-            transform: translateY(-2px) !important;
-        }
-        
-        /* Game board background - keep subtle */
-        body[class*="theme-"] #game-board-container {
-            background: rgba(0, 0, 0, 0.2) !important;
-        }
-        
-        /* DO NOT change hexagon colors - they need original colors for highlights to work! */
-        /* Hexagons are excluded from theme changes to preserve game visibility */
-        
-        /* Panels */
-        body[class*="theme-"] .draggable-panel,
-        body[class*="theme-"] #chat-panel,
-        body[class*="theme-"] #online-players-panel,
-        body[class*="theme-"] #friends-panel {
-            background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-secondary) 100%) !important;
-            border-color: rgba(255, 255, 255, 0.3) !important;
-        }
-        
-        /* Ensure all text is white on dark themes */
-        body.theme-midnight,
-        body.theme-monotone {
-            color: white !important;
-        }
-        
-        body.theme-midnight *:not(button):not(.highlight-green):not(.highlight-red):not(.highlight-blue),
-        body.theme-monotone *:not(button):not(.highlight-green):not(.highlight-red):not(.highlight-blue) {
-            color: white !important;
-        }
-        
-        /* Account bar adjustments */
-        body[class*="theme-"] #account-bar {
-            background: rgba(0, 0, 0, 0.3) !important;
-        }
-        
-        /* Menu cards/boxes */
-        body[class*="theme-"] .menu-card,
-        body[class*="theme-"] .info-box,
-        body[class*="theme-"] .feature-card {
-            background: rgba(255, 255, 255, 0.1) !important;
-            border-color: rgba(255, 255, 255, 0.3) !important;
-        }
-        
-        /* Input fields */
-        body[class*="theme-"] input,
-        body[class*="theme-"] textarea,
-        body[class*="theme-"] select {
-            background: rgba(255, 255, 255, 0.1) !important;
-            color: white !important;
-            border-color: rgba(255, 255, 255, 0.3) !important;
-        }
-        
-        body[class*="theme-"] input::placeholder,
-        body[class*="theme-"] textarea::placeholder {
-            color: rgba(255, 255, 255, 0.6) !important;
         }
 
         /* Wooden Board Theme */
@@ -6824,6 +6440,16 @@
             transition: none !important;
         }
         
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes scaleIn {
+            from { transform: scale(0.7); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
         @keyframes pulse-red {
             0%, 100% { box-shadow: inset 0 0 10px rgba(0,0,0,0.6), 0 0 20px rgba(255, 68, 68, 0.9); }
             50% { box-shadow: inset 0 0 10px rgba(0,0,0,0.6), 0 0 30px rgba(255, 68, 68, 1); }
@@ -6832,22 +6458,6 @@
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        @keyframes scaleIn {
-            from { 
-                transform: scale(0.7);
-                opacity: 0;
-            }
-            to { 
-                transform: scale(1);
-                opacity: 1;
-            }
         }
         
         @keyframes turnPulse {
@@ -8292,154 +7902,8 @@
                 </div>
             </div>
             
-            <!-- Theme Selector Button -->
-            <div id="theme-toggle-btn" onclick="toggleThemeSelector()" style="
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                padding: 4px 12px;
-                background: rgba(255, 255, 255, 0.1);
-                border: 1px solid rgba(255, 255, 255, 0.3);
-                border-radius: 12px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                margin-right: 8px;
-                position: relative;
-            " onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.borderColor='rgba(255, 255, 255, 0.5)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.borderColor='rgba(255, 255, 255, 0.3)'" title="Change Theme">
-                <span style="font-size: 1.1em;">🎨</span>
-                <span style="
-                    font-size: 0.75em;
-                    color: #fff;
-                    font-weight: 600;
-                ">Theme</span>
-            </div>
-            
-            <!-- Theme Selector Dropdown -->
-            <div id="theme-selector-dropdown" style="
-                display: none;
-                position: absolute;
-                top: 50px;
-                right: 280px;
-                background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-                border: 2px solid rgba(255, 255, 255, 0.2);
-                border-radius: 15px;
-                padding: 15px;
-                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-                z-index: 10001;
-                min-width: 280px;
-            ">
-                <div style="color: white; font-weight: bold; margin-bottom: 15px; font-size: 16px; border-bottom: 2px solid rgba(255, 255, 255, 0.2); padding-bottom: 10px;">
-                    🎨 Choose Your Theme
-                </div>
-                
-                <div class="theme-option" data-theme="default" style="
-                    padding: 12px;
-                    margin: 8px 0;
-                    border-radius: 10px;
-                    cursor: pointer;
-                    border: 2px solid transparent;
-                    transition: all 0.3s ease;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                " onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='#ffd700'" onmouseout="this.style.transform='scale(1)'; this.style.borderColor='transparent'" onclick="applyTheme('default')">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: 2px solid white;"></div>
-                        <div style="color: white; font-weight: 600;">Default Purple</div>
-                    </div>
-                </div>
-                
-                <div class="theme-option" data-theme="monotone" style="
-                    padding: 12px;
-                    margin: 8px 0;
-                    border-radius: 10px;
-                    cursor: pointer;
-                    border: 2px solid transparent;
-                    transition: all 0.3s ease;
-                    background: linear-gradient(135deg, #2c3e50 0%, #95a5a6 100%);
-                " onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='#ffd700'" onmouseout="this.style.transform='scale(1)'; this.style.borderColor='transparent'" onclick="applyTheme('monotone')">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, #2c3e50 0%, #95a5a6 100%); border: 2px solid white;"></div>
-                        <div style="color: white; font-weight: 600;">Monotone B/W</div>
-                    </div>
-                </div>
-                
-                <div class="theme-option" data-theme="ocean" style="
-                    padding: 12px;
-                    margin: 8px 0;
-                    border-radius: 10px;
-                    cursor: pointer;
-                    border: 2px solid transparent;
-                    transition: all 0.3s ease;
-                    background: linear-gradient(135deg, #0984e3 0%, #74b9ff 100%);
-                " onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='#ffd700'" onmouseout="this.style.transform='scale(1)'; this.style.borderColor='transparent'" onclick="applyTheme('ocean')">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, #0984e3 0%, #74b9ff 100%); border: 2px solid white;"></div>
-                        <div style="color: white; font-weight: 600;">Ocean Blue</div>
-                    </div>
-                </div>
-                
-                <div class="theme-option" data-theme="forest" style="
-                    padding: 12px;
-                    margin: 8px 0;
-                    border-radius: 10px;
-                    cursor: pointer;
-                    border: 2px solid transparent;
-                    transition: all 0.3s ease;
-                    background: linear-gradient(135deg, #00b894 0%, #55efc4 100%);
-                " onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='#ffd700'" onmouseout="this.style.transform='scale(1)'; this.style.borderColor='transparent'" onclick="applyTheme('forest')">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, #00b894 0%, #55efc4 100%); border: 2px solid white;"></div>
-                        <div style="color: white; font-weight: 600;">Forest Green</div>
-                    </div>
-                </div>
-                
-                <div class="theme-option" data-theme="sunset" style="
-                    padding: 12px;
-                    margin: 8px 0;
-                    border-radius: 10px;
-                    cursor: pointer;
-                    border: 2px solid transparent;
-                    transition: all 0.3s ease;
-                    background: linear-gradient(135deg, #ff6348 0%, #ffa502 100%);
-                " onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='#ffd700'" onmouseout="this.style.transform='scale(1)'; this.style.borderColor='transparent'" onclick="applyTheme('sunset')">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, #ff6348 0%, #ffa502 100%); border: 2px solid white;"></div>
-                        <div style="color: white; font-weight: 600;">Sunset Orange</div>
-                    </div>
-                </div>
-                
-                <div class="theme-option" data-theme="midnight" style="
-                    padding: 12px;
-                    margin: 8px 0;
-                    border-radius: 10px;
-                    cursor: pointer;
-                    border: 2px solid transparent;
-                    transition: all 0.3s ease;
-                    background: linear-gradient(135deg, #1e272e 0%, #485460 100%);
-                " onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='#ffd700'" onmouseout="this.style.transform='scale(1)'; this.style.borderColor='transparent'" onclick="applyTheme('midnight')">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, #1e272e 0%, #485460 100%); border: 2px solid white;"></div>
-                        <div style="color: white; font-weight: 600;">Midnight Dark</div>
-                    </div>
-                </div>
-                
-                <div class="theme-option" data-theme="rose" style="
-                    padding: 12px;
-                    margin: 8px 0;
-                    border-radius: 10px;
-                    cursor: pointer;
-                    border: 2px solid transparent;
-                    transition: all 0.3s ease;
-                    background: linear-gradient(135deg, #fd79a8 0%, #a29bfe 100%);
-                " onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='#ffd700'" onmouseout="this.style.transform='scale(1)'; this.style.borderColor='transparent'" onclick="applyTheme('rose')">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, #fd79a8 0%, #a29bfe 100%); border: 2px solid white;"></div>
-                        <div style="color: white; font-weight: 600;">Rose Pink</div>
-                    </div>
-                </div>
-            </div>
-            
             <!-- Download Game Button (for offline LAN play) -->
-            <div onclick="showDownloadInstructions()" style="
+            <div onclick="window.open('https://github.com/romgon-coder/Romgon', '_blank')" style="
                 display: flex;
                 align-items: center;
                 gap: 8px;
@@ -12685,7 +12149,7 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     </div>
     
     <script>
-    console.log('�🚀🚀 ROMGON SCRIPT LOADED - Version 2025-11-03-DEBUG-CHAT 🚀🚀🚀');
+    console.log('%c🚀 ROMGON SCRIPT LOADED - Version 2025-11-04-CHALLENGE-SYSTEM-COMPLETE 🚀', 'background: #4ecdc4; color: white; font-size: 14px; padding: 5px; font-weight: bold;');
     console.log('🟢 Current URL:', window.location.href);
     console.log('🟢 Document ready state:', document.readyState);
     
@@ -13092,12 +12556,6 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         if (!chatSocket || !chatSocket.connected) {
             console.log('🔌 Chat socket not connected, initializing...');
             initializeChatSocket();
-        }
-        
-        // Request fresh online players list from server
-        if (gameSocket && gameSocket.connected) {
-            console.log('📡 Requesting fresh online players list...');
-            gameSocket.emit('lobby:getOnlinePlayers');
         }
         
         // Refresh BOTH lists (lobby graphical + panel compact)
@@ -13813,15 +13271,12 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
             
             // Helper function to generate random SVG avatar
             const generateRandomAvatar = (userId) => {
-                // Ensure userId is a string
-                const userIdStr = String(userId || 'guest');
-                
                 const colors = [
                     ['#FF6B6B', '#4ECDC4'], ['#A8E6CF', '#FFD3B6'], ['#FF8B94', '#A8E6CF'],
                     ['#95E1D3', '#F38181'], ['#AA96DA', '#FCBAD3'], ['#667eea', '#764ba2'],
                     ['#f093fb', '#f5576c'], ['#4facfe', '#00f2fe'], ['#43e97b', '#38f9d7']
                 ];
-                const hash = userIdStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                const hash = userId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
                 const colorPair = colors[hash % colors.length];
                 
                 return `
@@ -13996,38 +13451,8 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 alert(`Add friend feature coming soon! (${player.displayName})`);
             };
             
-            // Challenge button - send game challenge
-            const challengeBtn = document.createElement('button');
-            challengeBtn.innerHTML = '⚔️';
-            challengeBtn.title = 'Challenge';
-            challengeBtn.style.cssText = `
-                background: rgba(255, 215, 0, 0.3);
-                border: 1px solid rgba(255, 215, 0, 0.5);
-                color: #ffd700;
-                border-radius: 4px;
-                padding: 2px 4px;
-                cursor: pointer;
-                font-size: 0.65em;
-                transition: all 0.2s;
-                line-height: 1;
-            `;
-            challengeBtn.onmouseover = function() {
-                this.style.background = 'rgba(255, 215, 0, 0.5)';
-                this.style.transform = 'scale(1.1)';
-            };
-            challengeBtn.onmouseout = function() {
-                this.style.background = 'rgba(255, 215, 0, 0.3)';
-                this.style.transform = 'scale(1)';
-            };
-            challengeBtn.onclick = function(e) {
-                e.stopPropagation();
-                console.log('⚔️ Challenging player:', player.displayName);
-                sendGameChallenge(player.userId, player.displayName);
-            };
-            
             actionsDiv.appendChild(chatBtn);
             actionsDiv.appendChild(friendBtn);
-            actionsDiv.appendChild(challengeBtn);
             
             // Wrap playerHead and actions in a container
             const playerContainer = document.createElement('div');
@@ -21309,8 +20734,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             try {
                 // Get user info for WebSocket authentication
-                const userId = localStorage.getItem('userId');
                 const userStr = localStorage.getItem('romgon-user');
+                let userId = localStorage.getItem('userId'); // Try separate userId first
                 let username = 'Guest';
                 let rating = 1600;
                 
@@ -21321,16 +20746,41 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 if (userStr) {
                     try {
                         const user = JSON.parse(userStr);
+                        // Get userId from user object if not found separately
+                        if (!userId && user.id) {
+                            userId = user.id.toString();
+                            console.log('🔍 Using userId from romgon-user object:', userId);
+                        }
                         username = user.username || user.name || 'Guest';
                         rating = user.rating || 1600;
-                        console.log('🔍 Parsed user:', { username, rating });
+                        console.log('🔍 Parsed user:', { userId, username, rating });
                     } catch (e) {
                         console.error('❌ Failed to parse user:', e);
                     }
                 }
                 
+                // Check if user is actually logged in via token
+                const token = localStorage.getItem('token');
+                if (!userId && token) {
+                    console.warn('⚠️ User has token but no userId - attempting to extract from token');
+                    try {
+                        // JWT tokens have format: header.payload.signature
+                        const payload = token.split('.')[1];
+                        if (payload) {
+                            const decoded = JSON.parse(atob(payload));
+                            if (decoded.userId || decoded.id) {
+                                userId = (decoded.userId || decoded.id).toString();
+                                console.log('🔍 Extracted userId from JWT token:', userId);
+                            }
+                        }
+                    } catch (e) {
+                        console.error('❌ Failed to decode token:', e);
+                    }
+                }
+                
                 if (!userId) {
                     console.error('❌ No userId found - cannot connect to game socket');
+                    console.error('💡 Try logging out and logging in again to fix this issue');
                     return;
                 }
                 
@@ -21590,6 +21040,36 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     }
                 });
                 
+                // Challenge System Event Listeners
+                gameSocket.on('challenge:received', (challengeData) => {
+                    console.log('⚔️ Challenge received:', challengeData);
+                    if (window.showChallengeNotification) {
+                        window.showChallengeNotification(challengeData);
+                    }
+                });
+                
+                gameSocket.on('challenge:accepted', (data) => {
+                    console.log('✅ Challenge accepted:', data);
+                    showNotification(`✅ ${data.accepterName} accepted your challenge!`, 'success');
+                    
+                    // Auto-join the game room
+                    if (data.roomId) {
+                        setTimeout(() => {
+                            window.location.href = `/?room=${data.roomId}`;
+                        }, 1500);
+                    }
+                });
+                
+                gameSocket.on('challenge:declined', (data) => {
+                    console.log('❌ Challenge declined:', data);
+                    showNotification(`${data.declinerName || 'Player'} declined your challenge`, 'info');
+                });
+                
+                gameSocket.on('challenge:error', (data) => {
+                    console.error('❌ Challenge error:', data);
+                    showNotification(`❌ ${data.message || 'Challenge failed'}`, 'error');
+                });
+                
                 console.log('✅ Game socket initialized');
             } catch (error) {
                 console.error('❌ Failed to initialize game socket:', error);
@@ -21603,104 +21083,6 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         
         // Make onlinePlayers accessible globally
         window.onlinePlayers = onlinePlayers;
-        
-        /**
-         * Show challenge notification modal when receiving a challenge
-         */
-        function showChallengeNotification(challengeData) {
-            // IMMEDIATE TEST - This should show even if DOM manipulation fails
-            alert('🎯 Challenge notification function called!');
-            
-            const { challengeId, challengerUserId, challengerName, gameMode, timeControl, isRanked } = challengeData;
-            
-            console.log('🎯 Showing challenge notification modal...');
-            console.log('Challenge data:', challengeData);
-            
-            try {
-                // Format game info
-                const gameModeText = gameMode === 'classic' ? 'Classic' : gameMode === 'fog' ? 'Fog of War' : 'Custom';
-                const timeText = timeControl === 'untimed' ? 'Untimed' : timeControl === 'blitz' ? 'Blitz (3 min)' : 
-                               timeControl === 'rapid' ? 'Rapid (10 min)' : 'Standard (30 min)';
-                const rankedText = isRanked ? '⭐ Ranked' : 'Casual';
-                
-                // Create or update challenge notification modal
-                let notificationModal = document.getElementById('challenge-notification-modal');
-                if (!notificationModal) {
-                    console.log('Creating new challenge notification modal...');
-                    notificationModal = document.createElement('div');
-                    notificationModal.id = 'challenge-notification-modal';
-                    notificationModal.style.position = 'fixed';
-                    notificationModal.style.top = '0';
-                    notificationModal.style.left = '0';
-                    notificationModal.style.width = '100%';
-                    notificationModal.style.height = '100%';
-                    notificationModal.style.background = 'rgba(0,0,0,0.85)';
-                    notificationModal.style.zIndex = '10001';
-                    notificationModal.style.display = 'flex';
-                    notificationModal.style.justifyContent = 'center';
-                    notificationModal.style.alignItems = 'center';
-                    notificationModal.style.animation = 'fadeIn 0.3s';
-                    document.body.appendChild(notificationModal);
-                    console.log('Modal element created and appended to body');
-                } else {
-                    console.log('Reusing existing modal...');
-                    notificationModal.style.display = 'flex';
-                }
-                
-                notificationModal.innerHTML = `
-                    <div style="background:linear-gradient(135deg, #ffd700 0%, #ff6348 100%); padding:30px; border-radius:15px; max-width:500px; width:90%; box-shadow:0 10px 40px rgba(0,0,0,0.5); animation: scaleIn 0.3s;">
-                        <div style="color:white; font-size:24px; font-weight:bold; margin-bottom:15px; text-align:center;">
-                            ⚔️ Challenge Received!
-                        </div>
-                        <div style="background:rgba(0,0,0,0.3); padding:15px; border-radius:10px; margin-bottom:15px;">
-                            <div style="color:white; font-size:18px; font-weight:600; text-align:center; margin-bottom:10px;">
-                                From: ${challengerName}
-                            </div>
-                            <div style="color:white; font-size:14px; margin:8px 0;">
-                                🎮 Mode: <strong>${gameModeText}</strong>
-                            </div>
-                            <div style="color:white; font-size:14px; margin:8px 0;">
-                                ⏱️ Time: <strong>${timeText}</strong>
-                            </div>
-                            <div style="color:white; font-size:14px; margin:8px 0;">
-                                ${rankedText}
-                            </div>
-                        </div>
-                        <div style="display:flex; gap:12px; justify-content:center;">
-                            <button onclick="window.acceptChallengeFromModal('${challengeId}', '${challengerUserId}', '${challengerName}')" 
-                                    style="background:linear-gradient(135deg, #26de81 0%, #20bf6b 100%); color:white; border:none; padding:14px 28px; border-radius:10px; cursor:pointer; font-weight:bold; font-size:16px; flex:1; transition: transform 0.2s;"
-                                    onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                                ✅ Accept Challenge
-                            </button>
-                            <button onclick="window.declineChallengeFromModal('${challengeId}', '${challengerUserId}', '${challengerName}')" 
-                                    style="background:rgba(255,255,255,0.2); color:white; border:2px solid rgba(255,255,255,0.4); padding:14px 28px; border-radius:10px; cursor:pointer; font-weight:bold; font-size:16px; flex:1; transition: transform 0.2s;"
-                                    onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                                ❌ Decline
-                            </button>
-                        </div>
-                    </div>
-                `;
-                
-                console.log('✅ Modal HTML updated');
-                console.log('Modal display style:', notificationModal.style.display);
-                console.log('Modal in DOM:', document.body.contains(notificationModal));
-                
-            } catch (error) {
-                console.error('❌ Error showing challenge modal:', error);
-                alert('Error showing challenge: ' + error.message);
-            }
-            
-            // Also show system notification
-            showNotification(`⚔️ ${challengerName} challenged you to a game!`, 'info');
-            
-            // Play sound if available
-            if (typeof playNotificationSound === 'function') {
-                playNotificationSound();
-            }
-        }
-        
-        // Expose globally immediately
-        window.showChallengeNotification = showChallengeNotification;
         
         function initializeOnlinePlayers() {
             console.log('👥 Initializing online players tracking...');
@@ -21749,46 +21131,6 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 onlinePlayersList.delete(userId);
                 renderOnlinePlayersOld();
                 renderOnlinePlayers(); // Also update lobby graphical view
-            });
-            
-            // Listen for challenge received
-            gameSocket.on('challenge:received', (challengeData) => {
-                console.log('⚔️ Challenge received EVENT TRIGGERED!');
-                console.log('Challenge data:', challengeData);
-                
-                // Immediately try to show the modal
-                try {
-                    window.showChallengeNotification(challengeData);
-                } catch (error) {
-                    console.error('❌ Error showing challenge:', error);
-                    // Fallback alert
-                    alert(`⚔️ Challenge from ${challengeData?.challengerName || 'Unknown'}!\n\nClick OK to continue.`);
-                }
-            });
-            
-            // Listen for challenge accepted
-            gameSocket.on('challenge:accepted', (data) => {
-                console.log('✅ Challenge accepted:', data);
-                showNotification(`✅ ${data.opponentName} accepted your challenge!`, 'success');
-                
-                // Auto-join the game room
-                if (data.roomId) {
-                    setTimeout(() => {
-                        joinGame(data.roomId);
-                    }, 1000);
-                }
-            });
-            
-            // Listen for challenge declined
-            gameSocket.on('challenge:declined', (data) => {
-                console.log('❌ Challenge declined:', data);
-                showNotification(`${data.opponentName} declined your challenge`, 'info');
-            });
-            
-            // Listen for challenge errors
-            gameSocket.on('challenge:error', (data) => {
-                console.error('❌ Challenge error:', data);
-                showNotification(`Challenge error: ${data.message}`, 'error');
             });
             
             // Request initial online players list (wait for connection)
@@ -21973,176 +21315,202 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         // Make renderOnlinePlayersOld globally accessible
         window.renderOnlinePlayersOld = renderOnlinePlayersOld;
         
-        // ============================================
-        // CHALLENGE SYSTEM
-        // ============================================
+        // Challenge System Variables
+        let currentChallengeOpponentId = null;
+        let currentChallengeOpponentName = null;
+        let currentChallengeId = null;
         
-        function sendGameChallenge(opponentId, opponentName) {
-            console.log('⚔️ Sending challenge to:', opponentName, opponentId);
-            
-            // Show challenge configuration modal
-            showChallengeModal(opponentId, opponentName);
-        }
-        
+        // Challenge Player - Shows configuration modal
         function challengePlayer(userId) {
-            // Find player info from onlinePlayers map
-            const player = onlinePlayers.get(userId);
-            if (player) {
-                sendGameChallenge(userId, player.username);
-            } else {
-                console.error('❌ Player not found:', userId);
-            }
-        }
-        
-        function showChallengeModal(opponentId, opponentName) {
-            const modal = document.getElementById('challenge-modal');
-            const opponentNameEl = document.getElementById('challenge-opponent-name');
+            console.log('⚔️ Challenge player clicked:', userId);
             
-            if (!modal || !opponentNameEl) {
-                console.error('❌ Challenge modal not found');
+            // Find player info from online players list
+            const player = onlinePlayers.get(userId);
+            if (!player) {
+                showNotification('❌ Player not found', 'error');
                 return;
             }
             
-            opponentNameEl.textContent = opponentName;
-            modal.dataset.opponentId = opponentId;
-            modal.dataset.opponentName = opponentName;
-            modal.style.display = 'flex';
+            sendGameChallenge(userId, player.username);
         }
         
+        // Send Game Challenge - Opens modal with settings
+        function sendGameChallenge(opponentId, opponentName) {
+            console.log('⚔️ Opening challenge modal for:', opponentName);
+            currentChallengeOpponentId = opponentId;
+            currentChallengeOpponentName = opponentName;
+            showChallengeModal(opponentId, opponentName);
+        }
+        
+        // Show Challenge Modal
+        function showChallengeModal(opponentId, opponentName) {
+            const modal = document.getElementById('challenge-modal');
+            const nameEl = document.getElementById('challenge-opponent-name');
+            
+            if (nameEl) {
+                nameEl.textContent = `vs ${opponentName}`;
+            }
+            
+            if (modal) {
+                modal.style.display = 'flex';
+                modal.style.animation = 'fadeIn 0.3s';
+            }
+        }
+        
+        // Hide Challenge Modal
         function hideChallengeModal() {
             const modal = document.getElementById('challenge-modal');
             if (modal) {
                 modal.style.display = 'none';
             }
+            currentChallengeOpponentId = null;
+            currentChallengeOpponentName = null;
         }
         
+        // Send Challenge with Settings
         function sendChallengeWithSettings() {
-            const modal = document.getElementById('challenge-modal');
-            const opponentId = modal.dataset.opponentId;
-            const opponentName = modal.dataset.opponentName;
+            if (!currentChallengeOpponentId) {
+                showNotification('❌ No opponent selected', 'error');
+                return;
+            }
             
             const gameMode = document.getElementById('challenge-game-mode').value;
             const timeControl = document.getElementById('challenge-time-control').value;
-            const isRanked = document.getElementById('challenge-ranked').checked;
+            const ranked = document.getElementById('challenge-ranked').checked;
             
-            console.log('⚔️ Sending challenge:', {
-                opponentId,
-                opponentName,
-                gameMode,
-                timeControl,
-                isRanked
-            });
+            const challengeData = {
+                opponentId: currentChallengeOpponentId,
+                opponentName: currentChallengeOpponentName,
+                gameMode: gameMode,
+                timeControl: timeControl,
+                ranked: ranked
+            };
             
-            // Send via WebSocket
-            if (typeof gameSocket !== 'undefined' && gameSocket.connected) {
-                const currentUserId = localStorage.getItem('userId');
-                const currentUserName = localStorage.getItem('username') || 'Player';
-                
-                gameSocket.emit('challenge:send', {
-                    challengerUserId: currentUserId,
-                    challengerName: currentUserName,
-                    opponentId: opponentId,
-                    opponentName: opponentName,
-                    gameMode: gameMode,
-                    timeControl: timeControl,
-                    isRanked: isRanked
-                });
-                
+            console.log('⚔️ Sending challenge:', challengeData);
+            
+            // Emit challenge via WebSocket
+            if (gameSocket && gameSocket.connected) {
+                gameSocket.emit('challenge:send', challengeData);
                 hideChallengeModal();
-                
-                // Show notification
-                showNotification('⚔️ Challenge sent to ' + opponentName + '!', 'success');
+                showNotification(`⚔️ Challenge sent to ${currentChallengeOpponentName}!`, 'success');
             } else {
-                console.error('❌ Not connected to game server');
-                showNotification('❌ Not connected to server', 'error');
+                showNotification('❌ Not connected to game server', 'error');
             }
         }
         
-        /**
-         * Show challenge notification when receiving a challenge
-         */
-        /**
-         * Accept challenge from modal
-         */
-        function acceptChallengeFromModal(challengeId, challengerUserId, challengerName) {
-            acceptChallenge(challengeId, challengerUserId, challengerName);
+        // Show Challenge Notification (when receiving a challenge)
+        function showChallengeNotification(challengeData) {
+            console.log('🎯 Challenge notification received:', challengeData);
             
-            // Close modal
+            try {
+                // Create or get notification modal
+                let modal = document.getElementById('challenge-notification-modal');
+                if (!modal) {
+                    modal = document.createElement('div');
+                    modal.id = 'challenge-notification-modal';
+                    document.body.appendChild(modal);
+                }
+                
+                // Store challenge ID for accept/decline
+                currentChallengeId = challengeData.challengeId;
+                
+                // Set modal content
+                modal.innerHTML = `
+                    <div style="
+                        position: fixed;
+                        top: 0; left: 0;
+                        width: 100vw; height: 100vh;
+                        background: rgba(0, 0, 0, 0.9);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        z-index: 10001;
+                        animation: fadeIn 0.3s;
+                    ">
+                        <div style="background:linear-gradient(135deg, #ffd700 0%, #ff6348 100%); padding:30px; border-radius:15px; max-width:500px; width:90%; box-shadow:0 10px 40px rgba(0,0,0,0.5); animation: scaleIn 0.3s;">
+                            <div style="color:white; font-size:24px; font-weight:bold; margin-bottom:15px; text-align:center;">
+                                ⚔️ Challenge Received!
+                            </div>
+                            <div style="background:rgba(0,0,0,0.3); padding:15px; border-radius:10px; margin-bottom:15px;">
+                                <p style="color:white; margin:8px 0; font-size:16px;"><strong>From:</strong> ${challengeData.challengerName || 'Unknown Player'}</p>
+                                <p style="color:white; margin:8px 0; font-size:16px;"><strong>Mode:</strong> ${challengeData.gameMode || 'Classic'}</p>
+                                <p style="color:white; margin:8px 0; font-size:16px;"><strong>Time:</strong> ${challengeData.timeControl || 'Untimed'}</p>
+                                <p style="color:white; margin:8px 0; font-size:16px;"><strong>Ranked:</strong> ${challengeData.ranked ? 'Yes 🏆' : 'No'}</p>
+                            </div>
+                            <div style="display:flex; gap:12px;">
+                                <button onclick="declineChallengeFromModal()" style="flex:1; padding:12px 24px; background:#666; border:none; border-radius:10px; color:white; font-size:16px; font-weight:bold; cursor:pointer; transition:all 0.3s;" onmouseover="this.style.background='#777'" onmouseout="this.style.background='#666'">
+                                    ❌ Decline
+                                </button>
+                                <button onclick="acceptChallengeFromModal()" style="flex:1; padding:12px 24px; background:#4ecdc4; border:none; border-radius:10px; color:white; font-size:16px; font-weight:bold; cursor:pointer; transition:all 0.3s;" onmouseover="this.style.background='#44b3aa'" onmouseout="this.style.background='#4ecdc4'">
+                                    ✅ Accept Challenge
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                modal.style.display = 'block';
+            } catch (error) {
+                console.error('❌ Error showing challenge notification:', error);
+            }
+        }
+        
+        // Accept Challenge from Modal
+        function acceptChallengeFromModal() {
+            if (currentChallengeId) {
+                acceptChallenge(currentChallengeId);
+            }
+            hideChallengeNotificationModal();
+        }
+        
+        // Decline Challenge from Modal
+        function declineChallengeFromModal() {
+            if (currentChallengeId) {
+                declineChallenge(currentChallengeId);
+            }
+            hideChallengeNotificationModal();
+        }
+        
+        // Hide Challenge Notification Modal
+        function hideChallengeNotificationModal() {
             const modal = document.getElementById('challenge-notification-modal');
             if (modal) {
-                modal.style.display = 'none';
+                modal.remove();
             }
+            currentChallengeId = null;
         }
         
-        /**
-         * Decline challenge from modal
-         */
-        function declineChallengeFromModal(challengeId, challengerUserId, challengerName) {
-            declineChallenge(challengeId, challengerUserId, challengerName);
-            
-            // Close modal
-            const modal = document.getElementById('challenge-notification-modal');
-            if (modal) {
-                modal.style.display = 'none';
-            }
-        }
-        
-        /**
-         * Accept a challenge
-         */
-        function acceptChallenge(challengeId, challengerUserId, challengerName) {
+        // Accept Challenge
+        function acceptChallenge(challengeId) {
             console.log('✅ Accepting challenge:', challengeId);
-            
-            if (typeof gameSocket !== 'undefined' && gameSocket.connected) {
-                gameSocket.emit('challenge:accept', {
-                    challengeId: challengeId,
-                    challengerUserId: challengerUserId
-                });
-                
-                // Remove notification
-                const notification = document.getElementById(`challenge-notification-${challengeId}`);
-                if (notification) {
-                    notification.remove();
-                }
-                
-                showNotification(`✅ Accepted challenge from ${challengerName}!`, 'success');
+            if (gameSocket && gameSocket.connected) {
+                gameSocket.emit('challenge:accept', { challengeId });
+                showNotification('✅ Challenge accepted! Joining game...', 'success');
             } else {
                 showNotification('❌ Not connected to server', 'error');
             }
         }
         
-        /**
-         * Decline a challenge
-         */
-        function declineChallenge(challengeId, challengerUserId, challengerName) {
+        // Decline Challenge
+        function declineChallenge(challengeId) {
             console.log('❌ Declining challenge:', challengeId);
-            
-            if (typeof gameSocket !== 'undefined' && gameSocket.connected) {
-                gameSocket.emit('challenge:decline', {
-                    challengeId: challengeId,
-                    challengerUserId: challengerUserId
-                });
-                
-                // Remove notification
-                const notification = document.getElementById(`challenge-notification-${challengeId}`);
-                if (notification) {
-                    notification.remove();
-                }
-                
-                showNotification(`Declined challenge from ${challengerName}`, 'info');
-            } else {
-                showNotification('❌ Not connected to server', 'error');
+            if (gameSocket && gameSocket.connected) {
+                gameSocket.emit('challenge:decline', { challengeId });
+                showNotification('Challenge declined', 'info');
             }
         }
         
-        // Make functions globally accessible
-        window.sendGameChallenge = sendGameChallenge;
+        // Expose functions globally
         window.challengePlayer = challengePlayer;
-        window.acceptChallenge = acceptChallenge;
-        window.declineChallenge = declineChallenge;
+        window.sendGameChallenge = sendGameChallenge;
+        window.showChallengeModal = showChallengeModal;
+        window.hideChallengeModal = hideChallengeModal;
+        window.sendChallengeWithSettings = sendChallengeWithSettings;
+        window.showChallengeNotification = showChallengeNotification;
         window.acceptChallengeFromModal = acceptChallengeFromModal;
         window.declineChallengeFromModal = declineChallengeFromModal;
-        window.showChallengeNotification = showChallengeNotification;
+        window.acceptChallenge = acceptChallenge;
+        window.declineChallenge = declineChallenge;
         
         /**
          * Load active games from backend
@@ -24224,6 +23592,83 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 backToMultiplayerMenu();
             }
         }
+
+        /**
+         * Join a room by code (used for challenge system)
+         */
+        async function joinRoomByCode(roomCode) {
+            try {
+                console.log('🎮 Attempting to join room:', roomCode);
+                
+                // Check if user is logged in
+                const token = localStorage.getItem('romgon-jwt');
+                const userId = localStorage.getItem('userId');
+                
+                if (!token || !userId) {
+                    showNotification('Please log in to join the game', 'error');
+                    return;
+                }
+                
+                // Show multiplayer modal and join view
+                showMultiplayerModal();
+                showView('mp-join-room');
+                
+                // Set the room code in the input
+                const roomCodeInput = document.getElementById('room-code-input');
+                if (roomCodeInput) {
+                    roomCodeInput.value = roomCode;
+                }
+                
+                // Connect WebSocket if not connected
+                if (!roomClient.socket || !roomClient.socket.connected) {
+                    console.log('🔌 Connecting to WebSocket...');
+                    await roomClient.connect();
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                // Join the room
+                console.log('🚪 Joining room:', roomCode);
+                const room = await roomClient.joinRoom(roomCode);
+                
+                console.log('✅ Room joined successfully:', room);
+                showNotification(`✅ Joined room ${roomCode}!`, 'success');
+                
+                // Update UI
+                document.getElementById('joined-room-code').textContent = roomCode;
+                showView('mp-waiting');
+                
+                // Setup event handlers
+                roomClient.onGameStarted = (data) => {
+                    console.log('🎮 Game starting!', data);
+                    
+                    if (data.players && Array.isArray(data.players)) {
+                        roomClient.currentRoom.players = data.players;
+                    }
+                    
+                    if (data.gameId) {
+                        roomClient.currentRoom.id = data.gameId;
+                    }
+                    
+                    closeMultiplayerModal();
+                    startMultiplayerGame(data.gameId);
+                };
+                
+                roomClient.onPlayerJoinedRoom = (data) => {
+                    console.log('👤 Player joined room:', data);
+                    if (data.players && data.players.length === 2) {
+                        showNotification('Both players ready! Starting game...', 'success');
+                    }
+                };
+                
+            } catch (error) {
+                console.error('❌ Error joining room:', error);
+                showNotification(`❌ Failed to join room: ${error.message}`, 'error');
+                backToMultiplayerMenu();
+            }
+        }
+        
+        // Expose globally
+        window.joinRoomByCode = joinRoomByCode;
 
         async function startMatchmaking() {
             try {
@@ -34513,15 +33958,19 @@ ${moveHistory || '(No moves played yet - starting position)'}
                         email: payload.email || null,
                         type: 'registered',
                         id: payload.userId,
-                        token: token
+                        token: token,
+                        rating: 1600
                     };
                     
-                    // Save to localStorage
+                    // Save to localStorage (multiple places for redundancy)
                     localStorage.setItem('romgon-user', JSON.stringify(user));
+                    localStorage.setItem('userId', payload.userId.toString()); // Separate userId for easy access
+                    localStorage.setItem('token', token); // Also save as 'token' for compatibility
                     localStorage.setItem('romgon-jwt', token); // ⚠️ CRITICAL: Save JWT token separately
                     window.currentUser = user;
                     
                     console.log('✅ Google OAuth login successful:', user.name);
+                    console.log('✅ User data saved:', { userId: payload.userId, username: payload.username });
                     console.log('✅ JWT token saved to localStorage');
                     
                     // Clean URL and redirect to lobby
@@ -34531,6 +33980,40 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 } catch (e) {
                     console.error('❌ Failed to process OAuth token:', e);
                     window.history.replaceState({}, '', window.location.pathname);
+                }
+            }
+            
+            // Check for ?room= parameter (from challenge accepted)
+            const roomCode = urlParams.get('room');
+            if (roomCode) {
+                console.log('🎮 Room code detected in URL:', roomCode);
+                
+                // Make sure user is logged in
+                const user = JSON.parse(localStorage.getItem('romgon-user') || 'null');
+                if (user) {
+                    console.log('✅ User logged in, joining room automatically...');
+                    window.currentUser = user;
+                    
+                    // Clean URL first
+                    window.history.replaceState({}, '', window.location.pathname);
+                    
+                    // Hide splash and show lobby
+                    hideSplashPage();
+                    
+                    // Wait for socket to connect, then join room
+                    setTimeout(() => {
+                        if (typeof joinRoomByCode === 'function') {
+                            console.log('🎮 Calling joinRoomByCode with:', roomCode);
+                            joinRoomByCode(roomCode);
+                        } else {
+                            console.error('❌ joinRoomByCode function not found');
+                            showNotification('❌ Failed to join room', 'error');
+                        }
+                    }, 2000);
+                    return;
+                } else {
+                    console.log('⚠️ User not logged in, cannot join room');
+                    showNotification('Please sign in to join the game', 'info');
                 }
             }
             
@@ -35326,8 +34809,5 @@ ${moveHistory || '(No moves played yet - starting position)'}
     <!-- 🎮 Game Engine API - Enables external tools and AI systems to interact with the game -->
     <script src="romgon-engine-api.js"></script>
 
-    <!-- 🤖 Elfsight AI Chatbot - Free AI assistant with 50 messages -->
-    <script src="https://elfsightcdn.com/platform.js" async></script>
-    <div class="elfsight-app-2c2d7ab6-4233-413f-8115-bbe516bef732" data-elfsight-app-lazy></div>
 </body>
 </html>
