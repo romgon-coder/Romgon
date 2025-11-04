@@ -21756,12 +21756,23 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 console.log('⚔️ Challenge received EVENT TRIGGERED!');
                 console.log('Challenge data:', JSON.stringify(challengeData, null, 2));
                 console.log('showChallengeNotification type:', typeof showChallengeNotification);
+                console.log('window.showChallengeNotification type:', typeof window.showChallengeNotification);
                 
-                if (typeof showChallengeNotification === 'function') {
-                    showChallengeNotification(challengeData);
-                } else {
-                    console.error('❌ showChallengeNotification is not a function!');
-                    alert(`⚔️ Challenge from ${challengeData.challengerName}! (Function not loaded)`);
+                try {
+                    // Try calling it from window first
+                    if (window.showChallengeNotification) {
+                        console.log('Calling window.showChallengeNotification...');
+                        window.showChallengeNotification(challengeData);
+                    } else if (typeof showChallengeNotification === 'function') {
+                        console.log('Calling showChallengeNotification directly...');
+                        showChallengeNotification(challengeData);
+                    } else {
+                        console.error('❌ showChallengeNotification not found!');
+                        alert(`⚔️ Challenge from ${challengeData.challengerName}!\n\nThe modal function was not found. Please refresh the page.`);
+                    }
+                } catch (error) {
+                    console.error('❌ Error calling showChallengeNotification:', error);
+                    alert(`⚔️ Challenge from ${challengeData.challengerName}!\n\nError: ${error.message}`);
                 }
             });
             
