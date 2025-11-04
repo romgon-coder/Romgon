@@ -4,10 +4,30 @@
   "installCommand": "echo 'No install needed'",
   "buildCommand": "echo 'No build needed - using public/ directly'",
   "outputDirectory": "public",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+  "routes": [
+    {
+      "src": "/favicon.(ico|svg|png)",
+      "dest": "/favicon.$1"
+    },
+    {
+      "src": "/(.*\\.(js|css|svg|png|jpg|jpeg|gif|ico|woff|woff2|ttf|eot))",
+      "dest": "/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
   ],
   "headers": [
+    {
+      "source": "/favicon.(ico|svg|png)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [
