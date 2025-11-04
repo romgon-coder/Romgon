@@ -21631,6 +21631,31 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 renderOnlinePlayers(); // Also update lobby graphical view
             });
             
+            // Listen for challenge received
+            gameSocket.on('challenge:received', (challengeData) => {
+                console.log('⚔️ Challenge received:', challengeData);
+                showChallengeNotification(challengeData);
+            });
+            
+            // Listen for challenge accepted
+            gameSocket.on('challenge:accepted', (data) => {
+                console.log('✅ Challenge accepted:', data);
+                showNotification(`✅ ${data.opponentName} accepted your challenge!`, 'success');
+                
+                // Auto-join the game room
+                if (data.roomId) {
+                    setTimeout(() => {
+                        joinGame(data.roomId);
+                    }, 1000);
+                }
+            });
+            
+            // Listen for challenge declined
+            gameSocket.on('challenge:declined', (data) => {
+                console.log('❌ Challenge declined:', data);
+                showNotification(`${data.opponentName} declined your challenge`, 'info');
+            });
+            
             // Request initial online players list (wait for connection)
             setTimeout(() => {
                 console.log('📡 Requesting online players list...');
@@ -21875,7 +21900,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             // Send via WebSocket
             if (typeof gameSocket !== 'undefined' && gameSocket.connected) {
+                const currentUserId = localStorage.getItem('userId');
+                const currentUserName = localStorage.getItem('username') || 'Player';
+                
                 gameSocket.emit('challenge:send', {
+                    challengerUserId: currentUserId,
+                    challengerName: currentUserName,
                     opponentId: opponentId,
                     opponentName: opponentName,
                     gameMode: gameMode,
@@ -21893,9 +21923,120 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             }
         }
         
+        /**
+         * Show challenge notification when receiving a challenge
+         */
+        function showChallengeNotification(challengeData) {
+            const { challengeId, challengerUserId, challengerName, gameMode, timeControl, isRanked } = challengeData;
+            
+            // Format game info
+            const gameModeText = gameMode === 'classic' ? 'Classic' : gameMode === 'fog' ? 'Fog of War' : 'Custom';
+            const timeText = timeControl === 'untimed' ? 'Untimed' : timeControl === 'blitz' ? 'Blitz (3 min)' : 
+                           timeControl === 'rapid' ? 'Rapid (10 min)' : 'Standard (30 min)';
+            const rankedText = isRanked ? '⭐ Ranked' : 'Casual';
+            
+            // Create notification HTML
+            const notificationHTML = `
+                <div style="background:linear-gradient(135deg, #ffd700 0%, #ff6348 100%); padding:20px; border-radius:12px; margin:10px; box-shadow:0 4px 15px rgba(0,0,0,0.3); animation: slideIn 0.3s;">
+                    <div style="color:white; font-size:18px; font-weight:bold; margin-bottom:10px;">
+                        ⚔️ Challenge from ${challengerName}
+                    </div>
+                    <div style="background:rgba(0,0,0,0.2); padding:12px; border-radius:8px; margin-bottom:12px;">
+                        <div style="color:white; font-size:14px; margin:5px 0;">
+                            🎮 Mode: <strong>${gameModeText}</strong>
+                        </div>
+                        <div style="color:white; font-size:14px; margin:5px 0;">
+                            ⏱️ Time: <strong>${timeText}</strong>
+                        </div>
+                        <div style="color:white; font-size:14px; margin:5px 0;">
+                            ${rankedText}
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:10px; justify-content:center;">
+                        <button onclick="acceptChallenge('${challengeId}', '${challengerUserId}', '${challengerName}')" 
+                                style="background:linear-gradient(135deg, #26de81 0%, #20bf6b 100%); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold; flex:1;">
+                            ✅ Accept
+                        </button>
+                        <button onclick="declineChallenge('${challengeId}', '${challengerUserId}', '${challengerName}')" 
+                                style="background:rgba(255,255,255,0.2); color:white; border:2px solid rgba(255,255,255,0.4); padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold; flex:1;">
+                            ❌ Decline
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Add to chat if chat panel exists
+            const chatMessages = document.getElementById('chat-messages');
+            if (chatMessages) {
+                const msgDiv = document.createElement('div');
+                msgDiv.id = `challenge-notification-${challengeId}`;
+                msgDiv.innerHTML = notificationHTML;
+                chatMessages.appendChild(msgDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            // Also show system notification
+            showNotification(`⚔️ ${challengerName} challenged you to a game!`, 'info');
+            
+            // Play sound if available
+            if (typeof playNotificationSound === 'function') {
+                playNotificationSound();
+            }
+        }
+        
+        /**
+         * Accept a challenge
+         */
+        function acceptChallenge(challengeId, challengerUserId, challengerName) {
+            console.log('✅ Accepting challenge:', challengeId);
+            
+            if (typeof gameSocket !== 'undefined' && gameSocket.connected) {
+                gameSocket.emit('challenge:accept', {
+                    challengeId: challengeId,
+                    challengerUserId: challengerUserId
+                });
+                
+                // Remove notification
+                const notification = document.getElementById(`challenge-notification-${challengeId}`);
+                if (notification) {
+                    notification.remove();
+                }
+                
+                showNotification(`✅ Accepted challenge from ${challengerName}!`, 'success');
+            } else {
+                showNotification('❌ Not connected to server', 'error');
+            }
+        }
+        
+        /**
+         * Decline a challenge
+         */
+        function declineChallenge(challengeId, challengerUserId, challengerName) {
+            console.log('❌ Declining challenge:', challengeId);
+            
+            if (typeof gameSocket !== 'undefined' && gameSocket.connected) {
+                gameSocket.emit('challenge:decline', {
+                    challengeId: challengeId,
+                    challengerUserId: challengerUserId
+                });
+                
+                // Remove notification
+                const notification = document.getElementById(`challenge-notification-${challengeId}`);
+                if (notification) {
+                    notification.remove();
+                }
+                
+                showNotification(`Declined challenge from ${challengerName}`, 'info');
+            } else {
+                showNotification('❌ Not connected to server', 'error');
+            }
+        }
+        
         // Make functions globally accessible
         window.sendGameChallenge = sendGameChallenge;
         window.challengePlayer = challengePlayer;
+        window.acceptChallenge = acceptChallenge;
+        window.declineChallenge = declineChallenge;
         
         /**
          * Load active games from backend
