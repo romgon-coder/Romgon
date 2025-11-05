@@ -322,24 +322,6 @@
                     </svg>
                     Continue with Google
                 </button>
-                
-                <button onclick="handleGuestLoginWithBackend()" style="
-                    background: linear-gradient(135deg, rgba(78, 205, 196, 0.2), rgba(78, 205, 196, 0.1));
-                    color: #4ecdc4;
-                    border: 2px solid rgba(78, 205, 196, 0.5);
-                    padding: 14px 20px;
-                    border-radius: 12px;
-                    cursor: pointer;
-                    font-weight: 600;
-                    font-size: 0.95em;
-                    transition: all 0.3s ease;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 12px;
-                " onmouseover="this.style.background='linear-gradient(135deg, rgba(78, 205, 196, 0.3), rgba(78, 205, 196, 0.2))'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(78, 205, 196, 0.2), rgba(78, 205, 196, 0.1))'; this.style.transform='translateY(0)'">
-                    🎮 Quick Play as Guest
-                </button>
             </div>
             
             <!-- Sign Up Link -->
@@ -35037,6 +35019,10 @@ ${moveHistory || '(No moves played yet - starting position)'}
             const splash = document.getElementById('splash-page');
             if (startMenu) startMenu.style.display = 'none';
             if (splash) splash.style.display = 'none';
+            
+            // ALWAYS show the global account bar for both guests and logged-in users
+            showGlobalAccountBar();
+            
             // Populate user info
             const u = window.currentUser || (function(){ try { return JSON.parse(localStorage.getItem('romgon-user')); } catch(e){return null;} })();
             const avatar = document.getElementById('user-home-avatar');
@@ -35046,6 +35032,12 @@ ${moveHistory || '(No moves played yet - starting position)'}
             const guestNotice = document.getElementById('guest-upgrade-notice');
             
             if (u) {
+                // Update global account bar with user info
+                const username = u.name || u.username || 'Player';
+                const accountType = u.type === 'guest' ? 'Guest' : 'User';
+                const avatarInitial = username.charAt(0).toUpperCase();
+                updateGlobalAccountBar(username, accountType, avatarInitial, u.picture);
+                
                 // Update avatar
                 if (avatar) {
                     avatar.style.display = 'flex';
