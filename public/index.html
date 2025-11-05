@@ -4062,21 +4062,9 @@
     function updateGlobalAccountBar(username, accountType, avatarInitial, customAvatar = null) {
         // Update global account bar with user info
         const globalUsernameEl = document.getElementById('global-username');
-        const globalAccountTypeEl = document.getElementById('global-account-type');
         const globalAvatarEl = document.getElementById('global-avatar');
         
         if (globalUsernameEl) globalUsernameEl.textContent = username || 'Player';
-        
-        if (globalAccountTypeEl) {
-            globalAccountTypeEl.textContent = accountType || 'Guest';
-            if (accountType === 'Registered') {
-                globalAccountTypeEl.style.background = 'rgba(78, 205, 196, 0.2)';
-                globalAccountTypeEl.style.color = '#4ecdc4';
-            } else {
-                globalAccountTypeEl.style.background = 'rgba(255, 215, 0, 0.2)';
-                globalAccountTypeEl.style.color = '#ffd700';
-            }
-        }
         
         if (globalAvatarEl) {
             // Check for custom uploaded avatar or Google profile picture
