@@ -1,0 +1,11 @@
+# robots.txt for ROMGON - Hexagonal Strategy Game
+# Allow all search engines to crawl the entire site
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://romgon.net/sitemap.xml
+
+# Crawl-delay (be nice to our server)
+Crawl-delay: 1
