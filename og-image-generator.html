@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ROMGON OG Image Generator</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .og-image {
+            width: 1200px;
+            height: 630px;
+            background: linear-gradient(135deg, #1a1e26 0%, #23272e 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+        }
+        .hexagon-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            background-image: 
+                repeating-linear-gradient(60deg, transparent, transparent 50px, #4ecdc4 50px, #4ecdc4 52px),
+                repeating-linear-gradient(120deg, transparent, transparent 50px, #ff6b6b 50px, #ff6b6b 52px),
+                repeating-linear-gradient(0deg, transparent, transparent 50px, #FFD700 50px, #FFD700 52px);
+        }
+        .logo-hex {
+            width: 200px;
+            height: 200px;
+            background: #FFD700;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 120px;
+            font-weight: bold;
+            color: #FF4500;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 50px rgba(255, 215, 0, 0.5);
+            z-index: 2;
+        }
+        h1 {
+            color: #FFD700;
+            font-size: 90px;
+            font-weight: bold;
+            margin: 20px 0;
+            text-shadow: 0 4px 20px rgba(255, 215, 0, 0.5);
+            z-index: 2;
+        }
+        .subtitle {
+            color: #4ecdc4;
+            font-size: 42px;
+            font-weight: 500;
+            margin: 10px 0 30px 0;
+            z-index: 2;
+        }
+        .features {
+            display: flex;
+            gap: 40px;
+            margin-top: 20px;
+            z-index: 2;
+        }
+        .feature {
+            color: #fff;
+            font-size: 28px;
+            background: rgba(78, 205, 196, 0.2);
+            padding: 15px 30px;
+            border-radius: 12px;
+            border: 2px solid #4ecdc4;
+        }
+    </style>
+</head>
+<body>
+    <div class="og-image">
+        <div class="hexagon-bg"></div>
+        <div class="logo-hex">R</div>
+        <h1>ROMGON</h1>
+        <div class="subtitle">Hexagonal Strategy Game</div>
+        <div class="features">
+            <div class="feature">🎮 Multiplayer</div>
+            <div class="feature">🤖 AI Analysis</div>
+            <div class="feature">🏆 Ranked Matches</div>
+        </div>
+    </div>
+    
+    <div style="position: fixed; top: 20px; right: 20px; background: white; padding: 20px; border-radius: 10px; font-family: Arial;">
+        <h3 style="margin: 0 0 10px 0; color: #333;">Instructions:</h3>
+        <ol style="margin: 0; padding-left: 20px; color: #666; font-size: 14px;">
+            <li>Press F12 to open DevTools</li>
+            <li>Press Ctrl+Shift+P</li>
+            <li>Type "screenshot" and select "Capture node screenshot"</li>
+            <li>Click on the large image</li>
+            <li>Save as "og-image.png" in the public folder</li>
+            <li>Upload to your site</li>
+        </ol>
+    </div>
+</body>
+</html>
