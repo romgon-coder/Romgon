@@ -2,7 +2,7 @@
   "version": 2,
   "framework": null,
   "installCommand": "echo 'No install needed'",
-  "buildCommand": "echo 'No build needed - using public/ directly'",
+  "buildCommand": "node build-frontend.js",
   "outputDirectory": "public",
   "routes": [
     {
