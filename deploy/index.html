@@ -34846,7 +34846,9 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 console.log('✅ token stored for active games');
                 
                 hideLoadingIndicator();
-                showUserHome();
+                
+                // Show main menu instead of lobby
+                showStartMenu();
                 
             } catch (error) {
                 hideLoadingIndicator();
@@ -35141,7 +35143,6 @@ ${moveHistory || '(No moves played yet - starting position)'}
             } catch (e) { 
                 window.currentUser = guest; 
                 localStorage.setItem('romgon-user', JSON.stringify(guest)); 
-                hideSplashPage(); 
             }
             
             // IMPORTANT: Store guestId for active games (offline mode - no backend)
@@ -35150,6 +35151,9 @@ ${moveHistory || '(No moves played yet - starting position)'}
             
             console.log('👤 Logged in as Guest (offline):', guest);
             console.log('💾 Guest ID stored:', guestId);
+            
+            // Show main menu instead of lobby
+            showStartMenu();
         }
 
         // Get current user info
