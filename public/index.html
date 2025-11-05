@@ -7966,13 +7966,6 @@
                 <div style="display: flex; align-items: center; gap: 5px;">
                     <span id="global-username" style="font-weight: 600; color: #fff; font-size: 0.75em;">Player</span>
                     <span style="color: #555;">·</span>
-                    <span id="global-account-type" style="
-                        font-size: 0.65em;
-                        color: #ffd700;
-                        font-weight: 600;
-                        text-transform: uppercase;
-                    ">Guest</span>
-                    <span style="color: #555;">·</span>
                     <div style="display: flex; align-items: center; gap: 4px; font-size: 0.65em; color: #aaa;">
                         <span><span style="color: #26de81;" id="global-wins">0</span>W</span>
                         <span style="color: #555;">·</span>
@@ -35018,7 +35011,12 @@ ${moveHistory || '(No moves played yet - starting position)'}
             const startMenu = document.getElementById('start-menu');
             const splash = document.getElementById('splash-page');
             if (startMenu) startMenu.style.display = 'none';
-            if (splash) splash.style.display = 'none';
+            if (splash) {
+                splash.style.display = 'none';
+                splash.style.visibility = 'hidden';
+                splash.style.opacity = '0';
+                splash.style.pointerEvents = 'none';
+            }
             
             // ALWAYS show the global account bar for both guests and logged-in users
             showGlobalAccountBar();
