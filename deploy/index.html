@@ -8141,94 +8141,183 @@
 
     <!-- Theme Selection Menu (Dropdown from account bar) -->
     <div id="theme-menu-panel" style="
-        display: none;
+        display: none !important;
         position: fixed;
         top: 40px;
         right: 180px;
-        background: rgba(0, 0, 0, 0.95);
-        border: 2px solid rgba(255, 215, 0, 0.5);
-        border-radius: 8px;
-        padding: 12px;
-        width: 200px;
+        background: rgba(15, 20, 30, 0.98);
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(78, 205, 196, 0.4);
+        border-radius: 12px;
+        padding: 16px;
+        width: 280px;
         z-index: 9998;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
     ">
         <div style="
-            margin-bottom: 8px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(78, 205, 196, 0.2);
         ">
             <h3 style="
                 margin: 0;
-                color: #ffd700;
-                font-size: 14px;
-            ">Choose Theme</h3>
+                color: #4ecdc4;
+                font-size: 15px;
+                font-weight: 700;
+                letter-spacing: 1px;
+            ">🎨 THEME PALETTES</h3>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 6px;">
-            <button onclick="changeThemeColor('default')" style="
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- Default Cyan-Purple -->
+            <button onclick="changeThemeColor('default')" class="theme-btn" style="
                 background: linear-gradient(135deg, #4ecdc4 0%, #a55eea 100%);
                 color: white;
                 border: none;
-                padding: 8px;
-                border-radius: 6px;
+                padding: 10px 12px;
+                border-radius: 8px;
                 cursor: pointer;
                 font-size: 13px;
                 font-weight: 600;
-                transition: transform 0.2s;
-            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                🌈 Default
+                transition: all 0.2s;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            " onmouseover="this.style.transform='translateX(4px)'; this.style.boxShadow='0 4px 12px rgba(78, 205, 196, 0.4)'" onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none'">
+                <span>Cyan Wave</span>
+                <span style="opacity: 0.7;">●●</span>
             </button>
-            <button onclick="changeThemeColor('blue')" style="
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            
+            <!-- Dark Ocean Blue -->
+            <button onclick="changeThemeColor('ocean')" class="theme-btn" style="
+                background: linear-gradient(135deg, #2C3E50 0%, #3498DB 100%);
                 color: white;
                 border: none;
-                padding: 8px;
-                border-radius: 6px;
+                padding: 10px 12px;
+                border-radius: 8px;
                 cursor: pointer;
                 font-size: 13px;
                 font-weight: 600;
-                transition: transform 0.2s;
-            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                💙 Blue
+                transition: all 0.2s;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            " onmouseover="this.style.transform='translateX(4px)'; this.style.boxShadow='0 4px 12px rgba(52, 152, 219, 0.4)'" onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none'">
+                <span>Ocean Deep</span>
+                <span style="opacity: 0.7;">●●</span>
             </button>
-            <button onclick="changeThemeColor('green')" style="
-                background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            
+            <!-- Dark Purple Night -->
+            <button onclick="changeThemeColor('purple')" class="theme-btn" style="
+                background: linear-gradient(135deg, #2D1B69 0%, #8E44AD 100%);
                 color: white;
                 border: none;
-                padding: 8px;
-                border-radius: 6px;
+                padding: 10px 12px;
+                border-radius: 8px;
                 cursor: pointer;
                 font-size: 13px;
                 font-weight: 600;
-                transition: transform 0.2s;
-            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                💚 Green
+                transition: all 0.2s;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            " onmouseover="this.style.transform='translateX(4px)'; this.style.boxShadow='0 4px 12px rgba(142, 68, 173, 0.4)'" onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none'">
+                <span>Purple Night</span>
+                <span style="opacity: 0.7;">●●</span>
             </button>
-            <button onclick="changeThemeColor('red')" style="
-                background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            
+            <!-- Dark Forest Green -->
+            <button onclick="changeThemeColor('forest')" class="theme-btn" style="
+                background: linear-gradient(135deg, #1B4332 0%, #2D6A4F 100%);
                 color: white;
                 border: none;
-                padding: 8px;
-                border-radius: 6px;
+                padding: 10px 12px;
+                border-radius: 8px;
                 cursor: pointer;
                 font-size: 13px;
                 font-weight: 600;
-                transition: transform 0.2s;
-            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                ❤️ Red
+                transition: all 0.2s;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            " onmouseover="this.style.transform='translateX(4px)'; this.style.boxShadow='0 4px 12px rgba(45, 106, 79, 0.4)'" onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none'">
+                <span>Forest Dark</span>
+                <span style="opacity: 0.7;">●●</span>
             </button>
-            <button onclick="changeThemeColor('orange')" style="
-                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            
+            <!-- Dark Crimson -->
+            <button onclick="changeThemeColor('crimson')" class="theme-btn" style="
+                background: linear-gradient(135deg, #4A0404 0%, #8B0000 100%);
                 color: white;
                 border: none;
-                padding: 8px;
-                border-radius: 6px;
+                padding: 10px 12px;
+                border-radius: 8px;
                 cursor: pointer;
                 font-size: 13px;
                 font-weight: 600;
-                transition: transform 0.2s;
-            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                🧡 Orange
+                transition: all 0.2s;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            " onmouseover="this.style.transform='translateX(4px)'; this.style.boxShadow='0 4px 12px rgba(139, 0, 0, 0.4)'" onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none'">
+                <span>Crimson Dark</span>
+                <span style="opacity: 0.7;">●●</span>
+            </button>
+            
+            <!-- Dark Ember Orange -->
+            <button onclick="changeThemeColor('ember')" class="theme-btn" style="
+                background: linear-gradient(135deg, #6B2D0F 0%, #C15500 100%);
+                color: white;
+                border: none;
+                padding: 10px 12px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 13px;
+                font-weight: 600;
+                transition: all 0.2s;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            " onmouseover="this.style.transform='translateX(4px)'; this.style.boxShadow='0 4px 12px rgba(193, 85, 0, 0.4)'" onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none'">
+                <span>Ember Glow</span>
+                <span style="opacity: 0.7;">●●</span>
+            </button>
+            
+            <!-- Midnight Slate -->
+            <button onclick="changeThemeColor('slate')" class="theme-btn" style="
+                background: linear-gradient(135deg, #1E293B 0%, #475569 100%);
+                color: white;
+                border: none;
+                padding: 10px 12px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 13px;
+                font-weight: 600;
+                transition: all 0.2s;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            " onmouseover="this.style.transform='translateX(4px)'; this.style.boxShadow='0 4px 12px rgba(71, 85, 105, 0.4)'" onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none'">
+                <span>Midnight Slate</span>
+                <span style="opacity: 0.7;">●●</span>
+            </button>
+            
+            <!-- Gold Royale -->
+            <button onclick="changeThemeColor('gold')" class="theme-btn" style="
+                background: linear-gradient(135deg, #8B6914 0%, #D4AF37 100%);
+                color: white;
+                border: none;
+                padding: 10px 12px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 13px;
+                font-weight: 600;
+                transition: all 0.2s;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            " onmouseover="this.style.transform='translateX(4px)'; this.style.boxShadow='0 4px 12px rgba(212, 175, 55, 0.4)'" onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none'">
+                <span>Gold Royale</span>
+                <span style="opacity: 0.7;">●●</span>
             </button>
         </div>
     </div>
@@ -29733,41 +29822,89 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         function toggleThemeMenu() {
             const menu = document.getElementById('theme-menu-panel');
             if (menu) {
-                menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+                const isHidden = menu.style.display === 'none' || menu.style.display === 'none !important';
+                menu.style.display = isHidden ? 'block' : 'none';
+                menu.style.setProperty('display', isHidden ? 'block' : 'none', 'important');
+                
+                // Close when clicking outside
+                if (isHidden) {
+                    setTimeout(() => {
+                        document.addEventListener('click', function closeMenu(e) {
+                            if (!menu.contains(e.target) && !e.target.closest('[onclick*="toggleThemeMenu"]')) {
+                                menu.style.display = 'none';
+                                menu.style.setProperty('display', 'none', 'important');
+                                document.removeEventListener('click', closeMenu);
+                            }
+                        });
+                    }, 10);
+                }
             }
         }
 
         function changeThemeColor(color) {
             const themes = {
                 default: 'linear-gradient(135deg, #4ecdc4 0%, #a55eea 100%)',
-                blue: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                green: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
-                red: 'linear-gradient(135deg, #eb3349 0%, #f45c43 100%)',
-                orange: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
+                ocean: 'linear-gradient(135deg, #2C3E50 0%, #3498DB 100%)',
+                purple: 'linear-gradient(135deg, #2D1B69 0%, #8E44AD 100%)',
+                forest: 'linear-gradient(135deg, #1B4332 0%, #2D6A4F 100%)',
+                crimson: 'linear-gradient(135deg, #4A0404 0%, #8B0000 100%)',
+                ember: 'linear-gradient(135deg, #6B2D0F 0%, #C15500 100%)',
+                slate: 'linear-gradient(135deg, #1E293B 0%, #475569 100%)',
+                gold: 'linear-gradient(135deg, #8B6914 0%, #D4AF37 100%)'
             };
 
             const gradient = themes[color] || themes.default;
 
-            // Apply to all buttons
-            const buttons = document.querySelectorAll('button, .button');
+            // Apply to all buttons except theme menu buttons
+            const buttons = document.querySelectorAll('button, .button, .mp-button, .btn');
             buttons.forEach(btn => {
-                btn.style.background = gradient;
+                // Skip theme menu buttons themselves
+                if (!btn.classList.contains('theme-btn') && !btn.closest('#theme-menu-panel')) {
+                    btn.style.background = gradient;
+                }
             });
 
             // Save theme preference
             localStorage.setItem('theme-color', color);
 
             // Close menu
-            toggleThemeMenu();
+            const menu = document.getElementById('theme-menu-panel');
+            if (menu) {
+                menu.style.display = 'none';
+                menu.style.setProperty('display', 'none', 'important');
+            }
         }
 
-        // Load saved theme on page load
-        window.addEventListener('load', function() {
+        // Load saved theme only when user is logged in (not on splash page)
+        function loadSavedTheme() {
             const savedTheme = localStorage.getItem('theme-color');
-            if (savedTheme) {
-                changeThemeColor(savedTheme);
+            const userHome = document.getElementById('user-home');
+            const splashPage = document.getElementById('splash-page');
+            
+            // Only apply theme if user-home is visible (not on splash page)
+            if (savedTheme && userHome && userHome.style.display !== 'none') {
+                const themes = {
+                    default: 'linear-gradient(135deg, #4ecdc4 0%, #a55eea 100%)',
+                    ocean: 'linear-gradient(135deg, #2C3E50 0%, #3498DB 100%)',
+                    purple: 'linear-gradient(135deg, #2D1B69 0%, #8E44AD 100%)',
+                    forest: 'linear-gradient(135deg, #1B4332 0%, #2D6A4F 100%)',
+                    crimson: 'linear-gradient(135deg, #4A0404 0%, #8B0000 100%)',
+                    ember: 'linear-gradient(135deg, #6B2D0F 0%, #C15500 100%)',
+                    slate: 'linear-gradient(135deg, #1E293B 0%, #475569 100%)',
+                    gold: 'linear-gradient(135deg, #8B6914 0%, #D4AF37 100%)'
+                };
+                
+                const gradient = themes[savedTheme] || themes.default;
+                
+                // Apply to all buttons except theme menu buttons
+                const buttons = document.querySelectorAll('button, .button, .mp-button, .btn');
+                buttons.forEach(btn => {
+                    if (!btn.classList.contains('theme-btn') && !btn.closest('#theme-menu-panel')) {
+                        btn.style.background = gradient;
+                    }
+                });
             }
-        });
+        }
         
         // Add a new notification
         function addNotification(type, title, message, actionData = null) {
@@ -34894,6 +35031,9 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 initializeLobby();
             }
             uh.style.display = 'flex';
+            
+            // Load saved theme after showing user home
+            setTimeout(() => loadSavedTheme(), 100);
         }
 
         // Activity heartbeat to track active players
