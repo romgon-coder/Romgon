@@ -2,18 +2,10 @@
   "version": 2,
   "framework": null,
   "outputDirectory": "public",
-  "routes": [
+  "rewrites": [
     {
-      "src": "/favicon.(ico|svg|png)",
-      "dest": "/favicon.$1"
-    },
-    {
-      "src": "/(.*\\.(js|css|svg|png|jpg|jpeg|gif|ico|woff|woff2|ttf|eot))",
-      "dest": "/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ],
   "headers": [
