@@ -32612,6 +32612,15 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     
                     .btn-danger { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); }
                     .btn-danger:hover { box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5); }
+                    
+                    .btn-icon {
+                        width: 24px;
+                        height: 24px;
+                        vertical-align: middle;
+                        margin-right: 8px;
+                        filter: brightness(0) invert(1);
+                    }
+                    .btn-purple .btn-icon { filter: brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(236deg); }
                 </style>
                 
                 <h1 style="color: transparent; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; background-clip: text; margin: 0 0 15px 0; font-size: 2.8em; font-weight: 800;">GAME OVER</h1>
@@ -32625,36 +32634,36 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     <!-- Primary Actions -->
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
                         <button onclick="showUserAccountHub()" class="game-over-btn btn-success">
-                            👤 User Hub
+                            <img src="ASSETS/icons/User.png" class="btn-icon" alt="User"> User Hub
                         </button>
                         <button onclick="showLeaderboard()" class="game-over-btn btn-warning">
-                            🏆 Leaderboard
+                            <img src="ASSETS/icons/leadreboard.png" class="btn-icon" alt="Leaderboard"> Leaderboard
                         </button>
                         <button onclick="analyzeGameFromGameOver()" class="game-over-btn btn-purple">
-                            📊 Analyze
+                            <img src="ASSETS/icons/analyze.png" class="btn-icon" alt="Analyze"> Analyze
                         </button>
                     </div>
                     
                     <!-- Secondary Actions -->
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
                         <button onclick="copyRPNFromGameOver()" class="game-over-btn btn-info">
-                            📋 Copy RPN
+                            <img src="ASSETS/icons/CopyRpn.png" class="btn-icon" alt="Copy"> Copy RPN
                         </button>
                         <button onclick="saveGameFromGameOver()" class="game-over-btn">
-                            💾 Save Game
+                            <img src="ASSETS/icons/SaveGame.png" class="btn-icon" alt="Save"> Save Game
                         </button>
                         <button onclick="observeGameFromGameOver()" class="game-over-btn">
-                            👁️ Observe
+                            <img src="ASSETS/icons/observe.png" class="btn-icon" alt="Observe"> Observe
                         </button>
                     </div>
                     
                     <!-- Main Action Buttons -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px;">
                         <button onclick="location.reload()" class="game-over-btn btn-success" style="font-size: 1.1em; padding: 16px 28px;">
-                            ▶️ Play Again
+                            <img src="ASSETS/icons/PlayAgain.png" class="btn-icon" alt="Play Again"> Play Again
                         </button>
                         <button onclick="showStartMenu()" class="game-over-btn btn-danger" style="font-size: 1.1em; padding: 16px 28px;">
-                            🏠 Main Menu
+                            <img src="ASSETS/icons/MainMenu.png" class="btn-icon" alt="Main Menu"> Main Menu
                         </button>
                     </div>
                 </div>
