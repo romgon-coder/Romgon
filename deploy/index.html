@@ -24189,9 +24189,14 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     const allReady = room.players.every(p => p.ready);
                     if (allReady) {
                         console.log('🎮 Challenge room with both players ready, starting game...');
-                        console.log('🎮 Room object:', room);
+                        console.log('🎮 Room object FULL:', JSON.stringify(room, null, 2));
+                        console.log('🎮 Room keys:', Object.keys(room));
+                        console.log('🎮 room.gameId:', room.gameId);
+                        console.log('🎮 room.id:', room.id);
+                        console.log('🎮 room._id:', room._id);
                         const gameId = room.gameId || room.id;
-                        console.log('🎮 Using gameId:', gameId);
+                        console.log('🎮 Selected gameId:', gameId);
+                        console.log('🎯 CRITICAL: This gameId MUST match on both players\' browsers!');
                         setTimeout(() => {
                             closeMultiplayerModal();
                             startMultiplayerGame(gameId);
@@ -24691,10 +24696,18 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         });
                         console.log('✅ game:join emitted successfully');
                         console.log('   Waiting for server to confirm room join...');
+                        console.log('🔍 ROOM JOIN DEBUG:');
+                        console.log('   - My userId:', payload.userId);
+                        console.log('   - My color:', myPlayerColor);
+                        console.log('   - GameId being joined:', gameId);
+                        console.log('   - currentGameId stored:', currentGameId);
+                        console.log('   - Socket ID:', gameSocket?.id);
+                        console.log('   - Socket connected:', gameSocket?.connected);
                         
                         // Wait a moment to ensure server processes the join
                         await new Promise(resolve => setTimeout(resolve, 500));
                         console.log('✅ Game room should be joined now');
+                        console.log('🎯 If you don\'t see opponent moves, check backend logs for room membership');
                         return; // Success
                     }
                     
