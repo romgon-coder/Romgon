@@ -579,7 +579,10 @@ router.post('/submit-result',
         body('result').isIn(['win', 'loss', 'draw']).withMessage('Invalid result'),
         body('winner').isString().notEmpty().withMessage('Winner is required'),
         body('move_count').optional().isInt({ min: 0 }).withMessage('Invalid move count'),
-        body('captures').optional().isInt({ min: 0 }).withMessage('Invalid captures count')
+        body('captures').optional().isInt({ min: 0 }).withMessage('Invalid captures count'),
+        body('old_rating').optional().isInt({ min: 0 }).withMessage('Invalid old rating'),
+        body('new_rating').optional().isInt({ min: 0 }).withMessage('Invalid new rating'),
+        body('rating_change').optional().isInt().withMessage('Invalid rating change')
     ],
     async (req, res) => {
         try {
@@ -588,9 +591,19 @@ router.post('/submit-result',
                 return res.status(400).json({ errors: errors.array() });
             }
 
-            const { opponent_type, result, winner, move_count, captures } = req.body;
+            const { opponent_type, result, winner, move_count, captures, old_rating, new_rating, rating_change } = req.body;
             const playerId = req.user.userId;
             const gameId = uuidv4();
+
+            // Get current user data including rating
+            const db = await dbPromise;
+            const user = await db.get('SELECT * FROM users WHERE id = ?', [playerId]);
+            
+            if (!user) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+
+            const currentRating = user.rating || 1600;
 
             // Determine player color based on winner
             const playerIsWhite = winner.toLowerCase() === 'white';
@@ -610,7 +623,7 @@ router.post('/submit-result',
             const isPostgres = !!process.env.DATABASE_URL;
             const nowFunc = isPostgres ? 'CURRENT_TIMESTAMP' : "datetime('now')";
             
-            await dbPromise.run(
+            await db.run(
                 `INSERT INTO games (
                     id, white_player_id, black_player_id, 
                     status, winner_id, 
@@ -620,21 +633,46 @@ router.post('/submit-result',
                 [gameId, whitePlayerId, blackPlayerId, winnerId, move_count || 0]
             );
 
-            // Update user stats
-            const db = await dbPromise;
+            // Calculate rating change
+            let calculatedNewRating = currentRating;
+            let calculatedRatingChange = 0;
             
+            if (opponent_type === 'ai') {
+                // For AI games, use Elo calculation with AI rating of 1600
+                const { calculateEloRating } = require('../utils/rating');
+                const AI_RATING = 1600;
+                const score = result === 'win' ? 1 : (result === 'loss' ? 0 : 0.5);
+                
+                calculatedNewRating = calculateEloRating(currentRating, AI_RATING, score);
+                calculatedRatingChange = calculatedNewRating - currentRating;
+                
+                console.log(`🎯 Rating calculation for user ${playerId}:`, {
+                    oldRating: currentRating,
+                    newRating: calculatedNewRating,
+                    change: calculatedRatingChange,
+                    result,
+                    opponent: 'AI'
+                });
+            } else if (new_rating !== undefined && rating_change !== undefined) {
+                // Use frontend-provided rating if available (for PvP games)
+                calculatedNewRating = new_rating;
+                calculatedRatingChange = rating_change;
+            }
+
             const moves = move_count || 0;
             const capturesCount = captures || 0;
             
+            // Update user stats including rating
             if (result === 'win') {
                 await db.run(
                     `UPDATE users 
                      SET wins = wins + 1, 
                          total_games = total_games + 1,
                          total_moves = total_moves + ?,
-                         total_captures = total_captures + ?
+                         total_captures = total_captures + ?,
+                         rating = ?
                      WHERE id = ?`,
-                    [moves, capturesCount, playerId]
+                    [moves, capturesCount, calculatedNewRating, playerId]
                 );
             } else if (result === 'loss') {
                 await db.run(
@@ -642,9 +680,10 @@ router.post('/submit-result',
                      SET losses = losses + 1, 
                          total_games = total_games + 1,
                          total_moves = total_moves + ?,
-                         total_captures = total_captures + ?
+                         total_captures = total_captures + ?,
+                         rating = ?
                      WHERE id = ?`,
-                    [moves, capturesCount, playerId]
+                    [moves, capturesCount, calculatedNewRating, playerId]
                 );
             } else {
                 await db.run(
@@ -652,18 +691,45 @@ router.post('/submit-result',
                      SET draws = draws + 1, 
                          total_games = total_games + 1,
                          total_moves = total_moves + ?,
-                         total_captures = total_captures + ?
+                         total_captures = total_captures + ?,
+                         rating = ?
                      WHERE id = ?`,
-                    [moves, capturesCount, playerId]
+                    [moves, capturesCount, calculatedNewRating, playerId]
                 );
             }
 
-            console.log(`✅ Game result submitted for user ${playerId}: ${result} vs ${opponent_type}`);
+            // Record rating change in rating_changes table if available
+            try {
+                await db.run(
+                    `INSERT INTO rating_changes (
+                        player_id, old_rating, new_rating, change, 
+                        game_id, opponent_id, opponent_rating, result
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [
+                        playerId, 
+                        currentRating, 
+                        calculatedNewRating, 
+                        calculatedRatingChange,
+                        gameId,
+                        null, // No opponent ID for AI games
+                        opponent_type === 'ai' ? 1600 : null,
+                        result
+                    ]
+                );
+            } catch (ratingError) {
+                // rating_changes table might not exist, just log and continue
+                console.warn('Could not insert rating change record:', ratingError.message);
+            }
+
+            console.log(`✅ Game result submitted for user ${playerId}: ${result} vs ${opponent_type} | Rating: ${currentRating} → ${calculatedNewRating} (${calculatedRatingChange >= 0 ? '+' : ''}${calculatedRatingChange})`);
 
             res.status(201).json({
                 success: true,
                 gameId,
-                message: 'Game result submitted successfully'
+                message: 'Game result submitted successfully',
+                rating: calculatedNewRating,
+                ratingChange: calculatedRatingChange,
+                oldRating: currentRating
             });
 
         } catch (error) {
