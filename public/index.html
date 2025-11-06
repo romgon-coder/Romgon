@@ -3978,10 +3978,14 @@
                     console.log('✅ All backend stats applied to Player Hub');
                     
                     // ============================================
-                    // UPDATE RATING DISPLAY
+                    // UPDATE RATING DISPLAY FROM BACKEND
                     // ============================================
-                    // Use RatingManager to get current rating
-                    const rating = RatingManager.getCurrentRating(currentUser.username);
+                    // Use backend rating if available, otherwise fall back to RatingManager
+                    const rating = stats.rating !== undefined && stats.rating !== null 
+                        ? stats.rating 
+                        : RatingManager.getCurrentRating(currentUser.username);
+                    
+                    console.log('🎯 Rating source - Backend rating:', stats.rating, 'Using:', rating);
                     
                     const ratingEl = document.getElementById('hub-current-rating');
                     if (ratingEl) {
@@ -3998,11 +4002,19 @@
                         console.log('  ✓ Updated tier:', tier.name);
                     }
                     
-                    // Update rating stats
+                    // Update rating stats - use backend data if available
                     const ratingGamesEl = document.getElementById('hub-rating-games');
                     const ratingChangesEl = document.getElementById('hub-rating-changes');
-                    if (ratingGamesEl) ratingGamesEl.textContent = backendTotal;
-                    if (ratingChangesEl) ratingChangesEl.textContent = stats.recentGames?.length || 0;
+                    if (ratingGamesEl) {
+                        const ratingGames = stats.stats?.ratedGames || backendTotal;
+                        ratingGamesEl.textContent = ratingGames;
+                        console.log('  ✓ Updated rating games:', ratingGames);
+                    }
+                    if (ratingChangesEl) {
+                        const changes = stats.recentGames?.length || 0;
+                        ratingChangesEl.textContent = changes;
+                        console.log('  ✓ Updated rating changes:', changes);
+                    }
                     
                     // Display rating history from recent games
                     displayRecentGames(stats.recentGames || []);
