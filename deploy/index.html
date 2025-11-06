@@ -24667,71 +24667,43 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 initializeGameSocket();
             }
             
-            // Function to join game when socket is ready
-            const joinGameRoom = () => {
-                if (gameSocket && gameSocket.connected) {
-                    const token = localStorage.getItem('romgon-jwt');
-                    const payload = JSON.parse(atob(token.split('.')[1]));
-                    
-                    console.log('🔌 Attempting to join game room...');
-                    console.log('   gameId:', gameId);
-                    console.log('   userId:', payload.userId);
-                    console.log('   myPlayerColor:', myPlayerColor);
-                    console.log('   gameSocket.connected:', gameSocket.connected);
-                    
-                    gameSocket.emit('game:join', {
-                        gameId,
-                        userId: payload.userId
-                    });
-                    console.log('✅ game:join emitted successfully');
-                } else {
-                    console.log('⏳ Waiting for gameSocket to connect...');
-                    console.log('   gameSocket exists:', !!gameSocket);
-                    console.log('   gameSocket.connected:', gameSocket?.connected);
-                    
-                    // Try again after a short delay
-                    setTimeout(() => {
-                        console.log('🔄 Retrying game room join after delay...');
-                        if (gameSocket && gameSocket.connected) {
-                            const token = localStorage.getItem('romgon-jwt');
-                            const payload = JSON.parse(atob(token.split('.')[1]));
-                            
-                            console.log('🔌 gameSocket now connected! Joining room...');
-                            console.log('   gameId:', gameId);
-                            console.log('   userId:', payload.userId);
-                            
-                            gameSocket.emit('game:join', {
-                                gameId,
-                                userId: payload.userId
-                            });
-                            console.log('✅ game:join emitted after retry');
-                        } else {
-                            console.error('❌ gameSocket still not connected after retry');
-                        }
-                    }, 1000);
-                    
-                    // Also listen for connection event
-                    if (gameSocket) {
-                        gameSocket.once('connect', () => {
-                            const token = localStorage.getItem('romgon-jwt');
-                            const payload = JSON.parse(atob(token.split('.')[1]));
-                            
-                            console.log('🔌 gameSocket connected! Joining room...');
-                            console.log('   gameId:', gameId);
-                            console.log('   userId:', payload.userId);
-                            
-                            gameSocket.emit('game:join', {
-                                gameId,
-                                userId: payload.userId
-                            });
-                            console.log('✅ game:join emitted after connection');
+            // Wait for socket to be ready, then join game room
+            const waitForSocketAndJoin = async () => {
+                const maxAttempts = 20; // 10 seconds total
+                let attempts = 0;
+                
+                while (attempts < maxAttempts) {
+                    if (gameSocket && gameSocket.connected) {
+                        // Socket is ready, join the game room
+                        const token = localStorage.getItem('romgon-jwt');
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        
+                        console.log('🔌 Socket connected! Joining game room...');
+                        console.log('   gameId:', gameId);
+                        console.log('   userId:', payload.userId);
+                        console.log('   myPlayerColor:', myPlayerColor);
+                        
+                        gameSocket.emit('game:join', {
+                            gameId,
+                            userId: payload.userId
                         });
+                        console.log('✅ game:join emitted successfully');
+                        return; // Success
                     }
+                    
+                    // Not connected yet, wait and retry
+                    console.log(`⏳ Waiting for gameSocket (attempt ${attempts + 1}/${maxAttempts})...`);
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    attempts++;
                 }
+                
+                // Failed to connect after all attempts
+                console.error('❌ Failed to connect gameSocket after', maxAttempts, 'attempts');
+                showNotification('⚠️ Connection issue - please refresh if game doesn\'t start', 'warning');
             };
             
-            // Try to join game room
-            joinGameRoom();
+            // Start waiting for connection
+            waitForSocketAndJoin();
 
             // Start the game
             closeMultiplayerModal();
