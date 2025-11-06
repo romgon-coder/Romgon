@@ -32446,31 +32446,37 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 position: fixed !important;
                 top: 0 !important;
                 left: 0 !important;
-                width: 100% !important;
-                height: 100% !important;
-                background-color: rgba(0, 0, 0, 0.8) !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                background: rgba(15, 20, 30, 0.98) !important;
                 display: flex !important;
                 justify-content: center !important;
                 align-items: center !important;
                 z-index: 99999 !important;
-                font-family: sans-serif !important;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
                 pointer-events: auto !important;
                 visibility: visible !important;
                 opacity: 1 !important;
+                backdrop-filter: blur(8px) !important;
+                overflow-y: auto !important;
+                padding: 20px !important;
             `;
             
             const gameOverContent = document.createElement('div');
             gameOverContent.style.cssText = `
-                background-color: #2a2a2a !important;
-                padding: 40px !important;
-                border-radius: 15px !important;
-                border: 3px solid #444 !important;
+                background: linear-gradient(135deg, #23272e 0%, #2c313a 100%) !important;
+                padding: 50px 40px !important;
+                border-radius: 24px !important;
+                border: 1px solid rgba(102, 126, 234, 0.3) !important;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8) !important;
                 text-align: center !important;
                 color: white !important;
-                max-width: 400px !important;
+                max-width: 540px !important;
+                width: 100% !important;
                 position: relative !important;
                 z-index: 100000 !important;
                 pointer-events: auto !important;
+                margin: auto !important;
             `;
             
             // Check if user is logged in to show stats saved message
@@ -32485,46 +32491,58 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         if (lastGame.ratingChange === 0 && isPVP) {
                             ratingDisplayHTML = `
                                 <div style="
-                                    background-color: rgba(255, 193, 7, 0.1) !important;
-                                    border: 2px solid #ffc107 !important;
-                                    border-radius: 8px !important;
-                                    padding: 15px !important;
-                                    margin: 15px 0 0 0 !important;
+                                    background: linear-gradient(135deg, rgba(255, 193, 7, 0.15) 0%, rgba(255, 152, 0, 0.1) 100%);
+                                    border: 2px solid rgba(255, 193, 7, 0.5);
+                                    border-radius: 16px;
+                                    padding: 20px;
+                                    margin: 20px 0;
+                                    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.2);
                                 ">
-                                    <p style="color: #ffc107 !important; margin: 0 !important; font-size: 0.9em !important;">
+                                    <p style="color: #ffc107; margin: 0 0 8px 0; font-size: 1em; font-weight: 700;">
                                         🎮 PvP Mode - Rating Unchanged
                                     </p>
-                                    <p style="color: #999 !important; margin: 5px 0 0 0 !important; font-size: 0.8em !important;">
+                                    <p style="color: #ccc; margin: 0; font-size: 0.85em; line-height: 1.4;">
                                         Local multiplayer games don't affect your rating
                                     </p>
                                 </div>
                             `;
                         } else {
                             // AI game with rating change
-                            const ratingChangeColor = lastGame.ratingChange > 0 ? '#27ae60' : '#e74c3c';
+                            const ratingChangeColor = lastGame.ratingChange > 0 ? '#11998e' : '#f5576c';
                             const ratingChangeSymbol = lastGame.ratingChange > 0 ? '+' : '';
+                            const gradientColors = lastGame.ratingChange > 0 
+                                ? 'rgba(17, 153, 142, 0.15) 0%, rgba(56, 239, 125, 0.1) 100%'
+                                : 'rgba(245, 87, 108, 0.15) 0%, rgba(238, 90, 111, 0.1) 100%';
+                            const borderColor = lastGame.ratingChange > 0 ? 'rgba(17, 153, 142, 0.5)' : 'rgba(245, 87, 108, 0.5)';
                             ratingDisplayHTML = `
                                 <div style="
-                                    background-color: rgba(78, 205, 196, 0.1) !important;
-                                    border: 2px solid #4ecdc4 !important;
-                                    border-radius: 8px !important;
-                                    padding: 15px !important;
-                                    margin: 15px 0 0 0 !important;
+                                    background: linear-gradient(135deg, ${gradientColors});
+                                    border: 2px solid ${borderColor};
+                                    border-radius: 16px;
+                                    padding: 20px;
+                                    margin: 20px 0;
+                                    box-shadow: 0 4px 15px ${lastGame.ratingChange > 0 ? 'rgba(17, 153, 142, 0.2)' : 'rgba(245, 87, 108, 0.2)'};
                                 ">
-                                    <p style="color: #4ecdc4 !important; margin: 0 0 10px 0 !important; font-size: 0.9em !important;">⭐ Rating Update</p>
-                                    <div style="display: flex; justify-content: space-around; align-items: center; gap: 10px;">
-                                        <div>
-                                            <div style="color: #999 !important; font-size: 0.8em !important;">Before</div>
-                                            <div style="color: #fff !important; font-size: 1.3em !important; font-weight: bold !important;">${lastGame.oldRating}</div>
+                                    <p style="color: #667eea; margin: 0 0 15px 0; font-size: 1em; font-weight: 700;">⭐ Rating Update</p>
+                                    <div style="display: grid; grid-template-columns: 1fr auto 1fr auto; gap: 15px; align-items: center;">
+                                        <div style="text-align: center;">
+                                            <div style="color: #999; font-size: 0.75em; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px;">Before</div>
+                                            <div style="color: #fff; font-size: 1.8em; font-weight: 800;">${lastGame.oldRating}</div>
                                         </div>
-                                        <div style="color: #4ecdc4; font-size: 1.5em;">→</div>
-                                        <div>
-                                            <div style="color: #999 !important; font-size: 0.8em !important;">After</div>
-                                            <div style="color: #fff !important; font-size: 1.3em !important; font-weight: bold !important;">${lastGame.newRating}</div>
+                                        <div style="color: #667eea; font-size: 1.8em; font-weight: bold;">→</div>
+                                        <div style="text-align: center;">
+                                            <div style="color: #999; font-size: 0.75em; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px;">After</div>
+                                            <div style="color: #fff; font-size: 1.8em; font-weight: 800;">${lastGame.newRating}</div>
                                         </div>
-                                        <div style="border-left: 2px solid #444; padding-left: 10px;">
-                                            <div style="color: #999 !important; font-size: 0.8em !important;">Change</div>
-                                            <div style="color: ${ratingChangeColor} !important; font-size: 1.3em !important; font-weight: bold !important;">${ratingChangeSymbol}${lastGame.ratingChange}</div>
+                                        <div style="
+                                            background: linear-gradient(135deg, ${lastGame.ratingChange > 0 ? '#11998e, #38ef7d' : '#f093fb, #f5576c'});
+                                            padding: 12px 16px;
+                                            border-radius: 12px;
+                                            text-align: center;
+                                            box-shadow: 0 4px 12px ${lastGame.ratingChange > 0 ? 'rgba(17, 153, 142, 0.3)' : 'rgba(245, 87, 108, 0.3)'};
+                                        ">
+                                            <div style="color: rgba(255,255,255,0.9); font-size: 0.7em; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 1px;">Change</div>
+                                            <div style="color: #fff; font-size: 1.5em; font-weight: 800;">${ratingChangeSymbol}${lastGame.ratingChange}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -32535,100 +32553,112 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             }
             
             const userStatsMessage = currentUser.username && currentUser.type !== 'guest' 
-                ? '<p style="margin: 15px 0 0 0; font-size: 0.9em; color: #4ecdc4;">✅ Game result saved to your user hub!</p>'
+                ? '<p style="margin: 15px 0 0 0; font-size: 0.9em; color: #11998e; font-weight: 600;">✅ Game result saved to your user hub!</p>'
                 : '';
             
             gameOverContent.innerHTML = `
-                <h1 style="color: #ff6b6b; margin: 0 0 20px 0; font-size: 2.5em;">GAME OVER</h1>
-                <h2 style="color: #4ecdc4; margin: 0 0 20px 0; font-size: 1.8em;">${winnerDisplayName.toUpperCase()} WINS!</h2>
-                <p style="margin: 0 0 20px 0; font-size: 1.2em;">${reason}</p>
+                <!-- Winner Icon -->
+                <div style="
+                    width: 100px;
+                    height: 100px;
+                    margin: 0 auto 25px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 50px;
+                    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+                    animation: pulse 2s ease-in-out infinite;
+                ">🏆</div>
+                
+                <style>
+                    @keyframes pulse {
+                        0%, 100% { transform: scale(1); }
+                        50% { transform: scale(1.05); }
+                    }
+                    .game-over-btn {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        border: none;
+                        padding: 14px 28px;
+                        font-size: 0.95em;
+                        border-radius: 12px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+                        position: relative;
+                        overflow: hidden;
+                    }
+                    .game-over-btn:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+                    }
+                    .game-over-btn:active {
+                        transform: translateY(0);
+                    }
+                    .btn-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+                    .btn-success:hover { box-shadow: 0 6px 20px rgba(17, 153, 142, 0.5); }
+                    
+                    .btn-warning { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+                    .btn-warning:hover { box-shadow: 0 6px 20px rgba(245, 87, 108, 0.5); }
+                    
+                    .btn-info { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+                    .btn-info:hover { box-shadow: 0 6px 20px rgba(79, 172, 254, 0.5); }
+                    
+                    .btn-purple { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #764ba2; }
+                    .btn-purple:hover { box-shadow: 0 6px 20px rgba(168, 237, 234, 0.5); }
+                    
+                    .btn-danger { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); }
+                    .btn-danger:hover { box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5); }
+                </style>
+                
+                <h1 style="color: transparent; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; background-clip: text; margin: 0 0 15px 0; font-size: 2.8em; font-weight: 800;">GAME OVER</h1>
+                <h2 style="color: #4ecdc4; margin: 0 0 10px 0; font-size: 1.6em; font-weight: 700;">${winnerDisplayName.toUpperCase()} WINS!</h2>
+                <p style="margin: 0 0 30px 0; font-size: 1em; color: #aaa;">${reason}</p>
                 ${ratingDisplayHTML}
                 ${userStatsMessage}
-                <div style="display: flex; flex-direction: column; gap: 15px; align-items: center; margin-top: 20px;">
-                    <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                        <button onclick="showUserAccountHub()" style="
-                            background-color: #27ae60;
-                            color: white;
-                            border: none;
-                            padding: 15px 30px;
-                            font-size: 1.2em;
-                            border-radius: 8px;
-                            cursor: pointer;
-                            font-weight: bold;
-                        ">👤 User Hub</button>
-                        <button onclick="showLeaderboard()" style="
-                            background-color: #f39c12;
-                            color: white;
-                            border: none;
-                            padding: 15px 30px;
-                            font-size: 1.2em;
-                            border-radius: 8px;
-                            cursor: pointer;
-                            font-weight: bold;
-                        ">🏆 Leaderboard</button>
-                        <button onclick="analyzeGameFromGameOver()" style="
-                            background-color: #9b59b6;
-                            color: white;
-                            border: none;
-                            padding: 15px 30px;
-                            font-size: 1.2em;
-                            border-radius: 8px;
-                            cursor: pointer;
-                            font-weight: bold;
-                        ">📊 Analyze</button>
+                
+                <!-- Action Buttons -->
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 30px;">
+                    <!-- Primary Actions -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
+                        <button onclick="showUserAccountHub()" class="game-over-btn btn-success">
+                            👤 User Hub
+                        </button>
+                        <button onclick="showLeaderboard()" class="game-over-btn btn-warning">
+                            🏆 Leaderboard
+                        </button>
+                        <button onclick="analyzeGameFromGameOver()" class="game-over-btn btn-purple">
+                            📊 Analyze
+                        </button>
                     </div>
-                    <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                        <button onclick="copyRPNFromGameOver()" style="
-                            background-color: #16a085;
-                            color: white;
-                            border: none;
-                            padding: 15px 30px;
-                            font-size: 1.2em;
-                            border-radius: 8px;
-                            cursor: pointer;
-                            font-weight: bold;
-                        ">📋 Copy RPN</button>
-                        <button onclick="saveGameFromGameOver()" style="
-                            background-color: #e67e22;
-                            color: white;
-                            border: none;
-                            padding: 15px 30px;
-                            font-size: 1.2em;
-                            border-radius: 8px;
-                            cursor: pointer;
-                            font-weight: bold;
-                        ">💾 Save Game</button>
+                    
+                    <!-- Secondary Actions -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
+                        <button onclick="copyRPNFromGameOver()" class="game-over-btn btn-info">
+                            📋 Copy RPN
+                        </button>
+                        <button onclick="saveGameFromGameOver()" class="game-over-btn">
+                            💾 Save Game
+                        </button>
+                        <button onclick="observeGameFromGameOver()" class="game-over-btn">
+                            👁️ Observe
+                        </button>
                     </div>
-                    <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                        <button onclick="observeGameFromGameOver()" style="
-                            background-color: #3498db;
-                            color: white;
-                            border: none;
-                            padding: 15px 30px;
-                            font-size: 1.2em;
-                            border-radius: 8px;
-                            cursor: pointer;
-                            font-weight: bold;
-                        ">👁️ Observe Game</button>
-                        <button onclick="location.reload()" style="
-                            background-color: #4ecdc4;
-                            color: white;
-                            border: none;
-                            padding: 15px 30px;
-                            font-size: 1.2em;
-                            border-radius: 8px;
-                            cursor: pointer;
-                            font-weight: bold;
-                        ">▶️ Play Again</button>
-                        <button onclick="showStartMenu()" style="
-                            background-color: #ff6b6b;
-                            color: white;
-                            border: none;
-                            padding: 15px 30px;
-                            font-size: 1.2em;
-                            border-radius: 8px;
-                            cursor: pointer;
-                            font-weight: bold;
+                    
+                    <!-- Main Action Buttons -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px;">
+                        <button onclick="location.reload()" class="game-over-btn btn-success" style="font-size: 1.1em; padding: 16px 28px;">
+                            ▶️ Play Again
+                        </button>
+                        <button onclick="showStartMenu()" class="game-over-btn btn-danger" style="font-size: 1.1em; padding: 16px 28px;">
+                            🏠 Main Menu
+                        </button>
+                    </div>
+                </div>
+            `;
                         ">🏠 Main Menu</button>
                     </div>
                 </div>
