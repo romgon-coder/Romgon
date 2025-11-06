@@ -21315,10 +21315,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     const token = localStorage.getItem('romgon-jwt');
                     if (token) {
                         const payload = JSON.parse(atob(token.split('.')[1]));
-                        console.log('🎯 My userId:', payload.userId);
-                        console.log('🎯 Move by userId:', data.userId);
+                        const myUserId = payload.userId?.toString(); // Convert to string for comparison
+                        const moveUserId = data.userId?.toString(); // Ensure data.userId is also string
+                        console.log('🎯 My userId:', myUserId, `(type: ${typeof myUserId})`);
+                        console.log('🎯 Move by userId:', moveUserId, `(type: ${typeof moveUserId})`);
                         
-                        if (data.userId === payload.userId) {
+                        if (moveUserId === myUserId) {
                             console.log('⏭️ Skipping my own move (already applied locally)');
                             
                             // But still sync the turn from server
@@ -21449,7 +21451,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     const token = localStorage.getItem('romgon-jwt');
                     if (token) {
                         const payload = JSON.parse(atob(token.split('.')[1]));
-                        if (data.userId === payload.userId) {
+                        const myUserId = payload.userId?.toString(); // Convert to string
+                        const rotationUserId = data.userId?.toString(); // Convert to string
+                        if (rotationUserId === myUserId) {
                             console.log('⏭️ Skipping my own rotation (already applied locally)');
                             return;
                         }
@@ -21533,15 +21537,33 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     }
                 });
                 
-                gameSocket.on('challenge:accepted', (data) => {
+                gameSocket.on('challenge:accepted', async (data) => {
                     console.log('✅ Challenge accepted:', data);
-                    showNotification(`✅ ${data.accepterName} accepted your challenge!`, 'success');
+                    console.log('   Room ID:', data.roomId);
+                    console.log('   Game ID:', data.gameId);
+                    showNotification(`✅ Challenge accepted! Starting game...`, 'success');
                     
-                    // Auto-join the game room
+                    // Properly join the room through roomClient to get player data
                     if (data.roomId) {
-                        setTimeout(() => {
-                            window.location.href = `/?room=${data.roomId}`;
-                        }, 1500);
+                        try {
+                            console.log('🎮 Joining room through roomClient:', data.roomId);
+                            
+                            // Use roomClient to properly join and get room data with player colors
+                            const room = await roomClient.joinRoom(data.roomId);
+                            console.log('✅ Room joined via roomClient:', room);
+                            console.log('   Players:', room.players);
+                            
+                            // Now start the game with proper room data
+                            setTimeout(() => {
+                                window.location.href = `/?room=${data.roomId}`;
+                            }, 500);
+                        } catch (error) {
+                            console.error('❌ Failed to join room:', error);
+                            // Fallback to simple redirect
+                            setTimeout(() => {
+                                window.location.href = `/?room=${data.roomId}`;
+                            }, 1500);
+                        }
                     }
                 });
                 
@@ -24595,15 +24617,17 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             if (roomClient.currentRoom && roomClient.currentRoom.players) {
                 const token = localStorage.getItem('romgon-jwt');
                 const payload = JSON.parse(atob(token.split('.')[1]));
-                console.log('👤 My userId:', payload.userId);
+                const myUserId = payload.userId?.toString(); // Convert to string for comparison
+                console.log('👤 My userId:', myUserId, `(type: ${typeof myUserId})`);
                 console.log('👥 Players in room:', JSON.stringify(roomClient.currentRoom.players, null, 2));
                 console.log('👥 Number of players:', roomClient.currentRoom.players.length);
                 
                 roomClient.currentRoom.players.forEach((p, index) => {
-                    console.log(`   Player ${index + 1}: ${p.username} (ID: ${p.userId}) - Color: ${p.color}`);
+                    console.log(`   Player ${index + 1}: ${p.username} (ID: ${p.userId}, type: ${typeof p.userId}) - Color: ${p.color}`);
                 });
                 
-                const myPlayer = roomClient.currentRoom.players.find(p => p.userId === payload.userId);
+                // Compare as strings since backend sends userId as string
+                const myPlayer = roomClient.currentRoom.players.find(p => p.userId?.toString() === myUserId);
                 
                 if (myPlayer) {
                     myPlayerColor = myPlayer.color;
@@ -24611,8 +24635,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     console.log('✅ Found my player object:', JSON.stringify(myPlayer, null, 2));
                 } else {
                     console.error('❌ Could not find my player in room! Using default black');
-                    console.error('   My userId:', payload.userId);
-                    console.error('   Available player IDs:', roomClient.currentRoom.players.map(p => p.userId));
+                    console.error('   My userId:', myUserId);
+                    console.error('   Available player IDs:', roomClient.currentRoom.players.map(p => `${p.userId} (${typeof p.userId})`));
                     myPlayerColor = 'black'; // Fallback
                 }
             } else {
