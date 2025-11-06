@@ -32121,17 +32121,20 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             const currentUser = JSON.parse(localStorage.getItem('romgon-user') || '{}');
             console.log('🔍 Current User from localStorage:', currentUser);
             console.log('🔍 User username:', currentUser.username);
+            console.log('🔍 User name:', currentUser.name);
             console.log('🔍 User type:', currentUser.type);
+            console.log('🔍 User ID:', currentUser.id);
             
-            // Update user statistics if a user is logged in
-            if (currentUser.username && currentUser.type !== 'guest') {
-                console.log('📊 Logged-in user detected, saving game stats...');
+            // Update user statistics if a user is logged in (including guests)
+            if ((currentUser.username || currentUser.name) && currentUser.id) {
+                const userKey = currentUser.username || currentUser.name;
+                console.log('📊 User detected (type: ' + currentUser.type + '), saving game stats for:', userKey);
                 
                 // Get the current user's game records
                 let allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
-                if (!allUsers[currentUser.username]) {
-                    allUsers[currentUser.username] = {
-                        username: currentUser.username,
+                if (!allUsers[userKey]) {
+                    allUsers[userKey] = {
+                        username: userKey,
                         games: [],
                         stats: {
                             wins: 0,
@@ -32179,29 +32182,29 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     captures: captureCount
                 };
                 
-                allUsers[currentUser.username].games.push(gameRecord);
-                allUsers[currentUser.username].stats.totalGames += 1;
-                allUsers[currentUser.username].stats.totalMoves += moveCount;
-                allUsers[currentUser.username].stats.totalCaptures += captureCount;
+                allUsers[userKey].games.push(gameRecord);
+                allUsers[userKey].stats.totalGames += 1;
+                allUsers[userKey].stats.totalMoves += moveCount;
+                allUsers[userKey].stats.totalCaptures += captureCount;
                 
                 if (playerWon) {
-                    allUsers[currentUser.username].stats.wins += 1;
+                    allUsers[userKey].stats.wins += 1;
                 } else {
-                    allUsers[currentUser.username].stats.losses += 1;
+                    allUsers[userKey].stats.losses += 1;
                 }
                 
                 // ============================================
                 // RATING SYSTEM - Update player rating
                 // ============================================
                 
-                console.log('🎯 Starting rating update for:', currentUser.username);
+                console.log('🎯 Starting rating update for:', userKey);
                 console.log('   Current localStorage rating:', localStorage.getItem('rating'));
                 
                 // Initialize rating if not exists
-                initializeUserRating(currentUser.username);
+                initializeUserRating(userKey);
                 
                 // Update rating based on game result
-                const ratingUpdate = updatePlayerRating(currentUser.username, playerWon, 'AI');
+                const ratingUpdate = updatePlayerRating(userKey, playerWon, 'AI');
                 
                 console.log('💾 Rating update result:', ratingUpdate);
                 console.log('   localStorage rating after update:', localStorage.getItem('rating'));
@@ -32212,20 +32215,20 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 gameRecord.newRating = ratingUpdate.newRating;
                 
                 // Update game record with rating info
-                allUsers[currentUser.username].games[allUsers[currentUser.username].games.length - 1] = gameRecord;
+                allUsers[userKey].games[allUsers[userKey].games.length - 1] = gameRecord;
                 
                 // Save updated user data
                 localStorage.setItem('romgon-users', JSON.stringify(allUsers));
                 
                 // ALSO update the currentUser in localStorage with new stats and rating
-                currentUser.stats = allUsers[currentUser.username].stats;
+                currentUser.stats = allUsers[userKey].stats;
                 // Get the updated rating from RatingManager (single source of truth)
-                currentUser.rating = RatingManager.getCurrentRating(currentUser.username);
-                currentUser.gameHistory = allUsers[currentUser.username].games;
+                currentUser.rating = RatingManager.getCurrentRating(userKey);
+                currentUser.gameHistory = allUsers[userKey].games;
                 localStorage.setItem('romgon-user', JSON.stringify(currentUser));
                 
                 console.log('✅ Game result saved to user stats:', gameRecord);
-                console.log('📊 Updated user stats:', allUsers[currentUser.username].stats);
+                console.log('📊 Updated user stats:', allUsers[userKey].stats);
                 console.log('⭐ Updated user rating:', currentUser.rating);
                 console.log('💾 Updated currentUser in localStorage');
                 
