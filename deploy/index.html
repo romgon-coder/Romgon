@@ -21322,12 +21322,11 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         
                         if (moveUserId === myUserId) {
                             console.log('⏭️ Skipping my own move (already applied locally)');
-                            console.log('   Turn was already switched locally via switchTurn()');
-                            console.log('   Current turn:', currentPlayer);
-                            
-                            // DON'T sync turn from server - we already switched it locally!
-                            // Syncing here would cause double-switching or conflicts
-                            
+                            // Sync turn from server to ensure consistency
+                            if (data.turn) {
+                                currentPlayer = data.turn;
+                                updateTurnDisplay();
+                            }
                             return; // Don't apply our own moves again
                         }
                     }
@@ -29454,8 +29453,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         // Play end turn sound
                         playEndTurnSound();
                         
-                        // ALWAYS switch turn locally
-                        switchTurn();
+                        // Only switch turn locally if not in multiplayer OR if playing both colors
+                        if (!multiplayerMode || myPlayerColor === 'both') {
+                            switchTurn();
+                        }
                         
                         // Update base defence display
                         updateBaseDefenceDisplay();
@@ -33499,10 +33500,12 @@ ${moveHistory || '(No moves played yet - starting position)'}
                         console.log('📋 myPlayerColor:', myPlayerColor);
                         // Play end turn sound
                         playEndTurnSound();
-                        // ALWAYS switch turn locally after making a move
-                        switchTurn();
-                        console.log('📋 After switchTurn - currentPlayer:', currentPlayer);
-                        console.log('📋 Turn display should now show:', currentPlayer);
+                        // Only switch turn locally if not in multiplayer OR if playing both colors
+                        if (!multiplayerMode || myPlayerColor === 'both') {
+                            switchTurn();
+                            console.log('📋 After switchTurn - currentPlayer:', currentPlayer);
+                            console.log('📋 Turn display should now show:', currentPlayer);
+                        }
                         updateBaseDefenceDisplay();
                     } else if (!newPiece.classList.contains('triangle-piece') && !newPiece.classList.contains('hexgon-piece')) {
                         // Non-rotatable pieces end the turn automatically
@@ -33511,10 +33514,12 @@ ${moveHistory || '(No moves played yet - starting position)'}
                         console.log('📋 myPlayerColor:', myPlayerColor);
                         // Play end turn sound
                         playEndTurnSound();
-                        // ALWAYS switch turn locally after making a move
-                        switchTurn();
-                        console.log('📋 After switchTurn - currentPlayer:', currentPlayer);
-                        console.log('📋 Turn display should now show:', currentPlayer);
+                        // Only switch turn locally if not in multiplayer OR if playing both colors
+                        if (!multiplayerMode || myPlayerColor === 'both') {
+                            switchTurn();
+                            console.log('📋 After switchTurn - currentPlayer:', currentPlayer);
+                            console.log('📋 Turn display should now show:', currentPlayer);
+                        }
                         updateBaseDefenceDisplay();
                     } else {
                         console.log('📋 Turn NOT ending yet - rotatable piece (triangle/hexagon) can still rotate');
