@@ -29434,13 +29434,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         // Play end turn sound
                         playEndTurnSound();
                         
-                        // In multiplayer, broadcast turn end to server instead of switching locally
-                        if (multiplayerMode && myPlayerColor !== 'both') {
-                            broadcastTurnEndMultiplayer();
-                        } else {
-                            // Single player mode - switch locally
-                            switchTurn();
-                        }
+                        // ALWAYS switch turn locally
+                        switchTurn();
                         
                         // Update base defence display
                         updateBaseDefenceDisplay();
@@ -33482,22 +33477,16 @@ ${moveHistory || '(No moves played yet - starting position)'}
                         console.log('📋 Turn ending due to CAPTURE');
                         // Play end turn sound
                         playEndTurnSound();
-                        // In multiplayer, the turn was already broadcast via broadcastMove()
-                        // Just switch turn locally for single player
-                        if (!multiplayerMode || myPlayerColor === 'both') {
-                            switchTurn();
-                        }
+                        // ALWAYS switch turn locally after making a move
+                        switchTurn();
                         updateBaseDefenceDisplay();
                     } else if (!newPiece.classList.contains('triangle-piece') && !newPiece.classList.contains('hexgon-piece')) {
                         // Non-rotatable pieces end the turn automatically
                         console.log('📋 Turn ending - non-rotatable piece moved');
                         // Play end turn sound
                         playEndTurnSound();
-                        // In multiplayer, the turn was already broadcast via broadcastMove()
-                        // Just switch turn locally for single player
-                        if (!multiplayerMode || myPlayerColor === 'both') {
-                            switchTurn();
-                        }
+                        // ALWAYS switch turn locally after making a move
+                        switchTurn();
                         updateBaseDefenceDisplay();
                     } else {
                         console.log('📋 Turn NOT ending yet - rotatable piece (triangle/hexagon) can still rotate');
