@@ -126,33 +126,6 @@ class RoomClient {
         this.socket.on('matchmaking:status', (data) => {
             console.log('🔍 Matchmaking status:', data);
         });
-
-        this.socket.on('matchmaking:matched', (data) => {
-            console.log('🎯 Matchmaking match found via WebSocket!', data);
-            
-            // Check if this event is for current user
-            const token = localStorage.getItem('romgon-jwt');
-            if (token) {
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                if (data.userId === payload.userId) {
-                    // This match is for us!
-                    this.isInMatchmaking = false;
-                    this.stopMatchmakingPolling();
-                    this.currentRoom = data.room;
-                    
-                    // Join the room via WebSocket
-                    this.socket.emit('room:join', { roomCode: data.room.code });
-                    
-                    // Trigger game start
-                    if (this.onGameStarted) {
-                        this.onGameStarted({
-                            gameId: data.room.gameId,
-                            players: data.room.players
-                        });
-                    }
-                }
-            }
-        });
     }
 
     disconnect() {
@@ -203,6 +176,12 @@ class RoomClient {
 
     async joinRoom(roomCode) {
         try {
+            // Leave current room first if already in one
+            if (this.currentRoom) {
+                console.log('⚠️ Already in a room, leaving it first...');
+                await this.leaveRoom();
+            }
+
             const token = localStorage.getItem('romgon-jwt');
             const response = await fetch(`${getBackendAPIURL()}/api/rooms/join`, {
                 method: 'POST',
@@ -284,9 +263,11 @@ class RoomClient {
             if (data.success) {
                 this.socket.emit('room:ready', { roomCode, ready });
                 
+                // NOTE: Don't emit room:gameStarted here - the backend will broadcast it
+                // to all players via WebSocket when the game starts
                 if (data.gameStarted) {
-                    this.socket.emit('room:gameStarted', { roomCode, gameId: data.gameId });
-                    this.onGameStarted({ gameId: data.gameId });
+                    console.log('✅ Game started! Waiting for WebSocket event with player data...');
+                    // The onGameStarted callback will be triggered by the WebSocket event
                 }
                 
                 console.log('✅ Ready status updated:', ready);
@@ -339,6 +320,21 @@ class RoomClient {
             // Handle authentication errors (only for authenticated endpoint)
             if (token && (response.status === 401 || response.status === 403)) {
                 console.error('❌ Authentication error:', data.error, data.message);
+                
+                // If token signature is invalid, clear it and reload
+                if (data.message && data.message.includes('invalid signature')) {
+                    console.warn('⚠️ Invalid token signature detected - clearing old token');
+                    localStorage.removeItem('romgon-jwt');
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('romgon-guest-info');
+                    
+                    if (typeof alert !== 'undefined') {
+                        alert('Your session expired. Please log in again.');
+                        window.location.reload();
+                    }
+                    return [];
+                }
+                
                 if (typeof alert !== 'undefined') {
                     alert('Authentication error: ' + (data.message || 'Please log in again'));
                 }

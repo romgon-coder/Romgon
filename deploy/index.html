@@ -32142,6 +32142,42 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             console.log('🔍 User type:', currentUser.type);
             console.log('🔍 User ID:', currentUser.id);
             
+            // Determine winner display name
+            let winnerDisplayName = winner; // Default to color name
+            
+            // Check if this is PvP mode (local same-screen)
+            const isPVP = selectedGameMode === 'pvp';
+            
+            if (isPVP) {
+                // PvP mode: both players are the same user playing locally
+                winnerDisplayName = `${winner} (You)`;
+            } else if (currentUser.username || currentUser.name) {
+                // Single player vs AI: check if user won or AI won
+                const userKey = currentUser.username || currentUser.name;
+                
+                // Determine if user is playing as white or black
+                let playerIsWhite;
+                if (boardFlipped) {
+                    playerIsWhite = true; // Board flipped = player is white
+                } else {
+                    playerIsWhite = false; // Board not flipped = player is black
+                }
+                
+                const playerWon = (winner.toLowerCase() === 'white' && playerIsWhite) || 
+                                 (winner.toLowerCase() === 'black' && !playerIsWhite);
+                
+                if (playerWon) {
+                    winnerDisplayName = userKey; // Show username
+                } else {
+                    winnerDisplayName = 'AI'; // AI won
+                }
+            }
+            
+            console.log('🏆 Winner display name:', winnerDisplayName);
+            
+            // Add notification with display name
+            addNotification('game', 'Game Ended', `${winnerDisplayName} wins! ${reason}`);
+            
             // Update user statistics if a user is logged in (including guests)
             if ((currentUser.username || currentUser.name) && currentUser.id) {
                 const userKey = currentUser.username || currentUser.name;
@@ -32458,7 +32494,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             gameOverContent.innerHTML = `
                 <h1 style="color: #ff6b6b; margin: 0 0 20px 0; font-size: 2.5em;">GAME OVER</h1>
-                <h2 style="color: #4ecdc4; margin: 0 0 20px 0; font-size: 1.8em;">${winner} WINS!</h2>
+                <h2 style="color: #4ecdc4; margin: 0 0 20px 0; font-size: 1.8em;">${winnerDisplayName.toUpperCase()} WINS!</h2>
                 <p style="margin: 0 0 20px 0; font-size: 1.2em;">${reason}</p>
                 ${ratingDisplayHTML}
                 ${userStatsMessage}
