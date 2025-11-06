@@ -32312,6 +32312,24 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                             } else {
                                 console.warn('⚠️ Backend did NOT return updated rating');
                                 console.log('   Using local rating update instead:', ratingUpdate.newRating);
+                                console.log('   Fetching fresh stats from backend to get updated rating...');
+                                
+                                // Fetch fresh stats from backend to get the updated rating
+                                try {
+                                    const freshStats = await fetchUserStats(true);
+                                    if (freshStats && freshStats.rating !== undefined && freshStats.rating !== null) {
+                                        console.log('✅ Retrieved updated rating from backend:', freshStats.rating);
+                                        RatingManager.saveRating(userKey, freshStats.rating);
+                                        currentUser.rating = freshStats.rating;
+                                        localStorage.setItem('romgon-user', JSON.stringify(currentUser));
+                                        console.log('✅ Rating synced after stats fetch:', freshStats.rating);
+                                    } else {
+                                        console.warn('⚠️ Backend stats fetch also did not return rating, keeping local rating:', ratingUpdate.newRating);
+                                    }
+                                } catch (statsError) {
+                                    console.error('❌ Failed to fetch fresh stats:', statsError);
+                                    console.log('   Keeping local rating:', ratingUpdate.newRating);
+                                }
                             }
                             
                             // If backend returns updated stats, log them
