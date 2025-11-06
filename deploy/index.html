@@ -32250,17 +32250,37 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 // RATING SYSTEM - Update player rating
                 // ============================================
                 
-                console.log('🎯 Starting rating update for:', userKey);
-                console.log('   Current localStorage rating:', localStorage.getItem('rating'));
+                // Detect if this is a PvP game (local same-screen) or AI game
+                const isPVPGame = selectedGameMode === 'pvp';
                 
-                // Initialize rating if not exists
-                initializeUserRating(userKey);
+                let ratingUpdate = null;
                 
-                // Update rating based on game result
-                const ratingUpdate = updatePlayerRating(userKey, playerWon, 'AI');
-                
-                console.log('💾 Rating update result:', ratingUpdate);
-                console.log('   localStorage rating after update:', localStorage.getItem('rating'));
+                if (isPVPGame) {
+                    // PvP mode: Don't update rating (both players are same user/device)
+                    console.log('🎮 PvP game detected - Rating updates disabled');
+                    console.log('   Reason: Local same-screen multiplayer should not affect rating');
+                    
+                    // Get current rating without updating it
+                    const currentRating = RatingManager.getCurrentRating(userKey) || 1600;
+                    ratingUpdate = {
+                        ratingChange: 0,
+                        oldRating: currentRating,
+                        newRating: currentRating
+                    };
+                } else {
+                    // AI mode: Update rating normally
+                    console.log('🎯 AI game detected - Starting rating update for:', userKey);
+                    console.log('   Current localStorage rating:', localStorage.getItem('rating'));
+                    
+                    // Initialize rating if not exists
+                    initializeUserRating(userKey);
+                    
+                    // Update rating based on game result
+                    ratingUpdate = updatePlayerRating(userKey, playerWon, 'AI');
+                    
+                    console.log('💾 Rating update result:', ratingUpdate);
+                    console.log('   localStorage rating after update:', localStorage.getItem('rating'));
+                }
                 
                 // Store rating update info in gameRecord
                 gameRecord.ratingChange = ratingUpdate.ratingChange;
@@ -32299,7 +32319,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     
                     // For local/AI games, we need to submit as a completed game
                     // Detect if this is a PvP game or AI game
-                    const opponentType = selectedGameMode === 'pvp' ? 'local' : 'ai';
+                    const opponentType = isPVPGame ? 'local' : 'ai';
                     
                     try {
                         const gameData = {
@@ -32307,16 +32327,21 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                             result: playerWon ? 'win' : 'loss',
                             winner: winner.toLowerCase(),
                             move_count: moveCount,
-                            captures: captureCount,
-                            // Include rating information
-                            old_rating: ratingUpdate.oldRating,
-                            new_rating: ratingUpdate.newRating,
-                            rating_change: ratingUpdate.ratingChange
+                            captures: captureCount
                         };
+                        
+                        // Only include rating data for AI games, not PvP
+                        if (!isPVPGame) {
+                            gameData.old_rating = ratingUpdate.oldRating;
+                            gameData.new_rating = ratingUpdate.newRating;
+                            gameData.rating_change = ratingUpdate.ratingChange;
+                            console.log('⭐ Rating info (AI game): old=' + ratingUpdate.oldRating + ', new=' + ratingUpdate.newRating + ', change=' + ratingUpdate.ratingChange);
+                        } else {
+                            console.log('🎮 PvP game: Rating data not included in backend submission');
+                        }
                         
                         console.log('📤 Sending game data:', gameData);
                         console.log('🎮 Detected game mode:', selectedGameMode, '→ opponent_type:', opponentType);
-                        console.log('⭐ Rating info: old=' + ratingUpdate.oldRating + ', new=' + ratingUpdate.newRating + ', change=' + ratingUpdate.ratingChange);
                         
                         const response = await fetch(`${BACKEND_API_URL || 'https://api.romgon.net'}/api/games/submit-result`, {
                             method: 'POST',
@@ -32456,34 +32481,55 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 if (allUsers[currentUser.username] && allUsers[currentUser.username].games) {
                     const lastGame = allUsers[currentUser.username].games[allUsers[currentUser.username].games.length - 1];
                     if (lastGame && lastGame.ratingChange !== undefined) {
-                        const ratingChangeColor = lastGame.ratingChange > 0 ? '#27ae60' : '#e74c3c';
-                        const ratingChangeSymbol = lastGame.ratingChange > 0 ? '+' : '';
-                        ratingDisplayHTML = `
-                            <div style="
-                                background-color: rgba(78, 205, 196, 0.1) !important;
-                                border: 2px solid #4ecdc4 !important;
-                                border-radius: 8px !important;
-                                padding: 15px !important;
-                                margin: 15px 0 0 0 !important;
-                            ">
-                                <p style="color: #4ecdc4 !important; margin: 0 0 10px 0 !important; font-size: 0.9em !important;">⭐ Rating Update</p>
-                                <div style="display: flex; justify-content: space-around; align-items: center; gap: 10px;">
-                                    <div>
-                                        <div style="color: #999 !important; font-size: 0.8em !important;">Before</div>
-                                        <div style="color: #fff !important; font-size: 1.3em !important; font-weight: bold !important;">${lastGame.oldRating}</div>
-                                    </div>
-                                    <div style="color: #4ecdc4; font-size: 1.5em;">→</div>
-                                    <div>
-                                        <div style="color: #999 !important; font-size: 0.8em !important;">After</div>
-                                        <div style="color: #fff !important; font-size: 1.3em !important; font-weight: bold !important;">${lastGame.newRating}</div>
-                                    </div>
-                                    <div style="border-left: 2px solid #444; padding-left: 10px;">
-                                        <div style="color: #999 !important; font-size: 0.8em !important;">Change</div>
-                                        <div style="color: ${ratingChangeColor} !important; font-size: 1.3em !important; font-weight: bold !important;">${ratingChangeSymbol}${lastGame.ratingChange}</div>
+                        // Check if this was a PvP game (no rating change)
+                        if (lastGame.ratingChange === 0 && isPVP) {
+                            ratingDisplayHTML = `
+                                <div style="
+                                    background-color: rgba(255, 193, 7, 0.1) !important;
+                                    border: 2px solid #ffc107 !important;
+                                    border-radius: 8px !important;
+                                    padding: 15px !important;
+                                    margin: 15px 0 0 0 !important;
+                                ">
+                                    <p style="color: #ffc107 !important; margin: 0 !important; font-size: 0.9em !important;">
+                                        🎮 PvP Mode - Rating Unchanged
+                                    </p>
+                                    <p style="color: #999 !important; margin: 5px 0 0 0 !important; font-size: 0.8em !important;">
+                                        Local multiplayer games don't affect your rating
+                                    </p>
+                                </div>
+                            `;
+                        } else {
+                            // AI game with rating change
+                            const ratingChangeColor = lastGame.ratingChange > 0 ? '#27ae60' : '#e74c3c';
+                            const ratingChangeSymbol = lastGame.ratingChange > 0 ? '+' : '';
+                            ratingDisplayHTML = `
+                                <div style="
+                                    background-color: rgba(78, 205, 196, 0.1) !important;
+                                    border: 2px solid #4ecdc4 !important;
+                                    border-radius: 8px !important;
+                                    padding: 15px !important;
+                                    margin: 15px 0 0 0 !important;
+                                ">
+                                    <p style="color: #4ecdc4 !important; margin: 0 0 10px 0 !important; font-size: 0.9em !important;">⭐ Rating Update</p>
+                                    <div style="display: flex; justify-content: space-around; align-items: center; gap: 10px;">
+                                        <div>
+                                            <div style="color: #999 !important; font-size: 0.8em !important;">Before</div>
+                                            <div style="color: #fff !important; font-size: 1.3em !important; font-weight: bold !important;">${lastGame.oldRating}</div>
+                                        </div>
+                                        <div style="color: #4ecdc4; font-size: 1.5em;">→</div>
+                                        <div>
+                                            <div style="color: #999 !important; font-size: 0.8em !important;">After</div>
+                                            <div style="color: #fff !important; font-size: 1.3em !important; font-weight: bold !important;">${lastGame.newRating}</div>
+                                        </div>
+                                        <div style="border-left: 2px solid #444; padding-left: 10px;">
+                                            <div style="color: #999 !important; font-size: 0.8em !important;">Change</div>
+                                            <div style="color: ${ratingChangeColor} !important; font-size: 1.3em !important; font-weight: bold !important;">${ratingChangeSymbol}${lastGame.ratingChange}</div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        `;
+                            `;
+                        }
                     }
                 }
             }
