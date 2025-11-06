@@ -33475,18 +33475,26 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     
                     if (isCapture) {
                         console.log('📋 Turn ending due to CAPTURE');
+                        console.log('📋 Before switchTurn - currentPlayer:', currentPlayer);
+                        console.log('📋 myPlayerColor:', myPlayerColor);
                         // Play end turn sound
                         playEndTurnSound();
                         // ALWAYS switch turn locally after making a move
                         switchTurn();
+                        console.log('📋 After switchTurn - currentPlayer:', currentPlayer);
+                        console.log('📋 Turn display should now show:', currentPlayer);
                         updateBaseDefenceDisplay();
                     } else if (!newPiece.classList.contains('triangle-piece') && !newPiece.classList.contains('hexgon-piece')) {
                         // Non-rotatable pieces end the turn automatically
                         console.log('📋 Turn ending - non-rotatable piece moved');
+                        console.log('📋 Before switchTurn - currentPlayer:', currentPlayer);
+                        console.log('📋 myPlayerColor:', myPlayerColor);
                         // Play end turn sound
                         playEndTurnSound();
                         // ALWAYS switch turn locally after making a move
                         switchTurn();
+                        console.log('📋 After switchTurn - currentPlayer:', currentPlayer);
+                        console.log('📋 Turn display should now show:', currentPlayer);
                         updateBaseDefenceDisplay();
                     } else {
                         console.log('📋 Turn NOT ending yet - rotatable piece (triangle/hexagon) can still rotate');
