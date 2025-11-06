@@ -204,6 +204,10 @@ function setupSocketHandlers(io) {
                 
                 activeRooms.set(roomCode, room);
                 console.log(`🎮 Created room ${roomCode} for challenge game ${gameId}`);
+                console.log(`   Players assigned:`);
+                console.log(`   - ${challenge.challengerName} (${challenge.challengerUserId}): BLACK`);
+                console.log(`   - ${challenge.opponentName} (${challenge.opponentId}): WHITE`);
+                console.log(`   Full room data:`, JSON.stringify(room.players, null, 2));
                 
                 // Notify challenger
                 const challenger = onlinePlayers.get(challenge.challengerUserId);

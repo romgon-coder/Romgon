@@ -24596,20 +24596,28 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 const token = localStorage.getItem('romgon-jwt');
                 const payload = JSON.parse(atob(token.split('.')[1]));
                 console.log('👤 My userId:', payload.userId);
-                console.log('👥 Players in room:', roomClient.currentRoom.players);
+                console.log('👥 Players in room:', JSON.stringify(roomClient.currentRoom.players, null, 2));
+                console.log('👥 Number of players:', roomClient.currentRoom.players.length);
+                
+                roomClient.currentRoom.players.forEach((p, index) => {
+                    console.log(`   Player ${index + 1}: ${p.username} (ID: ${p.userId}) - Color: ${p.color}`);
+                });
                 
                 const myPlayer = roomClient.currentRoom.players.find(p => p.userId === payload.userId);
                 
                 if (myPlayer) {
                     myPlayerColor = myPlayer.color;
                     console.log('✅ You are playing as:', myPlayerColor);
-                    console.log('✅ myPlayerColor set to:', myPlayerColor);
+                    console.log('✅ Found my player object:', JSON.stringify(myPlayer, null, 2));
                 } else {
                     console.error('❌ Could not find my player in room! Using default black');
+                    console.error('   My userId:', payload.userId);
+                    console.error('   Available player IDs:', roomClient.currentRoom.players.map(p => p.userId));
                     myPlayerColor = 'black'; // Fallback
                 }
             } else {
                 console.error('❌ No room data available! Using default black');
+                console.error('   roomClient.currentRoom:', roomClient.currentRoom);
                 myPlayerColor = 'black'; // Fallback
             }
             
