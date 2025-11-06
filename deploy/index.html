@@ -21322,13 +21322,11 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         
                         if (moveUserId === myUserId) {
                             console.log('⏭️ Skipping my own move (already applied locally)');
+                            console.log('   Turn was already switched locally via switchTurn()');
+                            console.log('   Current turn:', currentPlayer);
                             
-                            // But still sync the turn from server
-                            if (data.turn) {
-                                currentPlayer = data.turn;
-                                console.log('🔄 Turn synchronized to:', currentPlayer);
-                                updateTurnDisplay();
-                            }
+                            // DON'T sync turn from server - we already switched it locally!
+                            // Syncing here would cause double-switching or conflicts
                             
                             return; // Don't apply our own moves again
                         }
