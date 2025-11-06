@@ -4137,12 +4137,14 @@
     }
     
     // Populate tab-specific content
-    function populateTabContent(tabName) {
+    async function populateTabContent(tabName) {
         const currentUser = JSON.parse(localStorage.getItem('romgon-user') || '{}');
-        const allUsers = JSON.parse(localStorage.getItem('romgon-users') || '{}');
         
-        if (tabName === 'analytics' && currentUser.username && allUsers[currentUser.username]) {
-            populateAnalyticsTab(currentUser.username);
+        if (tabName === 'analytics') {
+            // Check if user exists (either guest or registered)
+            if (currentUser.name || currentUser.username) {
+                await populateAnalyticsTab(currentUser.username || currentUser.name);
+            }
         }
         
         if (tabName === 'settings') {
@@ -4150,10 +4152,109 @@
         }
     }
     
-    // Populate Analytics tab with detailed stats
-    function populateAnalyticsTab(username) {
+    // Populate Analytics tab with detailed stats (Backend-integrated)
+    async function populateAnalyticsTab(username) {
+        const currentUser = JSON.parse(localStorage.getItem('romgon-user') || '{}');
+        
+        // Show loading state
+        const loadingHTML = '<span style="color: #999;">Loading...</span>';
+        document.getElementById('account-avg-moves').innerHTML = loadingHTML;
+        document.getElementById('account-fastest-win').innerHTML = loadingHTML;
+        document.getElementById('account-win-streak').innerHTML = loadingHTML;
+        document.getElementById('account-captures').innerHTML = loadingHTML;
+        
+        // If guest or offline, use localStorage fallback
+        if (currentUser.type === 'guest' || !currentUser.token) {
+            console.log('📊 Loading analytics from localStorage (guest/offline)');
+            populateAnalyticsFromLocalStorage(username);
+            return;
+        }
+        
+        // Fetch from backend for registered users
+        try {
+            console.log('📊 Fetching analytics from backend...');
+            const response = await fetchUserStats();
+            
+            if (!response || !response.stats) {
+                console.warn('⚠️ Backend stats unavailable, falling back to localStorage');
+                populateAnalyticsFromLocalStorage(username);
+                return;
+            }
+            
+            const backendStats = response.stats;
+            console.log('✅ Backend analytics loaded:', backendStats);
+            
+            // Calculate derived stats
+            const totalGames = backendStats.totalGames || 0;
+            const wins = backendStats.wins || 0;
+            const losses = backendStats.losses || 0;
+            const totalMoves = backendStats.totalMoves || 0;
+            const avgMoves = totalGames > 0 ? Math.round(totalMoves / totalGames) : 0;
+            
+            // Update performance stats
+            document.getElementById('account-avg-moves').textContent = avgMoves;
+            document.getElementById('account-fastest-win').textContent = backendStats.fastestWin ? backendStats.fastestWin + ' moves' : '—';
+            document.getElementById('account-win-streak').textContent = backendStats.longestWinStreak || 0;
+            document.getElementById('account-captures').textContent = backendStats.totalCaptures || 0;
+            
+            // Update piece stats (if backend provides them)
+            const pieceStats = backendStats.pieceStats || {
+                square: { captures: 0, survived: 0, lost: 0 },
+                triangle: { captures: 0, survived: 0, lost: 0 },
+                rhombus: { captures: 0, survived: 0, lost: 0 },
+                circle: { captures: 0, survived: 0, lost: 0 },
+                hexagon: { captures: 0, survived: 0, lost: 0 }
+            };
+            
+            // Square
+            document.getElementById('piece-square-captures').textContent = pieceStats.square?.captures || 0;
+            document.getElementById('piece-square-survived').textContent = pieceStats.square?.survived || 0;
+            document.getElementById('piece-square-lost').textContent = pieceStats.square?.lost || 0;
+            
+            // Triangle
+            document.getElementById('piece-triangle-captures').textContent = pieceStats.triangle?.captures || 0;
+            document.getElementById('piece-triangle-survived').textContent = pieceStats.triangle?.survived || 0;
+            document.getElementById('piece-triangle-lost').textContent = pieceStats.triangle?.lost || 0;
+            
+            // Rhombus
+            document.getElementById('piece-rhombus-captures').textContent = pieceStats.rhombus?.captures || 0;
+            document.getElementById('piece-rhombus-survived').textContent = pieceStats.rhombus?.survived || 0;
+            document.getElementById('piece-rhombus-lost').textContent = pieceStats.rhombus?.lost || 0;
+            
+            // Circle
+            document.getElementById('piece-circle-captures').textContent = pieceStats.circle?.captures || 0;
+            document.getElementById('piece-circle-survived').textContent = pieceStats.circle?.survived || 0;
+            document.getElementById('piece-circle-lost').textContent = pieceStats.circle?.lost || 0;
+            
+            // Hexagon
+            document.getElementById('piece-hexagon-captures').textContent = pieceStats.hexagon?.captures || 0;
+            document.getElementById('piece-hexagon-survived').textContent = pieceStats.hexagon?.survived || 0;
+            document.getElementById('piece-hexagon-lost').textContent = pieceStats.hexagon?.lost || 0;
+            
+        } catch (error) {
+            console.error('❌ Error loading analytics from backend:', error);
+            populateAnalyticsFromLocalStorage(username);
+        }
+    }
+    
+    // Fallback function for localStorage-based analytics
+    function populateAnalyticsFromLocalStorage(username) {
         const stats = getUserStats(username);
-        if (!stats) return;
+        if (!stats) {
+            // Show zeros if no stats available
+            document.getElementById('account-avg-moves').textContent = '0';
+            document.getElementById('account-fastest-win').textContent = '—';
+            document.getElementById('account-win-streak').textContent = '0';
+            document.getElementById('account-captures').textContent = '0';
+            
+            // All piece stats to 0
+            ['square', 'triangle', 'rhombus', 'circle', 'hexagon'].forEach(piece => {
+                document.getElementById(`piece-${piece}-captures`).textContent = '0';
+                document.getElementById(`piece-${piece}-survived`).textContent = '0';
+                document.getElementById(`piece-${piece}-lost`).textContent = '0';
+            });
+            return;
+        }
         
         // Win rate calculation
         const winRate = stats.gamesPlayed > 0 ? Math.round((stats.gamesWon / stats.gamesPlayed) * 100) : 0;
