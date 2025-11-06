@@ -24680,14 +24680,21 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         
                         console.log('🔌 Socket connected! Joining game room...');
                         console.log('   gameId:', gameId);
+                        console.log('   currentGameId:', currentGameId);
                         console.log('   userId:', payload.userId);
                         console.log('   myPlayerColor:', myPlayerColor);
+                        console.log('   multiplayerMode:', multiplayerMode);
                         
                         gameSocket.emit('game:join', {
                             gameId,
                             userId: payload.userId
                         });
                         console.log('✅ game:join emitted successfully');
+                        console.log('   Waiting for server to confirm room join...');
+                        
+                        // Wait a moment to ensure server processes the join
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        console.log('✅ Game room should be joined now');
                         return; // Success
                     }
                     
@@ -24803,6 +24810,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             console.log('   gameSocket:', gameSocket ? 'exists' : 'null');
             console.log('   gameSocket.connected:', gameSocket?.connected);
             console.log('   myPlayerColor:', myPlayerColor);
+            console.log('   currentPlayer BEFORE MOVE:', currentPlayer);
             
             // Don't broadcast in dev mode or if no socket
             if (!multiplayerMode || !gameSocket || !gameSocket.connected || myPlayerColor === 'both') {
@@ -24828,6 +24836,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             console.log('   from:', fromId, '→ to:', toId);
             console.log('   piece:', pieceClasses);
             console.log('   captured:', captured || 'none');
+            console.log('   🎯 CRITICAL: Is gameId valid?', gameId !== 'unknown');
             
             gameSocket.emit('game:move', {
                 gameId: gameId,
@@ -24842,7 +24851,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 }
             });
             
-            console.log('✅ Move emitted to server');
+            console.log('✅ Move emitted to server - waiting for broadcast to opponent...');
         }
         
         function broadcastRotation(hexId, pieceType, newOrientation) {
