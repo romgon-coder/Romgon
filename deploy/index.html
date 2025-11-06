@@ -24741,6 +24741,17 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             // Update global bar to show current turn
             updateTurnDisplay();
+            
+            // Show turn notification for WHITE player
+            if (myPlayerColor === 'white') {
+                setTimeout(() => {
+                    showNotification('⏳ Waiting for BLACK to make the first move...', 'info');
+                }, 1000);
+            } else if (myPlayerColor === 'black') {
+                setTimeout(() => {
+                    showNotification('🎮 Your turn! You play as BLACK (moves first)', 'success');
+                }, 1000);
+            }
         }
         
         function updateConnectionStatus(status, text) {
