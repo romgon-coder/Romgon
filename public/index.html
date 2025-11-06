@@ -3848,10 +3848,10 @@
         
         if (shouldFetchBackend) {
             try {
-                console.log('🔄 Fetching backend data...');
+                console.log('🔄 Fetching backend data with cache busting...');
                 
-                // Fetch stats (required) and games (optional)
-                const statsPromise = fetchUserStats();
+                // Fetch stats (required) and games (optional) - force fresh data
+                const statsPromise = fetchUserStats(true);  // Cache busting enabled
                 const gamesPromise = fetchUserGames(10).catch(err => {
                     console.warn('⚠️ Could not fetch game history:', err);
                     return [];
@@ -3859,7 +3859,9 @@
                 
                 const [stats, games] = await Promise.all([statsPromise, gamesPromise]);
                 
-                console.log('📊 Backend data:', { stats, games });
+                console.log('📊 Backend data received:', { stats, games });
+                console.log('📊 Backend rating:', stats?.rating);
+                console.log('📊 Backend stats object:', stats?.stats);
                 
                 // Update with backend data if available
                 if (stats) {
@@ -21086,11 +21088,14 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         /**
          * Fetch user statistics from backend
          */
-        async function fetchUserStats() {
+        async function fetchUserStats(bustCache = false) {
             try {
-                const response = await fetch(`${BACKEND_API_URL}/api/users/stats`, {
+                // Add cache busting parameter if requested
+                const cacheBuster = bustCache ? `?t=${Date.now()}` : '';
+                const response = await fetch(`${BACKEND_API_URL}/api/users/stats${cacheBuster}`, {
                     method: 'GET',
-                    headers: getAuthHeaders()
+                    headers: getAuthHeaders(),
+                    cache: bustCache ? 'no-cache' : 'default'
                 });
                 
                 if (!response.ok) {
@@ -32291,12 +32296,27 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         if (response.ok) {
                             const result = await response.json();
                             console.log('✅ Game result submitted to backend successfully:', result);
+                            console.log('📊 Full backend response:', JSON.stringify(result, null, 2));
                             
                             // If backend returns updated rating, sync it locally
                             if (result.rating !== undefined && result.rating !== null) {
                                 console.log('🔄 Backend returned updated rating:', result.rating);
-                                RatingManager.saveRating(currentUser.username, result.rating);
-                                console.log('✅ Local rating synced with backend');
+                                RatingManager.saveRating(userKey, result.rating);
+                                
+                                // Also update currentUser
+                                currentUser.rating = result.rating;
+                                localStorage.setItem('romgon-user', JSON.stringify(currentUser));
+                                
+                                console.log('✅ Local rating synced with backend:', result.rating);
+                                console.log('✅ Updated currentUser.rating:', currentUser.rating);
+                            } else {
+                                console.warn('⚠️ Backend did NOT return updated rating');
+                                console.log('   Using local rating update instead:', ratingUpdate.newRating);
+                            }
+                            
+                            // If backend returns updated stats, log them
+                            if (result.stats) {
+                                console.log('📊 Backend returned updated stats:', result.stats);
                             }
                         } else {
                             const errorText = await response.text();
