@@ -86,12 +86,23 @@ app.get('/api/health', (req, res) => {
 // Database diagnostic endpoint
 app.get('/api/debug/database', async (req, res) => {
     try {
-        // Test database connection
-        const testQuery = await dbPromise.all('SELECT name FROM sqlite_master WHERE type="table"');
+        const isPostgres = !!process.env.DATABASE_URL;
+        
+        // Test database connection with appropriate query
+        let testQuery;
+        if (isPostgres) {
+            // PostgreSQL query to list tables
+            testQuery = await dbPromise.all(
+                "SELECT tablename as name FROM pg_catalog.pg_tables WHERE schemaname = 'public'"
+            );
+        } else {
+            // SQLite query to list tables
+            testQuery = await dbPromise.all('SELECT name FROM sqlite_master WHERE type="table"');
+        }
         
         res.json({
             status: 'OK',
-            database: 'connected',
+            database: isPostgres ? 'PostgreSQL' : 'SQLite',
             tables: testQuery.map(t => t.name),
             customGamesInitialized: !!require('./routes/custom-games').customGameModel,
             timestamp: new Date().toISOString()
