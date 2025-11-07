@@ -432,13 +432,18 @@
                     </div>
                     <div class="button-group">
                         <button class="btn-primary" onclick="loadTrainingData()">
-                            📥 Load Data
+                            📥 Load from Backend
+                        </button>
+                        <button class="btn-success" onclick="document.getElementById('rmn-file-input').click()">
+                            📄 Upload RMN Files
                         </button>
                         <button class="btn-secondary" onclick="viewDataSample()">
                             👁️ Preview Data
                         </button>
                     </div>
+                    <input type="file" id="rmn-file-input" accept=".rmn,.txt" multiple style="display: none;" onchange="loadRMNFiles(event)">
                     <p class="progress-text" id="data-status">Not loaded</p>
+                    <div id="rmn-files-list" style="margin-top: 10px; color: #666; font-size: 0.9em;"></div>
                 </div>
 
                 <!-- Model Building Section -->
@@ -608,7 +613,7 @@
             }
         }
 
-        // Load training data
+        // Load training data from backend
         async function loadTrainingData() {
             const limit = document.getElementById('data-limit').value;
             const minRating = document.getElementById('min-rating').value;
@@ -626,6 +631,41 @@
                 document.getElementById('data-status').textContent = '❌ Failed to load';
                 log(`Failed to load training data: ${error.message}`, 'error');
             }
+        }
+
+        // Load RMN files
+        async function loadRMNFiles(event) {
+            const files = Array.from(event.target.files);
+            
+            if (files.length === 0) return;
+
+            log(`Loading ${files.length} RMN files...`, 'info');
+            document.getElementById('data-status').textContent = `Loading ${files.length} RMN files...`;
+
+            try {
+                const result = await aiTrainer.loadFromRMNFiles(files);
+                
+                document.getElementById('data-status').textContent = 
+                    `✅ Loaded ${result.examples} examples from ${result.files} files (${result.moves} moves)`;
+                document.getElementById('stat-games').textContent = aiTrainer.trainingData.length;
+                
+                // Show file list
+                const filesList = document.getElementById('rmn-files-list');
+                filesList.innerHTML = `
+                    <div style="background: #f0f9ff; border-left: 3px solid #3b82f6; padding: 10px; border-radius: 5px;">
+                        📄 <strong>${result.files} files loaded:</strong><br>
+                        ${files.map(f => `• ${f.name}`).join('<br>')}
+                    </div>
+                `;
+                
+                log(`Successfully loaded ${result.examples} training examples from ${result.files} RMN files`, 'success');
+            } catch (error) {
+                document.getElementById('data-status').textContent = '❌ Failed to load RMN files';
+                log(`Failed to load RMN files: ${error.message}`, 'error');
+            }
+
+            // Clear file input
+            event.target.value = '';
         }
 
         // Build model

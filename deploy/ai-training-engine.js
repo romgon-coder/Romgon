@@ -34,6 +34,257 @@ class RomgonAITrainer {
     }
 
     /**
+     * Load training data from RMN files
+     */
+    async loadFromRMNFiles(files) {
+        const rmnGames = [];
+        let totalMoves = 0;
+
+        for (const file of files) {
+            try {
+                const content = await this.readFileAsText(file);
+                const game = this.parseRMNFile(content, file.name);
+                
+                if (game && game.moves.length > 0) {
+                    rmnGames.push(game);
+                    totalMoves += game.moves.length;
+                    console.log(`✅ Parsed ${file.name}: ${game.moves.length} moves`);
+                }
+            } catch (error) {
+                console.error(`Failed to parse ${file.name}:`, error);
+            }
+        }
+
+        // Convert RMN games to training examples
+        const newExamples = this.processRMNGames(rmnGames);
+        
+        // Add to existing training data or replace
+        this.trainingData = this.trainingData.concat(newExamples);
+        
+        console.log(`✅ Loaded ${newExamples.length} training examples from ${rmnGames.length} RMN files (${totalMoves} moves)`);
+        
+        return {
+            files: rmnGames.length,
+            moves: totalMoves,
+            examples: newExamples.length
+        };
+    }
+
+    /**
+     * Read file as text
+     */
+    readFileAsText(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = (e) => reject(e);
+            reader.readAsText(file);
+        });
+    }
+
+    /**
+     * Parse RMN file format
+     */
+    parseRMNFile(content, filename) {
+        const lines = content.split('\n');
+        const game = {
+            filename: filename,
+            metadata: {},
+            moves: [],
+            result: null
+        };
+
+        let movesSection = false;
+
+        for (let line of lines) {
+            line = line.trim();
+            
+            // Skip empty lines
+            if (!line) continue;
+
+            // Parse metadata (lines starting with [)
+            if (line.startsWith('[') && line.endsWith(']')) {
+                const match = line.match(/\[(\w+)\s+"(.+)"\]/);
+                if (match) {
+                    const [, key, value] = match;
+                    game.metadata[key] = value;
+                    
+                    // Extract result
+                    if (key === 'Result') {
+                        game.result = value;
+                    }
+                }
+                continue;
+            }
+
+            // Parse moves (numbered lines like "1. e4 e5")
+            if (/^\d+\./.test(line)) {
+                movesSection = true;
+                
+                // Extract move pairs
+                const moveMatch = line.match(/^\d+\.\s+(\S+)(?:\s+(\S+))?/);
+                if (moveMatch) {
+                    const [, whiteMove, blackMove] = moveMatch;
+                    
+                    if (whiteMove && whiteMove !== '...') {
+                        game.moves.push({
+                            color: 'white',
+                            notation: whiteMove,
+                            moveNumber: game.moves.length + 1
+                        });
+                    }
+                    
+                    if (blackMove && blackMove !== '...') {
+                        game.moves.push({
+                            color: 'black',
+                            notation: blackMove,
+                            moveNumber: game.moves.length + 1
+                        });
+                    }
+                }
+            }
+        }
+
+        return game;
+    }
+
+    /**
+     * Process RMN games into training examples
+     */
+    processRMNGames(games) {
+        const examples = [];
+        
+        games.forEach(game => {
+            // Determine quality based on result
+            const quality = this.evaluateGameQuality(game);
+            
+            // Assign estimated rating based on metadata or use default
+            const rating = parseInt(game.metadata.WhiteElo || game.metadata.BlackElo) || 1500;
+            
+            // Reconstruct board positions from moves
+            let currentPosition = this.getStartingPosition();
+            
+            game.moves.forEach((move, index) => {
+                // Create training example from this position and move
+                examples.push({
+                    position: currentPosition,
+                    move: this.parseMoveNotation(move.notation),
+                    rating: rating,
+                    quality: quality,
+                    color: move.color,
+                    moveNumber: move.moveNumber,
+                    gameResult: game.result
+                });
+                
+                // Update position (simplified - assumes move is valid)
+                currentPosition = this.applyMove(currentPosition, move.notation);
+            });
+        });
+        
+        console.log(`Processed ${examples.length} training examples from ${games.length} games`);
+        return examples;
+    }
+
+    /**
+     * Evaluate game quality based on result and moves
+     */
+    evaluateGameQuality(game) {
+        // If game has a decisive result, it's likely better quality
+        if (game.result === '1-0' || game.result === '0-1') {
+            return 'good';
+        }
+        
+        // Longer games might be more instructive
+        if (game.moves.length > 40) {
+            return 'good';
+        }
+        
+        return 'neutral';
+    }
+
+    /**
+     * Get starting board position in RPN format
+     */
+    getStartingPosition() {
+        // Standard Romgon starting position
+        // This is a placeholder - should match your actual RPN format
+        return 'starting_position_rpn';
+    }
+
+    /**
+     * Parse move notation (like "Rh3-h4" or "Te3@60")
+     */
+    parseMoveNotation(notation) {
+        // Parse notation into move object
+        // Examples: "Rh3-h4" (rhombus from h3 to h4)
+        //          "Te3@60" (triangle at e3 rotates 60 degrees)
+        
+        const moveMatch = notation.match(/([STRHCG])([a-g][0-6])-([a-g][0-6])/);
+        const rotateMatch = notation.match(/([TH])([a-g][0-6])@(\d+)/);
+        
+        if (moveMatch) {
+            const [, piece, from, to] = moveMatch;
+            return {
+                type: 'move',
+                piece: this.pieceCodeToPiece(piece),
+                from: this.notationToHex(from),
+                to: this.notationToHex(to)
+            };
+        }
+        
+        if (rotateMatch) {
+            const [, piece, pos, angle] = rotateMatch;
+            return {
+                type: 'rotate',
+                piece: this.pieceCodeToPiece(piece),
+                position: this.notationToHex(pos),
+                angle: parseInt(angle)
+            };
+        }
+        
+        // Fallback
+        return {
+            type: 'move',
+            from: 'hex-0-0',
+            to: 'hex-1-0'
+        };
+    }
+
+    /**
+     * Convert piece code to piece name
+     */
+    pieceCodeToPiece(code) {
+        const pieces = {
+            'S': 'square',
+            'T': 'triangle',
+            'R': 'rhombus',
+            'H': 'hexagon',
+            'C': 'circle',
+            'G': 'gateway'
+        };
+        return pieces[code] || 'unknown';
+    }
+
+    /**
+     * Convert algebraic notation to hex ID (e.g., "e3" -> "hex-3-4")
+     */
+    notationToHex(notation) {
+        // Convert chess-like notation to hex coordinates
+        const col = notation.charCodeAt(0) - 'a'.charCodeAt(0);
+        const row = parseInt(notation[1]);
+        return `hex-${row}-${col}`;
+    }
+
+    /**
+     * Apply move to position (simplified)
+     */
+    applyMove(position, moveNotation) {
+        // This is a placeholder - actual implementation would update the board
+        // For training, we can use the move sequence as-is
+        return position + '_' + moveNotation;
+    }
+
+    /**
      * Process games into training examples
      */
     processGames(games) {
