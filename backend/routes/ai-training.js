@@ -330,6 +330,72 @@ router.post('/start', async (req, res) => {
 // ============================================
 
 /**
+ * GET /api/ai-training/list/active
+ * Get list of active training games
+ */
+router.get('/list/active', (req, res) => {
+    try {
+        const activeGames = Array.from(trainingGames.values())
+            .filter(game => game.status === 'active')
+            .map(game => ({
+                id: game.id,
+                moveNumber: game.moveNumber,
+                currentPlayer: game.currentPlayer,
+                spectatorCount: game.spectators.size,
+                startTime: game.startTime,
+                whiteWinRate: game.whiteAI.stats.winRate,
+                blackWinRate: game.blackAI.stats.winRate
+            }));
+        
+        res.json({
+            success: true,
+            games: activeGames,
+            totalGames: activeGames.length
+        });
+        
+    } catch (error) {
+        console.error('❌ Error listing AI games:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+/**
+ * GET /api/ai-training/stats/overall
+ * Get overall AI training statistics
+ */
+router.get('/stats/overall', (req, res) => {
+    try {
+        const whiteAI = aiInstances.get('white');
+        const blackAI = aiInstances.get('black');
+        
+        const uptimeMs = trainingStartTime ? Date.now() - trainingStartTime.getTime() : 0;
+        const uptimeHours = (uptimeMs / (1000 * 60 * 60)).toFixed(1);
+        
+        res.json({
+            success: true,
+            stats: {
+                totalGames: totalTrainingGames,
+                activeGames: trainingGames.size,
+                uptimeHours: parseFloat(uptimeHours),
+                whiteAI: whiteAI.getStats(),
+                blackAI: blackAI.getStats(),
+                gamesPerHour: uptimeHours > 0 ? (totalTrainingGames / parseFloat(uptimeHours)).toFixed(1) : 0
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Error getting AI stats:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+/**
  * GET /api/ai-training/:gameId
  * Get current AI game state for spectating
  */
@@ -367,72 +433,6 @@ router.get('/:gameId', (req, res) => {
         
     } catch (error) {
         console.error('❌ Error getting AI game:', error);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
-
-/**
- * GET /api/ai-training/list/active
- * Get list of active training games
- */
-router.get('/list/active', (req, res) => {
-    try {
-        const activeGames = Array.from(trainingGames.values())
-            .filter(game => game.status === 'active')
-            .map(game => ({
-                id: game.id,
-                moveNumber: game.moveNumber,
-                currentPlayer: game.currentPlayer,
-                spectatorCount: game.spectators.size,
-                startTime: game.startTime,
-                whiteWinRate: game.whiteAI.stats.winRate,
-                blackWinRate: game.blackAI.stats.winRate
-            }));
-        
-        res.json({
-            success: true,
-            games: activeGames,
-            totalGames: activeGames.length
-        });
-        
-    } catch (error) {
-        console.error('❌ Error listing AI games:', error);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
-
-/**
- * GET /api/ai-training/stats
- * Get overall AI training statistics
- */
-router.get('/stats/overall', (req, res) => {
-    try {
-        const whiteAI = aiInstances.get('white');
-        const blackAI = aiInstances.get('black');
-        
-        const uptimeMs = trainingStartTime ? Date.now() - trainingStartTime.getTime() : 0;
-        const uptimeHours = (uptimeMs / (1000 * 60 * 60)).toFixed(1);
-        
-        res.json({
-            success: true,
-            stats: {
-                totalGames: totalTrainingGames,
-                activeGames: trainingGames.size,
-                uptimeHours: parseFloat(uptimeHours),
-                whiteAI: whiteAI.getStats(),
-                blackAI: blackAI.getStats(),
-                gamesPerHour: uptimeHours > 0 ? (totalTrainingGames / parseFloat(uptimeHours)).toFixed(1) : 0
-            }
-        });
-        
-    } catch (error) {
-        console.error('❌ Error getting AI stats:', error);
         res.status(500).json({
             success: false,
             error: error.message
