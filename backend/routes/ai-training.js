@@ -31,6 +31,114 @@ function initializeAIs() {
 initializeAIs();
 
 // ============================================
+// DEBUG ENDPOINT - Check all games
+// ============================================
+
+/**
+ * GET /api/ai-training/debug-games
+ * Check all games in database (for debugging)
+ */
+router.get('/debug-games', async (req, res) => {
+    try {
+        const isPostgres = !!process.env.DATABASE_URL;
+        
+        // Get ALL games to see what's stored
+        let query;
+        if (isPostgres) {
+            query = `
+                SELECT 
+                    g.id,
+                    g.status,
+                    g.winner_color,
+                    g.moves,
+                    g.total_moves,
+                    g.white_player_id,
+                    g.black_player_id,
+                    g.created_at
+                FROM games g
+                ORDER BY g.created_at DESC
+                LIMIT 20
+            `;
+        } else {
+            query = `
+                SELECT 
+                    id,
+                    status,
+                    winner_color,
+                    moves,
+                    total_moves,
+                    white_player_id,
+                    black_player_id,
+                    created_at
+                FROM games
+                ORDER BY created_at DESC
+                LIMIT 20
+            `;
+        }
+        
+        const games = await dbPromise.all(query, []);
+        
+        // Analyze games
+        const analysis = {
+            totalGames: games.length,
+            byStatus: {},
+            withMoves: 0,
+            withWinner: 0,
+            completedWithMovesAndWinner: 0,
+            games: games.map(g => {
+                let movesArray = [];
+                try {
+                    movesArray = typeof g.moves === 'string' ? JSON.parse(g.moves) : (g.moves || []);
+                } catch (e) {
+                    movesArray = [];
+                }
+                
+                return {
+                    id: g.id,
+                    status: g.status,
+                    winner_color: g.winner_color,
+                    total_moves: g.total_moves,
+                    moves_length: movesArray.length,
+                    has_moves: movesArray.length > 0,
+                    white_player_id: g.white_player_id,
+                    black_player_id: g.black_player_id,
+                    created_at: g.created_at
+                };
+            })
+        };
+        
+        // Count by status
+        games.forEach(g => {
+            analysis.byStatus[g.status] = (analysis.byStatus[g.status] || 0) + 1;
+            
+            let movesArray = [];
+            try {
+                movesArray = typeof g.moves === 'string' ? JSON.parse(g.moves) : (g.moves || []);
+            } catch (e) {}
+            
+            if (movesArray.length > 0) analysis.withMoves++;
+            if (g.winner_color) analysis.withWinner++;
+            if (g.status === 'completed' && movesArray.length > 0 && g.winner_color) {
+                analysis.completedWithMovesAndWinner++;
+            }
+        });
+        
+        res.json({
+            success: true,
+            analysis,
+            message: `Found ${games.length} games. ${analysis.completedWithMovesAndWinner} meet training criteria (status=completed, has moves, has winner)`
+        });
+        
+    } catch (error) {
+        console.error('❌ Error debugging games:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// ============================================
 // TRAINING DATA ENDPOINT
 // ============================================
 
