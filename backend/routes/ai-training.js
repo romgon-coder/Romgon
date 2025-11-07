@@ -8,6 +8,7 @@ const { RomgonAI } = require('../ai/reinforcement-learning');
 const realEngine = require('../engine/romgon-real-engine');
 const { v4: uuidv4 } = require('uuid');
 const { generateRPN, generateGameRPN, parseRPN } = require('../utils/rpn-generator');
+const { dbPromise } = require('../config/database');
 
 // Active AI training sessions
 const trainingGames = new Map();
@@ -28,6 +29,94 @@ function initializeAIs() {
 }
 
 initializeAIs();
+
+// ============================================
+// TRAINING DATA ENDPOINT
+// ============================================
+
+/**
+ * GET /api/ai-training/training-data
+ * Get completed games for AI training
+ */
+router.get('/training-data', async (req, res) => {
+    try {
+        const { limit = 1000, minRating = 1200 } = req.query;
+        
+        // Query completed games from database
+        const query = `
+            SELECT 
+                g.id,
+                g.moves,
+                g.result,
+                g.total_moves,
+                g.created_at,
+                g.updated_at,
+                wr.rating as white_rating,
+                br.rating as black_rating,
+                wu.username as white_username,
+                bu.username as black_username
+            FROM games g
+            LEFT JOIN users wu ON g.white_player_id = wu.id
+            LEFT JOIN users bu ON g.black_player_id = bu.id
+            LEFT JOIN ratings wr ON g.white_player_id = wr.user_id
+            LEFT JOIN ratings br ON g.black_player_id = br.user_id
+            WHERE g.status = 'completed'
+                AND g.result IS NOT NULL
+                AND g.moves IS NOT NULL
+                AND json_array_length(g.moves) > 5
+                AND (
+                    (wr.rating >= ? OR br.rating >= ?)
+                    OR (wr.rating IS NULL AND br.rating IS NULL)
+                )
+            ORDER BY g.updated_at DESC
+            LIMIT ?
+        `;
+        
+        const games = await dbPromise.all(query, [minRating, minRating, parseInt(limit)]);
+        
+        // Format games for training
+        const trainingGames = games.map(game => {
+            let moves = [];
+            try {
+                moves = typeof game.moves === 'string' ? JSON.parse(game.moves) : game.moves;
+            } catch (e) {
+                console.error(`Failed to parse moves for game ${game.id}:`, e);
+            }
+            
+            return {
+                id: game.id,
+                moves: moves,
+                result: game.result,
+                whiteRating: game.white_rating || 1500,
+                blackRating: game.black_rating || 1500,
+                whitePlayer: game.white_username || 'Unknown',
+                blackPlayer: game.black_username || 'Unknown',
+                totalMoves: game.total_moves || moves.length,
+                date: game.updated_at || game.created_at
+            };
+        });
+        
+        console.log(`📊 Retrieved ${trainingGames.length} games for AI training (minRating: ${minRating})`);
+        
+        res.json({
+            success: true,
+            games: trainingGames,
+            count: trainingGames.length,
+            filters: {
+                limit: parseInt(limit),
+                minRating: parseInt(minRating)
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Error getting training data:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            details: 'Failed to retrieve training data from database'
+        });
+    }
+});
 
 // ============================================
 // START AI VS AI TRAINING

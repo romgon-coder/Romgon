@@ -431,8 +431,8 @@
                         <input type="number" id="min-rating" value="1200" min="800" max="2500" step="100">
                     </div>
                     <div class="button-group">
-                        <button class="btn-primary" onclick="loadTrainingData()" disabled style="opacity: 0.5; cursor: not-allowed;" title="Backend API endpoint not implemented yet">
-                            📥 Load from Backend (Coming Soon)
+                        <button class="btn-primary" onclick="loadTrainingData()">
+                            📥 Load from Backend
                         </button>
                         <button class="btn-success" onclick="document.getElementById('rmn-file-input').click()">
                             📄 Upload RMN Files
@@ -660,11 +660,12 @@
             document.getElementById('data-status').textContent = 'Loading...';
 
             try {
-                const count = await aiTrainer.loadTrainingData(parseInt(limit), parseInt(minRating));
+                const result = await aiTrainer.loadTrainingData(parseInt(limit), parseInt(minRating));
                 
-                document.getElementById('data-status').textContent = `✅ Loaded ${count} training examples`;
-                document.getElementById('stat-games').textContent = count;
-                log(`Successfully loaded ${count} training examples`, 'success');
+                document.getElementById('data-status').textContent = 
+                    `✅ Loaded ${result.examples} examples from ${result.games} games`;
+                document.getElementById('stat-games').textContent = aiTrainer.trainingData.length;
+                log(`Successfully loaded ${result.examples} training examples from ${result.games} games`, 'success');
             } catch (error) {
                 document.getElementById('data-status').textContent = '❌ Failed to load';
                 log(`Failed to load training data: ${error.message}`, 'error');

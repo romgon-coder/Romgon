@@ -16,17 +16,27 @@ class RomgonAITrainer {
      */
     async loadTrainingData(limit = 1000, minRating = 1200) {
         try {
-            const response = await fetch(`https://api.romgon.net/api/games/training-data?limit=${limit}&minRating=${minRating}`);
+            const response = await fetch(`https://api.romgon.net/api/ai-training/training-data?limit=${limit}&minRating=${minRating}`);
             
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                const errorText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
             }
 
-            const games = await response.json();
+            const data = await response.json();
+            
+            if (!data.success || !data.games) {
+                throw new Error('Invalid response format from server');
+            }
+            
+            const games = data.games;
             this.trainingData = this.processGames(games);
             
             console.log(`✅ Loaded ${this.trainingData.length} training examples from ${games.length} games`);
-            return this.trainingData.length;
+            return {
+                examples: this.trainingData.length,
+                games: games.length
+            };
         } catch (error) {
             console.error('Failed to load training data:', error);
             throw error;
