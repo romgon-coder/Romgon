@@ -42,35 +42,68 @@ router.get('/training-data', async (req, res) => {
     try {
         const { limit = 1000, minRating = 1200 } = req.query;
         
-        // Query completed games from database
-        const query = `
-            SELECT 
-                g.id,
-                g.moves,
-                g.result,
-                g.total_moves,
-                g.created_at,
-                g.updated_at,
-                wr.rating as white_rating,
-                br.rating as black_rating,
-                wu.username as white_username,
-                bu.username as black_username
-            FROM games g
-            LEFT JOIN users wu ON g.white_player_id = wu.id
-            LEFT JOIN users bu ON g.black_player_id = bu.id
-            LEFT JOIN ratings wr ON g.white_player_id = wr.user_id
-            LEFT JOIN ratings br ON g.black_player_id = br.user_id
-            WHERE g.status = 'completed'
-                AND g.result IS NOT NULL
-                AND g.moves IS NOT NULL
-                AND json_array_length(g.moves) > 5
-                AND (
-                    (wr.rating >= ? OR br.rating >= ?)
-                    OR (wr.rating IS NULL AND br.rating IS NULL)
-                )
-            ORDER BY g.updated_at DESC
-            LIMIT ?
-        `;
+        // Detect if using PostgreSQL or SQLite
+        const isPostgres = !!process.env.DATABASE_URL;
+        
+        // Build query based on database type
+        let query;
+        if (isPostgres) {
+            // PostgreSQL syntax
+            query = `
+                SELECT 
+                    g.id,
+                    g.moves,
+                    g.winner_color as result,
+                    g.total_moves,
+                    g.created_at,
+                    g.updated_at,
+                    wu.rating as white_rating,
+                    bu.rating as black_rating,
+                    wu.username as white_username,
+                    bu.username as black_username
+                FROM games g
+                LEFT JOIN users wu ON g.white_player_id = wu.id
+                LEFT JOIN users bu ON g.black_player_id = bu.id
+                WHERE g.status = 'completed'
+                    AND g.winner_color IS NOT NULL
+                    AND g.moves IS NOT NULL
+                    AND g.moves != '[]'
+                    AND (
+                        (wu.rating >= $1 OR bu.rating >= $2)
+                        OR (wu.rating IS NULL AND bu.rating IS NULL)
+                    )
+                ORDER BY g.updated_at DESC
+                LIMIT $3
+            `;
+        } else {
+            // SQLite syntax
+            query = `
+                SELECT 
+                    g.id,
+                    g.moves,
+                    g.winner_color as result,
+                    g.total_moves,
+                    g.created_at,
+                    g.updated_at,
+                    wu.rating as white_rating,
+                    bu.rating as black_rating,
+                    wu.username as white_username,
+                    bu.username as black_username
+                FROM games g
+                LEFT JOIN users wu ON g.white_player_id = wu.id
+                LEFT JOIN users bu ON g.black_player_id = bu.id
+                WHERE g.status = 'completed'
+                    AND g.winner_color IS NOT NULL
+                    AND g.moves IS NOT NULL
+                    AND json_array_length(g.moves) > 5
+                    AND (
+                        (wu.rating >= ? OR bu.rating >= ?)
+                        OR (wu.rating IS NULL AND bu.rating IS NULL)
+                    )
+                ORDER BY g.updated_at DESC
+                LIMIT ?
+            `;
+        }
         
         const games = await dbPromise.all(query, [minRating, minRating, parseInt(limit)]);
         
@@ -86,7 +119,7 @@ router.get('/training-data', async (req, res) => {
             return {
                 id: game.id,
                 moves: moves,
-                result: game.result,
+                result: game.result, // "white", "black", or "draw"
                 whiteRating: game.white_rating || 1500,
                 blackRating: game.black_rating || 1500,
                 whitePlayer: game.white_username || 'Unknown',
