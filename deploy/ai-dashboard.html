@@ -437,11 +437,18 @@
                         <button class="btn-success" onclick="document.getElementById('rmn-file-input').click()">
                             📄 Upload RMN Files
                         </button>
+                        <button class="btn-success" onclick="document.getElementById('rpn-file-input').click()">
+                            📋 Upload RPN Files
+                        </button>
+                        <button class="btn-secondary" onclick="showRPNPasteModal()">
+                            ✏️ Paste RPN Text
+                        </button>
                         <button class="btn-secondary" onclick="viewDataSample()">
                             👁️ Preview Data
                         </button>
                     </div>
                     <input type="file" id="rmn-file-input" accept=".rmn,.txt" multiple style="display: none;" onchange="loadRMNFiles(event)">
+                    <input type="file" id="rpn-file-input" accept=".txt,.rpn" multiple style="display: none;" onchange="loadRPNFiles(event)">
                     <p class="progress-text" id="data-status">Not loaded</p>
                     <div id="rmn-files-list" style="margin-top: 10px; color: #666; font-size: 0.9em;"></div>
                 </div>
@@ -575,6 +582,37 @@
         </div>
     </div>
 
+    <!-- RPN Paste Modal -->
+    <div id="rpn-paste-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 15px; padding: 30px; max-width: 700px; width: 90%; max-height: 80vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color: #667eea; margin: 0;">📋 Paste RPN Positions</h2>
+                <button onclick="closeRPNPasteModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">✖</button>
+            </div>
+            
+            <div class="alert info">
+                <strong>Format:</strong> One RPN position per line<br>
+                Example: <code style="background: #f0f0f0; padding: 2px 6px; border-radius: 3px;">5s/T0S3h0t0/8/RC4r2/H06c/T05t0/S4s b 2 - - - r3-8>3-6;C2-0>3-1 white - -</code>
+            </div>
+
+            <div class="input-group">
+                <label for="rpn-textarea">Paste RPN Positions (one per line):</label>
+                <textarea id="rpn-textarea" rows="15" style="font-family: monospace; width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.9em;" placeholder="5s/T0S3h0t0/8/RC4r2/H06c/T05t0/S4s b 2 - - - r3-8>3-6;C2-0>3-1 white - -
+5s/T0S3h0t0/8/RC4r2/H06c/T05t0/S4s w 3 - - - h2-7>1-5;S0-0>1-1 black - -
+..."></textarea>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn-primary" onclick="processRPNText()">
+                    ✅ Load RPN Positions
+                </button>
+                <button class="btn-secondary" onclick="closeRPNPasteModal()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="ai-training-engine.js"></script>
     <script>
         // Dashboard Controller
@@ -666,6 +704,94 @@
 
             // Clear file input
             event.target.value = '';
+        }
+
+        // Load RPN files
+        async function loadRPNFiles(event) {
+            const files = Array.from(event.target.files);
+            
+            if (files.length === 0) return;
+
+            log(`Loading ${files.length} RPN files...`, 'info');
+            document.getElementById('data-status').textContent = `Loading ${files.length} RPN files...`;
+
+            try {
+                const result = await aiTrainer.loadFromRPNFiles(files);
+                
+                document.getElementById('data-status').textContent = 
+                    `✅ Loaded ${result.examples} examples from ${result.files} files (${result.positions} positions)`;
+                document.getElementById('stat-games').textContent = aiTrainer.trainingData.length;
+                
+                // Show file list
+                const filesList = document.getElementById('rmn-files-list');
+                filesList.innerHTML = `
+                    <div style="background: #f0f9ff; border-left: 3px solid #3b82f6; padding: 10px; border-radius: 5px;">
+                        📋 <strong>${result.files} RPN files loaded:</strong><br>
+                        ${files.map(f => `• ${f.name} (${result.positionsPerFile[f.name] || 0} positions)`).join('<br>')}
+                    </div>
+                `;
+                
+                log(`Successfully loaded ${result.examples} training examples from ${result.files} RPN files`, 'success');
+            } catch (error) {
+                document.getElementById('data-status').textContent = '❌ Failed to load RPN files';
+                log(`Failed to load RPN files: ${error.message}`, 'error');
+            }
+
+            // Clear file input
+            event.target.value = '';
+        }
+
+        // Show RPN paste modal
+        function showRPNPasteModal() {
+            document.getElementById('rpn-paste-modal').style.display = 'flex';
+        }
+
+        // Close RPN paste modal
+        function closeRPNPasteModal() {
+            document.getElementById('rpn-paste-modal').style.display = 'none';
+        }
+
+        // Process pasted RPN text
+        async function processRPNText() {
+            const textarea = document.getElementById('rpn-textarea');
+            const text = textarea.value.trim();
+
+            if (!text) {
+                alert('Please paste RPN positions!');
+                return;
+            }
+
+            const lines = text.split('\n').filter(line => line.trim());
+            
+            log(`Processing ${lines.length} RPN positions...`, 'info');
+            closeRPNPasteModal();
+            document.getElementById('data-status').textContent = `Processing ${lines.length} RPN positions...`;
+
+            try {
+                const result = await aiTrainer.loadFromRPNStrings(lines);
+                
+                document.getElementById('data-status').textContent = 
+                    `✅ Loaded ${result.examples} examples from ${result.positions} RPN positions`;
+                document.getElementById('stat-games').textContent = aiTrainer.trainingData.length;
+                
+                // Show summary
+                const filesList = document.getElementById('rmn-files-list');
+                filesList.innerHTML = `
+                    <div style="background: #f0f9ff; border-left: 3px solid #3b82f6; padding: 10px; border-radius: 5px;">
+                        📋 <strong>RPN positions loaded:</strong> ${result.positions}<br>
+                        📊 <strong>Training examples created:</strong> ${result.examples}<br>
+                        🎯 <strong>Total training data:</strong> ${aiTrainer.trainingData.length}
+                    </div>
+                `;
+                
+                log(`Successfully loaded ${result.examples} training examples from ${result.positions} RPN positions`, 'success');
+                
+                // Clear textarea
+                textarea.value = '';
+            } catch (error) {
+                document.getElementById('data-status').textContent = '❌ Failed to process RPN text';
+                log(`Failed to process RPN text: ${error.message}`, 'error');
+            }
         }
 
         // Build model

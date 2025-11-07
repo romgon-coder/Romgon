@@ -71,6 +71,151 @@ class RomgonAITrainer {
     }
 
     /**
+     * Load training data from RPN files
+     */
+    async loadFromRPNFiles(files) {
+        const rpnStrings = [];
+        const positionsPerFile = {};
+        
+        for (const file of files) {
+            try {
+                const text = await this.readFileAsText(file);
+                const lines = text.split('\n').filter(line => line.trim());
+                positionsPerFile[file.name] = lines.length;
+                rpnStrings.push(...lines);
+            } catch (error) {
+                console.error(`Error reading ${file.name}:`, error);
+            }
+        }
+
+        const result = await this.loadFromRPNStrings(rpnStrings);
+        result.positionsPerFile = positionsPerFile;
+        return result;
+    }
+
+    /**
+     * Load training data from RPN strings
+     */
+    async loadFromRPNStrings(rpnStrings) {
+        let totalExamples = 0;
+        
+        for (const rpnString of rpnStrings) {
+            try {
+                const data = this.parseRPNString(rpnString);
+                if (data) {
+                    // Each RPN position is a training example
+                    // Input: board position, Output: the move that was made
+                    this.trainingData.push({
+                        position: data.position,
+                        move: data.move,
+                        player: data.player
+                    });
+                    totalExamples++;
+                }
+            } catch (error) {
+                console.error('Error parsing RPN string:', error, rpnString);
+            }
+        }
+
+        return {
+            positions: rpnStrings.length,
+            examples: totalExamples,
+            files: 1
+        };
+    }
+
+    /**
+     * Parse single RPN string
+     */
+    parseRPNString(rpnString) {
+        // RPN format: "board_encoding player move_number ... last_moves current_player - -"
+        // Example: "5s/T0S3h0t0/8/RC4r2/H06c/T05t0/S4s b 2 - - - r3-8>3-6;C2-0>3-1;h2-7>1-5;S0-0>1-1 white - -"
+        
+        const parts = rpnString.trim().split(/\s+/);
+        if (parts.length < 7) return null;
+
+        const boardEncoding = parts[0]; // "5s/T0S3h0t0/8/RC4r2/H06c/T05t0/S4s"
+        const player = parts[1]; // "b" or "w"
+        const moveNumber = parseInt(parts[2]); // 2
+        
+        // Find move history (semicolon-separated moves)
+        const moveHistoryIndex = parts.findIndex(p => p.includes(';') || p.includes('>'));
+        if (moveHistoryIndex === -1) return null;
+        
+        const moveHistory = parts[moveHistoryIndex]; // "r3-8>3-6;C2-0>3-1;h2-7>1-5;S0-0>1-1"
+        const moves = moveHistory.split(';');
+        
+        // Get the last move (most recent)
+        const lastMove = moves[moves.length - 1]; // "S0-0>1-1"
+        
+        // Parse move format: "piece_coordinate>destination_coordinate"
+        const moveMatch = lastMove.match(/([A-Za-z])(\d+-\d+)>(\d+-\d+)/);
+        if (!moveMatch) return null;
+        
+        const [_, piece, from, to] = moveMatch;
+        
+        // Convert board encoding to position array
+        const position = this.boardEncodingToPosition(boardEncoding);
+        
+        // Convert move to training format
+        const moveData = {
+            from: from, // "0-0"
+            to: to,     // "1-1"
+            piece: piece // "S"
+        };
+
+        return {
+            position: position,
+            move: moveData,
+            player: player === 'w' ? 'white' : 'black',
+            moveNumber: moveNumber
+        };
+    }
+
+    /**
+     * Convert RPN board encoding to position array
+     */
+    boardEncodingToPosition(encoding) {
+        // RPN encoding uses rows separated by "/"
+        // Each row: number = empty cells, piece = occupied cell
+        // Example: "5s/T0S3h0t0/8/RC4r2/H06c/T05t0/S4s"
+        
+        const position = Array(7).fill(null).map(() => Array(7).fill(null));
+        const rows = encoding.split('/');
+        
+        for (let row = 0; row < rows.length && row < 7; row++) {
+            const rowStr = rows[row];
+            let col = 0;
+            
+            for (let i = 0; i < rowStr.length; i++) {
+                const char = rowStr[i];
+                
+                if (/\d/.test(char)) {
+                    // Number = skip empty cells
+                    col += parseInt(char);
+                } else {
+                    // Letter = piece
+                    if (col < 7) {
+                        // Uppercase = white, lowercase = black
+                        const isWhite = char === char.toUpperCase();
+                        const pieceType = char.toUpperCase();
+                        
+                        position[row][col] = {
+                            type: pieceType,
+                            player: isWhite ? 'white' : 'black',
+                            row: row,
+                            col: col
+                        };
+                        col++;
+                    }
+                }
+            }
+        }
+
+        return position;
+    }
+
+    /**
      * Read file as text
      */
     readFileAsText(file) {
