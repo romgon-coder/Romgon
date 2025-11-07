@@ -431,8 +431,8 @@
                         <input type="number" id="min-rating" value="1200" min="800" max="2500" step="100">
                     </div>
                     <div class="button-group">
-                        <button class="btn-primary" onclick="loadTrainingData()">
-                            📥 Load from Backend
+                        <button class="btn-primary" onclick="loadTrainingData()" disabled style="opacity: 0.5; cursor: not-allowed;" title="Backend API endpoint not implemented yet">
+                            📥 Load from Backend (Coming Soon)
                         </button>
                         <button class="btn-success" onclick="document.getElementById('rmn-file-input').click()">
                             📄 Upload RMN Files
