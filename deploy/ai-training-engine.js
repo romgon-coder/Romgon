@@ -446,27 +446,86 @@ class RomgonAITrainer {
         const examples = [];
         
         games.forEach(game => {
-            if (!game.training_data || !game.training_data.moves) return;
+            // Skip games without moves or result
+            if (!game.moves || !Array.isArray(game.moves) || game.moves.length === 0) {
+                console.log(`Skipping game ${game.id}: no moves`);
+                return;
+            }
             
-            game.training_data.moves.forEach(move => {
-                // Only use moves from decent players and avoid blunders
-                if (move.player_rating > 1000 && move.move_quality !== 'blunder') {
-                    try {
+            if (!game.result) {
+                console.log(`Skipping game ${game.id}: no result`);
+                return;
+            }
+            
+            // Reconstruct board state and learn from each move
+            let position = this.getStartingPosition();
+            const playerRating = game.whiteRating || game.blackRating || 1500;
+            
+            game.moves.forEach((move, index) => {
+                try {
+                    // Each move should have: from, to, piece info
+                    if (move && move.from && move.to) {
                         examples.push({
-                            position: move.position,
-                            move: move.move,
-                            rating: move.player_rating,
-                            quality: move.move_quality
+                            position: JSON.parse(JSON.stringify(position)), // Deep copy
+                            move: {
+                                from: move.from,
+                                to: move.to,
+                                piece: move.piece || move.pieceType
+                            },
+                            rating: playerRating,
+                            quality: 'good', // We assume completed games have decent moves
+                            gameResult: game.result,
+                            moveNumber: index + 1
                         });
-                    } catch (e) {
-                        // Skip invalid moves
+                        
+                        // Update position for next move (simplified - just track we made a move)
+                        position = this.applyMoveToPosition(position, move);
                     }
+                } catch (e) {
+                    console.warn(`Failed to process move ${index} in game ${game.id}:`, e);
                 }
             });
         });
         
-        console.log(`Processed ${examples.length} valid training examples`);
+        console.log(`Processed ${examples.length} valid training examples from ${games.length} games`);
         return examples;
+    }
+
+    /**
+     * Get starting board position
+     */
+    getStartingPosition() {
+        // Return a 7x7 board with starting pieces
+        // This is a simplified representation - you may need to adjust based on your actual board
+        const position = Array(7).fill(null).map(() => Array(7).fill(null));
+        
+        // Set up initial pieces (example - adjust to your actual starting position)
+        // This is a placeholder - you'll need your actual starting setup
+        return position;
+    }
+
+    /**
+     * Apply move to position (simplified)
+     */
+    applyMoveToPosition(position, move) {
+        // Create a copy
+        const newPosition = JSON.parse(JSON.stringify(position));
+        
+        try {
+            // Parse coordinates like "0-0" to row=0, col=0
+            const [fromRow, fromCol] = move.from.split('-').map(Number);
+            const [toRow, toCol] = move.to.split('-').map(Number);
+            
+            // Move the piece
+            if (newPosition[fromRow] && newPosition[fromRow][fromCol]) {
+                newPosition[toRow][toCol] = newPosition[fromRow][fromCol];
+                newPosition[fromRow][fromCol] = null;
+            }
+        } catch (e) {
+            console.warn('Failed to apply move:', e);
+        }
+        
+        return newPosition;
     }
 
     /**
@@ -623,48 +682,76 @@ class RomgonAITrainer {
     }
 
     /**
-     * Convert board position (RPN) to tensor
+     * Convert board position to tensor
      */
-    positionToTensor(rpnPosition) {
+    positionToTensor(position) {
         // Create 169-element tensor (7x7 grid + piece info)
         const tensor = new Float32Array(169);
         
-        // TODO: Implement RPN parsing
-        // For now, use placeholder logic
-        // Parse RPN string and populate tensor with piece positions
-        
-        // Format: each cell can have:
-        // 0 = empty
-        // 1-6 = white pieces (square, triangle, rhombus, circle, hexagon, gateway)
-        // -1 to -6 = black pieces
-        
         try {
-            // Simple parsing - this should be enhanced with your actual RPN format
-            const parts = rpnPosition.split(' ');
-            const boardPart = parts[0] || '';
-            
-            // Fill tensor based on board state
-            for (let i = 0; i < Math.min(boardPart.length, 169); i++) {
-                const char = boardPart[i];
-                // Map characters to piece values
-                // This is a placeholder - adjust based on your RPN format
-                if (char === 's') tensor[i] = 1;      // white square
-                else if (char === 't') tensor[i] = 2; // white triangle
-                else if (char === 'r') tensor[i] = 3; // white rhombus
-                else if (char === 'c') tensor[i] = 4; // white circle
-                else if (char === 'h') tensor[i] = 5; // white hexagon
-                else if (char === 'S') tensor[i] = -1; // black square
-                else if (char === 'T') tensor[i] = -2; // black triangle
-                else if (char === 'R') tensor[i] = -3; // black rhombus
-                else if (char === 'C') tensor[i] = -4; // black circle
-                else if (char === 'H') tensor[i] = -5; // black hexagon
-                else tensor[i] = 0; // empty
+            // Check if position is a string (RPN format) or array (board state)
+            if (typeof position === 'string') {
+                // RPN string format
+                const parts = position.split(' ');
+                const boardPart = parts[0] || '';
+                
+                // Fill tensor based on board state
+                for (let i = 0; i < Math.min(boardPart.length, 169); i++) {
+                    const char = boardPart[i];
+                    // Map characters to piece values
+                    if (char === 's') tensor[i] = 1;      // white square
+                    else if (char === 't') tensor[i] = 2; // white triangle
+                    else if (char === 'r') tensor[i] = 3; // white rhombus
+                    else if (char === 'c') tensor[i] = 4; // white circle
+                    else if (char === 'h') tensor[i] = 5; // white hexagon
+                    else if (char === 'S') tensor[i] = -1; // black square
+                    else if (char === 'T') tensor[i] = -2; // black triangle
+                    else if (char === 'R') tensor[i] = -3; // black rhombus
+                    else if (char === 'C') tensor[i] = -4; // black circle
+                    else if (char === 'H') tensor[i] = -5; // black hexagon
+                    else tensor[i] = 0; // empty
+                }
+            } else if (Array.isArray(position)) {
+                // 2D array format (7x7 board)
+                for (let row = 0; row < 7; row++) {
+                    for (let col = 0; col < 7; col++) {
+                        const cell = position[row] && position[row][col];
+                        const index = row * 7 + col;
+                        
+                        if (cell && cell.type) {
+                            // Map piece types to values
+                            const pieceValue = this.getPieceValue(cell.type);
+                            const multiplier = cell.player === 'white' ? 1 : -1;
+                            tensor[index] = pieceValue * multiplier;
+                        } else {
+                            tensor[index] = 0; // empty
+                        }
+                    }
+                }
+            } else {
+                console.warn('Unknown position format:', typeof position);
             }
         } catch (e) {
-            console.warn('Failed to parse position:', e);
+            console.error('Failed to parse position:', e);
+            // Return zero tensor on error
         }
 
         return tf.tensor1d(tensor);
+    }
+
+    /**
+     * Get numeric value for piece type
+     */
+    getPieceValue(pieceType) {
+        const types = {
+            'S': 1,  // Square
+            'T': 2,  // Triangle  
+            'R': 3,  // Rhombus
+            'C': 4,  // Circle
+            'H': 5,  // Hexagon
+            'G': 6   // Gateway
+        };
+        return types[pieceType.toUpperCase()] || 0;
     }
 
     /**
@@ -675,13 +762,28 @@ class RomgonAITrainer {
         const tensor = new Float32Array(169);
         
         try {
-            // Parse move notation (e.g., {from: "hex-3-2", to: "hex-4-2"})
+            // Parse move notation - handle different formats
+            let row, col;
+            
             if (move.to) {
-                const match = move.to.match(/hex-(\d+)-(\d+)/);
-                if (match) {
-                    const row = parseInt(match[1]);
-                    const col = parseInt(match[2]);
-                    const index = row * 7 + col; // Convert to linear index
+                // Format 1: "hex-3-2" or similar
+                const hexMatch = move.to.match(/hex-(\d+)-(\d+)/);
+                if (hexMatch) {
+                    row = parseInt(hexMatch[1]);
+                    col = parseInt(hexMatch[2]);
+                }
+                // Format 2: "3-2" (just coordinates)
+                else {
+                    const coordMatch = move.to.match(/(\d+)-(\d+)/);
+                    if (coordMatch) {
+                        row = parseInt(coordMatch[1]);
+                        col = parseInt(coordMatch[2]);
+                    }
+                }
+                
+                // Convert to linear index
+                if (row !== undefined && col !== undefined) {
+                    const index = row * 7 + col;
                     
                     if (index >= 0 && index < 169) {
                         tensor[index] = 1.0; // One-hot encoding
@@ -689,7 +791,7 @@ class RomgonAITrainer {
                 }
             }
         } catch (e) {
-            console.warn('Failed to parse move:', e);
+            console.error('Failed to parse move:', e, move);
         }
 
         return tf.tensor1d(tensor);
