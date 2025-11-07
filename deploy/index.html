@@ -32384,7 +32384,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                             result: playerWon ? 'win' : 'loss',
                             winner: winner.toLowerCase(),
                             move_count: moveCount,
-                            captures: captureCount
+                            captures: captureCount,
+                            moves: moveHistory || [],  // Send the full move history
+                            reason: reason || 'Game ended'  // Send the reason
                         };
                         
                         // Only include rating data for AI games, not PvP
@@ -32398,6 +32400,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         }
                         
                         console.log('📤 Sending game data:', gameData);
+                        console.log('📤 Move history length:', (moveHistory || []).length);
                         console.log('🎮 Detected game mode:', selectedGameMode, '→ opponent_type:', opponentType);
                         
                         const response = await fetch(`${BACKEND_API_URL || 'https://api.romgon.net'}/api/games/submit-result`, {

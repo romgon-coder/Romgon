@@ -582,7 +582,9 @@ router.post('/submit-result',
         body('captures').optional().isInt({ min: 0 }).withMessage('Invalid captures count'),
         body('old_rating').optional().isInt({ min: 0 }).withMessage('Invalid old rating'),
         body('new_rating').optional().isInt({ min: 0 }).withMessage('Invalid new rating'),
-        body('rating_change').optional().isInt().withMessage('Invalid rating change')
+        body('rating_change').optional().isInt().withMessage('Invalid rating change'),
+        body('moves').optional().isArray().withMessage('Moves must be an array'),
+        body('reason').optional().isString().withMessage('Reason must be a string')
     ],
     async (req, res) => {
         try {
@@ -591,7 +593,10 @@ router.post('/submit-result',
                 return res.status(400).json({ errors: errors.array() });
             }
 
-            const { opponent_type, result, winner, move_count, captures, old_rating, new_rating, rating_change } = req.body;
+            const { 
+                opponent_type, result, winner, move_count, captures, 
+                old_rating, new_rating, rating_change, moves, reason 
+            } = req.body;
             const playerId = req.user.userId;
             const gameId = uuidv4();
 
@@ -618,6 +623,11 @@ router.post('/submit-result',
                 winnerId = null; // Opponent won (could be AI)
             }
 
+            // Prepare moves array (default to empty array if not provided)
+            const movesArray = moves || [];
+            const movesJson = JSON.stringify(movesArray);
+            const winnerColor = winner.toLowerCase(); // 'white' or 'black'
+
             // Insert the game as finished
             // Use CURRENT_TIMESTAMP for PostgreSQL, datetime('now') for SQLite
             const isPostgres = !!process.env.DATABASE_URL;
@@ -626,11 +636,11 @@ router.post('/submit-result',
             await db.run(
                 `INSERT INTO games (
                     id, white_player_id, black_player_id, 
-                    status, winner_id, 
+                    status, winner_id, winner_color, reason,
                     moves, total_moves,
                     start_time, end_time
-                ) VALUES (?, ?, ?, 'finished', ?, '[]', ?, ${nowFunc}, ${nowFunc})`,
-                [gameId, whitePlayerId, blackPlayerId, winnerId, move_count || 0]
+                ) VALUES (?, ?, ?, 'finished', ?, ?, ?, ?, ?, ${nowFunc}, ${nowFunc})`,
+                [gameId, whitePlayerId, blackPlayerId, winnerId, winnerColor, reason || 'Game ended', movesJson, move_count || movesArray.length]
             );
 
             // Calculate rating change
@@ -659,7 +669,7 @@ router.post('/submit-result',
                 calculatedRatingChange = rating_change;
             }
 
-            const moves = move_count || 0;
+            const totalMoves = move_count || movesArray.length;
             const capturesCount = captures || 0;
             
             // Update user stats including rating
@@ -672,7 +682,7 @@ router.post('/submit-result',
                          total_captures = total_captures + ?,
                          rating = ?
                      WHERE id = ?`,
-                    [moves, capturesCount, calculatedNewRating, playerId]
+                    [totalMoves, capturesCount, calculatedNewRating, playerId]
                 );
             } else if (result === 'loss') {
                 await db.run(
@@ -683,7 +693,7 @@ router.post('/submit-result',
                          total_captures = total_captures + ?,
                          rating = ?
                      WHERE id = ?`,
-                    [moves, capturesCount, calculatedNewRating, playerId]
+                    [totalMoves, capturesCount, calculatedNewRating, playerId]
                 );
             } else {
                 await db.run(
@@ -694,7 +704,7 @@ router.post('/submit-result',
                          total_captures = total_captures + ?,
                          rating = ?
                      WHERE id = ?`,
-                    [moves, capturesCount, calculatedNewRating, playerId]
+                    [totalMoves, capturesCount, calculatedNewRating, playerId]
                 );
             }
 
