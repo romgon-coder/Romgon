@@ -172,7 +172,7 @@ router.get('/training-data', async (req, res) => {
                 FROM games g
                 LEFT JOIN users wu ON g.white_player_id = wu.id
                 LEFT JOIN users bu ON g.black_player_id = bu.id
-                WHERE g.status = 'completed'
+                WHERE (g.status = 'completed' OR g.status = 'finished')
                     AND g.winner_color IS NOT NULL
                     AND g.moves IS NOT NULL
                     AND g.moves != '[]'
@@ -200,7 +200,7 @@ router.get('/training-data', async (req, res) => {
                 FROM games g
                 LEFT JOIN users wu ON g.white_player_id = wu.id
                 LEFT JOIN users bu ON g.black_player_id = bu.id
-                WHERE g.status = 'completed'
+                WHERE (g.status = 'completed' OR g.status = 'finished')
                     AND g.winner_color IS NOT NULL
                     AND g.moves IS NOT NULL
                     AND json_array_length(g.moves) > 5
