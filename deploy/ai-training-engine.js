@@ -619,10 +619,20 @@ class RomgonAITrainer {
                     },
                     onEpochEnd: async (epoch, logs) => {
                         console.log(`Epoch ${epoch + 1}/${epochs}:`);
-                        console.log(`  Loss: ${logs.loss.toFixed(4)}`);
-                        console.log(`  Accuracy: ${(logs.acc * 100).toFixed(2)}%`);
-                        console.log(`  Val Loss: ${logs.val_loss.toFixed(4)}`);
-                        console.log(`  Val Accuracy: ${(logs.val_acc * 100).toFixed(2)}%`);
+                        
+                        // Safely access log properties (they may be undefined)
+                        if (logs.loss !== undefined) {
+                            console.log(`  Loss: ${logs.loss.toFixed(4)}`);
+                        }
+                        if (logs.acc !== undefined) {
+                            console.log(`  Accuracy: ${(logs.acc * 100).toFixed(2)}%`);
+                        }
+                        if (logs.val_loss !== undefined) {
+                            console.log(`  Val Loss: ${logs.val_loss.toFixed(4)}`);
+                        }
+                        if (logs.val_acc !== undefined) {
+                            console.log(`  Val Accuracy: ${(logs.val_acc * 100).toFixed(2)}%`);
+                        }
                         
                         if (callbacks.onEpochEnd) {
                             await callbacks.onEpochEnd(epoch, logs);
