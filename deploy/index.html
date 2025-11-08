@@ -29597,23 +29597,24 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         // Check if piece has already acted (moved, attacked, or rotated)
                         const actions = pieceActions.get(hexId) || {moved: false, attacked: false, rotated: false, flipped: false};
                         
-                        // Cannot flip if already rotated (or any other action)
+                        // In Flip Mode: Can flip after moving, but not after rotating or attacking
+                        // Cannot flip if already rotated
                         if (actions.rotated) {
                             alert('⚠️ Cannot flip - piece already rotated this turn!');
                             return;
                         }
-                        if (actions.moved) {
-                            alert('⚠️ Cannot flip - piece already moved this turn!');
-                            return;
-                        }
+                        // Cannot flip after attacking (since attacking ends turn)
                         if (actions.attacked) {
                             alert('⚠️ Cannot flip - piece already attacked this turn!');
                             return;
                         }
+                        // Cannot flip twice
                         if (actions.flipped) {
                             alert('⚠️ Cannot flip - piece already flipped this turn!');
                             return;
                         }
+                        // In Flip Mode: Allow flipping after moving (that's the whole point!)
+                        // No check for actions.moved - it's allowed!
                         
                         // Toggle flip state
                         const isFlipped = piece.dataset.flipped === 'true';
