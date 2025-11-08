@@ -29600,6 +29600,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         
                         console.log(`Piece ${isFlipped ? 'unflipped' : 'flipped'} at ${hexId}`);
                         
+                        // Refresh threat highlights after flip state change
+                        highlightAllPiecesUnderAttack();
+                        
                         // End turn after flip
                         if (!gameOver) {
                             playEndTurnSound();
