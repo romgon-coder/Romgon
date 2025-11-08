@@ -17067,7 +17067,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                                piece.classList.contains('white-hexgon');
                 
                 // Check if this piece is under threat
-                const underThreat = isPieceUnderThreat(parseInt(row), parseInt(col), isWhite);
+                const underThreat = isPieceUnderThreat(parseInt(row), parseInt(col), isWhite, piece);
                 if (underThreat) {
                     // Special yellow highlight for RHOMBUS under attack (CHECK/DEADLOCK warning)
                     if (piece.classList.contains('rhombus-piece')) {
@@ -17129,9 +17129,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         }
         
         // Check if a specific piece is under threat
-        function isPieceUnderThreat(pieceRow, pieceCol, isWhite) {
+        function isPieceUnderThreat(pieceRow, pieceCol, isWhite, targetPiece = null) {
             const targetId = `hex-${pieceRow}-${pieceCol}`;
             console.log(`🔍 Checking if ${isWhite ? 'WHITE' : 'BLACK'} piece at ${targetId} is under threat...`);
+            
+            // Get flip state of the target piece (if provided)
+            const targetIsFlipped = targetPiece && targetPiece.dataset.flipped === 'true';
             
             // Get all opponent pieces (including circles and hexgons)
             const opponentPieceTypes = isWhite ? 
@@ -17152,6 +17155,15 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     
                     const pieceId = pieceHex.id;
                     const [, oppRow, oppCol] = pieceId.match(/hex-(\d+)-(\d+)/);
+                    
+                    // FLIP STATE CHECK: In flip mode, only consider threat if flip states match
+                    if (flipModeEnabled && targetPiece) {
+                        const attackerIsFlipped = piece.dataset.flipped === 'true';
+                        if (targetIsFlipped !== attackerIsFlipped) {
+                            // Flip states don't match - attacker can't threaten this piece
+                            continue;
+                        }
+                    }
                     
                     // Use the actual movement pattern functions to check if this piece can attack
                     if (canPieceActuallyAttack(parseInt(oppRow), parseInt(oppCol), pieceRow, pieceCol, piece)) {
