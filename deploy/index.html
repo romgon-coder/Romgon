@@ -29753,9 +29753,39 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 if (selectedPiece) {
                     const hexId = selectedPiece.id;
                     const [, row, col] = hexId.match(/hex-(\d+)-(\d+)/);
-                    const piece = selectedPiece.querySelector('.triangle-piece, .hexgon-piece');
-                    const pieceType = piece && piece.classList.contains('triangle-piece') ? 'triangle' : 'hexgon';
+                    const piece = selectedPiece.querySelector('.triangle-piece, .hexgon-piece, .rhombus-piece');
+                    const pieceType = piece && piece.classList.contains('triangle-piece') ? 'triangle' : 
+                                     piece && piece.classList.contains('hexgon-piece') ? 'hexgon' : 
+                                     piece && piece.classList.contains('rhombus-piece') ? 'rhombus' : 'unknown';
                     console.log(`Keeping ${pieceType} at:`, row, col, 'with current orientation');
+                    
+                    // FLIP MODE: Check if rhombus would be under attack after flipping (KEEP commits flip)
+                    if (flipModeEnabled && piece && piece.classList.contains('rhombus-piece')) {
+                        const currentFlipState = piece.dataset.flipped === 'true';
+                        const futureFlipState = !currentFlipState; // Will flip after KEEP
+                        const isWhite = piece.classList.contains('white-rhombus');
+                        
+                        console.log(`🔄 FLIP MODE KEEP: Checking POST-FLIP threat`);
+                        console.log(`   Current flip state: ${currentFlipState}`);
+                        console.log(`   Future flip state (after KEEP): ${futureFlipState}`);
+                        
+                        // Temporarily set the flip state to what it WILL BE after KEEP
+                        piece.dataset.flipped = futureFlipState.toString();
+                        
+                        // Check if rhombus would be under attack in its FUTURE flip state
+                        const underAttackAfterFlip = isPieceUnderThreat(parseInt(row), parseInt(col), isWhite, piece);
+                        
+                        // Restore original flip state
+                        piece.dataset.flipped = currentFlipState.toString();
+                        
+                        if (underAttackAfterFlip) {
+                            console.log('❌ FLIP MODE: Rhombus will be under attack after flipping (KEEP)!');
+                            alert('⚠️ ILLEGAL MOVE!\n\nAfter flipping (KEEP), your rhombus will be under attack!\n\nYou must press RELEASE to cancel the move or choose a safer position.');
+                            return; // Don't end turn
+                        } else {
+                            console.log('✅ FLIP MODE: Rhombus will be safe after flipping (KEEP)');
+                        }
+                    }
                     
                     // Check if any action was performed this turn
                     const actions = pieceActions.get(hexId) || {moved: false, attacked: false, rotated: false};
@@ -31676,44 +31706,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             console.log(`Checking if rhombus would be under attack at: ${checkRow}-${checkCol}`);
             
-            // FLIP MODE: If rhombus is moving in flip mode, simulate the POST-FLIP state
-            // When rhombus moves, it will FLIP after the move (KEEP button)
-            // We need to check if the NEW flip state will be under attack
-            let checkFlipState = playerRhombus;
-            
-            if (flipModeEnabled && isMovingRhombus) {
-                // Rhombus will flip after moving - simulate the future flip state
-                const currentFlipState = playerRhombus.dataset.flipped === 'true';
-                const futureFlipState = !currentFlipState; // Will flip after KEEP
-                
-                console.log(`🔄 FLIP MODE: Simulating POST-FLIP threat check`);
-                console.log(`   Current flip state: ${currentFlipState}`);
-                console.log(`   Future flip state (after KEEP): ${futureFlipState}`);
-                
-                // Temporarily set the flip state to what it WILL BE after KEEP
-                playerRhombus.dataset.flipped = futureFlipState.toString();
-                
-                // Check if rhombus would be under attack in its FUTURE flip state
-                const underAttackAfterFlip = isPieceUnderThreat(checkRow, checkCol, isWhiteMoving, playerRhombus);
-                
-                // Restore original flip state
-                playerRhombus.dataset.flipped = currentFlipState.toString();
-                
-                console.log('Rhombus under attack after flip:', underAttackAfterFlip);
-                
-                if (underAttackAfterFlip) {
-                    console.log('❌ FLIP MODE ILLEGAL! Rhombus will be under attack in flipped state after KEEP!');
-                    // Clean up simulation
-                    tempPiece.remove();
-                    movingPiece.style.display = '';
-                    if (capturedPiece && capturedPieceBackup !== null) {
-                        capturedPiece.style.display = capturedPieceBackup;
-                    }
-                    return true; // ILLEGAL MOVE
-                }
-            }
-            
             // Check if rhombus would be under attack after this move (in current flip state)
+            // Pass the RHOMBUS piece (not the moving piece) so flip state matching can be checked
             console.log(`🎲 FLIP MODE CHECK: Rhombus flip state: ${playerRhombus ? playerRhombus.dataset.flipped : 'N/A'}, flipModeEnabled: ${flipModeEnabled}`);
             const underAttack = isPieceUnderThreat(checkRow, checkCol, isWhiteMoving, playerRhombus);
             
@@ -31729,8 +31723,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 } else {
                     // FLIP MODE EXCEPTION: In flip mode, don't block moves that put rhombus under attack
                     // in the CURRENT flip state (because player can press RELEASE to stay unflipped)
+                    // The POST-FLIP threat check happens when player presses KEEP button
                     if (flipModeEnabled) {
-                        console.log('✅ FLIP MODE: Move allowed - player can press RELEASE to stay in current flip state');
+                        console.log('✅ FLIP MODE: Move allowed - POST-FLIP threat will be checked when KEEP is pressed');
                         wouldBeIllegal = false;
                     } else {
                         // ORIGINAL MODE: Always block moves that put rhombus under attack
