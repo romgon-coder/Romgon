@@ -17140,6 +17140,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             // Get flip state of the target piece (if provided)
             const targetIsFlipped = targetPiece && targetPiece.dataset.flipped === 'true';
+            console.log(`🔍 Target flip state: ${targetIsFlipped}, flipModeEnabled: ${flipModeEnabled}`);
             
             // Get all opponent pieces (including circles and hexgons)
             const opponentPieceTypes = isWhite ? 
