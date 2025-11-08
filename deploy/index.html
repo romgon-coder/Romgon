@@ -18002,22 +18002,23 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 flipIndicator.innerHTML = '🔄';
                 flipIndicator.style.cssText = `
                     position: absolute;
-                    top: 2px;
-                    right: 2px;
-                    width: 16px;
-                    height: 16px;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    width: 32px;
+                    height: 32px;
                     background: rgba(52, 152, 219, 0.9);
                     color: white;
                     border-radius: 50%;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-size: 10px;
+                    font-size: 20px;
                     font-weight: bold;
                     pointer-events: none;
                     z-index: 15;
-                    box-shadow: 0 0 4px rgba(52, 152, 219, 1), 0 0 8px rgba(52, 152, 219, 0.5);
-                    border: 1.5px solid rgba(255, 255, 255, 0.9);
+                    box-shadow: 0 0 6px rgba(52, 152, 219, 1), 0 0 12px rgba(52, 152, 219, 0.5);
+                    border: 2px solid rgba(255, 255, 255, 0.9);
                 `;
                 hex.appendChild(flipIndicator);
             }
