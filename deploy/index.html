@@ -29092,8 +29092,24 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 // Check if target has a piece
                 const targetPiece = targetHex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
                 
-                if (!targetPiece) {
-                    // Empty hex - check if it's a special move (zone transition for circle, diagonal for rhombus)
+                // Check for rhombus diagonal moves (BOTH DIRECTIONS: dead zone ↔ inner perimeter)
+                let isRhombusDiagonalMove = false;
+                if (pieceType === 'rhombus' && !isFlipped) {
+                    const deadZone = new Set(["3-3", "3-4", "3-5"]);
+                    const innerPerimeter = new Set(["2-2", "2-3", "2-4", "2-5", "3-2", "3-6", "4-2", "4-3", "4-4", "4-5"]);
+                    const currentPos = `${row}-${col}`;
+                    const targetPos = `${targetRow}-${targetCol}`;
+                    
+                    // Diagonal moves work BOTH WAYS
+                    isRhombusDiagonalMove = (deadZone.has(currentPos) && innerPerimeter.has(targetPos)) || 
+                                           (innerPerimeter.has(currentPos) && deadZone.has(targetPos));
+                }
+                
+                // CRITICAL: Diagonal moves are MOVEMENT ONLY - cannot capture (always purple)
+                if (isRhombusDiagonalMove) {
+                    targetHex.classList.add('highlight-diagonal'); // Purple for diagonal moves (movement only)
+                } else if (!targetPiece) {
+                    // Empty hex - check if it's a special move (zone transition for circle)
                     let isSpecialMove = false;
                     
                     if (pieceType === 'circle' && !isFlipped) {
@@ -29104,20 +29120,6 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         
                         if (validTransitions && validTransitions.includes(targetPos)) {
                             targetHex.classList.add('highlight-diagonal'); // Purple for zone transitions
-                            isSpecialMove = true;
-                        }
-                    } else if (pieceType === 'rhombus' && !isFlipped) {
-                        // Check if this target is a diagonal move (FROM dead zone TO inner perimeter ONLY)
-                        const deadZone = new Set(["3-3", "3-4", "3-5"]);
-                        const innerPerimeter = new Set(["2-2", "2-3", "2-4", "2-5", "3-2", "3-6", "4-2", "4-3", "4-4", "4-5"]);
-                        const currentPos = `${row}-${col}`;
-                        const targetPos = `${targetRow}-${targetCol}`;
-                        
-                        // Purple highlight ONLY when rhombus is IN dead zone moving TO inner perimeter
-                        const isDiagonalMove = deadZone.has(currentPos) && innerPerimeter.has(targetPos);
-                        
-                        if (isDiagonalMove) {
-                            targetHex.classList.add('highlight-diagonal'); // Purple for diagonal moves
                             isSpecialMove = true;
                         }
                     }
