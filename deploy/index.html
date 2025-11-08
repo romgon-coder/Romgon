@@ -29139,6 +29139,17 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     // Empty hex - check if it's a special move (zone transition for circle)
                     let isSpecialMove = false;
                     
+                    // FLIP MODE: Block flipped circles from entering dead zone (they can't unflip)
+                    if (flipModeEnabled && pieceType === 'circle' && isFlipped) {
+                        const deadZone = new Set(["3-3", "3-4", "3-5"]);
+                        const targetPos = `${targetRow}-${targetCol}`;
+                        if (deadZone.has(targetPos)) {
+                            // Skip this hex - flipped circles cannot enter dead zone
+                            console.log(`❌ FLIP MODE: Blocking flipped circle from entering dead zone at ${targetPos}`);
+                            return; // Don't add any highlight
+                        }
+                    }
+                    
                     if (pieceType === 'circle' && !isFlipped) {
                         // Check if this target is a zone transition (purple highlight)
                         const currentPos = `${row}-${col}`;
