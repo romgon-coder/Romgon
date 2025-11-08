@@ -27046,14 +27046,14 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             // Hardcoded square movements for all positions
             const squareMap = {
-                // Row 5 - using exact adjacency
-                '50': ['60','41'],
-                '51': ['60','61','42','41'],
-                '52': ['61','62','43','42'],
-                '53': ['62','63','44','43'],
-                '54': ['63','64','45','44'],
-                '55': ['64','65','46','45'],
-                '56': ['65','47','46']
+                // Row 5 - using exact adjacency from user
+                '50': ['40','41','60'],
+                '51': ['41','42','60','61'],
+                '52': ['42','43','61','62'],
+                '53': ['43','44','62','63'],
+                '54': ['44','45','63','64'],
+                '55': ['45','46','64','65'],
+                '56': ['46','47','65']
             };
             
             // If we have hardcoded mapping for this position, use it
