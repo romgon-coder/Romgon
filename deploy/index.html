@@ -11016,12 +11016,18 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 <input type="checkbox" id="fog-of-war-variant-tc" style="transform:scale(1.3);margin-left:8px;" />
                 <span id="fog-of-war-variant-tc-desc" style="color:#aaa;font-size:0.95em;margin-left:10px;">Hide enemy pieces outside vision range.</span>
             </div>
+            <div style="display:flex;justify-content:center;align-items:center;margin-bottom:18px;gap:12px;">
+                <label for="flip-mode-variant-tc" style="color:#3498db;font-size:1.08em;">🔄 Flip Mode:</label>
+                <input type="checkbox" id="flip-mode-variant-tc" style="transform:scale(1.3);margin-left:8px;" />
+                <span id="flip-mode-variant-tc-desc" style="color:#aaa;font-size:0.95em;margin-left:10px;">Pieces can flip to attack omnidirectionally. Flipped vs unflipped dimensions.</span>
+            </div>
             <script>
             // Set dropdown and fog of war to current value and update desc
             setTimeout(() => {
                 const sel = document.getElementById('base-defense-variant-tc');
                 const desc = document.getElementById('base-defense-variant-tc-desc');
                 const fogCheckbox = document.getElementById('fog-of-war-variant-tc');
+                const flipCheckbox = document.getElementById('flip-mode-variant-tc');
                 if (sel) {
                     // Initialize dropdown from saved settings, or fallback to runtime value
                     sel.value = (window.gameSettings && window.gameSettings.baseDefenseVariant) || window.baseDefenseVariant || 'original';
@@ -11046,6 +11052,16 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                         if (!window.gameSettings) window.gameSettings = {};
                         window.gameSettings.fogOfWar = fogCheckbox.checked;
                         fogOfWarEnabled = fogCheckbox.checked;
+                        saveSettings();
+                    });
+                }
+                if (flipCheckbox) {
+                    if (!window.gameSettings) window.gameSettings = {};
+                    flipCheckbox.checked = !!(window.gameSettings && window.gameSettings.flipMode);
+                    flipCheckbox.addEventListener('change', function() {
+                        if (!window.gameSettings) window.gameSettings = {};
+                        window.gameSettings.flipMode = flipCheckbox.checked;
+                        window.flipModeEnabled = flipCheckbox.checked;
                         saveSettings();
                     });
                 }
@@ -11143,12 +11159,18 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                 <input type="checkbox" id="fog-of-war-variant-tc-pvp" style="transform:scale(1.3);margin-left:8px;" />
                 <span id="fog-of-war-variant-tc-desc-pvp" style="color:#aaa;font-size:0.95em;margin-left:10px;">Hide enemy pieces outside vision range.</span>
             </div>
+            <div style="display:flex;justify-content:center;align-items:center;margin-bottom:18px;gap:12px;">
+                <label for="flip-mode-variant-tc-pvp" style="color:#3498db;font-size:1.08em;">🔄 Flip Mode:</label>
+                <input type="checkbox" id="flip-mode-variant-tc-pvp" style="transform:scale(1.3);margin-left:8px;" />
+                <span id="flip-mode-variant-tc-desc-pvp" style="color:#aaa;font-size:0.95em;margin-left:10px;">Pieces can flip to attack omn directionally. Flipped vs unflipped dimensions.</span>
+            </div>
             <script>
             // Set dropdown and fog of war to current value and update desc (PVP modal)
             setTimeout(() => {
                 const sel = document.getElementById('base-defense-variant-tc-pvp');
                 const desc = document.getElementById('base-defense-variant-tc-desc-pvp');
                 const fogCheckbox = document.getElementById('fog-of-war-variant-tc-pvp');
+                const flipCheckbox = document.getElementById('flip-mode-variant-tc-pvp');
                 if (sel) {
                     sel.value = (window.gameSettings && window.gameSettings.baseDefenseVariant) || window.baseDefenseVariant || 'original';
                     function updateDesc() {
@@ -11172,6 +11194,16 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
                         if (!window.gameSettings) window.gameSettings = {};
                         window.gameSettings.fogOfWar = fogCheckbox.checked;
                         fogOfWarEnabled = fogCheckbox.checked;
+                        saveSettings();
+                    });
+                }
+                if (flipCheckbox) {
+                    if (!window.gameSettings) window.gameSettings = {};
+                    flipCheckbox.checked = !!(window.gameSettings && window.gameSettings.flipMode);
+                    flipCheckbox.addEventListener('change', function() {
+                        if (!window.gameSettings) window.gameSettings = {};
+                        window.gameSettings.flipMode = flipCheckbox.checked;
+                        window.flipModeEnabled = flipCheckbox.checked;
                         saveSettings();
                     });
                 }
@@ -18800,6 +18832,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         let fogOfWarEnabled = false; // Enable/disable Fog of War mode
         let fogOfWarRadius = 2; // Visibility radius (number of hexes)
         let fogOfWarRevealOnAttack = true; // Reveal pieces when they attack
+        
+        // Flip Mode variant settings
+        let flipModeEnabled = false; // Enable/disable Flip Mode (omnidirectional attacks when flipped)
         
         // Last move tracking for highlighting
         let lastMoveFrom = null; // Hex ID of last move source
@@ -33194,9 +33229,32 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     
                     const rotationControls = document.getElementById('rotation-controls');
                     if (rotationControls) {
-                        if (this.classList.contains('triangle-piece') || this.classList.contains('hexgon-piece')) {
-                            console.log('Showing rotation controls for rotatable piece');
+                        // Show rotation/flip panel for rotatables OR all pieces in Flip Mode
+                        const isRotatable = this.classList.contains('triangle-piece') || this.classList.contains('hexgon-piece');
+                        const shouldShow = isRotatable || flipModeEnabled;
+                        
+                        if (shouldShow) {
+                            console.log('Showing rotation controls for rotatable piece or Flip Mode');
                             rotationControls.style.display = 'block';
+                            
+                            // Hide/show flip button based on Flip Mode
+                            const flipBtn = rotationControls.querySelector('button:nth-child(2)'); // 🔄 FLIP
+                            if (flipBtn) {
+                                flipBtn.style.display = flipModeEnabled ? 'block' : 'none';
+                            }
+                            
+                            // Hide rotation buttons for non-rotatable pieces in Flip Mode
+                            const rotateLeft = rotationControls.querySelector('button:nth-child(1)'); // ↻ RIGHT
+                            const rotateRight = rotationControls.querySelector('button:nth-child(4)'); // ↺ LEFT
+                            if (!isRotatable && flipModeEnabled) {
+                                // Non-rotatable piece in Flip Mode - show only flip, keep, release
+                                if (rotateLeft) rotateLeft.style.display = 'none';
+                                if (rotateRight) rotateRight.style.display = 'none';
+                            } else {
+                                // Rotatable piece - show all buttons
+                                if (rotateLeft) rotateLeft.style.display = 'block';
+                                if (rotateRight) rotateRight.style.display = 'block';
+                            }
                             
                             // Also show mobile rotation controls on mobile
                             const mobileRotationControls = document.getElementById('mobile-rotation-controls');
@@ -33774,13 +33832,33 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     e.dataTransfer.effectAllowed = 'move';
                     e.dataTransfer.setData('text/html', this.outerHTML);
                     
-                    // Show rotation controls if this is a triangle or hexagon, hide if not
+                    // Show rotation controls if this is a triangle or hexagon (or Flip Mode for all), hide if not
                     const rotationControls = document.getElementById('rotation-controls');
                     console.log('Rotation controls element:', rotationControls);
                     if (rotationControls) {
-                        if (this.classList.contains('triangle-piece') || this.classList.contains('hexgon-piece')) {
-                            console.log('Showing rotation controls for rotatable piece');
+                        const isRotatable = this.classList.contains('triangle-piece') || this.classList.contains('hexgon-piece');
+                        const shouldShow = isRotatable || flipModeEnabled;
+                        
+                        if (shouldShow) {
+                            console.log('Showing rotation controls for rotatable piece or Flip Mode');
                             rotationControls.style.display = 'block';
+                            
+                            // Hide/show flip button based on Flip Mode
+                            const flipBtn = rotationControls.querySelector('button:nth-child(2)'); // 🔄 FLIP
+                            if (flipBtn) {
+                                flipBtn.style.display = flipModeEnabled ? 'block' : 'none';
+                            }
+                            
+                            // Hide rotation buttons for non-rotatable pieces in Flip Mode
+                            const rotateLeft = rotationControls.querySelector('button:nth-child(1)'); // ↻ RIGHT
+                            const rotateRight = rotationControls.querySelector('button:nth-child(4)'); // ↺ LEFT
+                            if (!isRotatable && flipModeEnabled) {
+                                if (rotateLeft) rotateLeft.style.display = 'none';
+                                if (rotateRight) rotateRight.style.display = 'none';
+                            } else {
+                                if (rotateLeft) rotateLeft.style.display = 'block';
+                                if (rotateRight) rotateRight.style.display = 'block';
+                            }
                 } else {
                             console.log('Hiding rotation controls for non-rotatable piece');
                             rotationControls.style.display = 'none';
