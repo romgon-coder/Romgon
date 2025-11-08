@@ -16137,6 +16137,16 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             }
         });
         
+        // TESTING MODE: Press 'T' to toggle infinite moves with same piece
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'T' || e.key === 't') {
+                testingModeEnabled = !testingModeEnabled;
+                const status = testingModeEnabled ? 'ENABLED' : 'DISABLED';
+                console.log(`🧪 TESTING MODE ${status} - Infinite moves: ${testingModeEnabled}`);
+                alert(`🧪 Testing Mode ${status}\n\n${testingModeEnabled ? 'You can now move the same piece infinitely' : 'Normal one-piece-per-turn rules restored'}`);
+            }
+        });
+        
         // ============================================
         // LEFT-CLICK DRAG CONTROLS ON CAMERA PANEL DRAG AREA
         // ============================================
@@ -18724,6 +18734,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         
         // Flip Mode variant settings
         let flipModeEnabled = false; // Enable/disable Flip Mode (omnidirectional attacks when flipped)
+        let testingModeEnabled = false; // TESTING MODE: Allow infinite moves with same piece (press 'T' to toggle)
         
         // Last move tracking for highlighting
         let lastMoveFrom = null; // Hex ID of last move source
@@ -29899,8 +29910,13 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     // Clear selection
                     selectedPiece = null;
                     
-                    // Clear current turn piece restriction
-                    currentTurnPiece = null;
+                    // TESTING MODE: Don't clear currentTurnPiece so the same piece can be moved again
+                    if (!testingModeEnabled) {
+                        currentTurnPiece = null;
+                    } else {
+                        console.log('🧪 TESTING MODE: Keeping currentTurnPiece restriction cleared for infinite moves');
+                        currentTurnPiece = null; // Still clear it so ANY piece can be moved
+                    }
                     
                     // Clear dragged pieces
                     draggedPiece = null;
