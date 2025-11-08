@@ -29841,7 +29841,51 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 console.log('Release button clicked!');
                 console.log('Before release - currentTurnPiece:', currentTurnPiece ? currentTurnPiece.id : 'null');
                 console.log('Before release - selectedPiece:', selectedPiece ? selectedPiece.id : 'null');
+                
+                // Check if there's a move to undo (piece has moved this turn)
                 if (selectedPiece) {
+                    const hexId = selectedPiece.id;
+                    const actions = pieceActions.get(hexId) || {moved: false, attacked: false, rotated: false, flipped: false};
+                    
+                    // If piece has been flipped, undo the flip first
+                    if (actions.flipped) {
+                        console.log('🔄 RELEASE: Undoing flip action');
+                        
+                        // Remove the FLIP entry from moveHistory
+                        if (moveHistory.length > 0) {
+                            const lastEntry = moveHistory[moveHistory.length - 1];
+                            if (typeof lastEntry === 'string' && lastEntry.startsWith('FLIP')) {
+                                moveHistory.pop();
+                                console.log('✅ Flip history entry removed');
+                            }
+                        }
+                        
+                        // Toggle flip state back
+                        const piece = selectedPiece.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
+                        if (piece) {
+                            const currentFlip = piece.dataset.flipped === 'true';
+                            piece.dataset.flipped = (!currentFlip).toString();
+                            console.log('✅ Flip state reverted');
+                            
+                            // Update visual indicator
+                            updateFlipVisual(hexId);
+                        }
+                    }
+                    
+                    // If piece has moved, undo the move
+                    if (actions.moved) {
+                        console.log('🔄 RELEASE: Undoing move action');
+                        
+                        // Undo the last move
+                        if (moveHistory.length > 0) {
+                            undoLastMove();
+                            console.log('✅ Move undone successfully');
+                        }
+                    }
+                    
+                    // Clear the piece actions for this hex
+                    pieceActions.delete(hexId);
+                    
                     // Clear highlights
                     document.querySelectorAll('.hexagon').forEach(hex => {
                         hex.classList.remove('highlight-green', 'highlight-red', 'highlight-danger', 'highlight-diagonal', 'highlight-gray', 'highlight-selected', 'highlight-under-attack', 'highlight-rhombus-check');
