@@ -29552,7 +29552,27 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         
                         // Toggle flip state
                         const isFlipped = piece.dataset.flipped === 'true';
-                        piece.dataset.flipped = isFlipped ? 'false' : 'true';
+                        const willBeFlipped = !isFlipped; // What the state will become
+                        
+                        // ILLEGAL MOVE CHECK: If unflipping (going from flipped to unflipped)
+                        // Check if rhombus would be under attack in unflipped state
+                        if (isFlipped && !willBeFlipped && piece.classList.contains('rhombus-piece')) {
+                            const [, row, col] = hexId.match(/hex-(\d+)-(\d+)/);
+                            const isWhite = piece.classList.contains('white-rhombus') || piece.classList.contains('white-piece');
+                            
+                            // Temporarily set piece to unflipped to check threats
+                            piece.dataset.flipped = 'false';
+                            const underAttack = isPieceUnderThreat(parseInt(row), parseInt(col), isWhite, piece);
+                            // Restore flipped state for now
+                            piece.dataset.flipped = 'true';
+                            
+                            if (underAttack) {
+                                alert('❌ ILLEGAL UNFLIP! Unflipping would put your rhombus under attack from unflipped opponent pieces!');
+                                return; // Block the unflip
+                            }
+                        }
+                        
+                        piece.dataset.flipped = willBeFlipped ? 'true' : 'false';
                         
                         console.log('🔄 FLIP BUTTON: Toggled flip state from', isFlipped, 'to', piece.dataset.flipped);
                         console.log('🔄 Piece element:', piece);
