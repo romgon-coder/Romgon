@@ -18117,21 +18117,253 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             document.querySelectorAll('.hexagon').forEach(hex => {
                 hex.classList.remove('highlight-green', 'highlight-red', 'highlight-danger', 'highlight-diagonal', 'highlight-gray');
             });
+            
             const hexId = `hex-${centerRow}-${centerCol}`;
-            highlightPieceMoves(centerRow, centerCol, 'rhombus', hexId);
+            const centerHex = document.getElementById(hexId);
+            const centerPiece = centerHex.querySelector('.rhombus-piece');
+            
+            // FLIP CHECK: If flipped, use omnidirectional pattern
+            if (centerPiece && centerPiece.dataset.flipped === 'true') {
+                console.log('🔄 Rhombus is flipped, using omnidirectional pattern');
+                highlightPieceMoves(centerRow, centerCol, 'rhombus', hexId);
+                return;
+            }
+            
+            // NOT FLIPPED: Use original rhombus movement with diagonal highlights
+            console.log('📐 Rhombus NOT flipped, using original movement with diagonals');
+            
+            // Get friendly piece types based on rhombus color
+            let friendlyPieceTypes;
+            if (centerPiece && centerPiece.classList.contains('white-rhombus')) {
+                friendlyPieceTypes = ['.square-piece.white-piece', '.triangle-piece.white-triangle', '.rhombus-piece.white-rhombus', '.circle-piece.white-circle', '.hexgon-piece.white-hexgon'];
+            } else {
+                friendlyPieceTypes = ['.square-piece:not(.white-piece)', '.triangle-piece:not(.white-triangle)', '.rhombus-piece:not(.white-rhombus)', '.circle-piece:not(.white-circle)', '.hexgon-piece:not(.white-hexgon)'];
+            }
+
+            // Define zones for diagonal ability detection
+            const deadZone = new Set(["3-3", "3-4", "3-5"]);
+            const innerPerimeter = new Set(["4-2", "4-3", "4-4", "4-5", "2-2", "2-3", "2-4", "2-5"]);
+            const currentPos = `${centerRow}-${centerCol}`;
+
+            // Use getRhombusMoves to get all possible moves (including diagonal abilities)
+            const targets = getRhombusMoves(centerRow, centerCol);
+
+            // Highlight the hexes in the rhombus pattern
+            targets.forEach(([targetRow, targetCol]) => {
+                const targetHex = document.getElementById(`hex-${targetRow}-${targetCol}`);
+                const targetPos = `${targetRow}-${targetCol}`;
+                
+                if (targetHex) {
+                    // Check if target hex has a friendly piece
+                    let hasFriendlyPiece = false;
+                    friendlyPieceTypes.forEach(selector => {
+                        if (targetHex.querySelector(selector)) {
+                            hasFriendlyPiece = true;
+                        }
+                    });
+                    
+                    // Check if target hex has an opponent piece
+                    const isWhite = centerPiece && centerPiece.classList.contains('white-rhombus');
+                    const opponentPieceTypes = isWhite ? 
+                        ['.square-piece:not(.white-piece)', '.triangle-piece:not(.white-triangle)', '.circle-piece:not(.white-circle)', '.hexgon-piece:not(.white-hexgon)'] :
+                        ['.square-piece.white-piece', '.triangle-piece.white-triangle', '.circle-piece.white-circle', '.hexgon-piece.white-hexgon'];
+                    let hasOpponentPiece = false;
+                    opponentPieceTypes.forEach(selector => {
+                        if (targetHex.querySelector(selector)) {
+                            hasOpponentPiece = true;
+                        }
+                    });
+                    
+                    // Check if this is a diagonal move (from dead zone to inner perimeter or vice versa)
+                    const isDiagonalMove = (deadZone.has(currentPos) && innerPerimeter.has(targetPos)) || 
+                                          (innerPerimeter.has(currentPos) && deadZone.has(targetPos));
+                    
+                    // CRITICAL FIX: Diagonal moves are MOVEMENT ONLY - cannot capture
+                    if (isDiagonalMove) {
+                        // Always use purple highlight for diagonal moves (even with opponent piece)
+                        targetHex.classList.add('highlight-diagonal');
+                    } else if (hasOpponentPiece) {
+                        // Red highlight for normal (non-diagonal) capture moves
+                        targetHex.classList.add('highlight-red');
+                    } else if (!hasFriendlyPiece) {
+                        // Check if this position would be vulnerable to attack
+                        if (isPositionVulnerable(targetRow, targetCol, isWhite, 'rhombus')) {
+                            targetHex.classList.add('highlight-danger');
+                        } else {
+                            targetHex.classList.add('highlight-green');
+                        }
+                    }
+                }
+            });
         }
 
         // Function to show movement for circle pieces by zone
         function showCircleMovementPattern(centerRow, centerCol) {
-            console.log(`🎯 showCircleMovementPattern called for ${centerRow}-${centerCol}`);
-            // Clear previous highlights but keep threat
+            const hexId = `hex-${centerRow}-${centerCol}`;
+            const centerHex = document.getElementById(hexId);
+            const piece = centerHex.querySelector('.circle-piece');
+            
+            // Clear previous highlights
             document.querySelectorAll('.hexagon').forEach(hex => {
                 hex.classList.remove('highlight-green', 'highlight-red', 'highlight-danger', 'highlight-diagonal', 'highlight-gray');
             });
+            
+            // ===== FLIP CHECK: If flipped, use omnidirectional pattern =====
+            if (piece && piece.dataset.flipped === 'true') {
+                console.log('🔄 Circle is flipped, using omnidirectional pattern');
+                highlightPieceMoves(centerRow, centerCol, 'circle', hexId);
+                return;
+            }
+            
+            // ===== NOT FLIPPED: Use original zone perimeter + zone transition logic =====
+            console.log('⚪ Circle is NOT flipped, using zone perimeter + zone transition pattern');
+            
+            const coord = `${centerRow}-${centerCol}`;
+            console.log(`📍 Current position: ${coord}`);
+            
+            let zoneSet = null;
+            let zoneOrder = null;
+            let currentZone = null;
+            
+            if (circleDeadZone.has(coord)) {
+                currentZone = 'dead';
+                console.log(`❌ Circle is in DEAD ZONE - cannot move`);
+                addNotification('warning', 'Circle Cannot Move', 'Circles are not allowed to move to dead zone.');
+                return;
+            } else if (circleInnerZone.has(coord)) {
+                zoneSet = circleInnerZone;
+                zoneOrder = circleInnerOrder;
+                currentZone = 'inner';
+                console.log(`✅ Circle is in INNER zone`);
+            } else if (circleMiddleZone.has(coord)) {
+                zoneSet = circleMiddleZone;
+                zoneOrder = circleMiddleOrder;
+                currentZone = 'middle';
+                console.log(`✅ Circle is in MIDDLE zone`);
+            } else if (circleOuterZone.has(coord)) {
+                zoneSet = circleOuterZone;
+                zoneOrder = circleOuterOrder;
+                currentZone = 'outer';
+                console.log(`✅ Circle is in OUTER zone`);
+            } else {
+                console.log(`❌ Circle is NOT in any zone!`);
+                return;
+            }
 
-            // Use unified highlighting system that respects flip state
-            const hexId = `hex-${centerRow}-${centerCol}`;
-            highlightPieceMoves(centerRow, centerCol, 'circle', hexId);
+            const isWhite = piece.classList.contains('white-circle');
+            const friendlySelectors = isWhite 
+                ? ['.square-piece.white-piece', '.triangle-piece.white-triangle', '.rhombus-piece.white-rhombus', '.circle-piece.white-circle', '.hexgon-piece.white-hexgon']
+                : ['.square-piece:not(.white-piece)', '.triangle-piece:not(.white-triangle)', '.rhombus-piece:not(.white-rhombus)', '.circle-piece:not(.white-circle)', '.hexgon-piece:not(.white-hexgon)'];
+
+            const opponentSelectors = isWhite 
+                ? ['.square-piece:not(.white-piece)', '.triangle-piece:not(.white-triangle)', '.rhombus-piece:not(.white-rhombus)', '.circle-piece:not(.white-circle)', '.hexgon-piece:not(.white-hexgon)']
+                : ['.square-piece.white-piece', '.triangle-piece.white-triangle', '.rhombus-piece.white-rhombus', '.circle-piece.white-circle', '.hexgon-piece.white-hexgon'];
+
+            // ===== PART 1: FULL ZONE PERIMETRIC MOVEMENT =====
+            const startIdx = zoneOrder.indexOf(coord);
+            const len = zoneOrder.length;
+            console.log(`🔄 Starting clockwise perimetric sweep. startIdx: ${startIdx}, len: ${len}`);
+            
+            // Clockwise sweep
+            for (let step = 1; step < len; step++) {
+                const idx = (startIdx + step) % len;
+                const [r,c] = zoneOrder[idx].split('-');
+                const hex = document.getElementById(`hex-${r}-${c}`);
+                if (!hex) continue;
+                
+                // Friendly: stop without highlighting
+                let hasFriendly = false;
+                for (const sel of friendlySelectors) { if (hex.querySelector(sel)) { hasFriendly = true; break; } }
+                if (hasFriendly) {
+                    console.log(`  🔄 CW Step ${step}: ${r}-${c} has friendly piece, stopping`);
+                    break;
+                }
+                // Opponent: highlight red and stop
+                let hasOpponent = false;
+                for (const sel of opponentSelectors) { if (hex.querySelector(sel)) { hasOpponent = true; break; } }
+                if (hasOpponent) {
+                    console.log(`  🔄 CW Step ${step}: ${r}-${c} has opponent, adding red and stopping`);
+                    hex.classList.add('highlight-red');
+                    break;
+                }
+                // Empty: highlight green and continue
+                if (hex !== centerHex) {
+                    hex.classList.add('highlight-green');
+                    console.log(`  🔄 CW Step ${step}: ${r}-${c} is empty, added green`);
+                }
+            }
+            
+            // Counter-clockwise sweep
+            console.log(`🔄 Starting counter-clockwise perimetric sweep`);
+            for (let step = 1; step < len; step++) {
+                const idx = (startIdx - step + len) % len;
+                const [r,c] = zoneOrder[idx].split('-');
+                const hex = document.getElementById(`hex-${r}-${c}`);
+                if (!hex) continue;
+                
+                // Friendly: stop without highlighting
+                let hasFriendly = false;
+                for (const sel of friendlySelectors) { if (hex.querySelector(sel)) { hasFriendly = true; break; } }
+                if (hasFriendly) {
+                    console.log(`  🔄 CCW Step ${step}: ${r}-${c} has friendly piece, stopping`);
+                    break;
+                }
+                // Opponent: highlight red and stop
+                let hasOpponent = false;
+                for (const sel of opponentSelectors) { if (hex.querySelector(sel)) { hasOpponent = true; break; } }
+                if (hasOpponent) {
+                    console.log(`  🔄 CCW Step ${step}: ${r}-${c} has opponent, adding red and stopping`);
+                    hex.classList.add('highlight-red');
+                    break;
+                }
+                if (hex !== centerHex) {
+                    hex.classList.add('highlight-green');
+                    console.log(`  🔄 CCW Step ${step}: ${r}-${c} is empty, added green`);
+                }
+            }
+
+            // ===== PART 2: ADJACENT HEX ZONE TRANSITIONS (purple highlights) =====
+            console.log(`🔷 Starting zone transition checks`);
+            
+            const currentPos = `${centerRow}-${centerCol}`;
+            const validTransitions = circleZoneTransitions.get(currentPos);
+            
+            if (!validTransitions || validTransitions.length === 0) {
+                console.log(`🔷 No valid zone transitions from ${currentPos}`);
+            } else {
+                console.log(`🔷 Valid transitions from ${currentPos}:`, validTransitions);
+                
+                validTransitions.forEach(targetPos => {
+                    const [targetRow, targetCol] = targetPos.split('-').map(Number);
+                    const targetHex = document.getElementById(`hex-${targetRow}-${targetCol}`);
+                    
+                    if (!targetHex) return;
+                    
+                    // Skip if already highlighted
+                    const alreadyHighlighted = targetHex.classList.contains('highlight-green') || 
+                                              targetHex.classList.contains('highlight-red') || 
+                                              targetHex.classList.contains('highlight-gray');
+                    if (alreadyHighlighted) return;
+                    
+                    // Check for pieces
+                    let hasFriendly = false;
+                    for (const sel of friendlySelectors) {
+                        if (targetHex.querySelector(sel)) { hasFriendly = true; break; }
+                    }
+                    
+                    let hasOpponent = false;
+                    for (const sel of opponentSelectors) {
+                        if (targetHex.querySelector(sel)) { hasOpponent = true; break; }
+                    }
+                    
+                    // Zone transitions are movement-only, not attackable
+                    if (hasOpponent || hasFriendly) return;
+                    
+                    // Empty hex - valid zone transition (purple highlight)
+                    console.log(`    💜 Adding purple highlight for zone transition to ${targetPos}`);
+                    targetHex.classList.add('highlight-diagonal');
+                });
+            }
         }
 
         // Show persistent attack highlights for all circles on the board
@@ -26862,7 +27094,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 '21': ['20','11','12','22','31','30'],
                 '22': ['21','12','13','23','32','31'],
                 '23': ['22','13','14','24','33','32'],
-                '24': ['23','14','15','25','34','33'],
+                '24': ['23','13','14','25','35','34'],
                 '25': ['24','15','16','26','35','34'],
                 '26': ['25','16','36','35'],
                 '27': ['26','36','37'],
