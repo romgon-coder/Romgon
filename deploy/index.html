@@ -29739,15 +29739,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         // Refresh threat highlights after flip state change
                         highlightAllPiecesUnderAttack();
                         
-                        // End turn after flip
-                        if (!gameOver) {
-                            playEndTurnSound();
-                            if (!multiplayerMode || myPlayerColor === 'both') {
-                                switchTurn();
-                            }
-                            updateBaseDefenceDisplay();
-                            highlightAllPiecesUnderAttack();
-                        }
+                        console.log('✅ Flip complete - press KEEP to end turn or RELEASE to cancel');
                     }
                 }
             };
