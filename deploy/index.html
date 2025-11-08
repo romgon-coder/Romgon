@@ -16473,22 +16473,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 menuButtonSound.volume = 0.3;
                 menuButtonSound.preload = 'auto';
                 
-                // Load illegal move sound (MP3 format for better browser compatibility)
-                illegalSound = new Audio('ASSETS/illegalSound.mp3');
+                // Load illegal move sound (OGG format for better browser compatibility)
+                illegalSound = new Audio('ASSETS/illegalSound.ogg');
                 illegalSound.volume = 0.5; // Set volume to 50% for illegal move sound
                 illegalSound.preload = 'auto';
-                
-                console.log('✅ Illegal sound initialized:', illegalSound);
-                console.log('🔊 Illegal sound path:', illegalSound.src);
-                
-                // Add error listener with detailed logging
-                illegalSound.addEventListener('error', (e) => {
-                    console.error('❌ Failed to load illegal sound:', e);
-                    console.error('❌ Error code:', illegalSound.error ? illegalSound.error.code : 'unknown');
-                    console.error('❌ Error message:', illegalSound.error ? illegalSound.error.message : 'unknown');
-                    console.error('❌ Network state:', illegalSound.networkState);
-                    console.error('❌ Ready state:', illegalSound.readyState);
-                });
                 
                 // Background music tracks
                 backgroundMusic1 = new Audio('ASSETS/background1.mp3');
@@ -16624,46 +16612,11 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 return;
             }
             
-            console.log('🔊 Attempting to play illegal sound...');
-            console.log('🔊 readyState:', illegalSound.readyState, 'volume:', illegalSound.volume, 'src:', illegalSound.src);
-            
             try {
-                // Reset to beginning
-                illegalSound.currentTime = 0;
-                
-                // If not loaded, load it first
-                if (illegalSound.readyState < 2) {
-                    console.log('🔊 Audio not ready, loading first...');
-                    illegalSound.load();
-                    
-                    illegalSound.addEventListener('canplaythrough', function playHandler() {
-                        console.log('🔊 Audio loaded, playing now...');
-                        illegalSound.play()
-                            .then(() => console.log('✅ Illegal sound played successfully'))
-                            .catch(e => console.error('❌ Play failed:', e.message));
-                        illegalSound.removeEventListener('canplaythrough', playHandler);
-                    }, { once: true });
-                    
-                    // Fallback timeout
-                    setTimeout(() => {
-                        if (illegalSound.readyState >= 2) {
-                            console.log('🔊 Timeout fallback - forcing play...');
-                            illegalSound.play()
-                                .then(() => console.log('✅ Fallback play succeeded'))
-                                .catch(e => console.error('❌ Fallback play failed:', e.message));
-                        }
-                    }, 500);
-                } else {
-                    // Audio already loaded, play immediately
-                    console.log('🔊 Audio ready, playing immediately...');
-                    const playPromise = illegalSound.play();
-                    
-                    if (playPromise !== undefined) {
-                        playPromise
-                            .then(() => console.log('✅ Illegal sound played successfully'))
-                            .catch(error => console.error('❌ Play error:', error.message, error.name));
-                    }
-                }
+                illegalSound.currentTime = 0; // Reset to beginning
+                illegalSound.play()
+                    .then(() => console.log('✅ Illegal sound played successfully'))
+                    .catch(error => console.error('❌ Illegal sound play error:', error.message));
             } catch (error) {
                 console.error('❌ Illegal sound error:', error.message);
             }
