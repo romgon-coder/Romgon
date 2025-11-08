@@ -16613,58 +16613,13 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         }
         
         function playIllegalSound() {
-            console.log('🔊 playIllegalSound called');
             if (!illegalSound) {
                 console.error('❌ illegalSound not initialized!');
                 return;
             }
             
-            console.log('🔊 illegalSound object exists, attempting to play...');
-            console.log('🔊 illegalSound src:', illegalSound.src);
-            console.log('🔊 illegalSound readyState:', illegalSound.readyState);
-            console.log('🔊 illegalSound volume:', illegalSound.volume);
-            
-            // If audio not loaded yet, wait for it to load
-            if (illegalSound.readyState < 2) {
-                console.log('🔊 Audio not loaded yet, loading...');
-                
-                // Add error listener for loading failures
-                illegalSound.addEventListener('error', function errorHandler(e) {
-                    console.error('❌ Failed to load audio:', e);
-                    console.error('Error details:', illegalSound.error);
-                    illegalSound.removeEventListener('error', errorHandler);
-                }, { once: true });
-                
-                // Try to load and play
-                illegalSound.load();
-                
-                // Wait for either canplay or loadeddata
-                const playWhenReady = function() {
-                    console.log('🔊 Audio loaded, playing now... (readyState:', illegalSound.readyState, ')');
-                    illegalSound.play().then(() => {
-                        console.log('✅ Illegal sound played successfully');
-                    }).catch(error => {
-                        console.error('❌ Play error:', error.name, error.message);
-                    });
-                };
-                
-                illegalSound.addEventListener('canplay', playWhenReady, { once: true });
-                illegalSound.addEventListener('loadeddata', playWhenReady, { once: true });
-                
-                // Fallback timeout in case events don't fire
-                setTimeout(() => {
-                    if (illegalSound.readyState >= 2) {
-                        console.log('🔊 Timeout fallback - trying to play...');
-                        playWhenReady();
-                    } else {
-                        console.error('❌ Audio still not loaded after 2 seconds');
-                    }
-                }, 2000);
-                
-                return;
-            }
-            
             try {
+                // Reset to beginning and play
                 illegalSound.currentTime = 0;
                 const playPromise = illegalSound.play();
                 
@@ -16672,14 +16627,19 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     playPromise.then(() => {
                         console.log('✅ Illegal sound played successfully');
                     }).catch(error => {
-                        console.error('❌ Illegal move audio play error:', error);
-                        console.error('Error name:', error.name);
-                        console.error('Error message:', error.message);
+                        console.warn('⚠️ Illegal sound play error:', error.message);
+                        // If audio hasn't loaded yet, try loading it first
+                        if (error.name === 'NotAllowedError' || error.name === 'NotSupportedError') {
+                            console.log('🔊 Loading audio and retrying...');
+                            illegalSound.load();
+                            illegalSound.addEventListener('canplaythrough', () => {
+                                illegalSound.play().catch(e => console.error('❌ Retry failed:', e.message));
+                            }, { once: true });
+                        }
                     });
                 }
             } catch (error) {
-                console.error('❌ Illegal move audio play error (catch):', error);
-                console.error('Error details:', error.toString());
+                console.error('❌ Illegal sound error:', error.message);
             }
         }
         
@@ -19052,8 +19012,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         // Show popup/warning for illegal base defense move
         function showBaseDefenseWarning() {
             addNotification('warning', 'Base is Open', 'Only the allowed piece(s) can leave the base in this variant!');
-            playIllegalSound();
             alert('❌ Illegal move: Only the allowed piece(s) can leave the base in this variant!');
+            playIllegalSound();
         }
 
         // Check if a piece can leave base under shape defense rules
@@ -19120,8 +19080,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 alert('Shape Defense: Cannot escape - your base is not under threat. Position your shapes to defend the base first.');
             } else {
                 addNotification('warning', 'Base Defended', `${pieceType} cannot leave base under shape defense rules!`);
-                playIllegalSound();
                 alert(`❌ Illegal move: ${pieceType} cannot leave base under shape defense rules!`);
+                playIllegalSound();
             }
         }
 
@@ -29794,8 +29754,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                                 
                                 if (underAttackAfterFlip) {
                                     console.log('❌ FLIP MODE: Flipping would put rhombus under attack!');
-                                    playIllegalSound();
                                     alert('❌ ILLEGAL FLIP!\n\nFlipping would put your rhombus under attack from flipped opponent pieces!\n\nYou must press RELEASE to cancel the move or choose a safer position.');
+                                    playIllegalSound();
                                     return; // Block the flip
                                 }
                                 console.log('✅ FLIP MODE: Flipping is safe');
@@ -29812,8 +29772,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                                 
                                 if (underAttackAfterUnflip) {
                                     console.log('❌ FLIP MODE: Unflipping would put rhombus under attack!');
-                                    playIllegalSound();
                                     alert('❌ ILLEGAL UNFLIP!\n\nUnflipping would put your rhombus under attack from unflipped opponent pieces!\n\nYou must press RELEASE to cancel the move or choose a safer position.');
+                                    playIllegalSound();
                                     return; // Block the unflip
                                 }
                                 console.log('✅ FLIP MODE: Unflipping is safe');
@@ -29899,8 +29859,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                             console.log('❌ FLIP MODE: Rhombus is under attack in current flip state!');
                             const flipStateText = currentFlipState ? 'flipped' : 'unflipped';
                             const attackerStateText = currentFlipState ? 'flipped' : 'unflipped';
-                            playIllegalSound();
                             alert(`❌ ILLEGAL MOVE!\n\nYour ${flipStateText} rhombus is under attack from ${attackerStateText} opponent pieces at this position!\n\nYou must press RELEASE to cancel the move or ${currentFlipState ? 'press FLIP to unflip' : 'press FLIP to flip'}.`);
+                            playIllegalSound();
                             return; // Don't end turn
                         } else {
                             console.log('✅ FLIP MODE: Rhombus is safe in current flip state');
@@ -33545,8 +33505,8 @@ ${moveHistory || '(No moves played yet - starting position)'}
                                 
                                 if (rhombusUnderAttack) {
                                     e.preventDefault();
-                                    playIllegalSound();
                                     alert('❌ ILLEGAL MOVE!\n\nYour rhombus is in check!\n\nYou must move your rhombus to escape the threat or block it.');
+                                    playIllegalSound();
                                     return;
                                 }
                             }
@@ -33875,8 +33835,8 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 } else {
                     if (wouldMoveResultInOwnCheckmate(draggedFromHex.id, targetId, pieceClasses, existingPiece)) {
                         addNotification('error', 'ILLEGAL MOVE!', 'This move puts your rhombus under attack. You can only do this if you capture the attacking piece!');
-                        playIllegalSound();
                         alert('❌ ILLEGAL MOVE! This move puts your rhombus under attack. You can only do this if you capture the attacking piece!');
+                        playIllegalSound();
                         return; // Block the move
                     }
                 }
@@ -34226,8 +34186,8 @@ ${moveHistory || '(No moves played yet - starting position)'}
                                 
                                 if (rhombusUnderAttack) {
                                     e.preventDefault();
-                                    playIllegalSound();
                                     alert('❌ ILLEGAL MOVE!\n\nYour rhombus is in check!\n\nYou must move your rhombus to escape the threat or block it.');
+                                    playIllegalSound();
                                     return;
                                 }
                             }
