@@ -17177,6 +17177,21 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 hexgon: piece.classList.contains('hexgon-piece')
             });
             
+            // FLIP MECHANIC: Check if piece is flipped
+            const isFlipped = piece && piece.dataset.flipped === 'true';
+            
+            if (isFlipped) {
+                // Flipped pieces use omnidirectional 6-hex attack pattern
+                console.log(`🔄 Piece at ${pieceRow}-${pieceCol} is FLIPPED, checking omnidirectional attack`);
+                const flippedTargets = getFlippedAttackTargets(pieceRow, pieceCol);
+                const canAttack = flippedTargets.some(([r, c]) => r === targetRow && c === targetCol);
+                if (canAttack) {
+                    console.log(`✅ FLIPPED piece at ${pieceRow}-${pieceCol} CAN attack ${targetRow}-${targetCol}`);
+                }
+                return canAttack;
+            }
+            
+            // NOT FLIPPED: Use original piece-specific patterns
             // Get the piece type and determine which movement function to use
             if (piece.classList.contains('square-piece')) {
                 const canAttack = canSquareAttack(pieceRow, pieceCol, targetRow, targetCol);
