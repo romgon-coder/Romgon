@@ -29093,7 +29093,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 const targetPiece = targetHex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
                 
                 if (!targetPiece) {
-                    // Empty hex - check if it's a special move (zone transition for circle)
+                    // Empty hex - check if it's a special move (zone transition for circle, diagonal for rhombus)
                     let isSpecialMove = false;
                     
                     if (pieceType === 'circle' && !isFlipped) {
@@ -29104,6 +29104,20 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         
                         if (validTransitions && validTransitions.includes(targetPos)) {
                             targetHex.classList.add('highlight-diagonal'); // Purple for zone transitions
+                            isSpecialMove = true;
+                        }
+                    } else if (pieceType === 'rhombus' && !isFlipped) {
+                        // Check if this target is a diagonal move (dead zone ↔ inner perimeter)
+                        const deadZone = new Set(["3-3", "3-4", "3-5"]);
+                        const innerPerimeter = new Set(["2-2", "2-3", "2-4", "2-5", "3-2", "3-6", "4-2", "4-3", "4-4", "4-5"]);
+                        const currentPos = `${row}-${col}`;
+                        const targetPos = `${targetRow}-${targetCol}`;
+                        
+                        const isDiagonalMove = (deadZone.has(currentPos) && innerPerimeter.has(targetPos)) || 
+                                              (innerPerimeter.has(currentPos) && deadZone.has(targetPos));
+                        
+                        if (isDiagonalMove) {
+                            targetHex.classList.add('highlight-diagonal'); // Purple for diagonal moves
                             isSpecialMove = true;
                         }
                     }
