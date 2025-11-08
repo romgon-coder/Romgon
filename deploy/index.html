@@ -16614,26 +16614,32 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         
         function playIllegalSound() {
             console.log('🔊 playIllegalSound called');
-            if (illegalSound) {
-                console.log('🔊 illegalSound object exists, attempting to play...');
-                console.log('🔊 illegalSound src:', illegalSound.src);
-                console.log('🔊 illegalSound readyState:', illegalSound.readyState);
-                try {
-                    // Clone the audio to allow overlapping plays
-                    const soundClone = illegalSound.cloneNode();
-                    soundClone.volume = 0.5;
-                    soundClone.play().then(() => {
+            if (!illegalSound) {
+                console.error('❌ illegalSound not initialized!');
+                return;
+            }
+            
+            console.log('🔊 illegalSound object exists, attempting to play...');
+            console.log('🔊 illegalSound src:', illegalSound.src);
+            console.log('🔊 illegalSound readyState:', illegalSound.readyState);
+            console.log('🔊 illegalSound volume:', illegalSound.volume);
+            
+            try {
+                illegalSound.currentTime = 0;
+                const playPromise = illegalSound.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
                         console.log('✅ Illegal sound played successfully');
                     }).catch(error => {
                         console.error('❌ Illegal move audio play error:', error);
                         console.error('Error name:', error.name);
                         console.error('Error message:', error.message);
                     });
-                } catch (error) {
-                    console.error('❌ Illegal move audio play error (catch):', error);
                 }
-            } else {
-                console.error('❌ illegalSound not initialized!');
+            } catch (error) {
+                console.error('❌ Illegal move audio play error (catch):', error);
+                console.error('Error details:', error.toString());
             }
         }
         
