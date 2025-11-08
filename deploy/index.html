@@ -16477,6 +16477,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 illegalSound = new Audio('ASSETS/illegalSound.mp3');
                 illegalSound.volume = 0.5; // Set volume to 50% for illegal move sound
                 illegalSound.preload = 'auto';
+                
+                // Force load the audio immediately
+                illegalSound.load();
+                
                 console.log('✅ Illegal sound initialized:', illegalSound);
                 
                 // Add error listener
@@ -16618,25 +16622,45 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 return;
             }
             
+            console.log('🔊 Attempting to play illegal sound...');
+            console.log('🔊 readyState:', illegalSound.readyState, 'volume:', illegalSound.volume, 'src:', illegalSound.src);
+            
             try {
-                // Reset to beginning and play
+                // Reset to beginning
                 illegalSound.currentTime = 0;
-                const playPromise = illegalSound.play();
                 
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        console.log('✅ Illegal sound played successfully');
-                    }).catch(error => {
-                        console.warn('⚠️ Illegal sound play error:', error.message);
-                        // If audio hasn't loaded yet, try loading it first
-                        if (error.name === 'NotAllowedError' || error.name === 'NotSupportedError') {
-                            console.log('🔊 Loading audio and retrying...');
-                            illegalSound.load();
-                            illegalSound.addEventListener('canplaythrough', () => {
-                                illegalSound.play().catch(e => console.error('❌ Retry failed:', e.message));
-                            }, { once: true });
+                // If not loaded, load it first
+                if (illegalSound.readyState < 2) {
+                    console.log('🔊 Audio not ready, loading first...');
+                    illegalSound.load();
+                    
+                    illegalSound.addEventListener('canplaythrough', function playHandler() {
+                        console.log('🔊 Audio loaded, playing now...');
+                        illegalSound.play()
+                            .then(() => console.log('✅ Illegal sound played successfully'))
+                            .catch(e => console.error('❌ Play failed:', e.message));
+                        illegalSound.removeEventListener('canplaythrough', playHandler);
+                    }, { once: true });
+                    
+                    // Fallback timeout
+                    setTimeout(() => {
+                        if (illegalSound.readyState >= 2) {
+                            console.log('🔊 Timeout fallback - forcing play...');
+                            illegalSound.play()
+                                .then(() => console.log('✅ Fallback play succeeded'))
+                                .catch(e => console.error('❌ Fallback play failed:', e.message));
                         }
-                    });
+                    }, 500);
+                } else {
+                    // Audio already loaded, play immediately
+                    console.log('🔊 Audio ready, playing immediately...');
+                    const playPromise = illegalSound.play();
+                    
+                    if (playPromise !== undefined) {
+                        playPromise
+                            .then(() => console.log('✅ Illegal sound played successfully'))
+                            .catch(error => console.error('❌ Play error:', error.message, error.name));
+                    }
                 }
             } catch (error) {
                 console.error('❌ Illegal sound error:', error.message);
