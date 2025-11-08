@@ -34024,12 +34024,15 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     const elimId = existingPiece.getAttribute('data-eliminated-id');
                     capturedHTML = JSON.stringify({html: existingPiece.outerHTML, elimId});
                 }
+                // FLIP MODE: In flip mode, moves don't end turn until KEEP is pressed
+                const shouldEndTurn = flipModeEnabled ? false : (isCapture || (!newPiece.classList.contains('triangle-piece') && !newPiece.classList.contains('hexgon-piece')));
+                
                 moveHistory.push({
                     fromId: fromHex.id,
                     toId: targetHex.id,
                     pieceClass: pieceClasses,
                     capturedHTML: capturedHTML,
-                    endedTurn: isCapture || (!newPiece.classList.contains('triangle-piece') && !newPiece.classList.contains('hexgon-piece')),
+                    endedTurn: shouldEndTurn,
                     isTriangle: newPiece.classList.contains('triangle-piece'),
                     isHexgon: newPiece.classList.contains('hexgon-piece')
                 });
