@@ -18409,6 +18409,42 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 // FLIP MODE: Get circle's flip state
                 const circleIsFlipped = flipModeEnabled && circle.dataset.flipped === 'true';
                 
+                const isWhite = circle.classList.contains('white-circle');
+                
+                // FLIP MODE: If flipped, use omnidirectional attack (6 adjacent hexes)
+                if (circleIsFlipped) {
+                    const flippedTargets = getFlippedAttackTargets(centerRow, centerCol);
+                    const opponentSelectors = isWhite 
+                        ? ['.square-piece:not(.white-piece)', '.triangle-piece:not(.white-triangle)', '.rhombus-piece:not(.white-rhombus)', '.circle-piece:not(.white-circle)', '.hexgon-piece:not(.white-hexgon)']
+                        : ['.square-piece.white-piece', '.triangle-piece.white-triangle', '.rhombus-piece.white-rhombus', '.circle-piece.white-circle', '.hexgon-piece.white-hexgon'];
+                    
+                    flippedTargets.forEach(([targetRow, targetCol]) => {
+                        const hex = document.getElementById(`hex-${targetRow}-${targetCol}`);
+                        if (!hex) return;
+                        
+                        // Check if has opponent piece
+                        let opponentPiece = null;
+                        for (const sel of opponentSelectors) {
+                            const piece = hex.querySelector(sel);
+                            if (piece) {
+                                opponentPiece = piece;
+                                break;
+                            }
+                        }
+                        
+                        if (opponentPiece) {
+                            // Check if target is also flipped
+                            const targetIsFlipped = opponentPiece.dataset.flipped === 'true';
+                            if (targetIsFlipped) {
+                                // Both flipped - can attack
+                                hex.classList.add('highlight-red');
+                            }
+                        }
+                    });
+                    return; // Done with this flipped circle
+                }
+                
+                // UNFLIPPED CIRCLE: Use zone-based movement
                 // Determine zone
                 let zoneOrder = null;
                 if (circleInnerZone.has(coord)) {
