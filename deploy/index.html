@@ -17048,7 +17048,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             // Clear any previous "under attack" highlights (both regular and rhombus-check)
             // Also clear any movement highlights that might persist
             document.querySelectorAll('.hexagon').forEach(hex => {
-                hex.classList.remove('highlight-under-attack', 'highlight-rhombus-check', 'highlight-red');
+                hex.classList.remove('highlight-under-attack', 'highlight-rhombus-check', 'highlight-red', 'highlight-threat', 'highlight-danger');
             });
             console.log('✅ Cleared all threat and attack highlights');
             
