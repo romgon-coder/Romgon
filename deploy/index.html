@@ -17916,30 +17916,25 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             // If flipped, add visual indicator using the flipped piece image
             if (piece.dataset.flipped === 'true') {
-                // Determine piece type and color
-                let pieceType = '';
-                let isWhite = false;
+                // Determine piece type and color, then build exact filename
+                let imageName = '';
                 
                 if (piece.classList.contains('square-piece')) {
-                    pieceType = 'square';
-                    isWhite = piece.classList.contains('white-piece');
+                    const isWhite = piece.classList.contains('white-piece');
+                    imageName = isWhite ? 'square white Front FLIPPED.png' : 'square black front FLIPPED.png';
                 } else if (piece.classList.contains('triangle-piece')) {
-                    pieceType = 'Triangle';
-                    isWhite = piece.classList.contains('white-triangle');
+                    const isWhite = piece.classList.contains('white-triangle');
+                    imageName = isWhite ? 'Triangle white front FLIPPED.png' : 'Triangle black front FLIPPED.png';
                 } else if (piece.classList.contains('rhombus-piece')) {
-                    pieceType = 'Rhombus';
-                    isWhite = piece.classList.contains('white-rhombus');
+                    const isWhite = piece.classList.contains('white-rhombus');
+                    imageName = isWhite ? 'Rhombus white front FLIPPED.png' : 'Rhombus black front FLIPPED.png';
                 } else if (piece.classList.contains('circle-piece')) {
-                    pieceType = 'circle';
-                    isWhite = piece.classList.contains('white-circle');
+                    const isWhite = piece.classList.contains('white-circle');
+                    imageName = isWhite ? 'circle white front FLIPPED.png' : 'circle black front FLIPPED.png';
                 } else if (piece.classList.contains('hexgon-piece')) {
-                    pieceType = 'hexagon';
-                    isWhite = piece.classList.contains('white-hexgon');
+                    const isWhite = piece.classList.contains('white-hexgon');
+                    imageName = isWhite ? 'hexagon white front FLIPPED.png' : 'hexagon black front FLIPPED.png';
                 }
-                
-                // Build the flipped image filename
-                const color = isWhite ? 'white' : 'black';
-                const imageName = `${pieceType} ${color} front FLIPPED.png`;
                 
                 const flipIndicator = document.createElement('img');
                 flipIndicator.className = 'flip-indicator';
@@ -17956,6 +17951,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     filter: drop-shadow(0 0 3px rgba(52, 152, 219, 0.8));
                 `;
                 piece.appendChild(flipIndicator); // Attach to PIECE not hex
+                
+                console.log(`🔄 Added flip indicator: ${imageName} for piece at ${hexId}`);
             }
         }
 
