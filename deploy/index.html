@@ -26836,32 +26836,84 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         // FLIP MECHANIC: Returns all 6 adjacent hexes for flipped pieces (omnidirectional attack)
         function getFlippedAttackTargets(row, col) {
             const targets = [];
-            let offsets = [];
+            const pos = `${row}${col}`;
             
-            // Board dimensions: Row 0=6, Row 1=7, Row 2=8, Row 3=9, Row 4=8, Row 5=7, Row 6=6
-            const maxCols = [6, 7, 8, 9, 8, 7, 6];
+            // Hardcoded adjacency map for all hexes (based on actual board structure)
+            const adjacencyMap = {
+                // Row 0
+                '00': ['10','11','01'],
+                '01': ['00','11','12','02'],
+                '02': ['01','12','13','03'],
+                '03': ['02','13','14','04'],
+                '04': ['03','14','15','05'],
+                '05': ['04','15'],
+                
+                // Row 1
+                '10': ['00','20','11','01'],
+                '11': ['10','01','02','12','21','20'],
+                '12': ['11','02','03','13','22','21'],
+                '13': ['12','03','04','14','23','22'],
+                '14': ['13','04','05','15','24','23'],
+                '15': ['14','05','25','24'],
+                '16': ['15','25','26'],
+                
+                // Row 2
+                '20': ['10','30','21','11'],
+                '21': ['20','11','12','22','31','30'],
+                '22': ['21','12','13','23','32','31'],
+                '23': ['22','13','14','24','33','32'],
+                '24': ['23','14','15','25','34','33'],
+                '25': ['24','15','16','26','35','34'],
+                '26': ['25','16','36','35'],
+                '27': ['26','36','37'],
+                
+                // Row 3
+                '30': ['40','31','20'],
+                '31': ['40','30','20','21','32','41'],
+                '32': ['41','31','21','22','33','42'],
+                '33': ['42','32','22','23','34','43'],
+                '34': ['43','33','23','24','35','44'],
+                '35': ['44','34','24','25','36','45'],
+                '36': ['45','35','25','26','37','46'],
+                '37': ['46','36','26','27','38','47'],
+                '38': ['47','37','27'],
+                
+                // Row 4
+                '40': ['50','41','31'],
+                '41': ['50','40','31','32','42','51'],
+                '42': ['51','41','32','33','43','52'],
+                '43': ['52','42','33','34','44','53'],
+                '44': ['53','43','34','35','45','54'],
+                '45': ['54','44','35','36','46','55'],
+                '46': ['55','45','36','37','47','56'],
+                '47': ['56','46','37'],
+                
+                // Row 5
+                '50': ['60','51','41'],
+                '51': ['50','41','42','52','61','60'],
+                '52': ['51','42','43','53','62','61'],
+                '53': ['52','43','44','54','63','62'],
+                '54': ['53','44','45','55','64','63'],
+                '55': ['54','45','46','56','65','64'],
+                '56': ['65','55','46','47'],
+                
+                // Row 6
+                '60': ['61','51','50'],
+                '61': ['60','51','52','62'],
+                '62': ['61','52','53','63'],
+                '63': ['62','53','54','64'],
+                '64': ['63','54','55','65'],
+                '65': ['64','55','56']
+            };
             
-            // Hexagonal grid neighbors - based on actual square orthogonal + missing diagonals
-            if (row % 2 === 0) {
-                // Even rows (0, 2, 4, 6): offsets shift right on diagonals
-                offsets = [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [0, -1]];
-            } else {
-                // Odd rows (1, 3, 5): different diagonal pattern
-                offsets = [[1, 0], [1, 1], [0, 1], [-1, 0], [0, -1], [-1, 1]];
-            }
+            const adjacent = adjacencyMap[pos] || [];
+            console.log(`🔄 getFlippedAttackTargets for ${row}-${col} (pos: ${pos}), adjacent hexes:`, adjacent);
             
-            console.log(`🔄 getFlippedAttackTargets for ${row}-${col}, offsets:`, offsets);
-            
-            offsets.forEach(([dr, dc]) => {
-                const newRow = row + dr;
-                const newCol = col + dc;
-                // Check both row bounds and column bounds for that row
-                if (newRow >= 0 && newRow <= 6 && newCol >= 0 && newCol < maxCols[newRow]) {
-                    targets.push([newRow, newCol]);
-                    console.log(`  ✅ Added target: ${newRow}-${newCol}`);
-                } else {
-                    console.log(`  ❌ Rejected target: ${newRow}-${newCol} (out of bounds)`);
-                }
+            adjacent.forEach(adjPos => {
+                const adjRow = parseInt(adjPos[0]);
+                const adjCol = parseInt(adjPos[1]);
+                targets.push([adjRow, adjCol]);
+                console.log(`  ✅ Added target: ${adjRow}-${adjCol}`);
             });
             
             console.log(`🔄 Total flipped targets: ${targets.length}`);
