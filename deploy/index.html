@@ -17464,7 +17464,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         }
 
         // Helper function to check if a position is vulnerable to attack
-        function isPositionVulnerable(row, col, isWhite, movingPieceType = null) {
+        function isPositionVulnerable(row, col, isWhite, movingPieceType = null, movingPieceFlipped = false) {
             // Get all opponent pieces (INCLUDING CIRCLES AND HEXAGONS!)
             const opponentPieceTypes = isWhite ? 
                 ['.square-piece:not(.white-piece)', '.triangle-piece:not(.white-triangle)', '.rhombus-piece:not(.white-rhombus)', '.circle-piece:not(.white-circle)', '.hexgon-piece:not(.white-hexgon)'] :
@@ -17478,6 +17478,15 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     // and the opponent piece is also a rhombus, skip it (rhombuses can't attack each other)
                     if (movingPieceType === 'rhombus' && piece.classList.contains('rhombus-piece')) {
                         continue; // Skip rhombus-on-rhombus check
+                    }
+                    
+                    // FLIP MODE: Check if attacker's flip state matches moving piece's flip state
+                    if (flipModeEnabled) {
+                        const attackerIsFlipped = piece.dataset.flipped === 'true';
+                        if (attackerIsFlipped !== movingPieceFlipped) {
+                            // Flip states don't match - attacker can't threaten this piece
+                            continue;
+                        }
                     }
                     
                     const pieceHex = piece.closest('.hexagon');
@@ -29157,7 +29166,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                                                         deadZone.has(currentPos);
                         }
                         
-                        if (!canFlipFromCurrentPosition && isPositionVulnerable(targetRow, targetCol, isWhite, pieceType)) {
+                        if (!canFlipFromCurrentPosition && isPositionVulnerable(targetRow, targetCol, isWhite, pieceType, isFlipped)) {
                             targetHex.classList.add('highlight-danger'); // Red threat indicator
                         } else {
                             targetHex.classList.add('highlight-green'); // Safe move
