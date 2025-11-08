@@ -18183,11 +18183,23 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         ['.square-piece:not(.white-piece)', '.triangle-piece:not(.white-triangle)', '.circle-piece:not(.white-circle)', '.hexgon-piece:not(.white-hexgon)'] :
                         ['.square-piece.white-piece', '.triangle-piece.white-triangle', '.circle-piece.white-circle', '.hexgon-piece.white-hexgon'];
                     let hasOpponentPiece = false;
+                    let opponentPiece = null;
                     opponentPieceTypes.forEach(selector => {
-                        if (targetHex.querySelector(selector)) {
+                        const piece = targetHex.querySelector(selector);
+                        if (piece) {
                             hasOpponentPiece = true;
+                            opponentPiece = piece;
                         }
                     });
+                    
+                    // FLIP MECHANIC: Check if opponent piece has matching flip state
+                    if (hasOpponentPiece && opponentPiece) {
+                        const centerIsFlipped = centerPiece.dataset.flipped === 'true';
+                        const opponentIsFlipped = opponentPiece.dataset.flipped === 'true';
+                        if (centerIsFlipped !== opponentIsFlipped) {
+                            hasOpponentPiece = false; // Flip state mismatch - cannot attack
+                        }
+                    }
                     
                     // Check if this is a diagonal move (from dead zone to inner perimeter or vice versa)
                     const isDiagonalMove = (deadZone.has(currentPos) && innerPerimeter.has(targetPos)) || 
@@ -18295,7 +18307,25 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 }
                 // Opponent: highlight red and stop
                 let hasOpponent = false;
-                for (const sel of opponentSelectors) { if (hex.querySelector(sel)) { hasOpponent = true; break; } }
+                let opponentPiece = null;
+                for (const sel of opponentSelectors) { 
+                    const foundPiece = hex.querySelector(sel);
+                    if (foundPiece) { 
+                        hasOpponent = true;
+                        opponentPiece = foundPiece;
+                        break;
+                    }
+                }
+                
+                // FLIP MECHANIC: Check flip state before highlighting opponent
+                if (hasOpponent && opponentPiece) {
+                    const centerIsFlipped = piece.dataset.flipped === 'true';
+                    const opponentIsFlipped = opponentPiece.dataset.flipped === 'true';
+                    if (centerIsFlipped !== opponentIsFlipped) {
+                        hasOpponent = false; // Flip state mismatch - cannot attack
+                    }
+                }
+                
                 if (hasOpponent) {
                     console.log(`  🔄 CW Step ${step}: ${r}-${c} has opponent, adding red and stopping`);
                     hex.classList.add('highlight-red');
@@ -18325,7 +18355,25 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 }
                 // Opponent: highlight red and stop
                 let hasOpponent = false;
-                for (const sel of opponentSelectors) { if (hex.querySelector(sel)) { hasOpponent = true; break; } }
+                let opponentPiece = null;
+                for (const sel of opponentSelectors) {
+                    const foundPiece = hex.querySelector(sel);
+                    if (foundPiece) {
+                        hasOpponent = true;
+                        opponentPiece = foundPiece;
+                        break;
+                    }
+                }
+                
+                // FLIP MECHANIC: Check flip state before highlighting opponent
+                if (hasOpponent && opponentPiece) {
+                    const centerIsFlipped = piece.dataset.flipped === 'true';
+                    const opponentIsFlipped = opponentPiece.dataset.flipped === 'true';
+                    if (centerIsFlipped !== opponentIsFlipped) {
+                        hasOpponent = false; // Flip state mismatch - cannot attack
+                    }
+                }
+                
                 if (hasOpponent) {
                     console.log(`  🔄 CCW Step ${step}: ${r}-${c} has opponent, adding red and stopping`);
                     hex.classList.add('highlight-red');
