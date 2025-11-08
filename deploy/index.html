@@ -16627,16 +16627,40 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             // If audio not loaded yet, wait for it to load
             if (illegalSound.readyState < 2) {
                 console.log('🔊 Audio not loaded yet, loading...');
+                
+                // Add error listener for loading failures
+                illegalSound.addEventListener('error', function errorHandler(e) {
+                    console.error('❌ Failed to load audio:', e);
+                    console.error('Error details:', illegalSound.error);
+                    illegalSound.removeEventListener('error', errorHandler);
+                }, { once: true });
+                
+                // Try to load and play
                 illegalSound.load();
-                illegalSound.addEventListener('canplay', function playOnce() {
-                    console.log('🔊 Audio loaded, playing now...');
+                
+                // Wait for either canplay or loadeddata
+                const playWhenReady = function() {
+                    console.log('🔊 Audio loaded, playing now... (readyState:', illegalSound.readyState, ')');
                     illegalSound.play().then(() => {
                         console.log('✅ Illegal sound played successfully');
                     }).catch(error => {
                         console.error('❌ Play error:', error.name, error.message);
                     });
-                    illegalSound.removeEventListener('canplay', playOnce);
-                }, { once: true });
+                };
+                
+                illegalSound.addEventListener('canplay', playWhenReady, { once: true });
+                illegalSound.addEventListener('loadeddata', playWhenReady, { once: true });
+                
+                // Fallback timeout in case events don't fire
+                setTimeout(() => {
+                    if (illegalSound.readyState >= 2) {
+                        console.log('🔊 Timeout fallback - trying to play...');
+                        playWhenReady();
+                    } else {
+                        console.error('❌ Audio still not loaded after 2 seconds');
+                    }
+                }, 2000);
+                
                 return;
             }
             
