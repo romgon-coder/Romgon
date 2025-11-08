@@ -26806,9 +26806,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             const targets = [];
             let offsets = [];
             
+            // Board dimensions: Row 0=6, Row 1=7, Row 2=8, Row 3=9, Row 4=8, Row 5=7, Row 6=6
+            const maxCols = [6, 7, 8, 9, 8, 7, 6];
+            
             // Hexagonal grid neighbors - based on actual square orthogonal + missing diagonals
-            // Row 0 (even): square uses [1,0], [1,1], [-1,1], [-1,0] → add [0,1], [0,-1]
-            // Row 1 (odd):  square uses [1,0], [1,1], [-1,-1], [-1,0] → add [0,1], [0,-1]
             if (row % 2 === 0) {
                 // Even rows (0, 2, 4, 6): offsets shift right on diagonals
                 offsets = [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [0, -1]];
@@ -26822,9 +26823,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             offsets.forEach(([dr, dc]) => {
                 const newRow = row + dr;
                 const newCol = col + dc;
-                if (newRow >= 0 && newRow <= 6 && newCol >= 0) {
+                // Check both row bounds and column bounds for that row
+                if (newRow >= 0 && newRow <= 6 && newCol >= 0 && newCol < maxCols[newRow]) {
                     targets.push([newRow, newCol]);
                     console.log(`  ✅ Added target: ${newRow}-${newCol}`);
+                } else {
+                    console.log(`  ❌ Rejected target: ${newRow}-${newCol} (out of bounds)`);
                 }
             });
             
