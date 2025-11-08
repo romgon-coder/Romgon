@@ -16478,14 +16478,16 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 illegalSound.volume = 0.5; // Set volume to 50% for illegal move sound
                 illegalSound.preload = 'auto';
                 
-                // Force load the audio immediately
-                illegalSound.load();
-                
                 console.log('✅ Illegal sound initialized:', illegalSound);
+                console.log('🔊 Illegal sound path:', illegalSound.src);
                 
-                // Add error listener
+                // Add error listener with detailed logging
                 illegalSound.addEventListener('error', (e) => {
                     console.error('❌ Failed to load illegal sound:', e);
+                    console.error('❌ Error code:', illegalSound.error ? illegalSound.error.code : 'unknown');
+                    console.error('❌ Error message:', illegalSound.error ? illegalSound.error.message : 'unknown');
+                    console.error('❌ Network state:', illegalSound.networkState);
+                    console.error('❌ Ready state:', illegalSound.readyState);
                 });
                 
                 // Background music tracks
