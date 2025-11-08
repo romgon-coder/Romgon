@@ -21444,7 +21444,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     
                     // Apply the opponent's move to our board
                     if (data.move && multiplayerMode) {
-                        const { from, to, piece, captured, triangleOrientation, hexgonOrientation } = data.move;
+                        const { from, to, piece, captured, triangleOrientation, hexgonOrientation, flipped } = data.move;
                         
                         console.log('🔄 Applying opponent move:', from, '→', to);
                         console.log('🔄 Turn from server:', data.turn);
@@ -21485,9 +21485,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                             const newPiece = document.createElement('div');
                             newPiece.className = piece;
                             newPiece.draggable = true;
-                            newPiece.dataset.flipped = 'false'; // Initialize flip state
+                            newPiece.dataset.flipped = flipped ? 'true' : 'false'; // Preserve flip state from multiplayer
                             toHex.appendChild(newPiece);
-                            console.log('✅ Created new piece at destination:', to, 'with classes:', piece);
+                            console.log('✅ Created new piece at destination:', to, 'with classes:', piece, 'flipped:', flipped);
+                            
+                            // FLIP MECHANIC: Update flip visual after multiplayer move
+                            updateFlipVisual(to);
                             
                             // Restore orientations for triangles/hexagons
                             if (triangleOrientation !== undefined && triangleOrientation !== null) {
@@ -24969,7 +24972,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     piece: pieceClasses,
                     captured: captured,
                     triangleOrientation: triangleOrientations.get(toId),
-                    hexgonOrientation: hexgonOrientations.get(toId)
+                    hexgonOrientation: hexgonOrientations.get(toId),
+                    flipped: (() => {
+                        const toHex = document.getElementById(toId);
+                        const piece = toHex?.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
+                        return piece?.dataset.flipped === 'true';
+                    })()
                 }
             });
             
@@ -33604,13 +33612,17 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     console.log('Preserving hexgon orientation:', preservedOrientation, 'from', fromHexId);
                 }
                 
+                // FLIP MECHANIC: Preserve flip state from old piece
+                const preservedFlipState = draggedPiece.dataset.flipped || 'false';
+                console.log('🔄 Preserving flip state:', preservedFlipState, 'from', fromHexId);
+                
                 draggedPiece.remove();
                     
                 const newPiece = document.createElement('div');
                 // CRITICAL: Set className to sanitized pieceClasses to ensure no contamination
                 newPiece.className = pieceClasses;
                 newPiece.draggable = true;
-                newPiece.dataset.flipped = 'false'; // Initialize flip state
+                newPiece.dataset.flipped = preservedFlipState; // Preserve flip state
                 
                 // EXTRA SAFETY: Explicitly remove any wrong piece-type classes
                 newPiece.classList.remove('square-piece', 'triangle-piece', 'rhombus-piece', 'circle-piece', 'hexgon-piece');
@@ -33649,6 +33661,10 @@ ${moveHistory || '(No moves played yet - starting position)'}
                         console.log('Cleaned up old hexgon orientation from:', fromHexId);
                     }
                 }
+                
+                // FLIP MECHANIC: Restore flip visual after piece move
+                updateFlipVisual(targetHex.id);
+                console.log('🔄 Restored flip visual to:', targetHex.id, 'State:', preservedFlipState);
                 
                 // Broadcast move to multiplayer opponent
                 broadcastMove(fromHexId, targetId, pieceClasses, didCapture);
