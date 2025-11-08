@@ -31361,8 +31361,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             console.log(`Checking ${isWhite ? 'WHITE' : 'BLACK'} rhombus at ${rhombusRow}-${rhombusCol}`);
             
-            // Check if rhombus is under attack
-            const underAttack = isPieceUnderThreat(parseInt(rhombusRow), parseInt(rhombusCol), isWhite);
+            // Check if rhombus is under attack (pass rhombus piece for flip state matching)
+            const underAttack = isPieceUnderThreat(parseInt(rhombusRow), parseInt(rhombusCol), isWhite, rhombus);
             console.log(`Rhombus under attack: ${underAttack}`);
             
             // Get all possible moves for this rhombus
