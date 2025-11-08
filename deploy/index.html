@@ -29669,21 +29669,43 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         const isFlipped = piece.dataset.flipped === 'true';
                         const willBeFlipped = !isFlipped; // What the state will become
                         
-                        // ILLEGAL MOVE CHECK: If unflipping (going from flipped to unflipped)
-                        // Check if rhombus would be under attack in unflipped state
-                        if (isFlipped && !willBeFlipped && piece.classList.contains('rhombus-piece')) {
+                        // ILLEGAL MOVE CHECK: For rhombus flipping/unflipping
+                        if (piece.classList.contains('rhombus-piece')) {
                             const [, row, col] = hexId.match(/hex-(\d+)-(\d+)/);
                             const isWhite = piece.classList.contains('white-rhombus') || piece.classList.contains('white-piece');
                             
-                            // Temporarily set piece to unflipped to check threats
-                            piece.dataset.flipped = 'false';
-                            const underAttack = isPieceUnderThreat(parseInt(row), parseInt(col), isWhite, piece);
-                            // Restore flipped state for now
-                            piece.dataset.flipped = 'true';
+                            // FLIPPING (unflipped → flipped): Check if would be under attack from flipped opponents
+                            if (!isFlipped && willBeFlipped) {
+                                console.log('🔄 FLIP MODE: Checking if FLIPPING rhombus would be under attack...');
+                                // Temporarily set piece to flipped to check threats
+                                piece.dataset.flipped = 'true';
+                                const underAttackAfterFlip = isPieceUnderThreat(parseInt(row), parseInt(col), isWhite, piece);
+                                // Restore unflipped state for now
+                                piece.dataset.flipped = 'false';
+                                
+                                if (underAttackAfterFlip) {
+                                    console.log('❌ FLIP MODE: Flipping would put rhombus under attack!');
+                                    alert('❌ ILLEGAL FLIP!\n\nFlipping would put your rhombus under attack from flipped opponent pieces!\n\nYou must press RELEASE to cancel the move or choose a safer position.');
+                                    return; // Block the flip
+                                }
+                                console.log('✅ FLIP MODE: Flipping is safe');
+                            }
                             
-                            if (underAttack) {
-                                alert('❌ ILLEGAL UNFLIP! Unflipping would put your rhombus under attack from unflipped opponent pieces!');
-                                return; // Block the unflip
+                            // UNFLIPPING (flipped → unflipped): Check if would be under attack from unflipped opponents
+                            if (isFlipped && !willBeFlipped) {
+                                console.log('🔄 FLIP MODE: Checking if UNFLIPPING rhombus would be under attack...');
+                                // Temporarily set piece to unflipped to check threats
+                                piece.dataset.flipped = 'false';
+                                const underAttackAfterUnflip = isPieceUnderThreat(parseInt(row), parseInt(col), isWhite, piece);
+                                // Restore flipped state for now
+                                piece.dataset.flipped = 'true';
+                                
+                                if (underAttackAfterUnflip) {
+                                    console.log('❌ FLIP MODE: Unflipping would put rhombus under attack!');
+                                    alert('❌ ILLEGAL UNFLIP!\n\nUnflipping would put your rhombus under attack from unflipped opponent pieces!\n\nYou must press RELEASE to cancel the move or choose a safer position.');
+                                    return; // Block the unflip
+                                }
+                                console.log('✅ FLIP MODE: Unflipping is safe');
                             }
                         }
                         
@@ -29758,34 +29780,6 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                                      piece && piece.classList.contains('hexgon-piece') ? 'hexgon' : 
                                      piece && piece.classList.contains('rhombus-piece') ? 'rhombus' : 'unknown';
                     console.log(`Keeping ${pieceType} at:`, row, col, 'with current orientation');
-                    
-                    // FLIP MODE: Check if rhombus would be under attack after flipping (KEEP commits flip)
-                    if (flipModeEnabled && piece && piece.classList.contains('rhombus-piece')) {
-                        const currentFlipState = piece.dataset.flipped === 'true';
-                        const futureFlipState = !currentFlipState; // Will flip after KEEP
-                        const isWhite = piece.classList.contains('white-rhombus');
-                        
-                        console.log(`🔄 FLIP MODE KEEP: Checking POST-FLIP threat`);
-                        console.log(`   Current flip state: ${currentFlipState}`);
-                        console.log(`   Future flip state (after KEEP): ${futureFlipState}`);
-                        
-                        // Temporarily set the flip state to what it WILL BE after KEEP
-                        piece.dataset.flipped = futureFlipState.toString();
-                        
-                        // Check if rhombus would be under attack in its FUTURE flip state
-                        const underAttackAfterFlip = isPieceUnderThreat(parseInt(row), parseInt(col), isWhite, piece);
-                        
-                        // Restore original flip state
-                        piece.dataset.flipped = currentFlipState.toString();
-                        
-                        if (underAttackAfterFlip) {
-                            console.log('❌ FLIP MODE: Rhombus will be under attack after flipping (KEEP)!');
-                            alert('⚠️ ILLEGAL MOVE!\n\nAfter flipping (KEEP), your rhombus will be under attack!\n\nYou must press RELEASE to cancel the move or choose a safer position.');
-                            return; // Don't end turn
-                        } else {
-                            console.log('✅ FLIP MODE: Rhombus will be safe after flipping (KEEP)');
-                        }
-                    }
                     
                     // Check if any action was performed this turn
                     const actions = pieceActions.get(hexId) || {moved: false, attacked: false, rotated: false};
