@@ -26910,8 +26910,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             console.log(`🔄 getFlippedAttackTargets for ${row}-${col} (pos: ${pos}), adjacent hexes:`, adjacent);
             
             adjacent.forEach(adjPos => {
+                // Handle both single-digit and two-digit positions
                 const adjRow = parseInt(adjPos[0]);
-                const adjCol = parseInt(adjPos[1]);
+                const adjCol = parseInt(adjPos.substring(1));
                 targets.push([adjRow, adjCol]);
                 console.log(`  ✅ Added target: ${adjRow}-${adjCol}`);
             });
