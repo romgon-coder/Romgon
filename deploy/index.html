@@ -17904,15 +17904,27 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         
         // FLIP MECHANIC: Update visual indicator for flipped pieces
         function updateFlipVisual(hexId) {
+            console.log('🎨 updateFlipVisual called for:', hexId);
             const hex = document.getElementById(hexId);
-            if (!hex) return;
+            if (!hex) {
+                console.error('❌ Hex not found:', hexId);
+                return;
+            }
             
             const piece = hex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
-            if (!piece) return;
+            if (!piece) {
+                console.error('❌ Piece not found in hex:', hexId);
+                return;
+            }
+            
+            console.log('🎨 Piece found, flipped state:', piece.dataset.flipped);
             
             // Remove existing flip indicator from PIECE (not hex)
             const existing = piece.querySelector('.flip-indicator');
-            if (existing) existing.remove();
+            if (existing) {
+                console.log('🎨 Removing existing flip indicator');
+                existing.remove();
+            }
             
             // If flipped, add visual indicator using the flipped piece image
             if (piece.dataset.flipped === 'true') {
@@ -17936,9 +17948,13 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     imageName = isWhite ? 'hexagon white front FLIPPED.png' : 'hexagon black front FLIPPED.png';
                 }
                 
+                console.log('🎨 Creating flip indicator with image:', imageName);
+                
                 const flipIndicator = document.createElement('img');
                 flipIndicator.className = 'flip-indicator';
                 flipIndicator.src = `ASSETS/${imageName}`;
+                flipIndicator.onerror = () => console.error('❌ Failed to load image:', flipIndicator.src);
+                flipIndicator.onload = () => console.log('✅ Image loaded successfully:', flipIndicator.src);
                 flipIndicator.style.cssText = `
                     position: absolute;
                     top: 0;
@@ -17953,6 +17969,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 piece.appendChild(flipIndicator); // Attach to PIECE not hex
                 
                 console.log(`🔄 Added flip indicator: ${imageName} for piece at ${hexId}`);
+            } else {
+                console.log('🎨 Piece is not flipped, no indicator needed');
             }
         }
 
