@@ -17161,6 +17161,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         const attackerIsFlipped = piece.dataset.flipped === 'true';
                         if (targetIsFlipped !== attackerIsFlipped) {
                             // Flip states don't match - attacker can't threaten this piece
+                            console.log(`⚙️ FLIP MODE: Skipping threat check - flip state mismatch (attacker: ${attackerIsFlipped}, target: ${targetIsFlipped})`);
                             continue;
                         }
                     }
