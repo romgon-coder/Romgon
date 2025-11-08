@@ -33518,6 +33518,19 @@ ${moveHistory || '(No moves played yet - starting position)'}
                                         existingPiece.classList.contains('white-circle') ||
                                         existingPiece.classList.contains('white-hexgon');
                     
+                    // FLIP MECHANIC SAFETY CHECK: Verify flip states match (should already be filtered by red highlight)
+                    const draggedIsFlipped = draggedPiece.dataset.flipped === 'true';
+                    const existingIsFlipped = existingPiece.dataset.flipped === 'true';
+                    
+                    if (draggedIsFlipped !== existingIsFlipped) {
+                        console.log('🚫 SAFETY BLOCK: Flip state mismatch detected!', {
+                            dragged: draggedIsFlipped,
+                            existing: existingIsFlipped
+                        });
+                        addNotification('error', 'INVALID CAPTURE', 'Flipped pieces can only capture flipped pieces. Unflipped pieces can only capture unflipped pieces.');
+                        return; // Block the capture
+                    }
+                    
                     // If different colors, capture the opponent piece
                     if (isDraggedWhite !== isExistingWhite) {
                         // Add to eliminated pieces display before removing
