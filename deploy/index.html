@@ -16473,8 +16473,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 menuButtonSound.volume = 0.3;
                 menuButtonSound.preload = 'auto';
                 
-                // Load illegal move sound (OGG format)
-                illegalSound = new Audio('ASSETS/illegalSound.ogg');
+                // Load illegal move sound (MP3 format for better browser compatibility)
+                illegalSound = new Audio('ASSETS/illegalSound.mp3');
                 illegalSound.volume = 0.5; // Set volume to 50% for illegal move sound
                 illegalSound.preload = 'auto';
                 console.log('✅ Illegal sound initialized:', illegalSound);
