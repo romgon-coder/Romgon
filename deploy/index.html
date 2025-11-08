@@ -31521,8 +31521,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             console.log(`Checking if rhombus would be under attack at: ${checkRow}-${checkCol}`);
             
+            // Get the rhombus piece to check flip state
+            const movingPieceElement = fromHex.querySelector('.rhombus-piece, .circle-piece');
+            
             // Check if rhombus would be under attack after this move
-            const underAttack = isPieceUnderThreat(checkRow, checkCol, isWhiteMoving);
+            // Pass the piece so flip state matching can be checked
+            const underAttack = isPieceUnderThreat(checkRow, checkCol, isWhiteMoving, movingPieceElement);
             
             console.log('Rhombus under attack after move:', underAttack);
             
@@ -31536,7 +31540,6 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 } else {
                     // FLIP MODE EXCEPTION: Only apply flip protection if FLIP MODE is enabled
                     if (flipModeEnabled) {
-                        const movingPieceElement = fromHex.querySelector('.rhombus-piece, .circle-piece');
                         const isRhombusFlipped = movingPieceElement && movingPieceElement.dataset.flipped === 'true';
                         const deadZone = new Set(["3-3", "3-4", "3-5"]);
                         const currentPos = `${rhombusRow}-${rhombusCol}`; // Check CURRENT position (where rhombus is NOW)
