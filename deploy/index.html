@@ -29688,8 +29688,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         
                         // Update base defence display
                         updateBaseDefenceDisplay();
-                        // Update attack highlights for all pieces
-                        highlightAllPiecesUnderAttack();
+                        
+                        // Note: highlightAllPiecesUnderAttack() is called inside switchTurn()
                     }
                 } else {
                     console.log('No selected piece!');
@@ -29735,6 +29735,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     
                     // Hide rotation controls
                     rotationControls.style.display = 'none';
+                    
+                    // Refresh threat highlights to show correct danger indicators
+                    highlightAllPiecesUnderAttack();
                     
                     console.log('After release - currentTurnPiece:', currentTurnPiece);
                     console.log('After release - selectedPiece:', selectedPiece);
