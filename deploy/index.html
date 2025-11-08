@@ -16624,6 +16624,20 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             console.log('🔊 illegalSound readyState:', illegalSound.readyState);
             console.log('🔊 illegalSound volume:', illegalSound.volume);
             
+            // If audio not loaded yet, wait for it to load
+            if (illegalSound.readyState === 0) {
+                console.log('🔊 Audio not loaded yet, loading...');
+                illegalSound.load();
+                illegalSound.addEventListener('canplay', function playOnce() {
+                    console.log('🔊 Audio loaded, playing now...');
+                    illegalSound.play().catch(error => {
+                        console.error('❌ Play error after load:', error);
+                    });
+                    illegalSound.removeEventListener('canplay', playOnce);
+                }, { once: true });
+                return;
+            }
+            
             try {
                 illegalSound.currentTime = 0;
                 const playPromise = illegalSound.play();
