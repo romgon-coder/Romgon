@@ -29463,7 +29463,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             const rotationControls = document.createElement('div');
             rotationControls.id = 'rotation-controls';
             rotationControls.style.cssText = `
-                display: none;
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap: 4px;
                 position: fixed;
                 bottom: 15px;
                 left: 50%;
@@ -29475,6 +29478,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 border: 2px solid rgba(78, 205, 196, 0.5);
                 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
             `;
+            rotationControls.style.display = 'none'; // Hidden by default
 
             // Create rotate left button
             const rotateLeftButton = document.createElement('button');
@@ -29484,7 +29488,6 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 border: 2px solid #9b59b6;
                 color: white;
                 padding: 8px 12px;
-                margin: 0 4px;
                 border-radius: 6px;
                 cursor: pointer;
                 font-weight: bold;
@@ -29520,7 +29523,6 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 border: 2px solid #9b59b6;
                 color: white;
                 padding: 8px 12px;
-                margin: 0 4px;
                 border-radius: 6px;
                 cursor: pointer;
                 font-weight: bold;
@@ -29556,7 +29558,6 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 border: 2px solid #3498db;
                 color: white;
                 padding: 8px 12px;
-                margin: 0 4px;
                 border-radius: 6px;
                 cursor: pointer;
                 font-weight: bold;
@@ -29640,7 +29641,6 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 border: 2px solid #27ae60;
                 color: white;
                 padding: 8px 12px;
-                margin: 0 4px;
                 border-radius: 6px;
                 cursor: pointer;
                 font-weight: bold;
@@ -29707,7 +29707,6 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 border: 2px solid #e74c3c;
                 color: white;
                 padding: 8px 12px;
-                margin: 0 4px;
                 border-radius: 6px;
                 cursor: pointer;
                 font-weight: bold;
@@ -33637,10 +33636,40 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     currentTurnPiece = targetHex; // Also update currentTurnPiece for rotatable pieces
                     console.log('Set selectedPiece to targetHex for rotatable piece:', selectedPiece);
                     console.log('Set currentTurnPiece to targetHex for rotatable piece:', currentTurnPiece);
+                    
                     // Show rotation controls for rotatable pieces after movement
                     const rotationControls = document.getElementById('rotation-controls');
                     if (rotationControls) {
+                        const isRotatable = true; // Already confirmed it's triangle or hexagon
                         rotationControls.style.display = 'block';
+                        
+                        // Show all buttons including flip
+                        const flipBtn = rotationControls.querySelector('button:nth-child(2)');
+                        const rotateLeft = rotationControls.querySelector('button:nth-child(1)');
+                        const rotateRight = rotationControls.querySelector('button:nth-child(4)');
+                        
+                        if (flipBtn) flipBtn.style.display = flipModeEnabled ? 'block' : 'none';
+                        if (rotateLeft) rotateLeft.style.display = 'block';
+                        if (rotateRight) rotateRight.style.display = 'block';
+                    }
+                } else if (flipModeEnabled) {
+                    // Non-rotatable piece in Flip Mode - show panel with flip button only
+                    selectedPiece = targetHex;
+                    currentTurnPiece = targetHex;
+                    console.log('Set selectedPiece to targetHex for non-rotatable in Flip Mode:', selectedPiece);
+                    
+                    const rotationControls = document.getElementById('rotation-controls');
+                    if (rotationControls) {
+                        rotationControls.style.display = 'block';
+                        
+                        // Show only flip, keep, release buttons
+                        const flipBtn = rotationControls.querySelector('button:nth-child(2)');
+                        const rotateLeft = rotationControls.querySelector('button:nth-child(1)');
+                        const rotateRight = rotationControls.querySelector('button:nth-child(4)');
+                        
+                        if (flipBtn) flipBtn.style.display = 'block';
+                        if (rotateLeft) rotateLeft.style.display = 'none';
+                        if (rotateRight) rotateRight.style.display = 'none';
                     }
                 }
                 
