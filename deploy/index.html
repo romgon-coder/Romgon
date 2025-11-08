@@ -17068,6 +17068,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 
                 // Check if this piece is under threat
                 const underThreat = isPieceUnderThreat(parseInt(row), parseInt(col), isWhite, piece);
+                console.log(`🎯 Piece at ${row}-${col} (${piece.className}) - underThreat: ${underThreat}, flipped: ${piece.dataset.flipped}`);
                 if (underThreat) {
                     // Special yellow highlight for RHOMBUS under attack (CHECK/DEADLOCK warning)
                     if (piece.classList.contains('rhombus-piece')) {
@@ -31369,6 +31370,13 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             const underAttack = isPieceUnderThreat(parseInt(rhombusRow), parseInt(rhombusCol), isWhite, rhombus);
             console.log(`Rhombus under attack: ${underAttack}`);
             
+            // FLIP MODE: In flip mode, being under attack is not immediately deadlock
+            // because the player can flip to a different state
+            // Only check for deadlock if truly no moves available
+            if (flipModeEnabled && underAttack) {
+                console.log('✅ FLIP MODE: Rhombus under attack but player can flip - checking for legal moves');
+            }
+            
             // Get all possible moves for this rhombus
             const possibleMoves = getRhombusMoves(parseInt(rhombusRow), parseInt(rhombusCol));
             console.log(`Possible moves for rhombus:`, possibleMoves);
@@ -31416,13 +31424,20 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     targetHex.appendChild(tempRhombus);
                     
                     // Check if rhombus would be under attack at new position
-                    const wouldBeUnderAttack = isPieceUnderThreat(targetRow, targetCol, isWhite);
+                    const wouldBeUnderAttack = isPieceUnderThreat(targetRow, targetCol, isWhite, rhombus);
                     console.log(`Would be under attack at ${targetRow}-${targetCol}: ${wouldBeUnderAttack}`);
                     
                     // Clean up simulation
                     tempRhombus.remove();
                     rhombus.style.display = '';
                     if (occupyingPiece) occupyingPiece.style.display = '';
+                    
+                    // FLIP MODE: Any move is legal because player can flip to escape
+                    if (flipModeEnabled) {
+                        console.log(`✅ FLIP MODE: Move to ${targetRow}-${targetCol} is legal (can flip to escape)`);
+                        hasLegalMove = true;
+                        break;
+                    }
                     
                     // If this move would get rhombus out of check, it's a legal move!
                     if (!wouldBeUnderAttack) {
@@ -31547,6 +31562,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             // Check if rhombus would be under attack after this move
             // Pass the RHOMBUS piece (not the moving piece) so flip state matching can be checked
+            console.log(`🎲 FLIP MODE CHECK: Rhombus flip state: ${playerRhombus ? playerRhombus.dataset.flipped : 'N/A'}, flipModeEnabled: ${flipModeEnabled}`);
             const underAttack = isPieceUnderThreat(checkRow, checkCol, isWhiteMoving, playerRhombus);
             
             console.log('Rhombus under attack after move:', underAttack);
@@ -31559,43 +31575,11 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     console.log('✅ Rhombus is capturing the attacking piece - move is LEGAL');
                     wouldBeIllegal = false;
                 } else {
-                    // FLIP MODE EXCEPTION: Only apply flip protection if FLIP MODE is enabled
+                    // FLIP MODE EXCEPTION: In flip mode, don't block moves that put rhombus under attack
+                    // because the player can flip to a different state to avoid the threat
                     if (flipModeEnabled) {
-                        const isRhombusFlipped = playerRhombus && playerRhombus.dataset.flipped === 'true';
-                        const deadZone = new Set(["3-3", "3-4", "3-5"]);
-                        const currentPos = `${rhombusRow}-${rhombusCol}`; // Check CURRENT position (where rhombus is NOW)
-                        const isInDeadZone = deadZone.has(currentPos);
-                        
-                        // Case 1: Rhombus is ALREADY flipped - can move anywhere (unflipped pieces can't attack it)
-                        if (isMovingRhombus && isRhombusFlipped) {
-                            console.log('✅ FLIP MODE: Rhombus is already flipped - move is LEGAL');
-                            wouldBeIllegal = false;
-                        }
-                        // Case 2: Rhombus is UNFLIPPED and in dead zone - can move anywhere (can flip for protection)
-                        else if (isMovingRhombus && !isRhombusFlipped && isInDeadZone) {
-                            console.log('✅ FLIP MODE: Rhombus is in dead zone and can flip - move is LEGAL');
-                            wouldBeIllegal = false;
-                        }
-                        // Case 3: Rhombus is UNFLIPPED but NOT in dead zone - still allow if can reach dead zone to flip
-                        // OR if the attack is from unflipped pieces (can flip after move)
-                        else if (isMovingRhombus && !isRhombusFlipped) {
-                            // Check if target position is in dead zone (can flip after move)
-                            const targetPos = `${checkRow}-${checkCol}`;
-                            const targetIsDeadZone = deadZone.has(targetPos);
-                            
-                            if (targetIsDeadZone) {
-                                console.log('✅ FLIP MODE: Rhombus moving to dead zone where it can flip - move is LEGAL');
-                                wouldBeIllegal = false;
-                            } else {
-                                // Not moving to dead zone - still illegal even in flip mode
-                                console.log('❌ FLIP MODE: Rhombus is unflipped, not in dead zone, and not moving to dead zone - move is ILLEGAL');
-                                wouldBeIllegal = true;
-                            }
-                        } else {
-                            // Even in flip mode, if no flip protection, still illegal
-                            console.log('❌ ILLEGAL! This move would leave your rhombus under attack!');
-                            wouldBeIllegal = true;
-                        }
+                        console.log('✅ FLIP MODE: Move allowed - player can flip to escape threats');
+                        wouldBeIllegal = false;
                     } else {
                         // ORIGINAL MODE: Always block moves that put rhombus under attack
                         console.log('❌ ILLEGAL! This move would leave your rhombus under attack!');
