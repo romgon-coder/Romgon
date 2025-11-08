@@ -29187,10 +29187,14 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             const piece = hex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
             const isFlipped = piece && piece.dataset.flipped === 'true';
             
+            console.log('🔦 highlightPieceMoves called:', hexId, 'pieceType:', pieceType, 'isFlipped:', isFlipped, 'dataset.flipped:', piece?.dataset.flipped);
+            
             // FLIP MECHANIC: If flipped, use omnidirectional attacks regardless of piece type
             if (isFlipped) {
                 targets = getFlippedAttackTargets(row, col);
+                console.log('🔄 Using FLIPPED attack pattern, targets:', targets.length);
             } else {
+                console.log('📏 Using NORMAL movement pattern');
                 // Use hardcoded movement patterns for unflipped pieces
                 if (pieceType === 'square') {
                     targets = getSquareTargets(row, col);
@@ -29627,6 +29631,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         // Toggle flip state
                         const isFlipped = piece.dataset.flipped === 'true';
                         piece.dataset.flipped = isFlipped ? 'false' : 'true';
+                        
+                        console.log('🔄 FLIP BUTTON: Toggled flip state from', isFlipped, 'to', piece.dataset.flipped);
+                        console.log('🔄 Piece element:', piece);
+                        console.log('🔄 HexId:', hexId);
                         
                         // Update visual indicator
                         updateFlipVisual(hexId);
@@ -33615,6 +33623,7 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 // FLIP MECHANIC: Preserve flip state from old piece
                 const preservedFlipState = draggedPiece.dataset.flipped || 'false';
                 console.log('🔄 Preserving flip state:', preservedFlipState, 'from', fromHexId);
+                console.log('🔄 Old piece dataset.flipped:', draggedPiece.dataset.flipped);
                 
                 draggedPiece.remove();
                     
@@ -33623,6 +33632,8 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 newPiece.className = pieceClasses;
                 newPiece.draggable = true;
                 newPiece.dataset.flipped = preservedFlipState; // Preserve flip state
+                
+                console.log('🔄 New piece created with dataset.flipped:', newPiece.dataset.flipped);
                 
                 // EXTRA SAFETY: Explicitly remove any wrong piece-type classes
                 newPiece.classList.remove('square-piece', 'triangle-piece', 'rhombus-piece', 'circle-piece', 'hexgon-piece');
