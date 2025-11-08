@@ -18406,6 +18406,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 // Skip if in dead zone
                 if (circleDeadZone.has(coord)) return;
                 
+                // FLIP MODE: Get circle's flip state
+                const circleIsFlipped = flipModeEnabled && circle.dataset.flipped === 'true';
+                
                 // Determine zone
                 let zoneOrder = null;
                 if (circleInnerZone.has(coord)) {
@@ -18434,14 +18437,25 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     if (!hex) continue;
                     
                     let hasOpponent = false;
+                    let opponentPiece = null;
                     for (const sel of opponentSelectors) {
-                        if (hex.querySelector(sel)) {
+                        const piece = hex.querySelector(sel);
+                        if (piece) {
+                            opponentPiece = piece;
                             hasOpponent = true;
                             break;
                         }
                     }
                     
                     if (hasOpponent) {
+                        // FLIP MODE: Check flip state matching
+                        if (flipModeEnabled && opponentPiece) {
+                            const targetIsFlipped = opponentPiece.dataset.flipped === 'true';
+                            if (circleIsFlipped !== targetIsFlipped) {
+                                // Flip states don't match - cannot attack
+                                break; // Stop searching
+                            }
+                        }
                         // Add red highlight for attackable opponent
                         hex.classList.add('highlight-red');
                         break; // Stop at first piece
@@ -18458,14 +18472,25 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     if (!hex) continue;
                     
                     let hasOpponent = false;
+                    let opponentPiece = null;
                     for (const sel of opponentSelectors) {
-                        if (hex.querySelector(sel)) {
+                        const piece = hex.querySelector(sel);
+                        if (piece) {
+                            opponentPiece = piece;
                             hasOpponent = true;
                             break;
                         }
                     }
                     
                     if (hasOpponent) {
+                        // FLIP MODE: Check flip state matching
+                        if (flipModeEnabled && opponentPiece) {
+                            const targetIsFlipped = opponentPiece.dataset.flipped === 'true';
+                            if (circleIsFlipped !== targetIsFlipped) {
+                                // Flip states don't match - cannot attack
+                                break; // Stop searching
+                            }
+                        }
                         // Add red highlight for attackable opponent
                         hex.classList.add('highlight-red');
                         break; // Stop at first piece
