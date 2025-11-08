@@ -29126,15 +29126,15 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     
                     if (!isSpecialMove) {
                         // Normal empty hex - check if it would be dangerous
-                        // FLIP SAFETY: If piece is in dead zone and can flip, don't show danger 
+                        // FLIP SAFETY: If piece is currently in dead zone and can flip, don't show danger for ANY move
                         // (because after flipping, unflipped attackers can't harm it)
                         const deadZone = new Set(["3-3", "3-4", "3-5"]);
-                        const currentPos = `${row}-${col}`;
-                        const canFlipAfterMove = (pieceType === 'rhombus' || pieceType === 'circle') && 
-                                                !isFlipped && 
-                                                deadZone.has(currentPos);
+                        const currentPos = `${row}-${col}`; // Current position (where piece is NOW)
+                        const canFlipFromCurrentPosition = (pieceType === 'rhombus' || pieceType === 'circle') && 
+                                                          !isFlipped && 
+                                                          deadZone.has(currentPos);
                         
-                        if (!canFlipAfterMove && isPositionVulnerable(targetRow, targetCol, isWhite, pieceType)) {
+                        if (!canFlipFromCurrentPosition && isPositionVulnerable(targetRow, targetCol, isWhite, pieceType)) {
                             targetHex.classList.add('highlight-danger'); // Red threat indicator
                         } else {
                             targetHex.classList.add('highlight-green'); // Safe move
@@ -31517,10 +31517,25 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     console.log('✅ Rhombus is capturing the attacking piece - move is LEGAL');
                     wouldBeIllegal = false;
                 } else {
-                    // Rhombus would be under attack after this move - ILLEGAL!
-                    // In chess terms: You cannot make a move that leaves your king in check
-                    console.log('❌ ILLEGAL! This move would leave your rhombus under attack!');
-                    wouldBeIllegal = true;
+                    // FLIP MODE EXCEPTION: If rhombus is currently IN dead zone and can flip, allow ANY move
+                    // (because after flipping, unflipped attackers can't harm it)
+                    const deadZone = new Set(["3-3", "3-4", "3-5"]);
+                    const currentPos = `${rhombusRow}-${rhombusCol}`; // Check CURRENT position (where rhombus is NOW)
+                    
+                    // Check if the rhombus is currently in dead zone and not yet flipped
+                    const movingPieceElement = fromHex.querySelector('.rhombus-piece, .circle-piece');
+                    const isNotFlipped = movingPieceElement && movingPieceElement.dataset.flipped !== 'true';
+                    const canFlip = isMovingRhombus && isNotFlipped && deadZone.has(currentPos);
+                    
+                    if (canFlip) {
+                        console.log('✅ Rhombus is in dead zone and can flip - move is LEGAL (flip protects from unflipped attackers)');
+                        wouldBeIllegal = false;
+                    } else {
+                        // Rhombus would be under attack after this move - ILLEGAL!
+                        // In chess terms: You cannot make a move that leaves your king in check
+                        console.log('❌ ILLEGAL! This move would leave your rhombus under attack!');
+                        wouldBeIllegal = true;
+                    }
                 }
             } else {
                 console.log('✅ Rhombus not under attack - move is safe');
