@@ -18457,7 +18457,6 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     return; // Not in valid zone
                 }
                 
-                const isWhite = circle.classList.contains('white-circle');
                 const opponentSelectors = isWhite 
                     ? ['.square-piece:not(.white-piece)', '.triangle-piece:not(.white-triangle)', '.rhombus-piece:not(.white-rhombus)', '.circle-piece:not(.white-circle)', '.hexgon-piece:not(.white-hexgon)']
                     : ['.square-piece.white-piece', '.triangle-piece.white-triangle', '.rhombus-piece.white-rhombus', '.circle-piece.white-circle', '.hexgon-piece.white-hexgon'];
