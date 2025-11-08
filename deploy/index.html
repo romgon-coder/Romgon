@@ -19309,7 +19309,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 draggedPiece = null;
                 draggedFromHex = null;
                 // Keep selection for triangles and hexagons so rotation buttons remain available
-                if (!this.classList.contains('triangle-piece') && !this.classList.contains('hexgon-piece')) {
+                // In Flip Mode, also keep selection for non-rotatable pieces
+                const isRotatable = this.classList.contains('triangle-piece') || this.classList.contains('hexgon-piece');
+                if (!isRotatable && !flipModeEnabled) {
                     selectedPiece = null;
                     currentTurnPiece = null;
                     const rotationControls = document.getElementById('rotation-controls');
@@ -33328,17 +33330,19 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     draggedFromHex = null;
                     
                     // Keep selection and rotation controls for triangles AND hexagons
-                    // Only clear for pieces that cannot rotate
-                    if (!this.classList.contains('triangle-piece') && !this.classList.contains('hexgon-piece')) {
+                    // Only clear for pieces that cannot rotate (unless Flip Mode is enabled)
+                    const isRotatable = this.classList.contains('triangle-piece') || this.classList.contains('hexgon-piece');
+                    if (!isRotatable && !flipModeEnabled) {
                         selectedPiece = null;
                         currentTurnPiece = null; // Clear current turn piece for non-rotatables
-                        console.log('Cleared currentTurnPiece in dragend');
+                        console.log('Cleared currentTurnPiece in dragend (Flip Mode disabled)');
                         const rotationControls = document.getElementById('rotation-controls');
                         if (rotationControls) {
                             rotationControls.style.display = 'none';
                         }
                     }
                     // For triangles and hexagons, selectedPiece is set in the drop event, not here
+                    // In Flip Mode, non-rotatable pieces also keep selectedPiece set (from drop handler)
                 });
             });
         }
@@ -33952,17 +33956,19 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     draggedPiece = null;
                     draggedFromHex = null;
                     
-                    // Clear selectedPiece and rotation controls for non-rotatable pieces
-                    if (!this.classList.contains('triangle-piece') && !this.classList.contains('hexgon-piece')) {
-                    selectedPiece = null;
+                    // Clear selectedPiece and rotation controls for non-rotatable pieces UNLESS Flip Mode is enabled
+                    const isRotatable = this.classList.contains('triangle-piece') || this.classList.contains('hexgon-piece');
+                    if (!isRotatable && !flipModeEnabled) {
+                        selectedPiece = null;
                         currentTurnPiece = null; // Clear current turn piece for non-rotatable pieces
-                        console.log('Cleared currentTurnPiece in dragend');
+                        console.log('Cleared currentTurnPiece in dragend (Flip Mode disabled)');
                         const rotationControls = document.getElementById('rotation-controls');
                         if (rotationControls) {
                             rotationControls.style.display = 'none';
                         }
                     }
                     // For rotatable pieces (triangles and hexagons), selectedPiece is set in the drop event, not here
+                    // In Flip Mode, non-rotatable pieces also keep selectedPiece set (from drop handler)
                 });
                 
                 // Clear highlights (but keep threat highlights)
