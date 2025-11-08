@@ -26806,15 +26806,15 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             const targets = [];
             let offsets = [];
             
-            // Hexagonal grid with odd-r offset coordinates
-            // Even rows (0, 2, 4, 6): neighbors shift based on column parity
-            // Odd rows (1, 3, 5): neighbors shift oppositely
+            // Hexagonal grid neighbors - based on actual square orthogonal + missing diagonals
+            // Row 0 (even): square uses [1,0], [1,1], [-1,1], [-1,0] → add [0,1], [0,-1]
+            // Row 1 (odd):  square uses [1,0], [1,1], [-1,-1], [-1,0] → add [0,1], [0,-1]
             if (row % 2 === 0) {
-                // Even rows: 0, 2, 4, 6
-                offsets = [[1, 0], [1, 1], [0, 1], [-1, 0], [-1, 1], [0, -1]];
+                // Even rows (0, 2, 4, 6): offsets shift right on diagonals
+                offsets = [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [0, -1]];
             } else {
-                // Odd rows: 1, 3, 5
-                offsets = [[1, -1], [1, 0], [0, 1], [-1, -1], [-1, 0], [0, -1]];
+                // Odd rows (1, 3, 5): different diagonal pattern
+                offsets = [[1, 0], [1, 1], [0, 1], [-1, 0], [0, -1], [-1, 1]];
             }
             
             console.log(`🔄 getFlippedAttackTargets for ${row}-${col}, offsets:`, offsets);
