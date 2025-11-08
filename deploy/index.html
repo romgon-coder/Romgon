@@ -17991,36 +17991,35 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             const piece = hex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
             if (!piece) return;
             
-            // Remove existing flip indicator
-            const existing = hex.querySelector('.flip-indicator');
+            // Remove existing flip indicator from PIECE (not hex)
+            const existing = piece.querySelector('.flip-indicator');
             if (existing) existing.remove();
             
-            // If flipped, add visual indicator
+            // If flipped, add visual indicator to the PIECE
             if (piece.dataset.flipped === 'true') {
                 const flipIndicator = document.createElement('div');
                 flipIndicator.className = 'flip-indicator';
                 flipIndicator.innerHTML = '🔄';
                 flipIndicator.style.cssText = `
                     position: absolute;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    width: 32px;
-                    height: 32px;
-                    background: rgba(52, 152, 219, 0.9);
-                    color: white;
-                    border-radius: 50%;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-size: 20px;
+                    font-size: 24px;
                     font-weight: bold;
                     pointer-events: none;
-                    z-index: 15;
-                    box-shadow: 0 0 6px rgba(52, 152, 219, 1), 0 0 12px rgba(52, 152, 219, 0.5);
-                    border: 2px solid rgba(255, 255, 255, 0.9);
+                    z-index: 20;
+                    text-shadow: 
+                        0 0 3px rgba(52, 152, 219, 1),
+                        0 0 6px rgba(52, 152, 219, 0.8),
+                        0 0 9px rgba(52, 152, 219, 0.6),
+                        2px 2px 4px rgba(0, 0, 0, 0.8);
                 `;
-                hex.appendChild(flipIndicator);
+                piece.appendChild(flipIndicator); // Attach to PIECE not hex
             }
         }
 
