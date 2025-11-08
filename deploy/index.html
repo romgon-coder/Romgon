@@ -16625,13 +16625,15 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             console.log('🔊 illegalSound volume:', illegalSound.volume);
             
             // If audio not loaded yet, wait for it to load
-            if (illegalSound.readyState === 0) {
+            if (illegalSound.readyState < 2) {
                 console.log('🔊 Audio not loaded yet, loading...');
                 illegalSound.load();
                 illegalSound.addEventListener('canplay', function playOnce() {
                     console.log('🔊 Audio loaded, playing now...');
-                    illegalSound.play().catch(error => {
-                        console.error('❌ Play error after load:', error);
+                    illegalSound.play().then(() => {
+                        console.log('✅ Illegal sound played successfully');
+                    }).catch(error => {
+                        console.error('❌ Play error:', error.name, error.message);
                     });
                     illegalSound.removeEventListener('canplay', playOnce);
                 }, { once: true });
