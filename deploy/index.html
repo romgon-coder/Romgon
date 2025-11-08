@@ -18155,139 +18155,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 hex.classList.remove('highlight-green', 'highlight-red', 'highlight-danger', 'highlight-diagonal', 'highlight-gray');
             });
 
-            // Different offset patterns for each row due to hexagonal grid structure
-            let offsets;
-            
-            if (centerRow === 0) {
-                // Row 0 (even, shift-down)
-                offsets = [
-                    [1, 0],  // down-left
-                    [1, 1],  // down-right
-                    [-1, 1], // up-right (off-board)
-                    [-1, 0]  // up-left (off-board)
-                ];
-            } else if (centerRow === 1) {
-                // Row 1 (odd, no shift)
-                // For 1-3 → 2-3, 2-4, 0-2, 0-3
-                offsets = [
-                    [1, 0],  // down-left: 1-3 + [1,0] = 2-3
-                    [1, 1],  // down-right: 1-3 + [1,1] = 2-4
-                    [-1, -1], // up-left: 1-3 + [-1,-1] = 0-2
-                    [-1, 0]  // up-right: 1-3 + [-1,0] = 0-3
-                ];
-            } else if (centerRow === 2) {
-                // Row 2 (even, shift-down)
-                // For 2-3 → 3-3, 3-4, 1-2, 1-3
-                offsets = [
-                    [1, 0],  // down-left: 2-3 + [1,0] = 3-3
-                    [1, 1],  // down-right: 2-3 + [1,1] = 3-4
-                    [-1, -1], // up-left: 2-3 + [-1,-1] = 1-2
-                    [-1, 0]  // up-right: 2-3 + [-1,0] = 1-3
-                ];
-            } else if (centerRow === 3) {
-                // Row 3 (odd, no shift) - KEEP ORIGINAL WORKING PATTERN
-                // For 3-4 → 4-3, 4-4, 2-4, 2-3
-                offsets = [
-                    [1, -1], // down-left
-                    [1, 0],  // down-right
-                    [-1, 0], // up-right
-                    [-1, -1] // up-left
-                ];
-            } else if (centerRow === 4) {
-                // Row 4 (even, shift-down)
-                // For 4-3 → 3-3, 3-4, 5-2, 5-3
-                offsets = [
-                    [-1, 0], // up-left
-                    [-1, 1], // up-right
-                    [1, -1], // down-left
-                    [1, 0]   // down-right
-                ];
-            } else if (centerRow === 5) {
-                // Row 5 (odd, no shift)
-                // For 5-1 → 6-0, 6-1, 4-1, 4-2
-                offsets = [
-                    [1, -1], // down-left
-                    [1, 0],  // down-right
-                    [-1, 0], // up-left  
-                    [-1, 1]  // up-right
-                ];
-            } else if (centerRow === 6) {
-                // Row 6 (even, shift-down)
-                // For 6-0 → should go to 5-0, 5-1 (and two off-board)
-                offsets = [
-                    [1, 0],  // down-left (off-board)
-                    [1, 1],  // down-right (off-board)
-                    [-1, 1], // up-right
-                    [-1, 0]  // up-left
-                ];
-            }
-
-            // Get the piece type that's showing movement pattern
-            const centerHex = document.getElementById(`hex-${centerRow}-${centerCol}`);
-            const centerPiece = centerHex.querySelector('.square-piece, .triangle-piece');
-            let friendlyPieceTypes = [];
-            
-            if (centerPiece) {
-                if (centerPiece.classList.contains('square-piece')) {
-                    if (centerPiece.classList.contains('white-piece')) {
-                            // White square - friendly with other white pieces (squares, triangles, rhombuses, circles, hexgons)
-                            friendlyPieceTypes = ['.square-piece.white-piece', '.triangle-piece.white-triangle', '.rhombus-piece.white-rhombus', '.circle-piece.white-circle', '.hexgon-piece.white-hexgon'];
-                    } else {
-                        // Black square - friendly with other black pieces and triangles
-                            friendlyPieceTypes = ['.square-piece:not(.white-piece)', '.triangle-piece:not(.white-triangle)', '.rhombus-piece:not(.white-rhombus)', '.circle-piece:not(.white-circle)', '.hexgon-piece:not(.white-hexgon)'];
-                    }
-                } else if (centerPiece.classList.contains('triangle-piece')) {
-                    if (centerPiece.classList.contains('white-triangle')) {
-                        // White triangle - friendly with white squares and other white triangles
-                            friendlyPieceTypes = ['.square-piece.white-piece', '.triangle-piece.white-triangle', '.rhombus-piece.white-rhombus', '.circle-piece.white-circle', '.hexgon-piece.white-hexgon'];
-                    } else {
-                        // Black triangle - friendly with black squares and other black triangles
-                            friendlyPieceTypes = ['.square-piece:not(.white-piece)', '.triangle-piece:not(.white-triangle)', '.rhombus-piece:not(.white-rhombus)', '.circle-piece:not(.white-circle)', '.hexgon-piece:not(.white-hexgon)'];
-                    }
-                }
-            }
-
-            // Highlight the hexes in the cross pattern
-            offsets.forEach(([rowOffset, colOffset]) => {
-                const targetRow = centerRow + rowOffset;
-                const targetCol = centerCol + colOffset;
-                const targetHex = document.getElementById(`hex-${targetRow}-${targetCol}`);
-                
-                if (targetHex) {
-                    // Check if target hex has a friendly piece
-                    let hasFriendlyPiece = false;
-                    friendlyPieceTypes.forEach(selector => {
-                        if (targetHex.querySelector(selector)) {
-                            hasFriendlyPiece = true;
-                        }
-                    });
-                    
-                    // Check if target hex has an opponent piece
-                    const isWhite = centerPiece && (centerPiece.classList.contains('white-piece') || centerPiece.classList.contains('white-triangle'));
-                    const opponentPieceTypes = isWhite ? 
-                        ['.square-piece:not(.white-piece)', '.triangle-piece:not(.white-triangle)', '.rhombus-piece:not(.white-rhombus)', '.circle-piece:not(.white-circle)', '.hexgon-piece:not(.white-hexgon)'] :
-                        ['.square-piece.white-piece', '.triangle-piece.white-triangle', '.rhombus-piece.white-rhombus', '.circle-piece.white-circle', '.hexgon-piece.white-hexgon'];
-                    let hasOpponentPiece = false;
-                    opponentPieceTypes.forEach(selector => {
-                        if (targetHex.querySelector(selector)) {
-                            hasOpponentPiece = true;
-                        }
-                    });
-                    
-                    // Highlight in red if opponent piece, green if empty (skip friendly pieces)
-                    if (hasOpponentPiece) {
-                        console.log(`🔴 SQUARE: Adding red highlight to ${targetRow}-${targetCol} for opponent piece`);
-                        targetHex.classList.add('highlight-red');
-                    } else if (!hasFriendlyPiece) {
-                        // Check if this position would be vulnerable to attack
-                        if (isPositionVulnerable(targetRow, targetCol, isWhite)) {
-                            targetHex.classList.add('highlight-danger');
-                        } else {
-                            targetHex.classList.add('highlight-green');
-                        }
-                    }
-                }
-            });
+            // Use unified highlighting system that respects flip state
+            const hexId = `hex-${centerRow}-${centerCol}`;
+            highlightPieceMoves(centerRow, centerCol, 'square', hexId);
         }
 
         // Function to show movement pattern for rhombus pieces
@@ -18374,57 +18244,18 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         // Function to show movement for circle pieces by zone
         function showCircleMovementPattern(centerRow, centerCol) {
             console.log(`🎯 showCircleMovementPattern called for ${centerRow}-${centerCol}`);
-            const centerHex = document.getElementById(`hex-${centerRow}-${centerCol}`);
-            if (!centerHex) {
-                console.log(`❌ centerHex not found!`);
-                return;
-            }
-            const piece = centerHex.querySelector('.circle-piece');
-            if (!piece) {
-                console.log(`❌ circle piece not found!`);
-                return;
-            }
-            
-            console.log(`✅ Circle piece found, proceeding...`);
-
             // Clear previous highlights but keep threat
             document.querySelectorAll('.hexagon').forEach(hex => {
                 hex.classList.remove('highlight-green', 'highlight-red', 'highlight-danger', 'highlight-diagonal', 'highlight-gray');
             });
 
-            const coord = `${centerRow}-${centerCol}`;
-            console.log(`📍 Current position: ${coord}`);
-            
-            let zoneSet = null;
-            let zoneOrder = null;
-            let currentZone = null;
-            
-            if (circleDeadZone.has(coord)) {
-                currentZone = 'dead';
-                console.log(`❌ Circle is in DEAD ZONE - cannot move`);
-                addNotification('warning', 'Circle Cannot Move', 'Circles are not allowed to move to dead zone.');
-                return; // cannot move in dead zone
-            } else if (circleInnerZone.has(coord)) {
-                zoneSet = circleInnerZone;
-                zoneOrder = circleInnerOrder;
-                currentZone = 'inner';
-                console.log(`✅ Circle is in INNER zone`);
-            } else if (circleMiddleZone.has(coord)) {
-                zoneSet = circleMiddleZone;
-                zoneOrder = circleMiddleOrder;
-                currentZone = 'middle';
-                console.log(`✅ Circle is in MIDDLE zone`);
-            } else if (circleOuterZone.has(coord)) {
-                zoneSet = circleOuterZone;
-                zoneOrder = circleOuterOrder;
-                currentZone = 'outer';
-                console.log(`✅ Circle is in OUTER zone`);
-            } else {
-                console.log(`❌ Circle is NOT in any zone!`);
-                return;
-            }
+            // Use unified highlighting system that respects flip state
+            const hexId = `hex-${centerRow}-${centerCol}`;
+            highlightPieceMoves(centerRow, centerCol, 'circle', hexId);
+        }
 
-            const isWhite = piece.classList.contains('white-circle');
+        function showTriangleMovementPattern(centerRow, centerCol) {
+            console.log('📐 showTriangleMovementPattern called for', centerRow, centerCol);
             const friendlySelectors = isWhite 
                 ? ['.square-piece.white-piece', '.triangle-piece.white-triangle', '.rhombus-piece.white-rhombus', '.circle-piece.white-circle', '.hexgon-piece.white-hexgon']
                 : ['.square-piece:not(.white-piece)', '.triangle-piece:not(.white-triangle)', '.rhombus-piece:not(.white-rhombus)', '.circle-piece:not(.white-circle)', '.hexgon-piece:not(.white-hexgon)'];
