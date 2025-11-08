@@ -33464,6 +33464,30 @@ ${moveHistory || '(No moves played yet - starting position)'}
                         e.preventDefault(); // Prevent drag if not current player's turn
                         return;
                     }
+                    
+                    // FLIP MODE: Check if rhombus is in check - if so, only allow moving the rhombus
+                    if (flipModeEnabled && !this.classList.contains('rhombus-piece')) {
+                        const isWhite = this.classList.contains('white-piece') || this.classList.contains('white-triangle') || 
+                                       this.classList.contains('white-hexgon') || this.classList.contains('white-circle');
+                        const playerRhombus = isWhite ? 
+                            document.querySelector('.rhombus-piece.white-rhombus') : 
+                            document.querySelector('.rhombus-piece:not(.white-rhombus)');
+                        
+                        if (playerRhombus) {
+                            const rhombusHex = playerRhombus.parentElement;
+                            if (rhombusHex) {
+                                const [, rhombusRow, rhombusCol] = rhombusHex.id.match(/hex-(\d+)-(\d+)/);
+                                const rhombusUnderAttack = isPieceUnderThreat(parseInt(rhombusRow), parseInt(rhombusCol), isWhite, playerRhombus);
+                                
+                                if (rhombusUnderAttack) {
+                                    e.preventDefault();
+                                    playIllegalSound();
+                                    alert('❌ ILLEGAL MOVE!\n\nYour rhombus is in check!\n\nYou must move your rhombus to escape the threat or block it.');
+                                    return;
+                                }
+                            }
+                        }
+                    }
 
                     // Check if another piece is already active this turn
                     if (currentTurnPiece && currentTurnPiece !== this.parentElement) {
@@ -34120,6 +34144,30 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     if (gameOver || !isCurrentPlayerPiece(this)) {
                         e.preventDefault(); // Prevent drag if not current player's turn
                         return;
+                    }
+                    
+                    // FLIP MODE: Check if rhombus is in check - if so, only allow moving the rhombus
+                    if (flipModeEnabled && !this.classList.contains('rhombus-piece')) {
+                        const isWhite = this.classList.contains('white-piece') || this.classList.contains('white-triangle') || 
+                                       this.classList.contains('white-hexgon') || this.classList.contains('white-circle');
+                        const playerRhombus = isWhite ? 
+                            document.querySelector('.rhombus-piece.white-rhombus') : 
+                            document.querySelector('.rhombus-piece:not(.white-rhombus)');
+                        
+                        if (playerRhombus) {
+                            const rhombusHex = playerRhombus.parentElement;
+                            if (rhombusHex) {
+                                const [, rhombusRow, rhombusCol] = rhombusHex.id.match(/hex-(\d+)-(\d+)/);
+                                const rhombusUnderAttack = isPieceUnderThreat(parseInt(rhombusRow), parseInt(rhombusCol), isWhite, playerRhombus);
+                                
+                                if (rhombusUnderAttack) {
+                                    e.preventDefault();
+                                    playIllegalSound();
+                                    alert('❌ ILLEGAL MOVE!\n\nYour rhombus is in check!\n\nYou must move your rhombus to escape the threat or block it.');
+                                    return;
+                                }
+                            }
+                        }
                     }
 
                     // Check if another piece is already active this turn
