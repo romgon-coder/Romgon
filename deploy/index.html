@@ -19253,8 +19253,26 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 
                 const rotationControls = document.getElementById('rotation-controls');
                 if (rotationControls) {
-                    if (this.classList.contains('triangle-piece') || this.classList.contains('hexgon-piece')) {
-                        rotationControls.style.display = 'block';
+                    const isRotatable = this.classList.contains('triangle-piece') || this.classList.contains('hexgon-piece');
+                    const shouldShow = isRotatable || flipModeEnabled;
+                    
+                    if (shouldShow) {
+                        rotationControls.style.display = 'flex';
+                        
+                        // Configure button visibility
+                        const flipBtn = rotationControls.querySelector('button:nth-child(2)');
+                        const rotateLeft = rotationControls.querySelector('button:nth-child(1)');
+                        const rotateRight = rotationControls.querySelector('button:nth-child(4)');
+                        
+                        if (flipBtn) flipBtn.style.display = flipModeEnabled ? 'block' : 'none';
+                        
+                        if (!isRotatable && flipModeEnabled) {
+                            if (rotateLeft) rotateLeft.style.display = 'none';
+                            if (rotateRight) rotateRight.style.display = 'none';
+                        } else {
+                            if (rotateLeft) rotateLeft.style.display = 'block';
+                            if (rotateRight) rotateRight.style.display = 'block';
+                        }
                     } else {
                         rotationControls.style.display = 'none';
                     }
@@ -33234,7 +33252,7 @@ ${moveHistory || '(No moves played yet - starting position)'}
                         
                         if (shouldShow) {
                             console.log('Showing rotation controls for rotatable piece or Flip Mode');
-                            rotationControls.style.display = 'block';
+                            rotationControls.style.display = 'flex';
                             
                             // Hide/show flip button based on Flip Mode
                             const flipBtn = rotationControls.querySelector('button:nth-child(2)'); // 🔄 FLIP
@@ -33641,7 +33659,7 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     const rotationControls = document.getElementById('rotation-controls');
                     if (rotationControls) {
                         const isRotatable = true; // Already confirmed it's triangle or hexagon
-                        rotationControls.style.display = 'block';
+                        rotationControls.style.display = 'flex';
                         
                         // Show all buttons including flip
                         const flipBtn = rotationControls.querySelector('button:nth-child(2)');
@@ -33660,7 +33678,7 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     
                     const rotationControls = document.getElementById('rotation-controls');
                     if (rotationControls) {
-                        rotationControls.style.display = 'block';
+                        rotationControls.style.display = 'flex';
                         
                         // Show only flip, keep, release buttons
                         const flipBtn = rotationControls.querySelector('button:nth-child(2)');
@@ -33870,7 +33888,7 @@ ${moveHistory || '(No moves played yet - starting position)'}
                         
                         if (shouldShow) {
                             console.log('Showing rotation controls for rotatable piece or Flip Mode');
-                            rotationControls.style.display = 'block';
+                            rotationControls.style.display = 'flex';
                             
                             // Hide/show flip button based on Flip Mode
                             const flipBtn = rotationControls.querySelector('button:nth-child(2)'); // 🔄 FLIP
