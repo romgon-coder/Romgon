@@ -31676,8 +31676,44 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             console.log(`Checking if rhombus would be under attack at: ${checkRow}-${checkCol}`);
             
-            // Check if rhombus would be under attack after this move
-            // Pass the RHOMBUS piece (not the moving piece) so flip state matching can be checked
+            // FLIP MODE: If rhombus is moving in flip mode, simulate the POST-FLIP state
+            // When rhombus moves, it will FLIP after the move (KEEP button)
+            // We need to check if the NEW flip state will be under attack
+            let checkFlipState = playerRhombus;
+            
+            if (flipModeEnabled && isMovingRhombus) {
+                // Rhombus will flip after moving - simulate the future flip state
+                const currentFlipState = playerRhombus.dataset.flipped === 'true';
+                const futureFlipState = !currentFlipState; // Will flip after KEEP
+                
+                console.log(`🔄 FLIP MODE: Simulating POST-FLIP threat check`);
+                console.log(`   Current flip state: ${currentFlipState}`);
+                console.log(`   Future flip state (after KEEP): ${futureFlipState}`);
+                
+                // Temporarily set the flip state to what it WILL BE after KEEP
+                playerRhombus.dataset.flipped = futureFlipState.toString();
+                
+                // Check if rhombus would be under attack in its FUTURE flip state
+                const underAttackAfterFlip = isPieceUnderThreat(checkRow, checkCol, isWhiteMoving, playerRhombus);
+                
+                // Restore original flip state
+                playerRhombus.dataset.flipped = currentFlipState.toString();
+                
+                console.log('Rhombus under attack after flip:', underAttackAfterFlip);
+                
+                if (underAttackAfterFlip) {
+                    console.log('❌ FLIP MODE ILLEGAL! Rhombus will be under attack in flipped state after KEEP!');
+                    // Clean up simulation
+                    tempPiece.remove();
+                    movingPiece.style.display = '';
+                    if (capturedPiece && capturedPieceBackup !== null) {
+                        capturedPiece.style.display = capturedPieceBackup;
+                    }
+                    return true; // ILLEGAL MOVE
+                }
+            }
+            
+            // Check if rhombus would be under attack after this move (in current flip state)
             console.log(`🎲 FLIP MODE CHECK: Rhombus flip state: ${playerRhombus ? playerRhombus.dataset.flipped : 'N/A'}, flipModeEnabled: ${flipModeEnabled}`);
             const underAttack = isPieceUnderThreat(checkRow, checkCol, isWhiteMoving, playerRhombus);
             
@@ -31692,9 +31728,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     wouldBeIllegal = false;
                 } else {
                     // FLIP MODE EXCEPTION: In flip mode, don't block moves that put rhombus under attack
-                    // because the player can flip to a different state to avoid the threat
+                    // in the CURRENT flip state (because player can press RELEASE to stay unflipped)
                     if (flipModeEnabled) {
-                        console.log('✅ FLIP MODE: Move allowed - player can flip to escape threats');
+                        console.log('✅ FLIP MODE: Move allowed - player can press RELEASE to stay in current flip state');
                         wouldBeIllegal = false;
                     } else {
                         // ORIGINAL MODE: Always block moves that put rhombus under attack
