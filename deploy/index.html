@@ -18119,18 +18119,13 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             });
             
             const hexId = `hex-${centerRow}-${centerCol}`;
-            const centerHex = document.getElementById(hexId);
-            const centerPiece = centerHex.querySelector('.rhombus-piece');
-            
-            // FLIP CHECK: If flipped, use omnidirectional pattern
-            if (centerPiece && centerPiece.dataset.flipped === 'true') {
-                console.log('🔄 Rhombus is flipped, using omnidirectional pattern');
-                highlightPieceMoves(centerRow, centerCol, 'rhombus', hexId);
-                return;
-            }
-            
-            // NOT FLIPPED: Use original rhombus movement with diagonal highlights
-            console.log('📐 Rhombus NOT flipped, using original movement with diagonals');
+            // ALWAYS use unified highlighting system that respects flip state
+            highlightPieceMoves(centerRow, centerCol, 'rhombus', hexId);
+        }
+
+        // Legacy rhombus pattern function (DEPRECATED - kept for reference)
+        function showRhombusMovementPattern_OLD(centerRow, centerCol) {
+            console.log(`🎯 showRhombusMovementPattern called for ${centerRow}-${centerCol}`);
             
             // Get friendly piece types based on rhombus color
             let friendlyPieceTypes;
@@ -18208,15 +18203,14 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 hex.classList.remove('highlight-green', 'highlight-red', 'highlight-danger', 'highlight-diagonal', 'highlight-gray');
             });
             
-            // ===== FLIP CHECK: If flipped, use omnidirectional pattern =====
-            if (piece && piece.dataset.flipped === 'true') {
-                console.log('🔄 Circle is flipped, using omnidirectional pattern');
-                highlightPieceMoves(centerRow, centerCol, 'circle', hexId);
-                return;
-            }
-            
-            // ===== NOT FLIPPED: Use original zone perimeter + zone transition logic =====
-            console.log('⚪ Circle is NOT flipped, using zone perimeter + zone transition pattern');
+            // ALWAYS use unified highlighting system that respects flip state
+            console.log('⚪ Circle using unified highlight system with flip state protection');
+            highlightPieceMoves(centerRow, centerCol, 'circle', hexId);
+        }
+
+        // Legacy circle pattern function (DEPRECATED - kept for reference)
+        function showCircleMovementPattern_OLD(centerRow, centerCol) {
+            const hexId = `hex-${centerRow}-${centerCol}`;
             
             const coord = `${centerRow}-${centerCol}`;
             console.log(`📍 Current position: ${coord}`);
