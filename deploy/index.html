@@ -19093,7 +19093,20 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             const piece = document.createElement('div');
             piece.className = last.pieceClass;
             piece.draggable = true;
+            
+            // FLIP MODE: Restore original flip state if saved
+            if (last.originalFlipState !== undefined) {
+                piece.dataset.flipped = last.originalFlipState;
+                console.log('🔄 UNDO: Restored original flip state:', last.originalFlipState);
+            } else {
+                piece.dataset.flipped = 'false'; // Default to unflipped if not saved
+            }
+            
             fromHex.appendChild(piece);
+            
+            // FLIP MODE: Update visual indicator for restored flip state
+            updateFlipVisual(fromHex.id);
+            console.log('🔄 UNDO: Updated flip visual for:', fromHex.id);
 
             // Restore captured piece if any and remove one eliminated-panel entry
             if (last.capturedHTML) {
@@ -34034,7 +34047,8 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     capturedHTML: capturedHTML,
                     endedTurn: shouldEndTurn,
                     isTriangle: newPiece.classList.contains('triangle-piece'),
-                    isHexgon: newPiece.classList.contains('hexgon-piece')
+                    isHexgon: newPiece.classList.contains('hexgon-piece'),
+                    originalFlipState: preservedFlipState // FLIP MODE: Save original flip state for undo
                 });
 
                 // Re-add drag event listeners to the new piece
