@@ -17322,6 +17322,19 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         
         // Check if a circle can attack a position (zone-based perimetric attack)
         function canCircleAttack(pieceRow, pieceCol, targetRow, targetCol, piece) {
+            // FLIP MODE: If circle is flipped, use omnidirectional attack (6 adjacent hexes)
+            if (flipModeEnabled && piece && piece.dataset.flipped === 'true') {
+                const flippedTargets = getFlippedAttackTargets(pieceRow, pieceCol);
+                for (const [targetR, targetC] of flippedTargets) {
+                    if (targetR === targetRow && targetC === targetCol) {
+                        console.log(`✅ FLIPPED CIRCLE at ${pieceRow}-${pieceCol} CAN attack ${targetRow}-${targetCol} (omnidirectional)`);
+                        return true;
+                    }
+                }
+                return false;
+            }
+            
+            // UNFLIPPED CIRCLE: Use zone-based perimeter attack
             // Circles attack ANY opponent on their perimeter ring (not just adjacent hexes)
             const coord = `${pieceRow}-${pieceCol}`;
             const targetCoord = `${targetRow}-${targetCol}`;
