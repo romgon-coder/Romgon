@@ -24663,6 +24663,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 // Setup event handlers
                 roomClient.onGameStarted = (data) => {
                     console.log('🎮 Game starting!', data);
+                    console.log('🎮 Game data includes gameMode?', data.gameMode);
+                    console.log('🎮 Current room gameMode before update:', roomClient.currentRoom?.gameMode);
                     
                     if (data.players && Array.isArray(data.players)) {
                         roomClient.currentRoom.players = data.players;
@@ -24671,6 +24673,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     if (data.gameId) {
                         roomClient.currentRoom.id = data.gameId;
                     }
+                    
+                    // Preserve gameMode if not included in data
+                    if (data.gameMode) {
+                        roomClient.currentRoom.gameMode = data.gameMode;
+                    }
+                    console.log('🎮 Room gameMode after update:', roomClient.currentRoom?.gameMode);
                     
                     closeMultiplayerModal();
                     startMultiplayerGame(data.gameId);
