@@ -34025,27 +34025,29 @@ ${moveHistory || '(No moves played yet - starting position)'}
         let mouseDownTime = 0;
         let mouseMovedDuringDrag = false;
 
-        // Make pieces draggable
-        function setupDragAndDrop() {
-            const pieces = document.querySelectorAll('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
+        // Attach event listeners to a single piece
+        function attachPieceEventListeners(piece) {
+            piece.draggable = true;
             
-            pieces.forEach(piece => {
-                piece.draggable = true;
-                
-                // Track mousedown for click detection
-                piece.addEventListener('mousedown', function(e) {
-                    mouseDownTime = Date.now();
-                    mouseMovedDuringDrag = false;
-                });
-                
-                // Track mouse movement
-                piece.addEventListener('mousemove', function(e) {
-                    if (mouseDownTime > 0) {
-                        mouseMovedDuringDrag = true;
-                    }
-                });
-                
-                piece.addEventListener('dragstart', function(e) {
+            // Remove existing listeners first (to avoid duplicates)
+            const oldPiece = piece.cloneNode(true);
+            piece.parentNode.replaceChild(oldPiece, piece);
+            piece = oldPiece;
+            
+            // Track mousedown for click detection
+            piece.addEventListener('mousedown', function(e) {
+                mouseDownTime = Date.now();
+                mouseMovedDuringDrag = false;
+            });
+            
+            // Track mouse movement
+            piece.addEventListener('mousemove', function(e) {
+                if (mouseDownTime > 0) {
+                    mouseMovedDuringDrag = true;
+                }
+            });
+            
+            piece.addEventListener('dragstart', function(e) {
                     // In multiplayer, check if it's our turn FIRST
                     if (multiplayerMode && myPlayerColor && myPlayerColor !== 'both') {
                         if (currentPlayer !== myPlayerColor) {
@@ -34349,6 +34351,15 @@ ${moveHistory || '(No moves played yet - starting position)'}
                         showSquareMovementPattern(parseInt(row), parseInt(col));
                     }
                 });
+            
+            return piece; // Return the new piece reference after cloning
+        }
+
+        // Make all pieces draggable
+        function setupDragAndDrop() {
+            const pieces = document.querySelectorAll('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
+            pieces.forEach(piece => {
+                attachPieceEventListeners(piece);
             });
         }
 
@@ -34619,7 +34630,6 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 const newPiece = document.createElement('div');
                 // CRITICAL: Set className to sanitized pieceClasses to ensure no contamination
                 newPiece.className = pieceClasses;
-                newPiece.draggable = true;
                 newPiece.dataset.flipped = preservedFlipState; // Preserve flip state
                 
                 console.log('🔄 New piece created with dataset.flipped:', newPiece.dataset.flipped);
@@ -34634,6 +34644,10 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 });
                 
                 targetHex.appendChild(newPiece);
+                
+                // CRITICAL: Attach event listeners to the new piece
+                attachPieceEventListeners(newPiece);
+                console.log('✅ Event listeners attached to new piece');
                 
                 console.log('🎯 Player piece created at:', targetHex.id, 'Classes:', newPiece.className);
                 console.log('🎯 Has triangle-piece?', newPiece.classList.contains('triangle-piece'));
