@@ -25104,6 +25104,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             currentGameId = gameId;
             console.log('💾 Stored currentGameId:', currentGameId);
             
+            // CRITICAL: Disable AI in multiplayer mode
+            aiEnabled = false;
+            console.log('🤖 AI disabled for multiplayer game');
+            
             multiplayerMode = true;
             currentPlayer = 'black'; // BLACK always moves first in Romgon
             console.log('🎲 Set currentPlayer to:', currentPlayer);
