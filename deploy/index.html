@@ -33142,6 +33142,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 // Online multiplayer: Get opponent's username from room data
                 console.log('🌐 Multiplayer game detected');
                 console.log('   Room data:', roomClient.currentRoom);
+                console.log('   Players:', roomClient.currentRoom?.players);
                 
                 if (roomClient.currentRoom && roomClient.currentRoom.players) {
                     const token = localStorage.getItem('romgon-jwt');
@@ -33159,8 +33160,21 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                             console.log('✅ Winner display name from room data:', winnerDisplayName);
                         } else {
                             console.warn('⚠️ Could not find winning player in room data');
+                            console.warn('   Winner color:', winner);
+                            console.warn('   Available players:', roomClient.currentRoom.players.map(p => `${p.username} (${p.color})`));
+                            // Fallback: just show the color if we can't find player
+                            winnerDisplayName = `${winner} player`;
                         }
+                    } else {
+                        console.error('❌ No token found for multiplayer game');
+                        winnerDisplayName = `${winner} player`;
                     }
+                } else {
+                    console.error('❌ No room data available in multiplayer game!');
+                    console.error('   roomClient:', roomClient);
+                    console.error('   roomClient.currentRoom:', roomClient.currentRoom);
+                    // Fallback for multiplayer without room data
+                    winnerDisplayName = `${winner} player`;
                 }
             } else if (isPVP) {
                 // PvP mode: both players are the same user playing locally
