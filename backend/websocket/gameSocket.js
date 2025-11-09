@@ -306,7 +306,10 @@ function setupSocketHandlers(io) {
                         hostUsername: room.hostUsername,
                         players: room.players,
                         status: room.status,
-                        gameId: room.gameId
+                        gameId: room.gameId,
+                        gameMode: room.gameMode,
+                        isRanked: room.isRanked,
+                        timeControl: room.timeControl
                     }
                 });
             }
