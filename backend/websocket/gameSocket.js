@@ -370,6 +370,9 @@ function setupSocketHandlers(io) {
             gameNamespace.to(`room-${roomCode}`).emit('room:gameStarted', {
                 gameId,
                 players: room ? room.players : [],
+                gameMode: room ? room.gameMode : 'classic',
+                isRanked: room ? room.isRanked : false,
+                timeControl: room ? room.timeControl : { enabled: false },
                 roomCode,
                 timestamp: new Date().toISOString()
             });
