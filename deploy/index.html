@@ -8023,6 +8023,15 @@
                 cursor: pointer;
             " onclick="window.location.href='/'">ROMGON</h1>
             
+            <!-- Online Players Count -->
+            <span id="online-players-count" style="
+                font-size: 0.85em;
+                color: #4ecdc4;
+                margin-left: 12px;
+            ">
+                <span style="color: #26de81;">●</span> <span id="online-count-number">0</span> online
+            </span>
+            
             <!-- Multiplayer Status (shown only in multiplayer games) -->
             <div id="multiplayer-status-bar" style="display: none; align-items: center; gap: 10px; margin-left: 20px; padding-left: 20px; border-left: 1px solid rgba(245, 125, 45, 0.3);">
                 <div style="display: flex; align-items: center; gap: 6px;">
@@ -9886,8 +9895,9 @@
         color: white;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         overflow: hidden;
-        padding: 60px 20px;
+        padding: 50px 20px;
         box-sizing: border-box;
+        zoom: 0.88;
     ">
         
         <!-- Return to Game Link (shown when in active game) -->
@@ -22131,6 +22141,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             // Update top-menu counter if present
             const menuCount = document.getElementById('online-count-menu');
             if (menuCount) menuCount.textContent = `${onlinePlayersList.size} online`;
+            
+            // Update top bar counter
+            const topBarCount = document.getElementById('online-count-number');
+            if (topBarCount) topBarCount.textContent = onlinePlayersList.size;
 
             console.log('🔔 Calling renderOnlinePlayers (NEW function with chat) and renderOnlinePlayersOld (top-bar)');
             // Call both renderers: new graphical lobby view and the old compact top-bar view
