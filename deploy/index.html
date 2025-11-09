@@ -36279,10 +36279,12 @@ ${moveHistory || '(No moves played yet - starting position)'}
         // 🔍 GLOBAL CLICK DETECTOR - Test if clicks work at all
         document.addEventListener('click', function(e) {
             console.log('🎯 GLOBAL CLICK DETECTED:', e.target.id || e.target.className || e.target.tagName);
+            console.log('🎯 Target type:', e.target.type, 'Tag:', e.target.tagName);
             
             // Play select sound for checkboxes (check both target and label's input)
             if (e.target.type === 'checkbox') {
-                console.log('🔊 Playing select sound for checkbox:', e.target.id);
+                console.log('🔊 CHECKBOX DETECTED! Playing select sound for:', e.target.id);
+                console.log('🔊 selectSound exists?', !!selectSound);
                 playSelectSound();
             } else if (e.target.tagName === 'LABEL') {
                 // Check if label is for a checkbox
