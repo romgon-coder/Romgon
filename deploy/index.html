@@ -8024,11 +8024,13 @@
             " onclick="window.location.href='/'">ROMGON</h1>
             
             <!-- Online Players Count -->
-            <span id="online-players-count" style="
+            <span id="online-players-count" onclick="openOnlinePlayersPanel()" style="
                 font-size: 0.85em;
                 color: #4ecdc4;
                 margin-left: 12px;
-            ">
+                cursor: pointer;
+                transition: color 0.2s ease;
+            " onmouseover="this.style.color='#5eddd4'" onmouseout="this.style.color='#4ecdc4'">
                 <span style="color: #26de81;">●</span> <span id="online-count-number">0</span> online
             </span>
             
@@ -10161,22 +10163,6 @@
                         " onmouseover="this.style.color='#ffed4e'; this.style.textShadow='0 0 15px rgba(255, 215, 0, 0.5)'" onmouseout="this.style.color='#ffd700'; this.style.textShadow='none'">BADGE SYSTEM</a>
                         <span style="color: #666; font-size: 0.75em; margin-left: auto;">210+ Badges • Achievements</span>
                     </div>
-                    
-                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                        <span style="color: #26de81; font-size: 1.6em;">🌐</span>
-                        <a onclick="openOnlinePlayersPanel()" style="
-                            color: #26de81;
-                            font-size: 0.95em;
-                            font-weight: 600;
-                            cursor: pointer;
-                            text-decoration: none;
-                            letter-spacing: 1px;
-                            transition: all 0.3s ease;
-                            display: inline-block;
-                            white-space: nowrap;
-                        " onmouseover="this.style.color='#3bed92'; this.style.textShadow='0 0 15px rgba(38, 222, 129, 0.5)'" onmouseout="this.style.color='#26de81'; this.style.textShadow='none'">ONLINE PLAYERS</a>
-                        <span id="online-count-menu" style="color: #666; font-size: 0.75em; margin-left: auto;">0 online</span>
-                    </div>
                 </div>
             </div>
             
@@ -10437,12 +10423,12 @@
                 width: 100%;
                 background: rgba(15, 20, 25, 0.95);
                 border-top: 1px solid #2a3540;
-                padding: 15px 20px;
+                padding: 8px 20px;
                 text-align: center;
                 color: #888;
-                font-size: 0.8em;
+                font-size: 0.75em;
             ">
-                <div style="display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap; line-height: 1.4;">
+                <div style="display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap; line-height: 1.2;">
                     <span style="color: #4ecdc4; font-weight: 600;">NO DRAWS</span>
                     <span style="color: #555;">•</span>
                     <span>Only Win or Lose</span>
