@@ -16428,6 +16428,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         let illegalSound = null; // Illegal move sound
         let flipSound = null; // Flip piece sound
         let keepSound = null; // Keep button sound
+        let selectSound = null; // Select/toggle sound
         
         // Background music
         let backgroundMusic1 = null;
@@ -16489,6 +16490,11 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 keepSound = new Audio('ASSETS/keepSound.ogg');
                 keepSound.volume = 0.5; // Set volume to 50% for keep sound
                 keepSound.preload = 'auto';
+                
+                // Load select/toggle sound (OGG format)
+                selectSound = new Audio('ASSETS/sellectSound.ogg');
+                selectSound.volume = 0.4; // Set volume to 40% for select sound
+                selectSound.preload = 'auto';
                 
                 // Background music tracks
                 backgroundMusic1 = new Audio('ASSETS/background1.mp3');
@@ -16666,6 +16672,22 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             }
         }
         
+        function playSelectSound() {
+            if (!selectSound) {
+                console.error('❌ selectSound not initialized!');
+                return;
+            }
+            
+            try {
+                selectSound.currentTime = 0; // Reset to beginning
+                selectSound.play()
+                    .then(() => console.log('✅ Select sound played successfully'))
+                    .catch(error => console.error('❌ Select sound play error:', error.message));
+            } catch (error) {
+                console.error('❌ Select sound error:', error.message);
+            }
+        }
+        
         function playMenuButtonSound() {
             console.log('playMenuButtonSound called');
             if (menuButtonSound) {
@@ -16745,6 +16767,13 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 }
             }
         }
+        
+        // Add global event listener for all checkboxes and select elements to play select sound
+        document.addEventListener('change', function(e) {
+            if (e.target.type === 'checkbox' || e.target.tagName === 'SELECT') {
+                playSelectSound();
+            }
+        });
         
         // Track movement history
         let moveCount = 0;
