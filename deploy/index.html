@@ -364,149 +364,187 @@
         display: none;
         position: fixed;
         top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(10, 12, 15, 0.98);
+        background: rgba(0, 0, 0, 0.85);
         z-index: 3001;
         overflow-y: auto;
         padding: 0; margin: 0;
-        backdrop-filter: blur(4px);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
     ">
         <div style="
             max-width: 1200px;
-            width: 97vw;
-            margin: 20px auto;
-            background: #1a1e26;
-            border-radius: 20px;
-            box-shadow: 0 10px 50px #0009;
+            width: 96vw;
+            margin: 2vh auto;
+            background: linear-gradient(145deg, #1e2128 0%, #16181d 100%);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 1px rgba(102, 126, 234, 0.5);
             padding: 0;
-            color: #fff;
+            color: #e8eaed;
             position: relative;
             display: flex;
             flex-direction: column;
-            max-height: 90vh;
+            max-height: 96vh;
             overflow: hidden;
+            border: 1px solid rgba(102, 126, 234, 0.2);
         ">
             <!-- Header with Close Button -->
             <div style="
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                padding: 28px 32px;
+                padding: 32px 40px;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                border-bottom: 2px solid #667eea;
+                border-bottom: none;
+                position: relative;
+                overflow: hidden;
             ">
-                <h2 style="margin: 0; font-size: 1.8em; color: #fff;">👤 Player Hub</h2>
-                <button onclick="hideAccountModal()" style="
-                    background: rgba(255, 255, 255, 0.2);
-                    color: white;
-                    border: 2px solid rgba(255, 255, 255, 0.5);
+                <!-- Decorative Background Pattern -->
+                <div style="
+                    position: absolute;
+                    top: -50%;
+                    right: -10%;
+                    width: 300px;
+                    height: 300px;
+                    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
                     border-radius: 50%;
-                    font-size: 1.3em;
-                    width: 40px;
-                    height: 40px;
+                "></div>
+                <div style="
+                    position: absolute;
+                    bottom: -50%;
+                    left: -5%;
+                    width: 250px;
+                    height: 250px;
+                    background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+                    border-radius: 50%;
+                "></div>
+                
+                <div style="position: relative; z-index: 1;">
+                    <h2 style="margin: 0; font-size: 2em; color: #fff; font-weight: 700; letter-spacing: -0.5px;">Player Hub</h2>
+                    <p style="margin: 6px 0 0 0; color: rgba(255,255,255,0.8); font-size: 0.9em;">Manage your profile & view statistics</p>
+                </div>
+                <button onclick="hideAccountModal()" style="
+                    background: rgba(255, 255, 255, 0.15);
+                    color: white;
+                    border: 2px solid rgba(255, 255, 255, 0.3);
+                    border-radius: 12px;
+                    font-size: 1.2em;
+                    width: 44px;
+                    height: 44px;
                     cursor: pointer;
                     transition: all 0.3s ease;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                " onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">✖</button>
+                    position: relative;
+                    z-index: 1;
+                    backdrop-filter: blur(10px);
+                    -webkit-backdrop-filter: blur(10px);
+                " onmouseover="this.style.background='rgba(255, 255, 255, 0.25)'; this.style.transform='rotate(90deg)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.15)'; this.style.transform='rotate(0deg)'">✖</button>
             </div>
 
             <!-- Tab Navigation -->
             <div style="
                 display: flex;
-                background: #141820;
-                border-bottom: 2px solid #2a2f3a;
+                background: #0d0f13;
+                border-bottom: 1px solid rgba(102, 126, 234, 0.15);
                 padding: 0;
                 overflow-x: auto;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             ">
                 <button onclick="switchAccountTab('overview')" class="account-tab-btn" style="
                     flex: 1;
-                    padding: 16px 20px;
+                    padding: 18px 24px;
                     background: transparent;
                     border: none;
-                    color: #999;
-                    font-size: 0.95em;
+                    color: #888;
+                    font-size: 0.9em;
                     font-weight: 600;
                     cursor: pointer;
                     border-bottom: 3px solid transparent;
                     transition: all 0.3s ease;
                     white-space: nowrap;
-                " data-tab="overview" onmouseover="this.style.color='#fff'" onmouseout="this.style.color=this.classList.contains('active') ? '#fff' : '#999'">
+                    letter-spacing: 0.3px;
+                " data-tab="overview" onmouseover="this.style.color='#fff'; this.style.background='rgba(102, 126, 234, 0.05)'" onmouseout="this.style.color=this.classList.contains('active') ? '#667eea' : '#888'; this.style.background='transparent'">
                     📊 Overview
                 </button>
                 <button onclick="switchAccountTab('analytics')" class="account-tab-btn" style="
                     flex: 1;
-                    padding: 16px 20px;
+                    padding: 18px 24px;
                     background: transparent;
                     border: none;
-                    color: #999;
-                    font-size: 0.95em;
+                    color: #888;
+                    font-size: 0.9em;
                     font-weight: 600;
                     cursor: pointer;
                     border-bottom: 3px solid transparent;
                     transition: all 0.3s ease;
                     white-space: nowrap;
-                " data-tab="analytics" onmouseover="this.style.color='#fff'" onmouseout="this.style.color=this.classList.contains('active') ? '#fff' : '#999'">
+                    letter-spacing: 0.3px;
+                " data-tab="analytics" onmouseover="this.style.color='#fff'; this.style.background='rgba(102, 126, 234, 0.05)'" onmouseout="this.style.color=this.classList.contains('active') ? '#667eea' : '#888'; this.style.background='transparent'">
                     📈 Analytics
                 </button>
                 <button onclick="switchAccountTab('variations')" class="account-tab-btn" style="
                     flex: 1;
-                    padding: 16px 20px;
+                    padding: 18px 24px;
                     background: transparent;
                     border: none;
-                    color: #999;
-                    font-size: 0.95em;
+                    color: #888;
+                    font-size: 0.9em;
                     font-weight: 600;
                     cursor: pointer;
                     border-bottom: 3px solid transparent;
                     transition: all 0.3s ease;
                     white-space: nowrap;
-                " data-tab="variations" onmouseover="this.style.color='#fff'" onmouseout="this.style.color=this.classList.contains('active') ? '#fff' : '#999'">
+                    letter-spacing: 0.3px;
+                " data-tab="variations" onmouseover="this.style.color='#fff'; this.style.background='rgba(102, 126, 234, 0.05)'" onmouseout="this.style.color=this.classList.contains('active') ? '#667eea' : '#888'; this.style.background='transparent'">
                     🎮 Variations
                 </button>
                 <button onclick="switchAccountTab('achievements')" class="account-tab-btn" style="
                     flex: 1;
-                    padding: 16px 20px;
+                    padding: 18px 24px;
                     background: transparent;
                     border: none;
-                    color: #999;
-                    font-size: 0.95em;
+                    color: #888;
+                    font-size: 0.9em;
                     font-weight: 600;
                     cursor: pointer;
                     border-bottom: 3px solid transparent;
                     transition: all 0.3s ease;
                     white-space: nowrap;
-                " data-tab="achievements" onmouseover="this.style.color='#fff'" onmouseout="this.style.color=this.classList.contains('active') ? '#fff' : '#999'">
+                    letter-spacing: 0.3px;
+                " data-tab="achievements" onmouseover="this.style.color='#fff'; this.style.background='rgba(102, 126, 234, 0.05)'" onmouseout="this.style.color=this.classList.contains('active') ? '#667eea' : '#888'; this.style.background='transparent'">
                     🏆 Achievements
                 </button>
                 <button onclick="switchAccountTab('ratings')" class="account-tab-btn" style="
                     flex: 1;
-                    padding: 16px 20px;
+                    padding: 18px 24px;
                     background: transparent;
                     border: none;
-                    color: #999;
-                    font-size: 0.95em;
+                    color: #888;
+                    font-size: 0.9em;
                     font-weight: 600;
                     cursor: pointer;
                     border-bottom: 3px solid transparent;
                     transition: all 0.3s ease;
                     white-space: nowrap;
-                " data-tab="ratings" onmouseover="this.style.color='#fff'" onmouseout="this.style.color=this.classList.contains('active') ? '#fff' : '#999'">
+                    letter-spacing: 0.3px;
+                " data-tab="ratings" onmouseover="this.style.color='#fff'; this.style.background='rgba(102, 126, 234, 0.05)'" onmouseout="this.style.color=this.classList.contains('active') ? '#667eea' : '#888'; this.style.background='transparent'">
                     ⭐ Ratings
                 </button>
                 <button onclick="switchAccountTab('settings')" class="account-tab-btn" style="
                     flex: 1;
-                    padding: 16px 20px;
+                    padding: 18px 24px;
                     background: transparent;
                     border: none;
-                    color: #999;
-                    font-size: 0.95em;
+                    color: #888;
+                    font-size: 0.9em;
                     font-weight: 600;
                     cursor: pointer;
                     border-bottom: 3px solid transparent;
                     transition: all 0.3s ease;
                     white-space: nowrap;
-                " data-tab="settings" onmouseover="this.style.color='#fff'" onmouseout="this.style.color=this.classList.contains('active') ? '#fff' : '#999'">
+                    letter-spacing: 0.3px;
+                " data-tab="settings" onmouseover="this.style.color='#fff'; this.style.background='rgba(102, 126, 234, 0.05)'" onmouseout="this.style.color=this.classList.contains('active') ? '#667eea' : '#888'; this.style.background='transparent'">
                     ⚙️ Settings
                 </button>
             </div>
@@ -514,60 +552,76 @@
             <!-- Main Content Area -->
             <div style="
                 flex: 1;
-                padding: 32px;
+                padding: 36px 40px;
                 display: flex;
-                gap: 32px;
+                gap: 36px;
                 overflow-y: auto;
+                background: #16181d;
             ">
                 <!-- Sidebar -->
                 <div style="
-                    min-width: 280px;
-                    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-                    padding: 24px;
-                    border-radius: 16px;
-                    border: 1px solid rgba(102, 126, 234, 0.3);
+                    min-width: 300px;
+                    background: linear-gradient(145deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+                    padding: 28px;
+                    border-radius: 20px;
+                    border: 1px solid rgba(102, 126, 234, 0.2);
                     height: fit-content;
+                    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
                 ">
-                    <div style="text-align: center; margin-bottom: 24px;">
+                    <div style="text-align: center; margin-bottom: 28px;">
                         <div id="account-avatar" style="
-                            width: 120px;
-                            height: 120px;
+                            width: 130px;
+                            height: 130px;
                             border-radius: 50%;
-                            background: rgba(255, 255, 255, 0.1);
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                             display: flex;
                             align-items: center;
                             justify-content: center;
-                            margin: 0 auto 16px;
-                            font-size: 3em;
-                            border: 4px solid rgba(102, 126, 234, 0.6);
+                            margin: 0 auto 18px;
+                            font-size: 3.5em;
+                            border: 4px solid rgba(102, 126, 234, 0.3);
                             overflow: hidden;
-                        ">👤</div>
+                            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+                            position: relative;
+                        ">
+                            <div style="
+                                position: absolute;
+                                top: 0;
+                                left: 0;
+                                right: 0;
+                                bottom: 0;
+                                background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2) 0%, transparent 60%);
+                            "></div>
+                            <span style="position: relative; z-index: 1;">👤</span>
+                        </div>
                         <h3 id="account-sidebar-name" style="
                             margin: 0 0 8px 0;
-                            font-size: 1.3em;
+                            font-size: 1.4em;
                             color: #fff;
                             word-break: break-word;
+                            font-weight: 700;
+                            letter-spacing: -0.3px;
                         ">Guest Player</h3>
                         <p id="account-sidebar-email" style="
-                            margin: 0 0 16px 0;
-                            color: #999;
+                            margin: 0 0 18px 0;
+                            color: #888;
                             font-size: 0.85em;
                             word-break: break-all;
                         ">Session User</p>
                     </div>
                     
-                    <div style="border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 16px;">
-                        <div style="margin-bottom: 16px;">
-                            <p style="color: #999; font-size: 0.85em; margin: 0 0 4px 0;">Registered</p>
-                            <p id="account-sidebar-date" style="color: #4ecdc4; font-weight: 600; margin: 0;">Not registered</p>
+                    <div style="border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 20px; margin-top: 20px;">
+                        <div style="margin-bottom: 18px; padding: 14px; background: rgba(0,0,0,0.2); border-radius: 10px;">
+                            <p style="color: #888; font-size: 0.8em; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Registered</p>
+                            <p id="account-sidebar-date" style="color: #4ecdc4; font-weight: 600; margin: 0; font-size: 1.05em;">Not registered</p>
                         </div>
-                        <div style="margin-bottom: 16px;">
-                            <p style="color: #999; font-size: 0.85em; margin: 0 0 4px 0;">Member Level</p>
-                            <p id="account-member-level" style="color: #ffd700; font-weight: 600; margin: 0;">Bronze</p>
+                        <div style="margin-bottom: 18px; padding: 14px; background: rgba(0,0,0,0.2); border-radius: 10px;">
+                            <p style="color: #888; font-size: 0.8em; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Member Level</p>
+                            <p id="account-member-level" style="color: #ffd700; font-weight: 700; margin: 0; font-size: 1.05em;">Bronze</p>
                         </div>
-                        <div>
-                            <p style="color: #999; font-size: 0.85em; margin: 0 0 4px 0;">Total Games</p>
-                            <p id="account-total-games" style="color: #4ecdc4; font-weight: 600; margin: 0; font-size: 1.3em;">0</p>
+                        <div style="padding: 14px; background: rgba(0,0,0,0.2); border-radius: 10px;">
+                            <p style="color: #888; font-size: 0.8em; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Total Games</p>
+                            <p id="account-total-games" style="color: #667eea; font-weight: 700; margin: 0; font-size: 1.8em;">0</p>
                         </div>
                     </div>
                 </div>
@@ -577,90 +631,100 @@
                     
                     <!-- OVERVIEW TAB -->
                     <div id="account-tab-overview" class="account-tab-content" style="display: block;">
-                        <h3 style="color: #667eea; margin-top: 0; margin-bottom: 24px; font-size: 1.4em;">Profile & Quick Stats</h3>
+                        <h3 style="color: #667eea; margin-top: 0; margin-bottom: 28px; font-size: 1.5em; font-weight: 700; letter-spacing: -0.5px;">Profile & Quick Stats</h3>
                         
                         <!-- Profile Info -->
                         <div style="
-                            background: rgba(78, 205, 196, 0.1);
-                            padding: 20px;
-                            border-radius: 12px;
+                            background: linear-gradient(135deg, rgba(78, 205, 196, 0.1) 0%, rgba(78, 205, 196, 0.05) 100%);
+                            padding: 24px;
+                            border-radius: 16px;
                             border-left: 4px solid #4ecdc4;
-                            margin-bottom: 24px;
+                            margin-bottom: 28px;
+                            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
                         ">
-                            <p style="color: #aaa; margin: 8px 0;"><strong style="color: #4ecdc4;">Username:</strong> <span id="account-username">Loading...</span></p>
-                            <p style="color: #aaa; margin: 8px 0;"><strong style="color: #4ecdc4;">Email:</strong> <span id="account-email">Loading...</span></p>
+                            <p style="color: #b8bbc1; margin: 10px 0; font-size: 0.95em;"><strong style="color: #4ecdc4; font-weight: 600;">Username:</strong> <span id="account-username" style="color: #e8eaed;">Loading...</span></p>
+                            <p style="color: #b8bbc1; margin: 10px 0; font-size: 0.95em;"><strong style="color: #4ecdc4; font-weight: 600;">Email:</strong> <span id="account-email" style="color: #e8eaed;">Loading...</span></p>
                         </div>
 
                         <!-- Quick Stats Grid -->
-                        <div style="margin-bottom: 24px;">
-                            <h4 style="color: #999; margin: 0 0 16px 0; font-size: 0.95em; text-transform: uppercase; letter-spacing: 1px;">Game Record</h4>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px;">
+                        <div style="margin-bottom: 28px;">
+                            <h4 style="color: #888; margin: 0 0 18px 0; font-size: 0.85em; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700;">Game Record</h4>
+                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
                                 <div style="
-                                    background: linear-gradient(135deg, rgba(38, 222, 129, 0.1) 0%, rgba(38, 222, 129, 0.05) 100%);
-                                    padding: 18px;
-                                    border-radius: 10px;
-                                    border: 1px solid rgba(38, 222, 129, 0.3);
+                                    background: linear-gradient(135deg, rgba(38, 222, 129, 0.12) 0%, rgba(38, 222, 129, 0.05) 100%);
+                                    padding: 24px 20px;
+                                    border-radius: 16px;
+                                    border: 1px solid rgba(38, 222, 129, 0.25);
                                     text-align: center;
-                                ">
-                                    <div style="color: #26de81; font-size: 2em; font-weight: bold;" id="account-wins">0</div>
-                                    <div style="color: #999; font-size: 0.85em; margin-top: 6px;">Wins</div>
+                                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                                " onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(38, 222, 129, 0.2)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
+                                    <div style="color: #26de81; font-size: 2.5em; font-weight: 800; line-height: 1;" id="account-wins">0</div>
+                                    <div style="color: #888; font-size: 0.8em; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Wins</div>
                                 </div>
                                 <div style="
-                                    background: linear-gradient(135deg, rgba(255, 107, 107, 0.1) 0%, rgba(255, 107, 107, 0.05) 100%);
-                                    padding: 18px;
-                                    border-radius: 10px;
-                                    border: 1px solid rgba(255, 107, 107, 0.3);
+                                    background: linear-gradient(135deg, rgba(255, 107, 107, 0.12) 0%, rgba(255, 107, 107, 0.05) 100%);
+                                    padding: 24px 20px;
+                                    border-radius: 16px;
+                                    border: 1px solid rgba(255, 107, 107, 0.25);
                                     text-align: center;
-                                ">
-                                    <div style="color: #ff6b6b; font-size: 2em; font-weight: bold;" id="account-losses">0</div>
-                                    <div style="color: #999; font-size: 0.85em; margin-top: 6px;">Losses</div>
+                                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                                " onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(255, 107, 107, 0.2)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
+                                    <div style="color: #ff6b6b; font-size: 2.5em; font-weight: 800; line-height: 1;" id="account-losses">0</div>
+                                    <div style="color: #888; font-size: 0.8em; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Losses</div>
                                 </div>
                                 <div style="
-                                    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 215, 0, 0.05) 100%);
-                                    padding: 18px;
-                                    border-radius: 10px;
-                                    border: 1px solid rgba(255, 215, 0, 0.3);
+                                    background: linear-gradient(135deg, rgba(255, 215, 0, 0.12) 0%, rgba(255, 215, 0, 0.05) 100%);
+                                    padding: 24px 20px;
+                                    border-radius: 16px;
+                                    border: 1px solid rgba(255, 215, 0, 0.25);
                                     text-align: center;
-                                ">
-                                    <div style="color: #ffd700; font-size: 2em; font-weight: bold;" id="account-winrate">0%</div>
-                                    <div style="color: #999; font-size: 0.85em; margin-top: 6px;">Win Rate</div>
+                                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                                " onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(255, 215, 0, 0.2)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
+                                    <div style="color: #ffd700; font-size: 2.5em; font-weight: 800; line-height: 1;" id="account-winrate">0%</div>
+                                    <div style="color: #888; font-size: 0.8em; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Win Rate</div>
                                 </div>
                                 <div style="
-                                    background: linear-gradient(135deg, rgba(78, 205, 196, 0.1) 0%, rgba(78, 205, 196, 0.05) 100%);
-                                    padding: 18px;
-                                    border-radius: 10px;
-                                    border: 1px solid rgba(78, 205, 196, 0.3);
+                                    background: linear-gradient(135deg, rgba(102, 126, 234, 0.12) 0%, rgba(118, 75, 162, 0.08) 100%);
+                                    padding: 24px 20px;
+                                    border-radius: 16px;
+                                    border: 1px solid rgba(102, 126, 234, 0.25);
                                     text-align: center;
-                                ">
-                                    <div style="color: #4ecdc4; font-size: 2em; font-weight: bold;" id="account-games">0</div>
-                                    <div style="color: #999; font-size: 0.85em; margin-top: 6px;">Total</div>
+                                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                                " onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(102, 126, 234, 0.2)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
+                                    <div style="color: #667eea; font-size: 2.5em; font-weight: 800; line-height: 1;" id="account-games">0</div>
+                                    <div style="color: #888; font-size: 0.8em; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Total</div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Account Activity -->
                         <div style="
-                            background: rgba(165, 94, 234, 0.1);
-                            padding: 20px;
-                            border-radius: 12px;
+                            background: linear-gradient(135deg, rgba(165, 94, 234, 0.1) 0%, rgba(165, 94, 234, 0.05) 100%);
+                            padding: 24px;
+                            border-radius: 16px;
                             border-left: 4px solid #a55eea;
-                            margin-bottom: 24px;
+                            margin-bottom: 28px;
+                            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
                         ">
-                            <h4 style="color: #a55eea; margin: 0 0 12px 0;">📅 Activity</h4>
-                            <p style="color: #aaa; margin: 8px 0;"><strong style="color: #a55eea;">Last Login:</strong> <span id="account-last-login">Never</span></p>
-                            <p style="color: #aaa; margin: 8px 0;"><strong style="color: #a55eea;">Saved Games:</strong> <span id="account-saved-games">0</span></p>
-                            <p style="color: #aaa; margin: 8px 0;"><strong style="color: #a55eea;">Total Moves Made:</strong> <span id="account-total-moves">0</span></p>
-                            <p style="color: #aaa; margin: 8px 0;"><strong style="color: #a55eea;">Pieces Captured:</strong> <span id="account-total-captures">0</span></p>
+                            <h4 style="color: #a55eea; margin: 0 0 16px 0; font-size: 1.1em; font-weight: 700;">📅 Activity</h4>
+                            <p style="color: #b8bbc1; margin: 10px 0; font-size: 0.95em;"><strong style="color: #a55eea; font-weight: 600;">Last Login:</strong> <span id="account-last-login" style="color: #e8eaed;">Never</span></p>
+                            <p style="color: #b8bbc1; margin: 10px 0; font-size: 0.95em;"><strong style="color: #a55eea; font-weight: 600;">Saved Games:</strong> <span id="account-saved-games" style="color: #e8eaed;">0</span></p>
+                            <p style="color: #b8bbc1; margin: 10px 0; font-size: 0.95em;"><strong style="color: #a55eea; font-weight: 600;">Total Moves Made:</strong> <span id="account-total-moves" style="color: #e8eaed;">0</span></p>
+                            <p style="color: #b8bbc1; margin: 10px 0; font-size: 0.95em;"><strong style="color: #a55eea; font-weight: 600;">Pieces Captured:</strong> <span id="account-total-captures" style="color: #e8eaed;">0</span></p>
                         </div>
 
                         <!-- Delete Account -->
                         <button onclick="deleteAccount()" style="
                             width: 100%;
-                            background: linear-gradient(135deg, #ff6b6b, #ff8a8a);
+                            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
                             color: white;
                             border: none;
-                            padding: 14px 24px;
-                            border-radius: 10px;
+                            padding: 16px 28px;
+                            border-radius: 12px;
                             font-weight: 700;
                             font-size: 0.95em;
                             cursor: pointer;
