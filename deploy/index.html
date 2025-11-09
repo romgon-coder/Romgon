@@ -34027,12 +34027,8 @@ ${moveHistory || '(No moves played yet - starting position)'}
 
         // Attach event listeners to a single piece
         function attachPieceEventListeners(piece) {
+            if (!piece) return piece;
             piece.draggable = true;
-            
-            // Remove existing listeners first (to avoid duplicates)
-            const oldPiece = piece.cloneNode(true);
-            piece.parentNode.replaceChild(oldPiece, piece);
-            piece = oldPiece;
             
             // Track mousedown for click detection
             piece.addEventListener('mousedown', function(e) {
@@ -34351,8 +34347,6 @@ ${moveHistory || '(No moves played yet - starting position)'}
                         showSquareMovementPattern(parseInt(row), parseInt(col));
                     }
                 });
-            
-            return piece; // Return the new piece reference after cloning
         }
 
         // Make all pieces draggable
