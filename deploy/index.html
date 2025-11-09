@@ -9850,45 +9850,43 @@
 
     <!-- Compact Professional Start Menu -->
     <div id="start-menu" style="
-        position: fixed;
-        top: 0;
-        left: 0;
+        position: relative;
+        min-height: 100vh;
         width: 100%;
-        height: 100%;
         background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #0f1419 100%);
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: flex-start;
         align-items: center;
         z-index: 2000;
         color: white;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         overflow-y: auto;
-        padding: 40px 20px;
+        padding: 80px 20px 20px 20px;
         box-sizing: border-box;
     ">
         <!-- Logo/Title Section -->
         <div style="
             text-align: center;
-            margin-bottom: 60px;
+            margin-bottom: 40px;
             max-width: 800px;
         ">
             <h1 style="
-                font-size: 3.5em;
+                font-size: 2.8em;
                 font-weight: 900;
                 margin: 0 0 10px 0;
                 background: linear-gradient(135deg, #f57d2d 0%, #ffa500 100%);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
                 background-clip: text;
-                letter-spacing: 8px;
+                letter-spacing: 6px;
             ">ROMGON</h1>
             <p style="
-                font-size: 0.9em;
+                font-size: 0.85em;
                 margin: 0;
                 color: #999;
                 font-weight: 300;
-                letter-spacing: 3px;
+                letter-spacing: 2px;
             ">HEXAGONAL STRATEGY GAME</p>
         </div>
         
@@ -36680,7 +36678,8 @@ ${moveHistory || '(No moves played yet - starting position)'}
         text-align: center;
         color: #aaa;
         font-size: 0.9em;
-        margin-top: 40px;
+        margin-top: 20px;
+        width: 100%;
     ">
         <div style="max-width: 1200px; margin: 0 auto;">
             <p style="margin: 5px 0; color: #4ecdc4; font-weight: 600;">
@@ -36688,7 +36687,7 @@ ${moveHistory || '(No moves played yet - starting position)'}
             </p>
             <p style="margin: 5px 0;">
                 <span style="color: #f57d2d; font-weight: 500;">ALPHA v0.3.0</span> | 
-                © 2024 ROMGON | All Rights Reserved
+                © 2024-2025 ROMGON | All Rights Reserved
             </p>
             <p style="margin: 10px 0; font-size: 0.85em;">
                 <a href="#" onclick="showWelcomeModal(); return false;" style="color: #4ecdc4; text-decoration: none; margin: 0 10px;">What's New</a> |
@@ -36705,10 +36704,12 @@ ${moveHistory || '(No moves played yet - starting position)'}
             const gameBoard = document.getElementById('game-board');
             const startMenu = document.getElementById('start-menu');
             
-            if (footer && gameBoard && startMenu) {
+            if (footer && gameBoard) {
                 // Hide footer when game board is visible (not display:none)
                 const isGameActive = window.getComputedStyle(gameBoard).display !== 'none';
-                footer.style.display = isGameActive ? 'none' : 'block';
+                // Show footer only on start menu
+                const isOnStartMenu = startMenu && window.getComputedStyle(startMenu).display !== 'none';
+                footer.style.display = (isOnStartMenu && !isGameActive) ? 'block' : 'none';
             }
         }
         
