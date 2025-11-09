@@ -1263,7 +1263,7 @@
             ">
                 <div>
                     <h2 style="margin: 0; font-size: 1.8em; color: #fff;">🌐 Online Players</h2>
-                    <p id="online-players-count" style="margin: 5px 0 0 0; font-size: 0.9em; color: rgba(255,255,255,0.8);">Loading...</p>
+                    <p id="online-players-panel-count" style="margin: 5px 0 0 0; font-size: 0.9em; color: rgba(255,255,255,0.8);">Loading...</p>
                 </div>
                 <button onclick="closeOnlinePlayersPanel()" style="
                     background: rgba(255, 255, 255, 0.2);
@@ -9069,28 +9069,7 @@
                 border-radius: 12px;
                 padding: 15px 20px;
                 margin-bottom: 20px;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                flex-wrap: wrap;
-                gap: 15px;
             ">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div style="
-                            width: 10px;
-                            height: 10px;
-                            border-radius: 50%;
-                            background: #4ecdc4;
-                            box-shadow: 0 0 10px rgba(78, 205, 196, 0.6);
-                            animation: pulse 2s infinite;
-                        "></div>
-                        <span style="color: #4ecdc4; font-weight: 600; font-size: 1.1em;">
-                            <span id="online-players-count">0</span> Players Online
-                        </span>
-                    </div>
-                </div>
-                
                 <!-- Online Players List (Lobby Graphical Context) -->
                 <div id="online-players-lobby-list" style="
                     display: flex;
@@ -13968,10 +13947,16 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
     function updateOnlineCount(count) {
         console.log('📊 Updating online count:', count);
         
-        // Update in modal
-        const countEl = document.getElementById('online-players-count');
-        if (countEl) {
-            countEl.textContent = `${count} player${count !== 1 ? 's' : ''} online`;
+        // Update global top bar counter
+        const globalCountEl = document.getElementById('online-count-number');
+        if (globalCountEl) {
+            globalCountEl.textContent = count;
+        }
+        
+        // Update in modal panel
+        const panelCountEl = document.getElementById('online-players-panel-count');
+        if (panelCountEl) {
+            panelCountEl.textContent = `${count} player${count !== 1 ? 's' : ''} online`;
         }
         
         // Update in menu
@@ -14029,10 +14014,10 @@ Romgon is a deep, complex game with rich theoretical possibilities. Its combinat
         
         console.log('🎨 Rendering', onlinePlayersList.size, 'online players in lobby');
         
-        // Update the counter in the top of the section
-        const countEl = document.getElementById('online-players-count');
-        if (countEl) {
-            countEl.textContent = onlinePlayersList.size;
+        // Update the counter in the global top bar
+        const globalCountEl = document.getElementById('online-count-number');
+        if (globalCountEl) {
+            globalCountEl.textContent = onlinePlayersList.size;
         }
         
         // Clear existing
@@ -22177,11 +22162,11 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         
         function renderOnlinePlayersOld() { // This renders the compact list in the PANEL/MODAL
             console.log('🎨 renderOnlinePlayersOld called');
-            const countEl = document.getElementById('online-players-count');
+            const globalCountEl = document.getElementById('online-count-number');
             const listEl = document.getElementById('online-players-panel-list');
             
-            if (!countEl || !listEl) {
-                console.log('⚠️ Panel list elements not found');
+            if (!listEl) {
+                console.log('⚠️ Panel list element not found');
                 return;
             }
             
@@ -22189,7 +22174,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             console.log('📊 onlinePlayers Map size:', count);
             console.log('📊 onlinePlayers contents:', Array.from(onlinePlayers.entries()));
             
-            countEl.textContent = count;
+            // Update global top bar counter
+            if (globalCountEl) {
+                globalCountEl.textContent = count;
+            }
             
             if (count === 0) {
                 console.log('⚠️ onlinePlayers Map is empty');
