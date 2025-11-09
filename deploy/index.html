@@ -9890,7 +9890,7 @@
         left: 0;
         width: 100%;
         height: 100vh;
-        background: #0f1419 url(./ASSETS/backgrounds/bluehex.png) center/cover no-repeat !important;
+        background: #0f1419 url(/ASSETS/backgrounds/bluehex.png) center/cover no-repeat !important;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -35699,12 +35699,13 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 // Force bluehex background on start menu
                 const startMenu = document.getElementById('start-menu');
                 if (startMenu) {
-                    startMenu.style.backgroundImage = 'url(./ASSETS/backgrounds/bluehex.png)';
+                    startMenu.style.backgroundImage = 'url(/ASSETS/backgrounds/bluehex.png)';
                     startMenu.style.backgroundSize = 'cover';
                     startMenu.style.backgroundPosition = 'center';
                     startMenu.style.backgroundRepeat = 'no-repeat';
                     startMenu.style.backgroundColor = '#0f1419';
                     console.log('🎨 Applied bluehex background to start menu');
+                    console.log('📍 Background image path:', startMenu.style.backgroundImage);
                 } else {
                     console.error('❌ start-menu element not found!');
                 }
