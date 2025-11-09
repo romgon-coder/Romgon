@@ -21759,29 +21759,46 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     console.log('🎯 Move update received:', data);
                     console.log('🎯 My color:', myPlayerColor);
                     console.log('🎯 Current turn before update:', currentPlayer);
+                    console.log('🎯 multiplayerMode:', multiplayerMode);
+                    console.log('🎯 data.move exists:', !!data.move);
                     
                     // Get my user ID to check if this is my own move
+                    let isMyMove = false;
                     const token = localStorage.getItem('romgon-jwt');
                     if (token) {
-                        const payload = JSON.parse(atob(token.split('.')[1]));
-                        const myUserId = payload.userId?.toString(); // Convert to string for comparison
-                        const moveUserId = data.userId?.toString(); // Ensure data.userId is also string
-                        console.log('🎯 My userId:', myUserId, `(type: ${typeof myUserId})`);
-                        console.log('🎯 Move by userId:', moveUserId, `(type: ${typeof moveUserId})`);
-                        
-                        if (moveUserId === myUserId) {
-                            console.log('⏭️ Skipping my own move (already applied locally)');
-                            // Sync turn from server to ensure consistency
-                            if (data.turn) {
-                                currentPlayer = data.turn;
-                                updateTurnDisplay();
+                        try {
+                            const payload = JSON.parse(atob(token.split('.')[1]));
+                            const myUserId = payload.userId?.toString(); // Convert to string for comparison
+                            const moveUserId = data.userId?.toString(); // Ensure data.userId is also string
+                            console.log('🎯 My userId:', myUserId, `(type: ${typeof myUserId})`);
+                            console.log('🎯 Move by userId:', moveUserId, `(type: ${typeof moveUserId})`);
+                            
+                            if (moveUserId === myUserId) {
+                                console.log('⏭️ Skipping my own move (already applied locally)');
+                                isMyMove = true;
+                                // Sync turn from server to ensure consistency
+                                if (data.turn) {
+                                    currentPlayer = data.turn;
+                                    updateTurnDisplay();
+                                }
+                                return; // Don't apply our own moves again
                             }
-                            return; // Don't apply our own moves again
+                        } catch (error) {
+                            console.error('❌ Error checking userId:', error);
                         }
+                    } else {
+                        console.warn('⚠️ No romgon-jwt token found - cannot verify if this is my move');
                     }
                     
                     // Apply the opponent's move to our board
-                    if (data.move && multiplayerMode) {
+                    // Don't check multiplayerMode strictly - if we receive a move, it's multiplayer!
+                    if (data.move && !isMyMove) {
+                        // Ensure multiplayerMode is enabled (defensive check)
+                        if (!multiplayerMode) {
+                            console.warn('⚠️ multiplayerMode was false, but received opponent move - enabling it now!');
+                            multiplayerMode = true;
+                        }
+                        
                         const { from, to, piece, captured, triangleOrientation, hexgonOrientation, flipped } = data.move;
                         
                         console.log('🔄 Applying opponent move:', from, '→', to);
