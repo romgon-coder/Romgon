@@ -134,9 +134,13 @@ router.post('/join', authenticateToken, async (req, res) => {
                 room: {
                     code: roomCode,
                     id: room.id,
+                    gameId: room.gameId,
                     hostUsername: room.hostUsername,
                     players: room.players,
-                    status: room.status
+                    status: room.status,
+                    gameMode: room.gameMode,
+                    isRanked: room.isRanked,
+                    timeControl: room.timeControl
                 }
             });
         }
@@ -196,9 +200,13 @@ router.post('/join', authenticateToken, async (req, res) => {
             room: {
                 code: roomCode,
                 id: room.id,
+                gameId: room.gameId,
                 hostUsername: room.hostUsername,
                 players: room.players,
-                status: room.status
+                status: room.status,
+                gameMode: room.gameMode,
+                isRanked: room.isRanked,
+                timeControl: room.timeControl
             }
         });
     } catch (error) {

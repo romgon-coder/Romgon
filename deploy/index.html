@@ -24649,6 +24649,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 const room = await roomClient.joinRoom(roomCode);
                 
                 console.log('✅ Room joined successfully:', room);
+                console.log('🎮 Room gameMode:', room.gameMode);
+                console.log('🎮 Full room object:', JSON.stringify(room, null, 2));
                 showNotification(`✅ Joined room ${roomCode}!`, 'success');
                 
                 // Update UI
@@ -25172,6 +25174,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 console.log('✅ Flip Mode activated');
             } else {
                 console.log('📋 Standard game mode');
+                console.log('🔍 roomClient.currentRoom:', roomClient.currentRoom);
+                console.log('🔍 roomClient.currentRoom.gameMode:', roomClient.currentRoom?.gameMode);
                 selectedGameMode = roomClient.currentRoom?.gameMode || 'classic';
                 flipModeEnabled = false;
             }
