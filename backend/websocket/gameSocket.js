@@ -489,7 +489,21 @@ function setupSocketHandlers(io) {
                 console.log(`   Move count: ${currentMoveCount}`);
                 console.log(`   Next turn: ${nextTurn}`);
                 console.log(`📢 Broadcasting to game-${gameId}...`);
-                console.log(`   Sockets in room:`, gameNamespace.adapter.rooms.get(`game-${gameId}`)?.size || 0);
+                
+                // Get all sockets in this game room
+                const roomSockets = gameNamespace.adapter.rooms.get(`game-${gameId}`);
+                const socketCount = roomSockets?.size || 0;
+                console.log(`   Sockets in room: ${socketCount}`);
+                
+                if (roomSockets) {
+                    console.log(`   Socket IDs in room:`, Array.from(roomSockets));
+                    // Log which users these sockets belong to
+                    const socketsInRoom = Array.from(gameNamespace.sockets.values())
+                        .filter(s => roomSockets.has(s.id));
+                    console.log(`   Users in room:`, socketsInRoom.map(s => `${s.userId} (${s.username}) [${s.id}]`));
+                } else {
+                    console.error(`   ❌ NO ROOM FOUND for game-${gameId}!`);
+                }
                 
                 // Always broadcast the move regardless of database status
                 gameNamespace.to(`game-${gameId}`).emit('game:moveUpdate', {
@@ -501,7 +515,7 @@ function setupSocketHandlers(io) {
                     timestamp: new Date().toISOString()
                 });
                 
-                console.log(`✅ Move broadcast complete, next turn: ${nextTurn}`);
+                console.log(`✅ Move broadcast complete to ${socketCount - 1} other socket(s), next turn: ${nextTurn}`);
             } catch (error) {
                 console.error('❌ Error broadcasting move:', error);
                 socket.emit('game:error', { error: error.message });
