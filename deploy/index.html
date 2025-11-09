@@ -1526,6 +1526,7 @@
                         color: #fff; font-size: 1em; cursor: pointer;
                     ">
                         <option value="classic">Classic Romgon</option>
+                        <option value="flip-mode">🔄 Flip Mode</option>
                         <option value="fog-of-war">Fog of War</option>
                         <option value="custom">Custom Rules</option>
                     </select>
@@ -25153,6 +25154,27 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             multiplayerMode = true;
             currentPlayer = 'black'; // BLACK always moves first in Romgon
             console.log('🎲 Set currentPlayer to:', currentPlayer);
+            
+            // Check if game mode is Flip Mode
+            if (roomClient.currentRoom && roomClient.currentRoom.gameMode === 'flip-mode') {
+                console.log('🔄 Flip Mode enabled for this game!');
+                selectedGameMode = 'flip-mode';
+                
+                // Enable flip mode
+                flipModeEnabled = true;
+                
+                // Show flip mode indicator
+                const flipIndicator = document.getElementById('flip-mode-indicator');
+                if (flipIndicator) {
+                    flipIndicator.style.display = 'block';
+                }
+                
+                console.log('✅ Flip Mode activated');
+            } else {
+                console.log('📋 Standard game mode');
+                selectedGameMode = roomClient.currentRoom?.gameMode || 'classic';
+                flipModeEnabled = false;
+            }
             
             // Determine player color from room
             if (roomClient.currentRoom && roomClient.currentRoom.players) {
