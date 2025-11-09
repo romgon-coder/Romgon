@@ -36695,14 +36695,11 @@ ${moveHistory || '(No moves played yet - starting position)'}
         function updateFooterVisibility() {
             const footer = document.getElementById('site-footer');
             const gameBoard = document.getElementById('game-board');
-            const startMenu = document.getElementById('start-menu');
             
             if (footer && gameBoard) {
-                // Hide footer when game board is visible (not display:none)
+                // Hide footer only when game board is active
                 const isGameActive = window.getComputedStyle(gameBoard).display !== 'none';
-                // Show footer only on start menu
-                const isOnStartMenu = startMenu && window.getComputedStyle(startMenu).display !== 'none';
-                footer.style.display = (isOnStartMenu && !isGameActive) ? 'block' : 'none';
+                footer.style.display = isGameActive ? 'none' : 'block';
             }
         }
         
