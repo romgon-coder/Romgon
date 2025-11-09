@@ -16427,6 +16427,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         let menuButtonSound = null;
         let illegalSound = null; // Illegal move sound
         let flipSound = null; // Flip piece sound
+        let keepSound = null; // Keep button sound
         
         // Background music
         let backgroundMusic1 = null;
@@ -16483,6 +16484,11 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 flipSound = new Audio('ASSETS/flipSound.ogg');
                 flipSound.volume = 0.5; // Set volume to 50% for flip sound
                 flipSound.preload = 'auto';
+                
+                // Load keep button sound (OGG format)
+                keepSound = new Audio('ASSETS/keepSound.ogg');
+                keepSound.volume = 0.5; // Set volume to 50% for keep sound
+                keepSound.preload = 'auto';
                 
                 // Background music tracks
                 backgroundMusic1 = new Audio('ASSETS/background1.mp3');
@@ -16641,6 +16647,22 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     .catch(error => console.error('❌ Flip sound play error:', error.message));
             } catch (error) {
                 console.error('❌ Flip sound error:', error.message);
+            }
+        }
+        
+        function playKeepSound() {
+            if (!keepSound) {
+                console.error('❌ keepSound not initialized!');
+                return;
+            }
+            
+            try {
+                keepSound.currentTime = 0; // Reset to beginning
+                keepSound.play()
+                    .then(() => console.log('✅ Keep sound played successfully'))
+                    .catch(error => console.error('❌ Keep sound play error:', error.message));
+            } catch (error) {
+                console.error('❌ Keep sound error:', error.message);
             }
         }
         
@@ -29887,6 +29909,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     // Mark as rotated (even though no rotation happened) to end turn
                     actions.rotated = true;
                     pieceActions.set(hexId, actions);
+                    
+                    // Play keep sound
+                    playKeepSound();
                     
                     // End turn
                     if (!gameOver) {
