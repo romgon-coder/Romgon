@@ -36279,6 +36279,20 @@ ${moveHistory || '(No moves played yet - starting position)'}
         // 🔍 GLOBAL CLICK DETECTOR - Test if clicks work at all
         document.addEventListener('click', function(e) {
             console.log('🎯 GLOBAL CLICK DETECTED:', e.target.id || e.target.className || e.target.tagName);
+            
+            // Play select sound for checkboxes
+            if (e.target.type === 'checkbox') {
+                console.log('🔊 Playing select sound for checkbox:', e.target.id);
+                playSelectSound();
+            }
+        }, true);
+        
+        // Play select sound for dropdown changes
+        document.addEventListener('change', function(e) {
+            if (e.target.tagName === 'SELECT') {
+                console.log('🔊 Playing select sound for dropdown:', e.target.id);
+                playSelectSound();
+            }
         }, true);
 
         // 🔍 Test the chat button specifically
