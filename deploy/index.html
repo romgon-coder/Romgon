@@ -35696,6 +35696,16 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 const footer = document.getElementById('start-menu-footer');
                 if (footer) footer.style.display = 'block';
                 
+                // Force bluehex background on start menu
+                const startMenu = document.getElementById('start-menu');
+                if (startMenu) {
+                    startMenu.style.backgroundImage = 'url(ASSETS/backgrounds/bluehex.png)';
+                    startMenu.style.backgroundSize = 'cover';
+                    startMenu.style.backgroundPosition = 'center';
+                    startMenu.style.backgroundRepeat = 'no-repeat';
+                    console.log('🎨 Applied bluehex background to start menu');
+                }
+                
                 // Auto-connect to chat socket for online players tracking
                 if (typeof io !== 'undefined' && typeof initializeChatSocket === 'function') {
                     console.log('🌐 Auto-connecting to chat socket for online players...');
