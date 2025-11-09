@@ -653,24 +653,6 @@
                             <p style="color: #aaa; margin: 8px 0;"><strong style="color: #a55eea;">Pieces Captured:</strong> <span id="account-total-captures">0</span></p>
                         </div>
 
-                        <!-- What's New Button -->
-                        <button onclick="hideAccountModal(); showWelcomeModal();" style="
-                            width: 100%;
-                            background: linear-gradient(135deg, #4ecdc4, #44a7f0);
-                            color: white;
-                            border: none;
-                            padding: 14px 24px;
-                            border-radius: 10px;
-                            font-weight: 700;
-                            font-size: 0.95em;
-                            cursor: pointer;
-                            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
-                            transition: all 0.3s ease;
-                            margin-bottom: 16px;
-                        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(78, 205, 196, 0.5)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(78, 205, 196, 0.3)'">
-                            ✨ What's New - v0.3.0
-                        </button>
-
                         <!-- Delete Account -->
                         <button onclick="deleteAccount()" style="
                             width: 100%;
@@ -8085,6 +8067,17 @@
                 ">0</div>
             </div>
             
+            <!-- What's New Button -->
+            <div onclick="showWelcomeModal()" style="
+                cursor: pointer;
+                font-size: 20px;
+                padding: 4px 8px;
+                transition: all 0.2s ease;
+                border-radius: 6px;
+            " onmouseover="this.style.transform='scale(1.1)'; this.style.background='rgba(78, 205, 196, 0.2)'" onmouseout="this.style.transform='scale(1)'; this.style.background='transparent'" title="What's New - v0.3.0">
+                ✨
+            </div>
+            
             <!-- Account Info (Plain Text) -->
             <div onclick="showAccountModal()" style="
                 display: flex;
@@ -10414,6 +10407,7 @@
                 line-height: 1.6;
                 padding-top: 30px;
                 border-top: 1px solid #333;
+                display: none;
             ">
                 <p style="margin: 0 0 10px 0;">
                     <strong style="color: #f57d2d;">Objective:</strong> Move your rhombus to opponent's base or trap theirs
@@ -36676,6 +36670,58 @@ ${moveHistory || '(No moves played yet - starting position)'}
 
     <!-- 🎮 Game Engine API - Enables external tools and AI systems to interact with the game -->
     <script src="romgon-engine-api.js"></script>
+
+    <!-- Footer -->
+    <footer id="site-footer" style="
+        position: relative;
+        background: linear-gradient(135deg, #1a1818 0%, #2d2925 100%);
+        border-top: 2px solid #4ecdc4;
+        padding: 20px;
+        text-align: center;
+        color: #aaa;
+        font-size: 0.9em;
+        margin-top: 40px;
+    ">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <p style="margin: 5px 0; color: #4ecdc4; font-weight: 600;">
+                ROMGON - The Rhombus Strategy Game
+            </p>
+            <p style="margin: 5px 0;">
+                <span style="color: #f57d2d; font-weight: 500;">ALPHA v0.3.0</span> | 
+                © 2024 ROMGON | All Rights Reserved
+            </p>
+            <p style="margin: 10px 0; font-size: 0.85em;">
+                <a href="#" onclick="showWelcomeModal(); return false;" style="color: #4ecdc4; text-decoration: none; margin: 0 10px;">What's New</a> |
+                <a href="#" onclick="showTheoryModal(); return false;" style="color: #a55eea; text-decoration: none; margin: 0 10px;">Theory Guide</a> |
+                <a href="#" onclick="showStatsModal(); return false;" style="color: #feca57; text-decoration: none; margin: 0 10px;">Statistics</a>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Hide footer when game board is visible
+        function updateFooterVisibility() {
+            const footer = document.getElementById('site-footer');
+            const gameBoard = document.getElementById('game-board');
+            const startMenu = document.getElementById('start-menu');
+            
+            if (footer && gameBoard && startMenu) {
+                // Hide footer when game board is visible (not display:none)
+                const isGameActive = window.getComputedStyle(gameBoard).display !== 'none';
+                footer.style.display = isGameActive ? 'none' : 'block';
+            }
+        }
+        
+        // Check visibility on page load and periodically
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', updateFooterVisibility);
+        } else {
+            updateFooterVisibility();
+        }
+        
+        // Monitor for changes (game start/end)
+        setInterval(updateFooterVisibility, 500);
+    </script>
 
 </body>
 </html>
