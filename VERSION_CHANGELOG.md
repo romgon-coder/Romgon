@@ -59,6 +59,9 @@ This file tracks all versions, bug fixes, and features for easy updates to the w
 - Added error handlers for audio file loading
 - Improved event listener structure for UI sounds
 - Welcome page modal implementation (Commit: 750ac12)
+- **"What's New" button in Account Settings** - Manual access to welcome modal
+- **Version-based display system** - Modal only shows when version changes
+- Welcome modal now tracks last seen version in localStorage
 
 ---
 

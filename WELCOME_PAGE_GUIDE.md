@@ -30,14 +30,25 @@ The welcome page is a modal that greets players after login (Google, Email/Passw
 1. User logs in (Google OAuth / Email / Guest mode)
 2. `hideSplashPage()` is called
 3. `showWelcomeModalIfNeeded()` is triggered
-4. Welcome modal appears with fade-in animation
-5. User reads updates and clicks "Continue to Game"
-6. If "Don't show this again" is checked, modal won't appear on future logins
+4. **VERSION CHECK**: Compares `currentVersion` (0.3.0) with `localStorage['romgon-last-version']`
+5. If version changed or first login → Welcome modal appears with fade-in animation
+6. If same version → Modal skipped (already seen this version)
+7. User reads updates and clicks "Continue to Game"
+8. Version saved to localStorage (`romgon-last-version = '0.3.0'`)
+9. If "Don't show this again" is checked → `romgon-hide-welcome = 'true'` (disables for ALL versions)
+
+### Manual Access
+- User can click **"✨ What's New - v0.3.0"** button in Account Settings
+- This button always shows the modal regardless of version tracking
+- Located in Settings tab, above Delete Account button
 
 ### Local Storage
-- **Key**: `romgon-hide-welcome`
-- **Value**: `'true'` when user checks "Don't show this again"
-- **Location**: `localStorage.setItem('romgon-hide-welcome', 'true')`
+- **Key 1**: `romgon-last-version` - Stores last seen version (e.g., '0.3.0')
+- **Key 2**: `romgon-hide-welcome` - Permanent disable flag ('true' when user opts out)
+- **Behavior**: 
+  - Modal shows when version changes (e.g., 0.3.0 → 0.4.0)
+  - Modal skipped if same version already seen
+  - "Don't show again" disables for ALL future versions
 
 ## Current Content (ALPHA v0.3.0)
 
@@ -87,7 +98,7 @@ Find the features section in **both files**:
 Find the version badge in **both files**:
 
 **File 1: `deploy/welcome-page.html`** (Line ~71)
-**File 2: `deploy/index.html`** (Line ~8570)
+**File 2: `deploy/index.html`** (Line ~8613)
 
 ```html
 <div class="version-badge">ALPHA v0.3.0</div>
@@ -97,6 +108,17 @@ Change to:
 ```html
 <div class="version-badge">ALPHA v0.4.0</div>
 ```
+
+**IMPORTANT**: Also update these 3 locations:
+1. **Modal version badge** (Line ~8613)
+2. **JavaScript currentVersion** in `showWelcomeModalIfNeeded()` function (Line ~35891):
+   ```javascript
+   const currentVersion = '0.4.0'; // Update this with each release
+   ```
+3. **"What's New" button text** in Account Settings (Line ~659):
+   ```html
+   ✨ What's New - v0.4.0
+   ```
 
 ## Testing
 
@@ -118,9 +140,20 @@ Start-Process "deploy\welcome-page.html"
 4. Modal should NOT appear
 
 ### Reset Modal Display
-To force the modal to show again:
+To force the modal to show again for testing:
 ```javascript
+// Option 1: Clear version to see modal again
+localStorage.removeItem('romgon-last-version');
+
+// Option 2: Clear permanent disable flag
 localStorage.removeItem('romgon-hide-welcome');
+
+// Option 3: Clear both
+localStorage.removeItem('romgon-last-version');
+localStorage.removeItem('romgon-hide-welcome');
+
+// Option 4: Manually trigger from console or "What's New" button
+showWelcomeModal();
 ```
 
 ## Keyboard Shortcuts

@@ -653,6 +653,24 @@
                             <p style="color: #aaa; margin: 8px 0;"><strong style="color: #a55eea;">Pieces Captured:</strong> <span id="account-total-captures">0</span></p>
                         </div>
 
+                        <!-- What's New Button -->
+                        <button onclick="hideAccountModal(); showWelcomeModal();" style="
+                            width: 100%;
+                            background: linear-gradient(135deg, #4ecdc4, #44a7f0);
+                            color: white;
+                            border: none;
+                            padding: 14px 24px;
+                            border-radius: 10px;
+                            font-weight: 700;
+                            font-size: 0.95em;
+                            cursor: pointer;
+                            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+                            transition: all 0.3s ease;
+                            margin-bottom: 16px;
+                        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(78, 205, 196, 0.5)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(78, 205, 196, 0.3)'">
+                            ✨ What's New - v0.3.0
+                        </button>
+
                         <!-- Delete Account -->
                         <button onclick="deleteAccount()" style="
                             width: 100%;
@@ -8592,7 +8610,7 @@
                     font-weight: bold;
                     margin-top: 10px;
                     box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
-                ">ALPHA v0.3.0</div>
+                ">ALPHA v0.3.0</div> <!-- UPDATE VERSION: Also update showWelcomeModalIfNeeded() currentVersion and "What's New" button -->
             </div>
 
             <p style="
@@ -35864,17 +35882,30 @@ ${moveHistory || '(No moves played yet - starting position)'}
         
         /**
          * Show welcome modal on first login or after updates
+         * VERSION-BASED: Only shows when version changes
          */
         function showWelcomeModalIfNeeded() {
+            const currentVersion = '0.3.0'; // Update this with each release
+            const lastSeenVersion = localStorage.getItem('romgon-last-version');
             const hideWelcome = localStorage.getItem('romgon-hide-welcome');
             
-            // Always show for now during ALPHA - can change to check version later
-            // if (hideWelcome === 'true') return;
+            // Check if user has disabled welcome modal completely
+            if (hideWelcome === 'true') {
+                console.log('⏭️ Welcome modal disabled by user preference');
+                return;
+            }
             
-            const welcomeModal = document.getElementById('welcome-modal');
-            if (welcomeModal) {
-                welcomeModal.style.display = 'flex';
-                console.log('✨ Welcome modal displayed');
+            // Show modal if version has changed or first time
+            if (!lastSeenVersion || lastSeenVersion !== currentVersion) {
+                const welcomeModal = document.getElementById('welcome-modal');
+                if (welcomeModal) {
+                    welcomeModal.style.display = 'flex';
+                    // Save the current version so modal won't show again until next update
+                    localStorage.setItem('romgon-last-version', currentVersion);
+                    console.log(`✨ Welcome modal displayed for version ${currentVersion} (previous: ${lastSeenVersion || 'none'})`);
+                }
+            } else {
+                console.log(`✅ User already seen version ${currentVersion}, skipping welcome modal`);
             }
         }
         
@@ -35887,7 +35918,7 @@ ${moveHistory || '(No moves played yet - starting position)'}
             
             if (dontShowAgain && dontShowAgain.checked) {
                 localStorage.setItem('romgon-hide-welcome', 'true');
-                console.log('💾 Welcome modal disabled for future logins');
+                console.log('💾 Welcome modal disabled permanently for all future versions');
             }
             
             if (welcomeModal) {
@@ -35903,7 +35934,7 @@ ${moveHistory || '(No moves played yet - starting position)'}
             const welcomeModal = document.getElementById('welcome-modal');
             if (welcomeModal) {
                 welcomeModal.style.display = 'flex';
-                console.log('✨ Welcome modal manually displayed');
+                console.log('✨ Welcome modal manually displayed from settings');
             }
         }
         
