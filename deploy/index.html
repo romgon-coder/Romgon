@@ -21754,6 +21754,13 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     console.log('🧪 TEST MESSAGE RECEIVED:', data);
                 });
                 
+                // Listen for game room joined confirmation
+                gameSocket.on('game:joined', (data) => {
+                    console.log('✅ Game room joined confirmation received:', data);
+                    console.log('   Room members:', data.members || 'not provided');
+                    console.log('   My role:', data.role || 'not provided');
+                });
+                
                 // Listen for move updates
                 gameSocket.on('game:moveUpdate', (data) => {
                     console.log('🎯 Move update received:', data);
@@ -25168,9 +25175,15 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         console.log('   myPlayerColor:', myPlayerColor);
                         console.log('   multiplayerMode:', multiplayerMode);
                         
+                        console.log('🚨 EMITTING game:join WITH:');
+                        console.log('   gameId:', gameId);
+                        console.log('   userId:', payload.userId);
+                        console.log('   myPlayerColor:', myPlayerColor);
+                        
                         gameSocket.emit('game:join', {
                             gameId,
-                            userId: payload.userId
+                            userId: payload.userId,
+                            playerColor: myPlayerColor  // Send color to help backend track
                         });
                         console.log('✅ game:join emitted successfully');
                         console.log('   Waiting for server to confirm room join...');
@@ -33116,7 +33129,36 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             // Check if this is PvP mode (local same-screen)
             const isPVP = selectedGameMode === 'pvp';
             
-            if (isPVP) {
+            console.log('🎮 Game mode check:');
+            console.log('   isPVP:', isPVP);
+            console.log('   multiplayerMode:', multiplayerMode);
+            console.log('   selectedGameMode:', selectedGameMode);
+            
+            if (multiplayerMode) {
+                // Online multiplayer: Get opponent's username from room data
+                console.log('🌐 Multiplayer game detected');
+                console.log('   Room data:', roomClient.currentRoom);
+                
+                if (roomClient.currentRoom && roomClient.currentRoom.players) {
+                    const token = localStorage.getItem('romgon-jwt');
+                    if (token) {
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        const myUserId = payload.userId?.toString();
+                        
+                        // Find the winning player
+                        const winningPlayer = roomClient.currentRoom.players.find(p => 
+                            p.color?.toLowerCase() === winner.toLowerCase()
+                        );
+                        
+                        if (winningPlayer) {
+                            winnerDisplayName = winningPlayer.username;
+                            console.log('✅ Winner display name from room data:', winnerDisplayName);
+                        } else {
+                            console.warn('⚠️ Could not find winning player in room data');
+                        }
+                    }
+                }
+            } else if (isPVP) {
                 // PvP mode: both players are the same user playing locally
                 winnerDisplayName = `${winner} (You)`;
             } else if (currentUser.username || currentUser.name) {
