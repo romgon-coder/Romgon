@@ -21737,6 +21737,22 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     console.log('🔌 Socket ID:', gameSocket.id);
                     console.log('🔑 Auth data sent:', gameSocket.auth);
                     
+                    // Emit lobby:join to register as online player
+                    const token = localStorage.getItem('romgon-jwt');
+                    if (token) {
+                        try {
+                            const payload = JSON.parse(atob(token.split('.')[1]));
+                            gameSocket.emit('lobby:join', {
+                                userId: payload.userId,
+                                username: gameSocket.auth.username,
+                                rating: gameSocket.auth.rating
+                            });
+                            console.log('📢 Emitted lobby:join to register as online player');
+                        } catch (error) {
+                            console.error('❌ Failed to emit lobby:join:', error);
+                        }
+                    }
+                    
                     // Initialize online players tracking AFTER connection
                     initializeOnlinePlayersListeners();
                 });
@@ -22075,6 +22091,14 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             
             // Setup listeners first
             initializeOnlinePlayersListeners();
+            
+            // Request online players list from server
+            if (gameSocket.connected) {
+                console.log('📡 Requesting online players list from server...');
+                gameSocket.emit('lobby:getOnlinePlayers');
+            } else {
+                console.warn('⚠️ Socket not connected yet, will request online players after connection');
+            }
             
             // Render initial state (shows 0 until data arrives)
             renderOnlinePlayers();
