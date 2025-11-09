@@ -25360,15 +25360,21 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             const gameId = currentGameId || roomClient.currentRoom?.gameId || roomClient.currentRoom?.id || 'unknown';
             
             console.log('📤 Broadcasting move to gameSocket');
-            console.log('   gameId:', gameId);
-            console.log('   currentGameId:', currentGameId);
-            console.log('   roomClient.currentRoom?.gameId:', roomClient.currentRoom?.gameId);
-            console.log('   roomClient.currentRoom?.id:', roomClient.currentRoom?.id);
-            console.log('   userId:', payload.userId);
-            console.log('   from:', fromId, '→ to:', toId);
-            console.log('   piece:', pieceClasses);
-            console.log('   captured:', captured || 'none');
-            console.log('   🎯 CRITICAL: Is gameId valid?', gameId !== 'unknown');
+            console.log('   🆔 gameId (final):', gameId);
+            console.log('   🆔 currentGameId:', currentGameId);
+            console.log('   🆔 roomClient.currentRoom?.gameId:', roomClient.currentRoom?.gameId);
+            console.log('   🆔 roomClient.currentRoom?.id:', roomClient.currentRoom?.id);
+            console.log('   👤 userId:', payload.userId);
+            
+            if (gameId === 'unknown') {
+                console.error('❌❌❌ CRITICAL: gameId is unknown! Move will not be received by opponent!');
+                console.error('   This means currentGameId was not set in startMultiplayerGame');
+                return;
+            }
+            
+            console.log('   📍 from:', fromId, '→ to:', toId);
+            console.log('   ♟️ piece:', pieceClasses);
+            console.log('   💥 captured:', captured || 'none');
             
             gameSocket.emit('game:move', {
                 gameId: gameId,
@@ -25388,7 +25394,8 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 }
             });
             
-            console.log('✅ Move emitted to server - waiting for broadcast to opponent...');
+            console.log('✅ Move emitted to server with gameId:', gameId);
+            console.log('   Backend should broadcast this to all players in game room:', gameId);
         }
         
         function broadcastRotation(hexId, pieceType, newOrientation) {
