@@ -9891,7 +9891,7 @@
         width: 100%;
         height: 100vh;
         background-color: #0f1419;
-        background-image: url('ASSETS/backgrounds/bluehex.png');
+        background-image: url('assets/backgrounds/bluehex.png');
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
@@ -9907,8 +9907,8 @@
         box-sizing: border-box;
     ">
         
-        <!-- TEST: Image element to verify bluehex.png loads -->
-        <img src="ASSETS/backgrounds/bluehex.png" style="position: fixed; top: 10px; right: 10px; width: 100px; height: 100px; border: 2px solid red; z-index: 9999;" alt="test">
+        <!-- TEST: Image element to verify bluehex.png loads - trying lowercase assets -->
+        <img src="assets/backgrounds/bluehex.png" style="position: fixed; top: 10px; right: 10px; width: 100px; height: 100px; border: 2px solid red; z-index: 9999;" alt="test">
         
         <!-- Return to Game Link (shown when in active game) -->
         <div id="return-to-game-container" style="
@@ -35706,8 +35706,8 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 // Force bluehex background on start menu
                 const startMenu = document.getElementById('start-menu');
                 if (startMenu) {
-                    // Use same format as other CSS background images in the file
-                    startMenu.style.backgroundImage = "url('ASSETS/backgrounds/bluehex.png')";
+                    // Use lowercase assets path like the video
+                    startMenu.style.backgroundImage = "url('assets/backgrounds/bluehex.png')";
                     startMenu.style.backgroundSize = 'cover';
                     startMenu.style.backgroundPosition = 'center';
                     startMenu.style.backgroundRepeat = 'no-repeat';
