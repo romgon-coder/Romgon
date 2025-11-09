@@ -25121,12 +25121,30 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         }
 
         function startMultiplayerGame(gameId) {
-            console.log('🎮 Starting multiplayer game:', gameId);
+            console.log('🎮 Starting multiplayer game with gameId:', gameId);
+            console.log('🎮 gameId type:', typeof gameId);
+            console.log('🎮 gameId is undefined?', gameId === undefined);
+            console.log('🎮 gameId is null?', gameId === null);
             console.log('🔍 Room data:', roomClient.currentRoom);
+            
+            if (!gameId) {
+                console.error('❌❌❌ CRITICAL ERROR: gameId is missing!');
+                console.error('   Cannot start multiplayer game without gameId');
+                console.error('   roomClient.currentRoom:', roomClient.currentRoom);
+                // Try to recover from room data
+                gameId = roomClient.currentRoom?.gameId || roomClient.currentRoom?.id;
+                if (gameId) {
+                    console.warn('⚠️ Recovered gameId from room data:', gameId);
+                } else {
+                    console.error('❌ Could not recover gameId - multiplayer will not work!');
+                    return;
+                }
+            }
             
             // Store gameId globally for move broadcasting
             currentGameId = gameId;
             console.log('💾 Stored currentGameId:', currentGameId);
+            console.log('💾 Verification - currentGameId is now:', currentGameId);
             
             // CRITICAL: Disable AI in multiplayer mode
             aiEnabled = false;
