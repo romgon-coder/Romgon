@@ -34020,6 +34020,10 @@ ${moveHistory || '(No moves played yet - starting position)'}
         // NOTE: These MUST be global so keyboard navigation can access them
         window.draggedPiece = null;
         window.draggedFromHex = null;
+        
+        // Track mouse movement to distinguish between click and drag
+        let mouseDownTime = 0;
+        let mouseMovedDuringDrag = false;
 
         // Make pieces draggable
         function setupDragAndDrop() {
@@ -34027,6 +34031,19 @@ ${moveHistory || '(No moves played yet - starting position)'}
             
             pieces.forEach(piece => {
                 piece.draggable = true;
+                
+                // Track mousedown for click detection
+                piece.addEventListener('mousedown', function(e) {
+                    mouseDownTime = Date.now();
+                    mouseMovedDuringDrag = false;
+                });
+                
+                // Track mouse movement
+                piece.addEventListener('mousemove', function(e) {
+                    if (mouseDownTime > 0) {
+                        mouseMovedDuringDrag = true;
+                    }
+                });
                 
                 piece.addEventListener('dragstart', function(e) {
                     // In multiplayer, check if it's our turn FIRST
@@ -34186,8 +34203,20 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     // In Flip Mode, non-rotatable pieces also keep selectedPiece set (from drop handler)
                 });
                 
-                // Add click-to-select functionality (works alongside drag)
-                piece.addEventListener('click', function(e) {
+                // Add click-to-select functionality using mouseup (works alongside drag)
+                piece.addEventListener('mouseup', function(e) {
+                    // Only treat as click if mousedown/up happened quickly and mouse didn't move much
+                    const clickDuration = Date.now() - mouseDownTime;
+                    const wasClick = clickDuration < 200 && !mouseMovedDuringDrag;
+                    
+                    mouseDownTime = 0;
+                    mouseMovedDuringDrag = false;
+                    
+                    if (!wasClick) {
+                        return; // This was a drag, not a click
+                    }
+                    
+                    console.log('🖱️ Click detected on piece');
                     e.stopPropagation(); // Prevent hex click from firing
                     
                     // In multiplayer, check if it's our turn
