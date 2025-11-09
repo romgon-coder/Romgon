@@ -34185,6 +34185,141 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     // For triangles and hexagons, selectedPiece is set in the drop event, not here
                     // In Flip Mode, non-rotatable pieces also keep selectedPiece set (from drop handler)
                 });
+                
+                // Add click-to-select functionality (works alongside drag)
+                piece.addEventListener('click', function(e) {
+                    e.stopPropagation(); // Prevent hex click from firing
+                    
+                    // In multiplayer, check if it's our turn
+                    if (multiplayerMode && myPlayerColor && myPlayerColor !== 'both') {
+                        if (currentPlayer !== myPlayerColor) {
+                            console.log('❌ Not your turn! It\'s ' + currentPlayer + '\'s turn, you are ' + myPlayerColor);
+                            return;
+                        }
+                    }
+                    
+                    // Check if it's the current player's turn and piece
+                    if (gameOver || !isCurrentPlayerPiece(this)) {
+                        return;
+                    }
+                    
+                    const parentHex = this.parentElement;
+                    
+                    // If this piece is already selected, deselect it
+                    if (selectedPiece === parentHex) {
+                        console.log('👆 Deselecting piece');
+                        selectedPiece = null;
+                        currentTurnPiece = null;
+                        
+                        // Clear highlights
+                        document.querySelectorAll('.hexagon').forEach(hex => {
+                            hex.classList.remove('highlight-green', 'highlight-red', 'highlight-danger', 'highlight-diagonal', 'highlight-gray');
+                        });
+                        
+                        // Hide rotation controls
+                        const rotationControls = document.getElementById('rotation-controls');
+                        if (rotationControls) {
+                            rotationControls.style.display = 'none';
+                        }
+                        const mobileRotationControls = document.getElementById('mobile-rotation-controls');
+                        if (mobileRotationControls) {
+                            mobileRotationControls.style.display = 'none';
+                        }
+                        
+                        return;
+                    }
+                    
+                    // FLIP MODE: Check if rhombus is in check - if so, only allow selecting the rhombus
+                    if (flipModeEnabled && !this.classList.contains('rhombus-piece')) {
+                        const isWhite = this.classList.contains('white-piece') || this.classList.contains('white-triangle') || 
+                                       this.classList.contains('white-hexgon') || this.classList.contains('white-circle');
+                        const playerRhombus = isWhite ? 
+                            document.querySelector('.rhombus-piece.white-rhombus') : 
+                            document.querySelector('.rhombus-piece:not(.white-rhombus)');
+                        
+                        if (playerRhombus) {
+                            const rhombusHex = playerRhombus.parentElement;
+                            if (rhombusHex) {
+                                const [, rhombusRow, rhombusCol] = rhombusHex.id.match(/hex-(\d+)-(\d+)/);
+                                const rhombusUnderAttack = isPieceUnderThreat(parseInt(rhombusRow), parseInt(rhombusCol), isWhite, playerRhombus);
+                                
+                                if (rhombusUnderAttack) {
+                                    playIllegalSound();
+                                    alert('❌ ILLEGAL MOVE!\n\nYour rhombus is in check!\n\nYou must move your rhombus to escape the threat or block it.');
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Check if another piece is already active this turn
+                    if (currentTurnPiece && currentTurnPiece !== parentHex) {
+                        alert('You can only move or rotate one piece per turn!');
+                        return;
+                    }
+                    
+                    console.log('👆 Selecting piece:', this.className);
+                    
+                    // Select this piece
+                    selectedPiece = parentHex;
+                    currentTurnPiece = parentHex;
+                    
+                    // Show movement highlights based on piece type
+                    const hexId = parentHex.id;
+                    const [, row, col] = hexId.match(/hex-(\d+)-(\d+)/);
+                    
+                    // Show rotation controls if applicable
+                    const rotationControls = document.getElementById('rotation-controls');
+                    if (rotationControls) {
+                        const isRotatable = this.classList.contains('triangle-piece') || this.classList.contains('hexgon-piece');
+                        const shouldShow = isRotatable || flipModeEnabled;
+                        
+                        if (shouldShow) {
+                            rotationControls.style.display = 'flex';
+                            
+                            // Configure buttons based on piece type and mode
+                            const flipBtn = rotationControls.querySelector('button:nth-child(2)');
+                            if (flipBtn) {
+                                flipBtn.style.display = flipModeEnabled ? 'block' : 'none';
+                            }
+                            
+                            const rotateLeft = rotationControls.querySelector('button:nth-child(1)');
+                            const rotateRight = rotationControls.querySelector('button:nth-child(4)');
+                            if (!isRotatable && flipModeEnabled) {
+                                if (rotateLeft) rotateLeft.style.display = 'none';
+                                if (rotateRight) rotateRight.style.display = 'none';
+                            } else {
+                                if (rotateLeft) rotateLeft.style.display = 'block';
+                                if (rotateRight) rotateRight.style.display = 'block';
+                            }
+                            
+                            const mobileRotationControls = document.getElementById('mobile-rotation-controls');
+                            if (mobileRotationControls && window.innerWidth <= 768) {
+                                mobileRotationControls.style.display = 'flex';
+                            }
+                        } else {
+                            rotationControls.style.display = 'none';
+                            const mobileRotationControls = document.getElementById('mobile-rotation-controls');
+                            if (mobileRotationControls) {
+                                mobileRotationControls.style.display = 'none';
+                            }
+                        }
+                    }
+                    
+                    // Show movement pattern
+                    console.log('🎯 Showing movement pattern for clicked piece');
+                    if (this.classList.contains('circle-piece')) {
+                        showCircleMovementPattern(parseInt(row), parseInt(col));
+                    } else if (this.classList.contains('triangle-piece')) {
+                        showTriangleMovementPattern(parseInt(row), parseInt(col), this);
+                    } else if (this.classList.contains('rhombus-piece')) {
+                        showRhombusMovementPattern(parseInt(row), parseInt(col));
+                    } else if (this.classList.contains('hexgon-piece')) {
+                        showHexagonMovementPattern(parseInt(row), parseInt(col), this);
+                    } else {
+                        showSquareMovementPattern(parseInt(row), parseInt(col));
+                    }
+                });
             });
         }
 
