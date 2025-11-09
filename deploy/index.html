@@ -36280,10 +36280,17 @@ ${moveHistory || '(No moves played yet - starting position)'}
         document.addEventListener('click', function(e) {
             console.log('🎯 GLOBAL CLICK DETECTED:', e.target.id || e.target.className || e.target.tagName);
             
-            // Play select sound for checkboxes
+            // Play select sound for checkboxes (check both target and label's input)
             if (e.target.type === 'checkbox') {
                 console.log('🔊 Playing select sound for checkbox:', e.target.id);
                 playSelectSound();
+            } else if (e.target.tagName === 'LABEL') {
+                // Check if label is for a checkbox
+                const checkbox = e.target.htmlFor ? document.getElementById(e.target.htmlFor) : e.target.querySelector('input[type="checkbox"]');
+                if (checkbox) {
+                    console.log('🔊 Playing select sound for checkbox via label:', checkbox.id);
+                    playSelectSound();
+                }
             }
         }, true);
         
