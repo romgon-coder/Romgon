@@ -10233,7 +10233,7 @@
                     
                     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                         <span style="color: #4ecdc4; font-size: 1.6em;">🏠</span>
-                        <a onclick="document.getElementById('start-menu').style.display='none'; showUserHome();" style="
+                        <a onclick="hideMainMenu(); showUserHome();" style="
                             color: #4ecdc4;
                             font-size: 0.95em;
                             font-weight: 600;
@@ -10413,46 +10413,49 @@
                     <strong style="color: #4ecdc4;">Tip:</strong> Start with Local PVP to learn the basics
                 </p>
             </div>
-            
-            <!-- Footer (inside start menu) -->
-            <div style="
-                position: absolute;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                width: 100%;
-                background: rgba(15, 20, 25, 0.95);
-                border-top: 1px solid #2a3540;
-                padding: 8px 20px;
-                text-align: center;
-                color: #888;
-                font-size: 0.75em;
-                margin: 0;
-                box-sizing: border-box;
-            ">
-                <div style="display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap; line-height: 1.2; margin: 0;">
-                    <span style="color: #4ecdc4; font-weight: 600;">NO DRAWS</span>
-                    <span style="color: #555;">•</span>
-                    <span>Only Win or Lose</span>
-                    <span style="color: #555;">•</span>
-                    <span>2 Players Same Screen</span>
-                    <span style="color: #555;">•</span>
-                    <a href="mailto:info@romgon.net" style="color: #4ecdc4; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#6fe5dc'" onmouseout="this.style.color='#4ecdc4'">📧 info@romgon.net</a>
-                    <span style="color: #555;">•</span>
-                    <a href="mailto:admin@romgon.net" style="color: #4ecdc4; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#6fe5dc'" onmouseout="this.style.color='#4ecdc4'">admin@romgon.net</a>
-                    <span style="color: #555;">•</span>
-                    <a href="https://boardgamegeek.com/boardgame/417548/romgon" target="_blank" style="color: #4ecdc4; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#6fe5dc'" onmouseout="this.style.color='#4ecdc4'">🎲 BGG</a>
-                    <span style="color: #555;">•</span>
-                    <a href="https://discord.com/channels/1216398846893232329/1216398847455006852" target="_blank" style="color: #4ecdc4; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#6fe5dc'" onmouseout="this.style.color='#4ecdc4'">💬 Discord</a>
-                    <span style="color: #555;">•</span>
-                    <a href="https://www.youtube.com/@RomgonGame" target="_blank" style="color: #4ecdc4; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#6fe5dc'" onmouseout="this.style.color='#4ecdc4'">▶️ YouTube</a>
-                    <span style="color: #555;">•</span>
-                    <a href="https://github.com/romgon-coder/Romgon" target="_blank" style="color: #4ecdc4; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#6fe5dc'" onmouseout="this.style.color='#4ecdc4'">📂 Repository</a>
-                    <span style="color: #555;">•</span>
-                    <span style="color: #666;">© 2024-2025 ROMGON • Created by <span style="color: #888; font-weight: 500;">Nikolaos Angelosoulis</span></span>
-                </div>
-            </div>
         </div>
+        
+    <!-- Footer (outside start menu to avoid zoom issues) -->
+    <div id="start-menu-footer" style="
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        background: rgba(15, 20, 25, 0.95);
+        border-top: 1px solid #2a3540;
+        padding: 8px 20px;
+        text-align: center;
+        color: #888;
+        font-size: 0.75em;
+        z-index: 2001;
+        margin: 0;
+        box-sizing: border-box;
+    ">
+        <div style="display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap; line-height: 1.2; margin: 0;">
+            <span style="color: #4ecdc4; font-weight: 600;">NO DRAWS</span>
+            <span style="color: #555;">•</span>
+            <span>Only Win or Lose</span>
+            <span style="color: #555;">•</span>
+            <span>2 Players Same Screen</span>
+            <span style="color: #555;">•</span>
+            <a href="mailto:info@romgon.net" style="color: #4ecdc4; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#6fe5dc'" onmouseout="this.style.color='#4ecdc4'">📧 info@romgon.net</a>
+            <span style="color: #555;">•</span>
+            <a href="mailto:admin@romgon.net" style="color: #4ecdc4; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#6fe5dc'" onmouseout="this.style.color='#4ecdc4'">admin@romgon.net</a>
+            <span style="color: #555;">•</span>
+            <a href="https://boardgamegeek.com/boardgame/417548/romgon" target="_blank" style="color: #4ecdc4; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#6fe5dc'" onmouseout="this.style.color='#4ecdc4'">🎲 BGG</a>
+            <span style="color: #555;">•</span>
+            <a href="https://discord.com/channels/1216398846893232329/1216398847455006852" target="_blank" style="color: #4ecdc4; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#6fe5dc'" onmouseout="this.style.color='#4ecdc4'">💬 Discord</a>
+            <span style="color: #555;">•</span>
+            <a href="https://www.youtube.com/@RomgonGame" target="_blank" style="color: #4ecdc4; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#6fe5dc'" onmouseout="this.style.color='#4ecdc4'">▶️ YouTube</a>
+            <span style="color: #555;">•</span>
+            <a href="https://github.com/romgon-coder/Romgon" target="_blank" style="color: #4ecdc4; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#6fe5dc'" onmouseout="this.style.color='#4ecdc4'">📂 Repository</a>
+            <span style="color: #555;">•</span>
+            <span style="color: #666;">© 2024-2025 ROMGON • Created by <span style="color: #888; font-weight: 500;">Nikolaos Angelosoulis</span></span>
+        </div>
+    </div>
+    
     <!-- Theory Modal -->
     <div id="theory-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.92); z-index:10001; justify-content:center; align-items:center; overflow-y:auto;">
         <div style="background:#262421; border:3px solid #a55eea; border-radius:20px; padding:40px 30px; max-width:900px; width:95vw; margin:40px auto; box-shadow:0 10px 50px rgba(165,94,234,0.2); position:relative; color:#fff;">
@@ -20019,6 +20022,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             // Close modals
             closePuzzlesModal();
             document.getElementById('start-menu').style.display = 'none';
+            document.getElementById('start-menu-footer').style.display = 'none';
             
             // Show game board
             document.getElementById('board-display-container').style.display = 'block';
@@ -20215,6 +20219,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         function closePVPVariantsModal() {
             document.getElementById('game-variants-pvp-modal').style.display = 'none';
             document.getElementById('start-menu').style.display = 'flex'; // Show main menu
+            document.getElementById('start-menu-footer').style.display = 'block'; // Show footer
             // Don't reset selectedGameMode here - it's needed for startGameWithTime()
         }
         
@@ -20222,6 +20227,17 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         function closeGameVariantsModal() {
             closeAIVariantsModal();
             closePVPVariantsModal();
+        }
+        
+        // Helper functions to show/hide main menu with footer
+        function showMainMenu() {
+            document.getElementById('start-menu').style.display = 'flex';
+            document.getElementById('start-menu-footer').style.display = 'block';
+        }
+        
+        function hideMainMenu() {
+            document.getElementById('start-menu').style.display = 'none';
+            document.getElementById('start-menu-footer').style.display = 'none';
         }
         
         // AI Difficulty Selection
@@ -20277,7 +20293,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             }
             
             // Hide start menu
-            document.getElementById('start-menu').style.display = 'none';
+            hideMainMenu();
             // Show game board
             document.getElementById('board-display-container').style.display = 'block';
             
@@ -20390,7 +20406,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             // Hide splash page and start menu
             const splashPage = document.getElementById('splash-page');
             if (splashPage) splashPage.style.display = 'none';
-            document.getElementById('start-menu').style.display = 'none';
+            hideMainMenu();
             
             // Show game board
             document.getElementById('board-display-container').style.display = 'block';
@@ -24047,7 +24063,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             closeGameModesModal();
             
             // Hide start menu
-            document.getElementById('start-menu').style.display = 'none';
+            hideMainMenu();
             
             // Hide global account bar during gameplay
             hideGlobalAccountBar();
@@ -24242,7 +24258,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 closeMultiplayerModal();
                 
             // Hide start menu
-            document.getElementById('start-menu').style.display = 'none';
+            hideMainMenu();
             // Show game board
             document.getElementById('board-display-container').style.display = 'block';
             
@@ -25190,7 +25206,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             updateConnectionStatus('connected', 'Connected');
 
             // Hide start menu and show game board
-            document.getElementById('start-menu').style.display = 'none';
+            hideMainMenu();
             showGlobalAccountBar(); // Show the top bar for multiplayer
             document.getElementById('board-display-container').style.display = 'block';
             gameInProgress = true;
@@ -25556,7 +25572,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             closeMultiplayerModal();
             
             // Hide start menu
-            document.getElementById('start-menu').style.display = 'none';
+            hideMainMenu();
             // Show game board
             document.getElementById('board-display-container').style.display = 'block';
             // Initialize board
@@ -35673,6 +35689,10 @@ ${moveHistory || '(No moves played yet - starting position)'}
             document.addEventListener('DOMContentLoaded', () => {
                 console.log('✅ DOMContentLoaded fired, calling initializeSplashPage in 200ms...');
                 setTimeout(initializeSplashPage, 200);
+                
+                // Show footer on main menu by default
+                const footer = document.getElementById('start-menu-footer');
+                if (footer) footer.style.display = 'block';
                 
                 // Auto-connect to chat socket for online players tracking
                 if (typeof io !== 'undefined' && typeof initializeChatSocket === 'function') {
