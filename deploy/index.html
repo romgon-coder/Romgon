@@ -16426,6 +16426,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         let endTurnSound = null;
         let menuButtonSound = null;
         let illegalSound = null; // Illegal move sound
+        let flipSound = null; // Flip piece sound
         
         // Background music
         let backgroundMusic1 = null;
@@ -16477,6 +16478,11 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 illegalSound = new Audio('ASSETS/illegalSound.ogg');
                 illegalSound.volume = 0.5; // Set volume to 50% for illegal move sound
                 illegalSound.preload = 'auto';
+                
+                // Load flip piece sound (OGG format)
+                flipSound = new Audio('ASSETS/flipSound.ogg');
+                flipSound.volume = 0.5; // Set volume to 50% for flip sound
+                flipSound.preload = 'auto';
                 
                 // Background music tracks
                 backgroundMusic1 = new Audio('ASSETS/background1.mp3');
@@ -16619,6 +16625,22 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     .catch(error => console.error('❌ Illegal sound play error:', error.message));
             } catch (error) {
                 console.error('❌ Illegal sound error:', error.message);
+            }
+        }
+        
+        function playFlipSound() {
+            if (!flipSound) {
+                console.error('❌ flipSound not initialized!');
+                return;
+            }
+            
+            try {
+                flipSound.currentTime = 0; // Reset to beginning
+                flipSound.play()
+                    .then(() => console.log('✅ Flip sound played successfully'))
+                    .catch(error => console.error('❌ Flip sound play error:', error.message));
+            } catch (error) {
+                console.error('❌ Flip sound error:', error.message);
             }
         }
         
@@ -29760,6 +29782,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         }
                         
                         piece.dataset.flipped = willBeFlipped ? 'true' : 'false';
+                        
+                        // Play flip sound
+                        playFlipSound();
                         
                         console.log('🔄 FLIP BUTTON: Toggled flip state from', isFlipped, 'to', piece.dataset.flipped);
                         console.log('🔄 Piece element:', piece);
