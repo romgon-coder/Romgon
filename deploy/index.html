@@ -16495,6 +16495,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 selectSound = new Audio('ASSETS/sellectSound.ogg');
                 selectSound.volume = 0.4; // Set volume to 40% for select sound
                 selectSound.preload = 'auto';
+                console.log('✅ Select sound initialized:', selectSound.src);
+                
+                selectSound.addEventListener('error', (e) => {
+                    console.error('❌ Failed to load select sound:', e);
+                    console.error('❌ Select sound error details:', selectSound.error);
+                });
                 
                 // Background music tracks
                 backgroundMusic1 = new Audio('ASSETS/background1.mp3');
@@ -16771,6 +16777,15 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         // Add global event listener for all checkboxes and select elements to play select sound
         document.addEventListener('change', function(e) {
             if (e.target.type === 'checkbox' || e.target.tagName === 'SELECT') {
+                console.log('🔊 Select sound triggered by change event on:', e.target.id || e.target.className);
+                playSelectSound();
+            }
+        });
+        
+        // Also add click event for checkboxes (some may not trigger change)
+        document.addEventListener('click', function(e) {
+            if (e.target.type === 'checkbox' || (e.target.tagName === 'LABEL' && e.target.querySelector('input[type="checkbox"]'))) {
+                console.log('🔊 Select sound triggered by click event on:', e.target.id || e.target.className);
                 playSelectSound();
             }
         });
