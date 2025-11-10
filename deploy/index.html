@@ -36294,6 +36294,72 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 }
             }
             
+            // Check for ?test=true parameter (custom game testing from game creator)
+            const testMode = urlParams.get('test');
+            if (testMode === 'true') {
+                console.log('🎮 Test mode detected - loading custom game from localStorage');
+                
+                try {
+                    const customGameConfig = localStorage.getItem('romgon_test_game');
+                    if (customGameConfig) {
+                        window.currentGameConfig = JSON.parse(customGameConfig);
+                        console.log('✅ Custom game config loaded:', window.currentGameConfig);
+                        
+                        // Clean URL
+                        window.history.replaceState({}, '', window.location.pathname);
+                        
+                        // Auto-start the game after splash
+                        const user = JSON.parse(localStorage.getItem('romgon-user') || 'null');
+                        if (user) {
+                            window.currentUser = user;
+                            
+                            // Set game mode flags for custom game
+                            window.isTestingCustomGame = true;
+                            window.selectedGameMode = 'pvp'; // PVP mode for testing (no AI)
+                            window.gameInProgress = true;
+                            
+                            // Disable timer for custom game testing
+                            window.timerEnabled = false;
+                            
+                            // Start the custom game automatically
+                            setTimeout(() => {
+                                console.log('🚀 Auto-starting custom game test...');
+                                
+                                // Hide splash page and start menu
+                                const splashPage = document.getElementById('splash-page');
+                                const startMenu = document.getElementById('start-menu');
+                                const startMenuFooter = document.getElementById('start-menu-footer');
+                                const boardDisplay = document.getElementById('board-display-container');
+                                const playerTimers = document.getElementById('player-timers');
+                                
+                                if (splashPage) splashPage.style.display = 'none';
+                                if (startMenu) startMenu.style.display = 'none';
+                                if (startMenuFooter) startMenuFooter.style.display = 'none';
+                                if (boardDisplay) boardDisplay.style.display = 'block';
+                                if (playerTimers) playerTimers.style.display = 'none';
+                                
+                                // Initialize the board
+                                if (typeof initializeBoard === 'function') {
+                                    initializeBoard('full');
+                                    console.log('✅ Custom game board initialized');
+                                } else {
+                                    console.error('❌ initializeBoard function not found');
+                                }
+                            }, 500);
+                            return;
+                        } else {
+                            console.log('⚠️ No user found, prompting login first');
+                        }
+                    } else {
+                        console.error('❌ No test game found in localStorage');
+                        showNotification('❌ No test game found. Please create a game first.', 'error');
+                    }
+                } catch (e) {
+                    console.error('❌ Failed to load custom game:', e);
+                    showNotification('❌ Failed to load test game', 'error');
+                }
+            }
+            
             // Check for ?menu URL parameter to force showing Start Menu instead of User Home
             const forceMenu = urlParams.has('menu');
             if (forceMenu) {

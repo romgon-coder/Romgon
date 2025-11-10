@@ -14,10 +14,10 @@ const gameData = {
     },
     pieces: [],
     board: {
-        width: 11,
-        height: 11,
-        rows: 7,
-        colsPerRow: [4, 5, 6, 7, 6, 5, 4],
+        width: 10,
+        height: 10,
+        rows: 10,
+        colsPerRow: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
         zones: [],
         specialZones: {},
         placements: [],
@@ -114,6 +114,16 @@ window.addEventListener('DOMContentLoaded', () => {
     
     // Load saved data
     loadFromLocalStorage();
+    
+    // Add color change listener to update preview
+    const colorSelect = document.getElementById('pieceColor');
+    if (colorSelect) {
+        colorSelect.addEventListener('change', () => {
+            if (selectedShape) {
+                selectShape(selectedShape);
+            }
+        });
+    }
     
     // Initialize game mechanics toggles
     initGameMechanicsToggles();
@@ -286,7 +296,20 @@ function selectShape(shapeName) {
     // Update preview
     const color = document.getElementById('pieceColor').value || 'black';
     const preview = document.getElementById('shapePreview');
-    preview.innerHTML = `<img src="ASSETS/${shapeName} ${color} front.png" style="max-width: 150px; max-height: 150px;">`;
+    
+    // Use base color and apply filter for blue/red
+    let baseColor = color;
+    let filterStyle = '';
+    
+    if (color === 'blue') {
+        baseColor = 'black';
+        filterStyle = 'filter: brightness(0) saturate(100%) invert(27%) sepia(98%) saturate(2571%) hue-rotate(210deg) brightness(95%) contrast(101%);';
+    } else if (color === 'red') {
+        baseColor = 'black';
+        filterStyle = 'filter: brightness(0) saturate(100%) invert(23%) sepia(92%) saturate(3566%) hue-rotate(345deg) brightness(96%) contrast(98%);';
+    }
+    
+    preview.innerHTML = `<img src="ASSETS/${shapeName} ${baseColor} front.png" style="max-width: 150px; max-height: 150px; ${filterStyle}">`;
     
     console.log('Selected shape:', shapeName);
 }
@@ -305,12 +328,19 @@ function savePieceShape() {
     }
 
     const color = document.getElementById('pieceColor').value;
+    
+    // Use base color (black/white) for image path
+    let baseColor = color;
+    if (color === 'blue' || color === 'red') {
+        baseColor = 'black';
+    }
+    
     const piece = {
         id: Date.now(),
         name: name,
         shape: selectedShape, // Store shape name instead of pixelData
         color: color,
-        imageUrl: `ASSETS/${selectedShape} ${color} front.png`, // Direct image reference
+        imageUrl: `ASSETS/${selectedShape} ${baseColor} front.png`, // Direct image reference
         description: document.getElementById('pieceDesc').value,
         abilities: {
             canRotate: document.getElementById('canRotate').checked,
@@ -319,7 +349,8 @@ function savePieceShape() {
             canAttack: document.getElementById('canAttack').checked,
             canDefend: document.getElementById('canDefend').checked,
             canEscape: document.getElementById('canEscape').checked,
-            canCapture: document.getElementById('canCapture').checked
+            canCapture: document.getElementById('canCapture').checked,
+            canPush: document.getElementById('canPush').checked
         },
         movement: {
             move: [],
@@ -379,7 +410,8 @@ function savePieceShapeOLD() {
             canAttack: document.getElementById('canAttack').checked,
             canDefend: document.getElementById('canDefend').checked,
             canEscape: document.getElementById('canEscape').checked,
-            canCapture: document.getElementById('canCapture').checked
+            canCapture: document.getElementById('canCapture').checked,
+            canPush: document.getElementById('canPush').checked
         },
         movement: {
             move: [],
@@ -490,9 +522,19 @@ function updatePieceGallery() {
 
     gallery.innerHTML = gameData.pieces.map(p => {
         // Support both new geometric shapes and old pixel art (for backwards compatibility)
-        const imageHtml = p.imageUrl 
-            ? `<img src="${p.imageUrl}" style="max-width: 100px; max-height: 100px;">`
-            : p.svg || '<div style="color: #999;">No preview</div>';
+        let imageHtml;
+        if (p.imageUrl) {
+            // Apply color filter for blue/red pieces
+            let filterStyle = '';
+            if (p.color === 'blue') {
+                filterStyle = 'filter: brightness(0) saturate(100%) invert(27%) sepia(98%) saturate(2571%) hue-rotate(210deg) brightness(95%) contrast(101%);';
+            } else if (p.color === 'red') {
+                filterStyle = 'filter: brightness(0) saturate(100%) invert(23%) sepia(92%) saturate(3566%) hue-rotate(345deg) brightness(96%) contrast(98%);';
+            }
+            imageHtml = `<img src="${p.imageUrl}" style="max-width: 100px; max-height: 100px; ${filterStyle}">`;
+        } else {
+            imageHtml = p.svg || '<div style="color: #999;">No preview</div>';
+        }
             
         return `
             <div class="piece-card" onclick="selectPieceCard(${p.id})" data-piece-id="${p.id}">
@@ -581,9 +623,9 @@ function handleMoveClick(e) {
         return;
     }
     
-    const board = gameData.board || {rows: 7, colsPerRow: [4, 5, 6, 7, 6, 5, 4]};
-    const rows = board.rows || 7;
-    const colsPerRow = board.colsPerRow || [4, 5, 6, 7, 6, 5, 4];
+    const board = gameData.board || {rows: 10, colsPerRow: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]};
+    const rows = board.rows || 10;
+    const colsPerRow = board.colsPerRow || [10, 10, 10, 10, 10, 10, 10, 10, 10, 10];
     const deletedHexes = board.deletedHexes || [];
     
     const rect = moveCanvas.getBoundingClientRect();
@@ -644,9 +686,9 @@ function handleMoveClick(e) {
 
 function redrawMoveCanvas() {
     // Use actual custom board from gameData.board instead of static 10x10 grid
-    const board = gameData.board || {rows: 7, colsPerRow: [4, 5, 6, 7, 6, 5, 4], zones: {}, deletedHexes: []};
-    const rows = board.rows || 7;
-    const colsPerRow = board.colsPerRow || [4, 5, 6, 7, 6, 5, 4];
+    const board = gameData.board || {rows: 10, colsPerRow: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10], zones: {}, deletedHexes: []};
+    const rows = board.rows || 10;
+    const colsPerRow = board.colsPerRow || [10, 10, 10, 10, 10, 10, 10, 10, 10, 10];
     const zones = board.zones || {};
     const deletedHexes = board.deletedHexes || [];
     
@@ -799,7 +841,7 @@ function updateHardcodedPatternDisplay() {
     if (!moveDisplay || !attackDisplay) return;
     
     // Safely get board data with fallback
-    const board = gameData.board || {rows: 7, colsPerRow: [4, 5, 6, 7, 6, 5, 4]};
+    const board = gameData.board || {rows: 10, colsPerRow: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]};
     
     // Validate board structure before accessing
     if (!board.colsPerRow || board.colsPerRow.length === 0) {
@@ -864,7 +906,7 @@ function saveMovementPattern() {
     
     // Store both absolute coordinates AND relative offsets (like Romgon hardcoded moves)
     // Relative offsets make highlighting work regardless of piece position
-    const board = gameData.board || {rows: 7, colsPerRow: [4, 5, 6, 7, 6, 5, 4]};
+    const board = gameData.board || {rows: 10, colsPerRow: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]};
     
     // Validate board structure
     if (!board.colsPerRow || board.colsPerRow.length === 0) {
@@ -1556,8 +1598,8 @@ function testGame() {
     // Save to localStorage for testing
     localStorage.setItem('romgon_test_game', JSON.stringify(config));
     
-    // Open in new tab
-    window.open('index.html?test=true', '_blank');
+    // Open play.html in new tab for custom game testing
+    window.open('play.html?test=true', '_blank');
     showNotification('Opening test game...', 'success');
 }
 

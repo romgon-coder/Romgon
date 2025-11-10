@@ -638,6 +638,8 @@
                                 <select id="pieceColor">
                                     <option value="black">Black</option>
                                     <option value="white">White</option>
+                                    <option value="blue">Blue</option>
+                                    <option value="red">Red</option>
                                 </select>
                             </div>
                             <div class="control-group">
@@ -653,7 +655,7 @@
                         </div>
                         <div class="checkbox-wrapper">
                             <input type="checkbox" id="canFlip">
-                            <label for="canFlip">Can Flip (mirror movement)</label>
+                            <label for="canFlip">Can Flip (becomes omnidirectional when flipped)</label>
                         </div>
                         <div class="checkbox-wrapper">
                             <input type="checkbox" id="canMove" checked>
@@ -674,6 +676,10 @@
                         <div class="checkbox-wrapper">
                             <input type="checkbox" id="canCapture" checked>
                             <label for="canCapture">Can Capture enemy pieces</label>
+                        </div>
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="canPush">
+                            <label for="canPush">Can Push (pushes opponent to random adjacent hex instead of capturing)</label>
                         </div>
 
                         <button class="btn btn-success" onclick="savePieceShape()" style="margin-top: 20px; width: 100%;">
@@ -1023,6 +1029,8 @@
                         <select id="placePlayer">
                             <option value="black">Black (Player 1)</option>
                             <option value="white">White (Player 2)</option>
+                            <option value="blue">Blue (Player 3)</option>
+                            <option value="red">Red (Player 4)</option>
                         </select>
                     </div>
                 </div>
