@@ -32497,14 +32497,14 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     console.log('✅ Rhombus is capturing the attacking piece - move is LEGAL');
                     wouldBeIllegal = false;
                 } else {
-                    // FLIP MODE EXCEPTION: In flip mode, don't block moves that put rhombus under attack
-                    // in the CURRENT flip state (because player can press RELEASE to stay unflipped)
-                    // The POST-FLIP threat check happens when player presses KEEP button
-                    if (flipModeEnabled) {
-                        console.log('✅ FLIP MODE: Move allowed - POST-FLIP threat will be checked when KEEP is pressed');
+                    // FLIP MODE EXCEPTION: In flip mode, only allow RHOMBUS moves that would put it under attack
+                    // (because player can press RELEASE to stay unflipped before confirming with KEEP)
+                    // For NON-RHOMBUS pieces, still block moves that leave rhombus in check
+                    if (flipModeEnabled && isMovingRhombus) {
+                        console.log('✅ FLIP MODE: Rhombus move allowed - POST-FLIP threat will be checked when KEEP is pressed');
                         wouldBeIllegal = false;
                     } else {
-                        // ORIGINAL MODE: Always block moves that put rhombus under attack
+                        // BLOCK: Either not flip mode, or moving a different piece while rhombus is in check
                         console.log('❌ ILLEGAL! This move would leave your rhombus under attack!');
                         wouldBeIllegal = true;
                     }
