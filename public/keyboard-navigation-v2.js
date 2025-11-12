@@ -120,7 +120,13 @@ class KeyboardNavigationSystemV2 {
       '.square-piece.white-piece, .triangle-piece.white-triangle, .rhombus-piece.white-rhombus, .circle-piece.white-circle, .hexgon-piece.white-hexgon' :
       '.square-piece:not(.white-piece), .triangle-piece:not(.white-triangle), .rhombus-piece:not(.white-rhombus), .circle-piece:not(.white-circle), .hexgon-piece:not(.white-hexgon)';
     
-    const pieces = Array.from(document.querySelectorAll(piecesSelector));
+    // Filter out eliminated pieces (pieces not on the board)
+    const allPieces = Array.from(document.querySelectorAll(piecesSelector));
+    const pieces = allPieces.filter(piece => {
+      const parent = piece.closest('[id^="hex-"]');
+      const inEliminatedContainer = piece.closest('#white-eliminated, #black-eliminated, #eliminated-pieces-container');
+      return parent && !inEliminatedContainer; // Only pieces on the board
+    });
     
     if (pieces.length === 0) {
       this.logDebug('No pieces found for current player');
@@ -430,6 +436,9 @@ class KeyboardNavigationSystemV2 {
     if (key === 'a' || key === 'd') {
       event.preventDefault();
       this.applyPostMoveRotation(key);
+    } else if (key === 'shift') {
+      event.preventDefault();
+      this.applyFlip();
     } else if (key === ' ') {
       event.preventDefault();
       this.logDebug('Ending turn after rotation phase');
@@ -527,12 +536,37 @@ class KeyboardNavigationSystemV2 {
   }
 
   /**
+   * Apply flip to the piece that just moved (Flip Mode)
+   */
+  applyFlip() {
+    if (!this.selectedMovementPos) {
+      this.logDebug('No selected piece position for flip');
+      return;
+    }
+
+    const targetHexId = `hex-${this.selectedMovementPos.row}-${this.selectedMovementPos.col}`;
+    
+    this.logDebug('Attempting to flip piece via keyboard (Shift)');
+    
+    // Click the flip button programmatically
+    const flipButton = document.querySelector('#rotation-controls button:nth-child(2)');
+    if (flipButton && flipButton.style.display !== 'none') {
+      this.logDebug('Clicking flip button');
+      flipButton.click();
+    } else {
+      this.logDebug('Flip button not available');
+    }
+  }
+
+  /**
    * Update UI for post-move rotation phase
    */
   updatePostMoveRotationUI() {
     const indicator = document.getElementById('kb-phase-indicator');
     if (indicator) {
-      indicator.textContent = `Rotation: Press A for LEFT, D for RIGHT, SPACE to end turn`;
+      // Check if flip mode is enabled to show Shift hint
+      const flipModeHint = (typeof flipModeEnabled !== 'undefined' && flipModeEnabled) ? ', SHIFT for FLIP' : '';
+      indicator.textContent = `Rotation: Press A for LEFT, D for RIGHT${flipModeHint}, SPACE to end turn`;
       indicator.style.backgroundColor = '#ff6b00';
     }
   }
