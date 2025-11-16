@@ -19497,7 +19497,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                             const attackable = isPieceUnderThreat(parseInt(destRow), parseInt(destCol), !isWhite);
                             // enforcement simulation log removed
                             if (temp) temp.remove();
-                            if (attackable) {
+                            // Only block rhombus escape when the destination is attackable AND
+                            // the player's own base is currently defended. If the base is NOT
+                            // defended the rhombus may escape (player choice), so allow the move.
+                            if (attackable && isBaseDefended(isWhite)) {
                                 showShapeDefenseWarning(pieceType);
                                 return false;
                             }
@@ -34644,7 +34647,11 @@ ${moveHistory || '(No moves played yet - starting position)'}
                         }
                             const attackable = isPieceUnderThreat(parseInt(destRow), parseInt(destCol), !isDraggedWhite);
                             if (tempSim) tempSim.remove();
-                        if (attackable) {
+                        // Only block rhombus escape to opponent base if the opponent can
+                        // attack that destination AND your own base is currently defended.
+                        // If your base is NOT defended, allow escape even if the destination
+                        // could be attackable (player chose to risk it).
+                        if (attackable && isBaseDefended(isDraggedWhite)) {
                             showShapeDefenseWarning('rhombus');
                             return;
                         }
