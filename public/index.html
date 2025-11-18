@@ -29613,6 +29613,13 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             console.log('📦 Adding cloned piece to:', toHex.id);
             toHex.appendChild(newPiece);
             
+            // FLIP MECHANIC: In flip mode, all pieces flip when they land
+            if (flipModeEnabled) {
+                const currentFlipped = newPiece.dataset.flipped === 'true';
+                newPiece.dataset.flipped = (!currentFlipped).toString();
+                console.log(`🔄 Flip mode: AI piece at ${toHex.id} flipped from ${currentFlipped} to ${!currentFlipped}`);
+            }
+            
             // FLIP MECHANIC: Update flip visual after clone
             updateFlipVisual(toHex.id);
             
@@ -34902,6 +34909,13 @@ ${moveHistory || '(No moves played yet - starting position)'}
                 });
                 
                 targetHex.appendChild(newPiece);
+                
+                // FLIP MECHANIC: In flip mode, all pieces flip when they land
+                if (flipModeEnabled) {
+                    const currentFlipped = newPiece.dataset.flipped === 'true';
+                    newPiece.dataset.flipped = (!currentFlipped).toString();
+                    console.log(`🔄 Flip mode: Player piece at ${targetHex.id} flipped from ${currentFlipped} to ${!currentFlipped}`);
+                }
                 
                 // CRITICAL: Attach event listeners to the new piece
                 attachPieceEventListeners(newPiece);
