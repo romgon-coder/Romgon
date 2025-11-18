@@ -17627,7 +17627,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 
                 // Check if this piece is under threat
                 const underThreat = isPieceUnderThreat(parseInt(row), parseInt(col), isWhite, piece);
-                console.log(`🎯 Piece at ${row}-${col} (${piece.className}) - underThreat: ${underThreat}, flipped: ${piece.dataset.flipped}`);
+                // console.log(`🎯 Piece at ${row}-${col} (${piece.className}) - underThreat: ${underThreat}, flipped: ${piece.dataset.flipped}`);
                 if (underThreat) {
                     // Special yellow highlight for RHOMBUS under attack (CHECK/DEADLOCK warning)
                     if (piece.classList.contains('rhombus-piece')) {
@@ -28225,7 +28225,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         }
         
         function getRotatedHexgonTargets(row, col, orientation, isWhite) {
-            console.log(`🔍 getRotatedHexgonTargets called: row=${row}, col=${col}, orientation=${orientation}, isWhite=${isWhite}`);
+            // console.log(`🔍 getRotatedHexgonTargets called: row=${row}, col=${col}, orientation=${orientation}, isWhite=${isWhite}`);
             
             // Hexagons have 6 visual orientations (0-5) but only 3 unique movement patterns
             // Orientations 3, 4, 5 repeat the patterns of 0, 1, 2
@@ -28612,11 +28612,11 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 return baseTargets;
             }
             
-            console.log(`🔍 Hexagon pattern for ${row}-${col} orientation ${orientation}:`, offsets);
+            // console.log(`🔍 Hexagon pattern for ${row}-${col} orientation ${orientation}:`, offsets);
             
             // Convert offsets to absolute coordinates
             const targets = offsets.map(([dr, dc]) => [row + dr, col + dc]);
-            console.log(`🎯 Hexagon target coordinates:`, targets);
+            // console.log(`🎯 Hexagon target coordinates:`, targets);
             
             return targets;
         }
