@@ -105,11 +105,16 @@ router.post('/move', async (req, res) => {
             console.log(`🎯 Medium mode: Selected from top ${topMoves.length} moves (score: ${selectedMove.score})`);
         } else {
             // Hard: Use full AI with Q-learning
-            const bestMove = ai.selectMove(board, currentPlayer, flipModeEnabled);
+            const gameState = {
+                board,
+                flipModeEnabled,
+                currentPlayer
+            };
+            const bestMove = await ai.getMove(gameState, currentPlayer);
             
             if (bestMove) {
                 selectedMove = bestMove;
-                console.log(`🧠 Hard mode: AI selected move with Q-learning (score: ${bestMove.score || 'N/A'})`);
+                console.log(`🧠 Hard mode: AI selected move with Q-learning (score: ${bestMove.evaluation || 'N/A'})`);
             } else {
                 // Fallback to evaluation if AI returns nothing
                 const evaluatedMoves = legalMoves.map(move => {
