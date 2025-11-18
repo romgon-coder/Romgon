@@ -26623,11 +26623,22 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 
                 console.log('📋 Board state built:', Object.keys(board).length, 'pieces');
                 
+                // DEBUG: Log flip states
+                const flippedPieces = Object.entries(board).filter(([pos, piece]) => piece.flipped);
+                console.log(`🔄 Flipped pieces: ${flippedPieces.length}`, flippedPieces.map(([pos, p]) => `${pos}:${p.color[0]}${p.type[0]}`).join(', '));
+                console.log('🎮 Flip mode enabled:', flipModeEnabled);
+                
                 // Call backend API
                 const apiUrl = typeof BACKEND_API_URL !== 'undefined' ? BACKEND_API_URL : 'https://api.romgon.net';
                 const difficulty = window.aiDifficulty || 'hard';
                 
                 console.log(`🌐 Calling backend API: ${apiUrl}/api/ai/move`);
+                console.log('📤 Request body:', JSON.stringify({ 
+                    boardPieces: Object.keys(board).length, 
+                    flipModeEnabled: flipModeEnabled || false,
+                    difficulty,
+                    flippedCount: flippedPieces.length
+                }));
                 
                 const response = await fetch(`${apiUrl}/api/ai/move`, {
                     method: 'POST',

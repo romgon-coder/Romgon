@@ -43,6 +43,13 @@ router.post('/move', async (req, res) => {
 
         console.log(`🤖 AI Move Request: ${currentPlayer} player, flip mode: ${flipModeEnabled}, difficulty: ${difficulty}`);
         console.log(`📋 Board state:`, Object.keys(board).length, 'pieces');
+        
+        // DEBUG: Log flip states in board
+        const flippedPieces = Object.entries(board).filter(([pos, piece]) => piece.flipped === true);
+        console.log(`🔄 Flipped pieces received: ${flippedPieces.length}`);
+        if (flippedPieces.length > 0) {
+            console.log('   Flipped:', flippedPieces.map(([pos, p]) => `${pos}:${p.color[0]}${p.type[0]}`).join(', '));
+        }
 
         // Generate all legal moves using improved engine
         const legalMoves = generateAllMoves(board, currentPlayer, flipModeEnabled);
@@ -57,6 +64,17 @@ router.post('/move', async (req, res) => {
         }
 
         console.log(`✅ Generated ${legalMoves.length} legal moves`);
+        
+        // DEBUG: Show move breakdown by piece type
+        const movesByType = {};
+        legalMoves.forEach(move => {
+            const piece = board[move.from];
+            if (piece) {
+                const key = piece.type;
+                movesByType[key] = (movesByType[key] || 0) + 1;
+            }
+        });
+        console.log('📊 Moves by piece type:', movesByType);
 
         // Select best move based on difficulty
         let selectedMove;
