@@ -27,6 +27,7 @@ const engineAnalysisRoutes = require('./routes/engine-analysis');
 const apiKeysRoutes = require('./routes/api-keys');
 const { router: roomsRoutes, setIOInstance } = require('./routes/rooms');
 const { router: aiTrainingRoutes } = require('./routes/ai-training');
+const aiMovesRoutes = require('./routes/ai-moves');
 
 // Import WebSocket handlers
 const setupSocketHandlers = require('./websocket/gameSocket');
@@ -145,6 +146,9 @@ app.use('/api/rooms', roomsRoutes);
 
 // AI Training and spectator routes
 app.use('/api/ai-training', aiTrainingRoutes);
+
+// AI Moves routes (improved backend engine)
+app.use('/api/ai', aiMovesRoutes);
 
 // Global Chat routes
 const { router: chatRoutes, setIOInstance: setChatIO } = require('./routes/chat');

@@ -26573,7 +26573,107 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         
         // ========== AI LOGIC ==========
         
-        function makeAIMove() {
+        // ========== BACKEND-POWERED AI (PREFERRED) ==========
+        async function makeAIMoveBackend() {
+            console.log('🤖 AI thinking (using BACKEND engine)...');
+            aiThinking = true;
+            
+            try {
+                // Build board state from DOM
+                const board = {};
+                const allHexagons = document.querySelectorAll('.hexagon');
+                
+                allHexagons.forEach(hex => {
+                    const piece = hex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
+                    if (piece) {
+                        const position = hex.id.replace('hex-', '');
+                        const isWhite = piece.classList.contains('white-piece') || 
+                                       piece.classList.contains('white-triangle') || 
+                                       piece.classList.contains('white-rhombus') ||
+                                       piece.classList.contains('white-circle') ||
+                                       piece.classList.contains('white-hexgon');
+                        
+                        let type = 'unknown';
+                        if (piece.classList.contains('rhombus-piece')) type = 'rhombus';
+                        else if (piece.classList.contains('triangle-piece')) type = 'triangle';
+                        else if (piece.classList.contains('hexgon-piece')) type = 'hexagon';
+                        else if (piece.classList.contains('circle-piece')) type = 'circle';
+                        else if (piece.classList.contains('square-piece')) type = 'square';
+                        
+                        const flipped = piece.dataset.flipped === 'true';
+                        
+                        board[position] = {
+                            color: isWhite ? 'white' : 'black',
+                            type: type,
+                            flipped: flipped,
+                            id: piece.id
+                        };
+                    }
+                });
+                
+                // Get difficulty and flip mode
+                const difficulty = window.aiDifficulty || 'hard';
+                const flipModeEnabled = !!document.querySelector('.flip-mode-indicator:not(.hidden)');
+                
+                // Call backend API
+                const apiUrl = typeof BACKEND_API_URL !== 'undefined' ? BACKEND_API_URL : 'https://api.romgon.net';
+                const response = await fetch(`${apiUrl}/api/ai/move`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        board: board,
+                        currentPlayer: 'white',
+                        flipModeEnabled: flipModeEnabled,
+                        difficulty: difficulty
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Backend API error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('✅ Backend AI response:', data);
+                
+                // Execute the move
+                const { from, to } = data.move;
+                const fromHex = document.getElementById(`hex-${from}`);
+                const toHex = document.getElementById(`hex-${to}`);
+                
+                if (!fromHex || !toHex) {
+                    throw new Error('Invalid move positions from backend');
+                }
+                
+                const piece = fromHex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
+                if (!piece) {
+                    throw new Error('No piece found at from position');
+                }
+                
+                // Simulate drag and drop
+                setTimeout(() => {
+                    const dragEvent = new DragEvent('dragstart', { bubbles: true, cancelable: true });
+                    piece.dispatchEvent(dragEvent);
+                    
+                    const dropEvent = new DragEvent('drop', { bubbles: true, cancelable: true });
+                    Object.defineProperty(dropEvent, 'dataTransfer', {
+                        value: {
+                            getData: (type) => type === 'pieceId' ? piece.id : null
+                        }
+                    });
+                    toHex.dispatchEvent(dropEvent);
+                    
+                    aiThinking = false;
+                }, 500);
+                
+            } catch (error) {
+                console.error('❌ Backend AI failed, falling back to client-side:', error);
+                // Fallback to client-side AI
+                makeAIMoveClientSide();
+            }
+        }
+        
+        // ========== CLIENT-SIDE AI (FALLBACK) ==========
+        function makeAIMoveClientSide() {
             console.log('🤖 AI thinking...');
             console.log('🤖 AI enabled:', aiEnabled);
             console.log('🤖 Current player:', currentPlayer);
@@ -26787,6 +26887,14 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 console.log(`🤖 AI chose: ${selectedAction.type} ${selectedAction.fromRow}-${selectedAction.fromCol} → ${selectedAction.toRow}-${selectedAction.toCol} (total: ${selectedAction.totalScore.toFixed(1)})`);
                 executeAIMove(selectedAction);
             }
+        }
+        
+        // ========== AI MOVE WRAPPER ==========
+        // This function calls the backend AI API (preferred) and falls back to client-side if needed
+        function makeAIMove() {
+            // Primary: Use backend API with improved engine
+            makeAIMoveBackend();
+            // Fallback is handled inside makeAIMoveBackend() if backend call fails
         }
         
         // Evaluate multi-move lookahead: What happens after this move?
