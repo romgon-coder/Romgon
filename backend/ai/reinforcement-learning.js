@@ -2,7 +2,7 @@
 // ROMGON AI - REINFORCEMENT LEARNING ENGINE
 // ============================================
 
-const { evaluatePosition, findBestMove } = require('../engine/romgon-engine');
+const { evaluatePosition, findBestMove, generateAllMoves } = require('../engine/romgon-real-engine');
 
 class RomgonAI {
     constructor(level = 1) {
@@ -60,17 +60,41 @@ class RomgonAI {
      * Find candidate moves using the engine
      */
     async findCandidateMoves(gameState, playerColor) {
-        // Use existing engine to generate legal moves
-        const result = await findBestMove(gameState, playerColor, this.level);
-        
-        if (result && result.candidateMoves) {
-            return result.candidateMoves.map(move => ({
-                ...move,
-                qValue: this.getQValue(gameState, move)
-            }));
+        // Generate all legal moves from real engine
+        const board = gameState.board || {};
+        const flipModeEnabled = gameState.flipModeEnabled || false;
+        const moves = generateAllMoves(board, playerColor, flipModeEnabled);
+
+        if (moves && moves.length > 0) {
+            // Evaluate each move and add Q-value
+            return moves.map(move => {
+                const newBoard = this.applyMoveToBoard(board, move);
+                const evaluation = evaluatePosition(newBoard, playerColor, flipModeEnabled);
+                return {
+                    ...move,
+                    evaluation,
+                    qValue: this.getQValue(gameState, move)
+                };
+            });
         }
-        
+
         return [];
+    }
+
+    /**
+     * Apply move to board state (helper)
+     */
+    applyMoveToBoard(board, move) {
+        const newBoard = JSON.parse(JSON.stringify(board));
+        const piece = newBoard[move.from];
+        if (piece) {
+            if (move.isCapture && newBoard[move.to]) {
+                delete newBoard[move.to];
+            }
+            newBoard[move.to] = piece;
+            delete newBoard[move.from];
+        }
+        return newBoard;
     }
 
     /**
@@ -126,10 +150,20 @@ class RomgonAI {
      * Hash a position for Q-table lookup
      */
     hashPosition(gameState, move) {
-        // Simple hash: concatenate move notation and piece count
+        // Advanced hash: include board position, piece locations, and flip states
+        const board = gameState.board || {};
         const moveStr = move ? `${move.from}-${move.to}` : 'start';
-        const pieces = gameState.board ? JSON.stringify(gameState.board).length : 0;
-        return `${moveStr}_${pieces}`;
+
+        // Create a compact representation of piece positions and flip states
+        const pieceHash = Object.entries(board)
+            .sort((a, b) => a[0].localeCompare(b[0])) // Consistent ordering
+            .map(([pos, piece]) => {
+                const flipState = piece.flipped ? 'F' : 'U'; // Flipped or Unflipped
+                return `${pos}:${piece.type[0]}${piece.color[0]}${flipState}`; // e.g., "3-4:rWF" = rhombus,white,flipped
+            })
+            .join('|');
+
+        return `${moveStr}#${pieceHash}`;
     }
 
     /**
