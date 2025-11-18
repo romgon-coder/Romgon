@@ -148,9 +148,11 @@ router.post('/move', async (req, res) => {
 
     } catch (error) {
         console.error('❌ AI Move Error:', error);
+        console.error('Error stack:', error.stack);
         res.status(500).json({
             error: 'Failed to generate AI move',
-            message: error.message
+            message: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 });
