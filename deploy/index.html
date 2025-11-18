@@ -17691,11 +17691,11 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         // Check if a specific piece is under threat
         function isPieceUnderThreat(pieceRow, pieceCol, isWhite, targetPiece = null) {
             const targetId = `hex-${pieceRow}-${pieceCol}`;
-            console.log(`🔍 Checking if ${isWhite ? 'WHITE' : 'BLACK'} piece at ${targetId} is under threat...`);
+            // console.log(`🔍 Checking if ${isWhite ? 'WHITE' : 'BLACK'} piece at ${targetId} is under threat...`);
             
             // Get flip state of the target piece (if provided)
             const targetIsFlipped = targetPiece && targetPiece.dataset.flipped === 'true';
-            console.log(`🔍 Target flip state: ${targetIsFlipped}, flipModeEnabled: ${flipModeEnabled}`);
+            // console.log(`🔍 Target flip state: ${targetIsFlipped}, flipModeEnabled: ${flipModeEnabled}`);
             
             // Get all opponent pieces (including circles and hexgons)
             const opponentPieceTypes = isWhite ? 
@@ -17734,22 +17734,22 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                     }
                 }
             }
-            console.log(`✓ No threat found for piece at ${targetId}`);
+            // console.log(`✓ No threat found for piece at ${targetId}`);
             return false;
         }
         
         // Check if a piece can actually attack using the real movement patterns
         function canPieceActuallyAttack(pieceRow, pieceCol, targetRow, targetCol, piece) {
             // DEBUG: Log piece info to diagnose triangle/hexgon confusion
-            console.log(`🔬 canPieceActuallyAttack: piece at ${pieceRow}-${pieceCol} checking if can attack ${targetRow}-${targetCol}`);
-            console.log(`🔬 Piece classes:`, piece.className);
-            console.log(`🔬 Type checks:`, {
-                square: piece.classList.contains('square-piece'),
-                triangle: piece.classList.contains('triangle-piece'),
-                rhombus: piece.classList.contains('rhombus-piece'),
-                circle: piece.classList.contains('circle-piece'),
-                hexgon: piece.classList.contains('hexgon-piece')
-            });
+            // console.log(`🔬 canPieceActuallyAttack: piece at ${pieceRow}-${pieceCol} checking if can attack ${targetRow}-${targetCol}`);
+            // console.log(`🔬 Piece classes:`, piece.className);
+            // console.log(`🔬 Type checks:`, {
+            //     square: piece.classList.contains('square-piece'),
+            //     triangle: piece.classList.contains('triangle-piece'),
+            //     rhombus: piece.classList.contains('rhombus-piece'),
+            //     circle: piece.classList.contains('circle-piece'),
+            //     hexgon: piece.classList.contains('hexgon-piece')
+            // });
             
             // FLIP MODE: Check if piece is flipped - flipped pieces use omnidirectional attack
             if (flipModeEnabled && piece.dataset.flipped === 'true') {
@@ -28643,7 +28643,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         }
         
         function getRotatedTriangleTargets(row, col, orientation, isWhite) {
-            console.log(`🔍 getRotatedTriangleTargets called: row=${row}, col=${col}, orientation=${orientation}, isWhite=${isWhite}`);
+            // console.log(`🔍 getRotatedTriangleTargets called: row=${row}, col=${col}, orientation=${orientation}, isWhite=${isWhite}`);
             
             // Get the specific movement pattern for this position and orientation
             let offsets = [];
@@ -28847,12 +28847,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 }
             }
             
-            console.log(`🔍 Pattern for ${row}-${col} orientation ${orientation}:`, offsets);
-            console.log(`🔍 Pattern details:`, offsets.map(([dr, dc]) => `[${dr}, ${dc}]`));
+            // console.log(`🔍 Pattern for ${row}-${col} orientation ${orientation}:`, offsets);
+            // console.log(`🔍 Pattern details:`, offsets.map(([dr, dc]) => `[${dr}, ${dc}]`));
             
             // Show expected target coordinates
             const expectedTargets = offsets.map(([dr, dc]) => `hex-${row + dr}-${col + dc}`);
-            console.log(`🎯 Expected target coordinates:`, expectedTargets);
+            // console.log(`🎯 Expected target coordinates:`, expectedTargets);
             
             return offsets;
         }
