@@ -18282,19 +18282,47 @@ ${moveHistory || '(No moves played yet - starting position)'}
                     auto_select: false,
                 });
 
-                // If there's a placeholder button in the modal, render Google's button into it
-                const holder = document.getElementById('account-google-btn');
-                if (holder) {
-                    holder.innerHTML = '';
-                    google.accounts.id.renderButton(holder, { theme: 'outline', size: 'large' });
-                }
-
-                // Trigger the one-tap prompt (optional).
-                // Wrap in try/catch to avoid FedCM/One-tap network/CORS errors causing uncaught exceptions.
+                // Trigger the one-tap prompt or popup
                 try {
-                    google.accounts.id.prompt();
+                    google.accounts.id.prompt((notification) => {
+                        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                            // If one-tap is not displayed, show the popup as fallback
+                            console.log('One Tap not available, showing popup');
+                            // Create a temporary container for the button
+                            const tempDiv = document.createElement('div');
+                            tempDiv.style.display = 'none';
+                            document.body.appendChild(tempDiv);
+
+                            google.accounts.id.renderButton(tempDiv, {
+                                type: 'standard',
+                                theme: 'outline',
+                                size: 'large',
+                            });
+
+                            // Trigger click on the rendered button
+                            setTimeout(() => {
+                                const btn = tempDiv.querySelector('div[role="button"]');
+                                if (btn) btn.click();
+                            }, 100);
+                        }
+                    });
                 } catch (promptErr) {
-                    console.warn('google.accounts.id.prompt() failed (FedCM/OneTap may be blocked):', promptErr);
+                    console.warn('google.accounts.id.prompt() failed:', promptErr);
+                    // Fallback: create temporary button and click it
+                    const tempDiv = document.createElement('div');
+                    tempDiv.style.display = 'none';
+                    document.body.appendChild(tempDiv);
+
+                    google.accounts.id.renderButton(tempDiv, {
+                        type: 'standard',
+                        theme: 'outline',
+                        size: 'large',
+                    });
+
+                    setTimeout(() => {
+                        const btn = tempDiv.querySelector('div[role="button"]');
+                        if (btn) btn.click();
+                    }, 100);
                 }
             } catch (e) {
                 console.error('handleGoogleLogin error', e);
