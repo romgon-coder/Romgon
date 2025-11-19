@@ -1199,15 +1199,15 @@
             isGuest: false,
             loginTime: new Date().toISOString()
         }));
-        
+
         // Record login timestamp
         recordLastLogin(username);
-        
-        // Close modal and show home
+
+        // Close modal and go directly to main menu
         hideSignUpModal();
         hideLoginOptions();
-        showUserHome();
-        
+        hideSplashPage();
+
         // Show success message
         console.log('✅ Account created successfully!');
     }
@@ -18179,9 +18179,11 @@ ${moveHistory || '(No moves played yet - starting position)'}
         // Hide splash page and show main menu
         function hideSplashPage() {
             const splashPage = document.getElementById('splash-page');
+            const userHome = document.getElementById('user-home');
             const startMenu = document.getElementById('start-menu');
 
             if (splashPage) splashPage.style.display = 'none';
+            if (userHome) userHome.style.display = 'none';
             if (startMenu) startMenu.style.display = 'flex';
         }
 
