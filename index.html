@@ -3534,7 +3534,6 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: linear-gradient(135deg, #0f1923 0%, #1a2332 50%, #0f1923 100%);
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -3546,6 +3545,29 @@
         padding: 20px;
         box-sizing: border-box;
     ">
+        <!-- Video Background -->
+        <video autoplay muted loop playsinline style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -2;
+        ">
+            <source src="ASSETS/romgon video.mp4" type="video/mp4">
+        </video>
+
+        <!-- Dark overlay -->
+        <div style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 25, 35, 0.75);
+            z-index: -1;
+        "></div>
         <!-- Logo Section -->
         <div style="
             text-align: center;
@@ -18283,9 +18305,10 @@ ${moveHistory || '(No moves played yet - starting position)'}
             if (!user) return;
             window.currentUser = user;
             try { localStorage.setItem('romgon-user', JSON.stringify(user)); } catch (e) {}
-            // Update small badge and user-home UI
+            // Update small badge and hide splash, show main menu directly
             try { showLoggedInUser(user); } catch (e) {}
-            try { showUserHome(); } catch (e) {}
+            // Hide splash page and show main menu directly
+            hideSplashPage();
         }
 
         // Profile UI helpers (lightweight, mirrors deploy behavior)
