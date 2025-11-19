@@ -18182,9 +18182,20 @@ ${moveHistory || '(No moves played yet - starting position)'}
             const userHome = document.getElementById('user-home');
             const startMenu = document.getElementById('start-menu');
 
-            if (splashPage) splashPage.style.display = 'none';
-            if (userHome) userHome.style.display = 'none';
-            if (startMenu) startMenu.style.display = 'flex';
+            if (splashPage) {
+                splashPage.style.display = 'none';
+                splashPage.style.visibility = 'hidden';
+            }
+            if (userHome) {
+                userHome.style.display = 'none';
+                userHome.style.visibility = 'hidden';
+            }
+            if (startMenu) {
+                startMenu.style.display = 'flex';
+                startMenu.style.visibility = 'visible';
+            }
+
+            console.log('✅ hideSplashPage: splash hidden, user-home hidden, start-menu shown');
         }
 
         // ----------------------
@@ -18335,9 +18346,13 @@ ${moveHistory || '(No moves played yet - starting position)'}
             if (!user) return;
             window.currentUser = user;
             try { localStorage.setItem('romgon-user', JSON.stringify(user)); } catch (e) {}
+
+            console.log('✅ persistCurrentUser: Saving user and going to main menu', user.name || user.email);
+
             // Update small badge and hide splash, show main menu directly
             try { showLoggedInUser(user); } catch (e) {}
-            // Hide splash page and show main menu directly
+
+            // Hide splash page and user-home, show main menu directly
             hideSplashPage();
         }
 
@@ -18382,36 +18397,10 @@ ${moveHistory || '(No moves played yet - starting position)'}
         }
 
         // Show / hide the user-first landing page
+        // DEPRECATED: user-home is no longer used - we go directly to main menu
         function showUserHome() {
-            const uh = document.getElementById('user-home');
-            if (!uh) return;
-            const startMenu = document.getElementById('start-menu');
-            const splash = document.getElementById('splash-page');
-            if (startMenu) startMenu.style.display = 'none';
-            if (splash) splash.style.display = 'none';
-            // Populate user info
-            const u = window.currentUser || (function(){ try { return JSON.parse(localStorage.getItem('romgon-user')); } catch(e){return null;} })();
-            const avatar = document.getElementById('user-home-avatar');
-            const nameEl = document.getElementById('user-home-name');
-            const emailEl = document.getElementById('user-home-email');
-            if (u) {
-                if (avatar) {
-                    avatar.style.display = 'flex';
-                    avatar.style.alignItems = 'center';
-                    avatar.style.justifyContent = 'center';
-                    if (u.picture) {
-                        avatar.style.background = 'transparent';
-                        avatar.innerHTML = `<img src="${u.picture}" style="width:100px;height:100px;border-radius:50%;object-fit:cover;"/>`;
-                    } else {
-                        avatar.style.background = 'linear-gradient(135deg, #4ecdc4, #a55eea)';
-                        avatar.innerHTML = '';
-                        avatar.textContent = (u.name || 'G').charAt(0).toUpperCase();
-                    }
-                }
-                if (nameEl) nameEl.textContent = u.name || u.email || 'Welcome Player';
-                if (emailEl) emailEl.textContent = u.email || (u.type === 'guest' ? 'Guest Session' : 'Not signed in');
-            }
-            uh.style.display = 'flex';
+            console.warn('⚠️ showUserHome called but is deprecated - redirecting to main menu instead');
+            hideSplashPage(); // Go directly to main menu instead
         }
 
         function hideUserHome() {
