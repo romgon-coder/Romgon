@@ -29893,9 +29893,18 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             // Re-setup drag and drop
             setupDragAndDrop();
             
-            // Record move
-            const repetitionCount = checkRepetition(move.fromRow, move.fromCol, move.toRow, move.toCol, move.type, true, move.isCapture);
-            recordMove(move.fromRow, move.fromCol, move.toRow, move.toCol, move.type, true, move.isCapture, repetitionCount);
+            // Determine piece type from class
+            const pieceType = piece.classList.contains('square-piece') ? 'square' :
+                             piece.classList.contains('triangle-piece') ? 'triangle' :
+                             piece.classList.contains('rhombus-piece') ? 'rhombus' :
+                             piece.classList.contains('circle-piece') ? 'circle' : 'hexgon';
+            
+            // Determine if it was a capture
+            const isCapture = existingPiece !== null;
+            
+            // Record move (use local variables, not move.fromRow which doesn't exist)
+            const repetitionCount = checkRepetition(fromRow, fromCol, toRow, toCol, pieceType, true, isCapture);
+            recordMove(fromRow, fromCol, toRow, toCol, pieceType, true, isCapture, repetitionCount);
             
             // Check position repetition (threefold repetition rule)
             checkPositionRepetition(true); // AI plays white
