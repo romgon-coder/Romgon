@@ -29788,17 +29788,42 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         
         function executeAIMove(move) {
             console.log('🤖 executeAIMove called:', move);
-            const fromHex = document.getElementById(`hex-${move.fromRow}-${move.fromCol}`);
-            const toHex = document.getElementById(`hex-${move.toRow}-${move.toCol}`);
+            
+            // Handle both formats: {fromRow, fromCol, toRow, toCol} and {from, to}
+            let fromRow, fromCol, toRow, toCol;
+            
+            if (move.from && move.to) {
+                // Backend format: "6-0" -> [row, col]
+                [fromRow, fromCol] = move.from.split('-').map(Number);
+                [toRow, toCol] = move.to.split('-').map(Number);
+            } else {
+                // Client-side format
+                fromRow = move.fromRow;
+                fromCol = move.fromCol;
+                toRow = move.toRow;
+                toCol = move.toCol;
+            }
+            
+            const fromHex = document.getElementById(`hex-${fromRow}-${fromCol}`);
+            const toHex = document.getElementById(`hex-${toRow}-${toCol}`);
             
             if (!fromHex || !toHex) {
-                console.log('❌ Invalid hex IDs:', `hex-${move.fromRow}-${move.fromCol}`, `hex-${move.toRow}-${move.toCol}`);
+                console.log('❌ Invalid hex IDs:', `hex-${fromRow}-${fromCol}`, `hex-${toRow}-${toCol}`);
+                aiThinking = false;
                 return;
             }
             
             console.log('✅ From hex:', fromHex.id, 'To hex:', toHex.id);
             
-            const piece = move.piece;
+            // Get the piece from fromHex
+            const piece = fromHex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
+            
+            if (!piece) {
+                console.log('❌ No piece found at:', fromHex.id);
+                aiThinking = false;
+                return;
+            }
+            
             console.log('🎯 Moving piece classes:', piece.className);
             
             const existingPiece = toHex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
