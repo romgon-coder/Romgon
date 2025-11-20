@@ -26900,35 +26900,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 const data = await response.json();
                 console.log('✅ Backend AI response:', data);
                 
-                // Execute the move
-                const { from, to } = data.move;
-                const fromHex = document.getElementById(`hex-${from}`);
-                const toHex = document.getElementById(`hex-${to}`);
-                
-                if (!fromHex || !toHex) {
-                    throw new Error('Invalid move positions from backend');
+                if (!data.move || !data.move.from || !data.move.to) {
+                    throw new Error('Invalid move data from backend');
                 }
                 
-                const piece = fromHex.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
-                if (!piece) {
-                    throw new Error('No piece found at from position');
-                }
-                
-                // Simulate drag and drop
-                setTimeout(() => {
-                    const dragEvent = new DragEvent('dragstart', { bubbles: true, cancelable: true });
-                    piece.dispatchEvent(dragEvent);
-                    
-                    const dropEvent = new DragEvent('drop', { bubbles: true, cancelable: true });
-                    Object.defineProperty(dropEvent, 'dataTransfer', {
-                        value: {
-                            getData: (type) => type === 'pieceId' ? piece.id : null
-                        }
-                    });
-                    toHex.dispatchEvent(dropEvent);
-                    
-                    aiThinking = false;
-                }, 500);
+                // Execute the move using the dedicated AI move function
+                executeAIMove(data.move);
                 
             } catch (error) {
                 console.error('❌ Backend AI failed, falling back to client-side:', error);
