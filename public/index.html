@@ -22407,10 +22407,42 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
         // Public Rooms Management
         let publicRooms = [];
 
-        function refreshPublicRooms() {
-            // Request public rooms from server
-            if (socket && socket.connected) {
-                socket.emit('getPublicRooms');
+        async function refreshPublicRooms() {
+            try {
+                // Use REST API to fetch rooms
+                const backendUrl = typeof BACKEND_API_URL !== 'undefined' ? BACKEND_API_URL : 'https://api.romgon.net';
+                const response = await fetch(`${backendUrl}/api/rooms/list`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('🚪 Fetched public rooms:', data);
+                    
+                    if (data.success && data.rooms) {
+                        // Transform backend data to match our format
+                        const transformedRooms = data.rooms.map(room => ({
+                            roomId: room.code,
+                            id: room.id,
+                            name: room.name,
+                            description: room.description,
+                            host: room.hostUsername,
+                            hostUsername: room.hostUsername,
+                            players: room.playerCount,
+                            playerCount: room.playerCount,
+                            maxPlayers: room.maxPlayers,
+                            variant: room.variant,
+                            timeControl: room.timeControl,
+                            status: room.playerCount >= room.maxPlayers ? 'full' : 'waiting',
+                            isPermanent: room.isPermanent,
+                            allowGuests: room.allowGuests
+                        }));
+                        
+                        updatePublicRooms(transformedRooms);
+                    }
+                } else {
+                    console.warn('⚠️ Failed to fetch rooms:', response.status);
+                }
+            } catch (error) {
+                console.warn('⚠️ Error fetching public rooms:', error);
             }
         }
 
@@ -22441,9 +22473,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
 
             let html = '';
             publicRooms.forEach(room => {
-                const isFull = room.players >= room.maxPlayers;
-                const statusColor = room.status === 'waiting' ? '#4ecdc4' : (room.status === 'playing' ? '#f39c12' : '#888');
-                const statusText = room.status === 'waiting' ? 'Waiting' : (room.status === 'playing' ? 'In Progress' : 'Unknown');
+                const isFull = room.playerCount >= room.maxPlayers;
+                const isAvailable = room.playerCount < room.maxPlayers;
+                const statusColor = isAvailable ? '#4ecdc4' : '#f39c12';
+                const statusText = isAvailable ? 'Available' : 'Full';
                 
                 html += `
                     <div style="
@@ -22455,9 +22488,9 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                         justify-content: space-between;
                         align-items: center;
                         transition: all 0.2s;
-                        cursor: ${isFull || room.status !== 'waiting' ? 'default' : 'pointer'};
-                        opacity: ${isFull || room.status !== 'waiting' ? '0.6' : '1'};
-                    " ${isFull || room.status !== 'waiting' ? '' : `onclick="joinPublicRoom('${room.roomId}')" onmouseover="this.style.background='linear-gradient(135deg, rgba(78, 205, 196, 0.2) 0%, rgba(102, 126, 234, 0.2) 100%)'; this.style.transform='translateX(5px)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(78, 205, 196, 0.1) 0%, rgba(102, 126, 234, 0.1) 100%)'; this.style.transform='translateX(0)'"`}>
+                        cursor: ${isAvailable ? 'pointer' : 'default'};
+                        opacity: ${isAvailable ? '1' : '0.6'};
+                    " ${isAvailable ? `onclick="joinPublicRoom('${room.roomId}')" onmouseover="this.style.background='linear-gradient(135deg, rgba(78, 205, 196, 0.2) 0%, rgba(102, 126, 234, 0.2) 100%)'; this.style.transform='translateX(5px)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(78, 205, 196, 0.1) 0%, rgba(102, 126, 234, 0.1) 100%)'; this.style.transform='translateX(0)'"` : ''}>
                         <div style="flex: 1;">
                             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
                                 <span style="
@@ -22475,15 +22508,24 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                                     text-transform: uppercase;
                                     letter-spacing: 0.5px;
                                 ">${statusText}</span>
+                                ${room.isPermanent ? `<span style="
+                                    background: rgba(138, 43, 226, 0.2);
+                                    color: #a55eea;
+                                    padding: 4px 10px;
+                                    border-radius: 6px;
+                                    font-size: 0.7em;
+                                    font-weight: 600;
+                                "><i class="fas fa-star"></i> PERMANENT</span>` : ''}
                             </div>
+                            ${room.description ? `<p style="color: #999; font-size: 0.85em; margin: 0 0 8px 0;">${room.description}</p>` : ''}
                             <div style="display: flex; gap: 16px; color: #aaa; font-size: 0.85em;">
-                                <span><i class="fas fa-user"></i> Host: ${room.host || 'Unknown'}</span>
-                                <span><i class="fas fa-users"></i> ${room.players}/${room.maxPlayers}</span>
+                                <span><i class="fas fa-code"></i> ${room.roomId}</span>
+                                <span><i class="fas fa-users"></i> ${room.playerCount}/${room.maxPlayers}</span>
                                 ${room.variant ? `<span><i class="fas fa-chess"></i> ${room.variant}</span>` : ''}
-                                ${room.timeControl ? `<span><i class="fas fa-clock"></i> ${room.timeControl}</span>` : ''}
+                                ${room.allowGuests ? `<span style="color: #4ecdc4;"><i class="fas fa-door-open"></i> Guests OK</span>` : ''}
                             </div>
                         </div>
-                        ${!isFull && room.status === 'waiting' ? `
+                        ${isAvailable ? `
                             <button style="
                                 background: linear-gradient(135deg, #4ecdc4 0%, #44b3ab 100%);
                                 border: none;
@@ -22500,7 +22542,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                             </button>
                         ` : `
                             <span style="color: #666; font-size: 0.9em; font-weight: 600;">
-                                ${isFull ? 'FULL' : 'IN PROGRESS'}
+                                FULL
                             </span>
                         `}
                     </div>
