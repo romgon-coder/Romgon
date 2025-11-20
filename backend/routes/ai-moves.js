@@ -463,10 +463,12 @@ function applyMoveToBoard(board, move) {
 router.get('/stats', (req, res) => {
     try {
         const stats = ai.getStats();
+        const minimaxStats = minimaxEngine.getStats();
         
         res.json({
             success: true,
             stats: stats,
+            minimaxStats: minimaxStats,
             activeGames: gameHistories.size
         });
 
@@ -478,6 +480,73 @@ router.get('/stats', (req, res) => {
         });
     }
 });
+
+/**
+ * GET /api/ai/difficulties
+ * Get available difficulty levels and their settings
+ */
+router.get('/difficulties', (req, res) => {
+    try {
+        const difficulties = Object.keys(DIFFICULTY_SETTINGS).map(name => ({
+            name,
+            depth: DIFFICULTY_SETTINGS[name].depth,
+            timeLimit: DIFFICULTY_SETTINGS[name].timeLimit,
+            randomChance: DIFFICULTY_SETTINGS[name].randomChance,
+            description: getDifficultyDescription(name)
+        }));
+
+        res.json({
+            success: true,
+            difficulties,
+            default: 'hard'
+        });
+
+    } catch (error) {
+        console.error('❌ Error getting difficulties:', error);
+        res.status(500).json({
+            error: 'Failed to get difficulty settings',
+            message: error.message
+        });
+    }
+});
+
+/**
+ * POST /api/ai/clear-cache
+ * Clear minimax engine cache and move history
+ */
+router.post('/clear-cache', (req, res) => {
+    try {
+        minimaxEngine.clearCache();
+
+        res.json({
+            success: true,
+            message: 'AI cache and move history cleared',
+            stats: minimaxEngine.getStats()
+        });
+
+    } catch (error) {
+        console.error('❌ Error clearing cache:', error);
+        res.status(500).json({
+            error: 'Failed to clear cache',
+            message: error.message
+        });
+    }
+});
+
+/**
+ * Helper: Get difficulty description
+ */
+function getDifficultyDescription(difficulty) {
+    const descriptions = {
+        beginner: 'Very weak play, makes random mistakes (30% random moves)',
+        easy: 'Weak play with occasional errors (15% random moves)',
+        medium: 'Decent play, thinks 3 moves ahead',
+        hard: 'Strong play, thinks 4 moves ahead',
+        expert: 'Very strong play, thinks 5 moves ahead',
+        master: 'Maximum strength, thinks 6 moves ahead'
+    };
+    return descriptions[difficulty] || 'Unknown difficulty';
+}
 
 /**
  * POST /api/ai/save
