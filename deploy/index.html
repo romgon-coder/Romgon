@@ -30031,6 +30031,12 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 return;
             }
             
+            // Don't auto-flip when playing against AI - keep human player at bottom
+            if (aiEnabled) {
+                console.log('🔄 Skipping auto-flip in AI game (human stays at bottom)');
+                return;
+            }
+            
             const board = document.querySelector('.board');
             
             // White's turn: Flip board so white is at bottom
