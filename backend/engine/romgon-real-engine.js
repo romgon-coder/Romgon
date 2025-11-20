@@ -182,14 +182,21 @@ function getLegalMoves(board, fromPos, playerColor, flipModeEnabled = false) {
 
 /**
  * Apply a move to the board (returns new board state)
+ * Handles both movement and flip actions
  */
 function applyMove(board, move) {
     const newBoard = JSON.parse(JSON.stringify(board)); // Deep clone
     
-    // Move piece
     const piece = newBoard[move.from];
     if (!piece) return newBoard;
     
+    // Handle flip action (from === to)
+    if (move.isFlip) {
+        piece.flipped = !piece.flipped;
+        return newBoard;
+    }
+    
+    // Handle normal movement
     // Remove captured piece if any
     if (move.isCapture && newBoard[move.to]) {
         delete newBoard[move.to];
@@ -385,7 +392,49 @@ function canAttack(board, attackerPos, targetPos, attackerColor, flipModeEnabled
 }
 
 /**
+ * Check if flipping a piece would be legal (not under threat)
+ * Returns true if flip is safe
+ */
+function canFlipSafely(board, pos, playerColor, flipModeEnabled) {
+    if (!flipModeEnabled) return false;
+    
+    const piece = board[pos];
+    if (!piece || piece.color !== playerColor) return false;
+    
+    // Only certain pieces can flip (not rhombus in danger)
+    const willBeFlipped = !piece.flipped;
+    const opponentColor = playerColor === 'white' ? 'black' : 'white';
+    
+    // Check if any opponent piece can attack this position after flip
+    const [row, col] = pos.split('-').map(Number);
+    
+    for (const oppPos in board) {
+        const oppPiece = board[oppPos];
+        if (oppPiece && oppPiece.color === opponentColor) {
+            // Check if opponent has matching flip state after our flip
+            if (oppPiece.flipped === willBeFlipped) {
+                // Create temporary board with flipped piece
+                const testBoard = JSON.parse(JSON.stringify(board));
+                testBoard[pos].flipped = willBeFlipped;
+                
+                // Check if opponent can attack
+                const oppMoves = getLegalMoves(testBoard, oppPos, opponentColor, flipModeEnabled);
+                if (oppMoves.some(m => m.to === pos && m.isCapture)) {
+                    // SPECIAL: Rhombus cannot flip into danger
+                    if (piece.type === 'rhombus') {
+                        return false;
+                    }
+                }
+            }
+        }
+    }
+    
+    return true;
+}
+
+/**
  * Generate all legal moves for current player
+ * Includes both movement and flip actions
  */
 function generateAllMoves(board, playerColor, flipModeEnabled = false) {
     const allMoves = [];
@@ -393,8 +442,22 @@ function generateAllMoves(board, playerColor, flipModeEnabled = false) {
     Object.keys(board).forEach(pos => {
         const piece = board[pos];
         if (piece && piece.color === playerColor) {
+            // Add movement moves
             const moves = getLegalMoves(board, pos, playerColor, flipModeEnabled);
             allMoves.push(...moves);
+            
+            // Add flip moves (if flip mode enabled)
+            if (flipModeEnabled) {
+                const canFlip = canFlipSafely(board, pos, playerColor, flipModeEnabled);
+                if (canFlip) {
+                    allMoves.push({
+                        from: pos,
+                        to: pos, // Flip in place
+                        isCapture: false,
+                        isFlip: true // Mark as flip action
+                    });
+                }
+            }
         }
     });
 

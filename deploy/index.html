@@ -29804,6 +29804,51 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 toCol = move.toCol;
             }
             
+            // FLIP ACTION: Check if from === to (flip in place)
+            if (move.isFlip || (fromRow === toRow && fromCol === toCol)) {
+                console.log('🔄 AI performing FLIP action at:', fromRow, fromCol);
+                const hex = document.getElementById(`hex-${fromRow}-${fromCol}`);
+                const piece = hex?.querySelector('.square-piece, .triangle-piece, .rhombus-piece, .circle-piece, .hexgon-piece');
+                
+                if (!piece) {
+                    console.log('❌ No piece found for flip at:', hex?.id);
+                    aiThinking = false;
+                    return;
+                }
+                
+                // Toggle flip state
+                const wasFlipped = piece.dataset.flipped === 'true';
+                piece.dataset.flipped = (!wasFlipped).toString();
+                console.log(`🔄 AI flipped piece from ${wasFlipped} to ${piece.dataset.flipped}`);
+                
+                // Play flip sound
+                playFlipSound();
+                
+                // Update visual
+                updateFlipVisual(hex.id);
+                
+                // Record as flip action (no move notation needed)
+                moveCount++;
+                const moveList = document.getElementById('white-moves');
+                const moveItem = document.createElement('li');
+                moveItem.className = 'movement-item white-move';
+                const pieceSymbol = piece.classList.contains('square-piece') ? '■' :
+                                   piece.classList.contains('triangle-piece') ? '▲' :
+                                   piece.classList.contains('rhombus-piece') ? '◆' :
+                                   piece.classList.contains('circle-piece') ? '●' : '⬡';
+                moveItem.textContent = `${moveCount}. ${pieceSymbol} FLIP at ${fromRow}-${fromCol} 🔄`;
+                moveItem.style.fontStyle = 'italic';
+                moveList.appendChild(moveItem);
+                moveList.scrollTop = moveList.scrollHeight;
+                
+                // Switch turn
+                aiThinking = false;
+                if (!gameOver) {
+                    switchTurn();
+                }
+                return;
+            }
+            
             const fromHex = document.getElementById(`hex-${fromRow}-${fromCol}`);
             const toHex = document.getElementById(`hex-${toRow}-${toCol}`);
             
@@ -29910,7 +29955,7 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             checkPositionRepetition(true); // AI plays white
             
             // Check win conditions (pass the target position and new piece)
-            checkWinConditions(move.toRow, move.toCol, newPiece);
+            checkWinConditions(toRow, toCol, newPiece);
             
             // Switch turn back to player
             aiThinking = false; // Unlock player input
