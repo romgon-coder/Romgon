@@ -6,9 +6,21 @@ const express = require('express');
 const router = express.Router();
 const { RomgonAI } = require('../ai/reinforcement-learning');
 const { generateAllMoves, evaluatePosition } = require('../engine/romgon-real-engine');
+const { MinimaxEngine } = require('../ai/minimax-engine');
 
 // Initialize AI instance
 const ai = new RomgonAI();
+const minimaxEngine = new MinimaxEngine();
+
+// Difficulty settings (Stockfish-style)
+const DIFFICULTY_SETTINGS = {
+    beginner: { depth: 1, timeLimit: 500, randomChance: 0.3 },   // Very weak, makes mistakes
+    easy: { depth: 2, timeLimit: 1000, randomChance: 0.15 },     // Weak play
+    medium: { depth: 3, timeLimit: 2000, randomChance: 0 },      // Decent play
+    hard: { depth: 4, timeLimit: 3000, randomChance: 0 },        // Strong play
+    expert: { depth: 5, timeLimit: 5000, randomChance: 0 },      // Very strong
+    master: { depth: 6, timeLimit: 8000, randomChance: 0 }       // Maximum strength
+};
 
 // Track game histories for learning (keyed by gameId or session)
 const gameHistories = new Map();
@@ -67,91 +79,50 @@ router.post('/move', async (req, res) => {
         }
 
         console.log(`✅ Generated ${legalMoves.length} legal moves`);
-        
-        // DEBUG: Show move breakdown by piece type
-        const movesByType = {};
-        legalMoves.forEach(move => {
-            const piece = board[move.from];
-            if (piece) {
-                const key = piece.type;
-                movesByType[key] = (movesByType[key] || 0) + 1;
-            }
-        });
-        console.log('📊 Moves by piece type:', movesByType);
 
-        // Select best move based on difficulty
+        // Get difficulty settings
+        const settings = DIFFICULTY_SETTINGS[difficulty] || DIFFICULTY_SETTINGS.hard;
+        
         let selectedMove;
-        
-        if (difficulty === 'easy') {
-            // Easy: Pick random move
+        let engineStats = null;
+
+        // Random move chance for lower difficulties
+        if (settings.randomChance > 0 && Math.random() < settings.randomChance) {
             selectedMove = legalMoves[Math.floor(Math.random() * legalMoves.length)];
-            console.log('🎲 Easy mode: Selected random move');
-        } else if (difficulty === 'medium') {
-            // Medium: Evaluate each move and pick from top 3
-            const evaluatedMoves = legalMoves.map(move => {
-                // Apply move temporarily
-                const testBoard = JSON.parse(JSON.stringify(board));
-                const piece = testBoard[move.from];
-                testBoard[move.to] = piece;
-                delete testBoard[move.from];
-                
-                // Evaluate resulting position
-                const score = evaluatePosition(testBoard, currentPlayer, flipModeEnabled);
-                
-                return { ...move, score };
-            });
-
-            // Sort by score and pick from top 3
-            evaluatedMoves.sort((a, b) => b.score - a.score);
-            const topMoves = evaluatedMoves.slice(0, Math.min(3, evaluatedMoves.length));
-            selectedMove = topMoves[Math.floor(Math.random() * topMoves.length)];
-            console.log(`🎯 Medium mode: Selected from top ${topMoves.length} moves (score: ${selectedMove.score})`);
+            console.log(`🎲 Random move for difficulty ${difficulty}`);
         } else {
-            // Hard: Use full AI with Q-learning
-            const gameState = {
-                board,
-                flipModeEnabled,
-                currentPlayer
-            };
-            const bestMove = await ai.getMove(gameState, currentPlayer);
+            // Use minimax engine (Stockfish-style)
+            console.log(`🧠 Using minimax engine: depth=${settings.depth}, timeLimit=${settings.timeLimit}ms`);
             
-            if (bestMove) {
-                selectedMove = bestMove;
-                console.log(`🧠 Hard mode: AI selected move with Q-learning (score: ${bestMove.evaluation || 'N/A'})`);
-            } else {
-                // Fallback to evaluation if AI returns nothing
-                const evaluatedMoves = legalMoves.map(move => {
-                    const testBoard = JSON.parse(JSON.stringify(board));
-                    const piece = testBoard[move.from];
-                    testBoard[move.to] = piece;
-                    delete testBoard[move.from];
-                    
-                    const score = evaluatePosition(testBoard, currentPlayer, flipModeEnabled);
-                    return { ...move, score };
-                });
+            const result = minimaxEngine.getBestMove(
+                board,
+                currentPlayer,
+                flipModeEnabled,
+                settings.depth,
+                settings.timeLimit
+            );
 
-                evaluatedMoves.sort((a, b) => b.score - a.score);
-                selectedMove = evaluatedMoves[0];
-                console.log(`📊 Hard mode fallback: Selected best evaluated move (score: ${selectedMove.score})`);
+            if (result) {
+                selectedMove = result;
+                engineStats = minimaxEngine.getStats();
+            } else {
+                // Fallback to random move
+                selectedMove = legalMoves[Math.floor(Math.random() * legalMoves.length)];
+                console.log(`⚠️ Minimax returned null, using random move`);
             }
         }
 
-        // Calculate final evaluation
-        const testBoard = JSON.parse(JSON.stringify(board));
-        const piece = testBoard[selectedMove.from];
-        testBoard[selectedMove.to] = piece;
-        delete testBoard[selectedMove.from];
-        const finalEvaluation = evaluatePosition(testBoard, currentPlayer, flipModeEnabled);
-
         const thinkingTime = Date.now() - startTime;
 
-        console.log(`✅ AI Move: ${selectedMove.from} → ${selectedMove.to} (evaluation: ${finalEvaluation}, time: ${thinkingTime}ms)`);
+        console.log(`✅ AI Move: ${selectedMove.from} → ${selectedMove.to} (evaluation: ${selectedMove.score || selectedMove.evaluation || 0}, time: ${thinkingTime}ms)`);
 
         res.json({
             move: selectedMove,
-            evaluation: finalEvaluation,
+            evaluation: selectedMove.score || selectedMove.evaluation || 0,
             thinkingTime,
-            totalMoves: legalMoves.length
+            totalMoves: legalMoves.length,
+            difficulty: difficulty,
+            engineStats: engineStats
         });
 
     } catch (error) {
@@ -202,10 +173,11 @@ router.post('/evaluate', async (req, res) => {
 router.get('/health', (req, res) => {
     res.json({
         status: 'OK',
-        engine: 'romgon-real-engine',
-        aiModel: 'reinforcement-learning',
+        engine: 'minimax-alpha-beta',
+        aiModel: 'stockfish-style',
         flipModeSupported: true,
-        stats: ai.getStats()
+        difficulties: Object.keys(DIFFICULTY_SETTINGS),
+        stats: minimaxEngine.getStats()
     });
 });
 
