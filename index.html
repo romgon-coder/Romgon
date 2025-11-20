@@ -126,6 +126,8 @@
         z-index: 3001;
         padding: 0; margin: 0;
         backdrop-filter: blur(8px);
+        align-items: center;
+        justify-content: center;
     ">
         <div style="
             max-width: 1400px;
@@ -163,9 +165,9 @@
                         font-size: 1.8em;
                         border: 3px solid rgba(255, 255, 255, 0.4);
                         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-                    "><i class="fa-solid fa-user"></i></div>
+                    ">👤</div>
                     <div>
-                        <h2 style="margin: 0; font-size: 1.5em; color: #fff; font-weight: 700;">Player Hub</h2>
+                        <h2 style="margin: 0; font-size: 1.5em; color: #fff; font-weight: 700;">👤 Player Hub</h2>
                         <p id="account-header-username" style="margin: 4px 0 0 0; color: rgba(255, 255, 255, 0.85); font-size: 0.9em; font-weight: 500;">Guest Player</p>
                     </div>
                 </div>
@@ -182,7 +184,7 @@
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                " onmouseover="this.style.background='rgba(255, 107, 107, 0.3)'; this.style.borderColor='rgba(255, 107, 107, 0.5)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.15)'; this.style.borderColor='rgba(255, 255, 255, 0.3)'"><i class="fa-solid fa-xmark"></i></button>
+                " onmouseover="this.style.background='rgba(255, 107, 107, 0.3)'; this.style.borderColor='rgba(255, 107, 107, 0.5)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.15)'; this.style.borderColor='rgba(255, 255, 255, 0.3)'">✖</button>
             </div>
 
             <!-- Tab Navigation -->
@@ -206,7 +208,7 @@
                     transition: all 0.3s ease;
                     white-space: nowrap;
                 " data-tab="overview" onmouseover="this.style.color='#fff'; this.style.background='rgba(102, 126, 234, 0.1)'" onmouseout="this.style.color=this.classList.contains('active') ? '#fff' : '#999'; this.style.background=this.classList.contains('active') ? 'rgba(102, 126, 234, 0.15)' : 'transparent'">
-                    <i class="fa-solid fa-chart-pie"></i> Overview
+                    📊 Overview
                 </button>
                 <button onclick="switchAccountTab('analytics')" class="account-tab-btn" style="
                     flex: 1;
@@ -221,7 +223,7 @@
                     transition: all 0.3s ease;
                     white-space: nowrap;
                 " data-tab="analytics" onmouseover="this.style.color='#fff'; this.style.background='rgba(102, 126, 234, 0.1)'" onmouseout="this.style.color=this.classList.contains('active') ? '#fff' : '#999'; this.style.background=this.classList.contains('active') ? 'rgba(102, 126, 234, 0.15)' : 'transparent'">
-                    <i class="fa-solid fa-chart-line"></i> Analytics
+                    📈 Analytics
                 </button>
                 <button onclick="switchAccountTab('variations')" class="account-tab-btn" style="
                     flex: 1;
@@ -236,7 +238,7 @@
                     transition: all 0.3s ease;
                     white-space: nowrap;
                 " data-tab="variations" onmouseover="this.style.color='#fff'; this.style.background='rgba(102, 126, 234, 0.1)'" onmouseout="this.style.color=this.classList.contains('active') ? '#fff' : '#999'; this.style.background=this.classList.contains('active') ? 'rgba(102, 126, 234, 0.15)' : 'transparent'">
-                    <i class="fa-solid fa-gamepad"></i> Variations
+                    🎮 Variations
                 </button>
                 <button onclick="switchAccountTab('achievements')" class="account-tab-btn" style="
                     flex: 1;
@@ -251,7 +253,7 @@
                     transition: all 0.3s ease;
                     white-space: nowrap;
                 " data-tab="achievements" onmouseover="this.style.color='#fff'; this.style.background='rgba(102, 126, 234, 0.1)'" onmouseout="this.style.color=this.classList.contains('active') ? '#fff' : '#999'; this.style.background=this.classList.contains('active') ? 'rgba(102, 126, 234, 0.15)' : 'transparent'">
-                    <i class="fa-solid fa-trophy"></i> Achievements
+                    🏆 Achievements
                 </button>
                 <button onclick="switchAccountTab('ratings')" class="account-tab-btn" style="
                     flex: 1;
@@ -266,7 +268,7 @@
                     transition: all 0.3s ease;
                     white-space: nowrap;
                 " data-tab="ratings" onmouseover="this.style.color='#fff'; this.style.background='rgba(102, 126, 234, 0.1)'" onmouseout="this.style.color=this.classList.contains('active') ? '#fff' : '#999'; this.style.background=this.classList.contains('active') ? 'rgba(102, 126, 234, 0.15)' : 'transparent'">
-                    <i class="fa-solid fa-star"></i> Ratings
+                    ⭐ Ratings
                 </button>
             </div>
 
@@ -293,7 +295,7 @@
                                 text-align: center;
                             ">
                                 <div style="color: #26de81; font-size: 2em; font-weight: bold; line-height: 1;" id="account-wins">0</div>
-                                <div style="color: #999; font-size: 0.75em; margin-top: 8px; font-weight: 600;"><i class="fa-solid fa-trophy"></i> Wins</div>
+                                <div style="color: #999; font-size: 0.75em; margin-top: 8px; font-weight: 600;">🏆 Wins</div>
                             </div>
                             <div style="
                                 background: linear-gradient(135deg, rgba(255, 107, 107, 0.15) 0%, rgba(255, 107, 107, 0.05) 100%);
@@ -303,7 +305,7 @@
                                 text-align: center;
                             ">
                                 <div style="color: #ff6b6b; font-size: 2em; font-weight: bold; line-height: 1;" id="account-losses">0</div>
-                                <div style="color: #999; font-size: 0.75em; margin-top: 8px; font-weight: 600;"><i class="fa-solid fa-xmark"></i> Losses</div>
+                                <div style="color: #999; font-size: 0.75em; margin-top: 8px; font-weight: 600;">❌ Losses</div>
                             </div>
                             <div style="
                                 background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 215, 0, 0.05) 100%);
@@ -313,7 +315,7 @@
                                 text-align: center;
                             ">
                                 <div style="color: #ffd700; font-size: 2em; font-weight: bold; line-height: 1;" id="account-winrate">0%</div>
-                                <div style="color: #999; font-size: 0.75em; margin-top: 8px; font-weight: 600;"><i class="fa-solid fa-percent"></i> Win Rate</div>
+                                <div style="color: #999; font-size: 0.75em; margin-top: 8px; font-weight: 600;">📊 Win Rate</div>
                             </div>
                             <div style="
                                 background: linear-gradient(135deg, rgba(78, 205, 196, 0.15) 0%, rgba(78, 205, 196, 0.05) 100%);
@@ -323,7 +325,7 @@
                                 text-align: center;
                             ">
                                 <div style="color: #4ecdc4; font-size: 2em; font-weight: bold; line-height: 1;" id="account-games">0</div>
-                                <div style="color: #999; font-size: 0.75em; margin-top: 8px; font-weight: 600;"><i class="fa-solid fa-gamepad"></i> Games</div>
+                                <div style="color: #999; font-size: 0.75em; margin-top: 8px; font-weight: 600;">🎮 Games</div>
                             </div>
                             <div style="
                                 background: linear-gradient(135deg, rgba(165, 94, 234, 0.15) 0%, rgba(165, 94, 234, 0.05) 100%);
@@ -333,7 +335,7 @@
                                 text-align: center;
                             ">
                                 <div style="color: #a55eea; font-size: 1.4em; font-weight: bold; line-height: 1;" id="account-member-level">Bronze</div>
-                                <div style="color: #999; font-size: 0.75em; margin-top: 8px; font-weight: 600;"><i class="fa-solid fa-medal"></i> Rank</div>
+                                <div style="color: #999; font-size: 0.75em; margin-top: 8px; font-weight: 600;">🥉 Rank</div>
                             </div>
                             <div style="
                                 background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(102, 126, 234, 0.05) 100%);
@@ -343,7 +345,7 @@
                                 text-align: center;
                             ">
                                 <div style="color: #667eea; font-size: 2em; font-weight: bold; line-height: 1;" id="account-total-games">0</div>
-                                <div style="color: #999; font-size: 0.75em; margin-top: 8px; font-weight: 600;"><i class="fa-solid fa-hashtag"></i> Total</div>
+                                <div style="color: #999; font-size: 0.75em; margin-top: 8px; font-weight: 600;">#️⃣ Total</div>
                             </div>
                         </div>
 
@@ -356,7 +358,7 @@
                                 border-radius: 12px;
                                 border: 1px solid rgba(78, 205, 196, 0.25);
                             ">
-                                <h4 style="color: #4ecdc4; margin: 0 0 14px 0; font-size: 0.95em; font-weight: 700;"><i class="fa-solid fa-user-circle"></i> Profile Information</h4>
+                                <h4 style="color: #4ecdc4; margin: 0 0 14px 0; font-size: 0.95em; font-weight: 700;">👤 Profile Information</h4>
                                 <div style="display: grid; gap: 10px;">
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
                                         <span style="color: #999; font-size: 0.85em;">Username</span>
@@ -380,7 +382,7 @@
                                 border-radius: 12px;
                                 border: 1px solid rgba(165, 94, 234, 0.25);
                             ">
-                                <h4 style="color: #a55eea; margin: 0 0 14px 0; font-size: 0.95em; font-weight: 700;"><i class="fa-solid fa-chart-simple"></i> Activity Stats</h4>
+                                <h4 style="color: #a55eea; margin: 0 0 14px 0; font-size: 0.95em; font-weight: 700;">📊 Activity Stats</h4>
                                 <div style="display: grid; gap: 10px;">
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
                                         <span style="color: #999; font-size: 0.85em;">Last Login</span>
@@ -406,7 +408,7 @@
                             border: 1px solid rgba(102, 126, 234, 0.25);
                             margin-bottom: 16px;
                         ">
-                            <h4 style="color: #667eea; margin: 0 0 14px 0; font-size: 0.95em; font-weight: 700;"><i class="fa-solid fa-chart-column"></i> Additional Statistics</h4>
+                            <h4 style="color: #667eea; margin: 0 0 14px 0; font-size: 0.95em; font-weight: 700;">📊 Additional Statistics</h4>
                             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
                                 <div style="text-align: center;">
                                     <div style="color: #667eea; font-size: 1.6em; font-weight: bold;" id="account-total-captures">0</div>
@@ -440,7 +442,7 @@
                             cursor: pointer;
                             transition: all 0.3s ease;
                         " onmouseover="this.style.background='linear-gradient(135deg, rgba(255, 107, 107, 0.3), rgba(255, 107, 107, 0.15))'; this.style.borderColor='rgba(255, 107, 107, 0.6)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(255, 107, 107, 0.2), rgba(255, 107, 107, 0.1))'; this.style.borderColor='rgba(255, 107, 107, 0.4)'">
-                            <i class="fa-solid fa-trash-can"></i> Delete Account
+                            🗑️ Delete Account
                         </button>
                     </div>
 
@@ -456,7 +458,7 @@
                                 text-align: center;
                             ">
                                 <div style="color: #667eea; font-size: 1.8em; font-weight: bold; line-height: 1;" id="account-avg-moves-analytics">0</div>
-                                <div style="color: #999; font-size: 0.75em; margin-top: 8px; font-weight: 600;"><i class="fa-solid fa-chart-line"></i> Avg Moves</div>
+                                <div style="color: #999; font-size: 0.75em; margin-top: 8px; font-weight: 600;">📈 Avg Moves</div>
                             </div>
                             <div style="
                                 background: linear-gradient(135deg, rgba(38, 222, 129, 0.15), rgba(38, 222, 129, 0.05));
@@ -466,7 +468,7 @@
                                 text-align: center;
                             ">
                                 <div style="color: #26de81; font-size: 1.8em; font-weight: bold; line-height: 1;" id="account-fastest-win-analytics">—</div>
-                                <div style="color: #999; font-size: 0.75em; margin-top: 8px; font-weight: 600;"><i class="fa-solid fa-bolt"></i> Fastest Win</div>
+                                <div style="color: #999; font-size: 0.75em; margin-top: 8px; font-weight: 600;">⚡ Fastest Win</div>
                             </div>
                             <div style="
                                 background: linear-gradient(135deg, rgba(165, 94, 234, 0.15), rgba(165, 94, 234, 0.05));
@@ -476,7 +478,7 @@
                                 text-align: center;
                             ">
                                 <div style="color: #a55eea; font-size: 1.8em; font-weight: bold; line-height: 1;" id="account-win-streak-analytics">0</div>
-                                <div style="color: #999; font-size: 0.75em; margin-top: 8px; font-weight: 600;"><i class="fa-solid fa-fire"></i> Win Streak</div>
+                                <div style="color: #999; font-size: 0.75em; margin-top: 8px; font-weight: 600;">🔥 Win Streak</div>
                             </div>
                             <div style="
                                 background: linear-gradient(135deg, rgba(78, 205, 196, 0.15), rgba(78, 205, 196, 0.05));
@@ -486,7 +488,7 @@
                                 text-align: center;
                             ">
                                 <div style="color: #4ecdc4; font-size: 1.8em; font-weight: bold; line-height: 1;" id="account-captures-analytics">0</div>
-                                <div style="color: #999; font-size: 0.75em; margin-top: 8px; font-weight: 600;"><i class="fa-solid fa-chess"></i> Captures</div>
+                                <div style="color: #999; font-size: 0.75em; margin-top: 8px; font-weight: 600;">♟️ Captures</div>
                             </div>
                         </div>
 
@@ -497,7 +499,7 @@
                             border-radius: 12px;
                             border: 1px solid rgba(78, 205, 196, 0.25);
                         ">
-                            <h4 style="color: #4ecdc4; margin: 0 0 14px 0; font-size: 0.95em; font-weight: 700;"><i class="fa-solid fa-chess-board"></i> Piece Performance</h4>
+                            <h4 style="color: #4ecdc4; margin: 0 0 14px 0; font-size: 0.95em; font-weight: 700;">🏁 Piece Performance</h4>
                             <table style="width: 100%; border-collapse: collapse;">
                                 <thead>
                                     <tr style="color: #999; font-size: 0.8em; border-bottom: 2px solid rgba(78, 205, 196, 0.3);">
@@ -554,7 +556,7 @@
                                 border: 1px solid rgba(102, 126, 234, 0.35);
                                 transition: all 0.3s ease;
                             " onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='rgba(102, 126, 234, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(102, 126, 234, 0.35)'">
-                                <h4 style="color: #667eea; margin: 0 0 10px 0; font-size: 1.1em; font-weight: 700;"><i class="fa-solid fa-gamepad"></i> Standard Romgon</h4>
+                                <h4 style="color: #667eea; margin: 0 0 10px 0; font-size: 1.1em; font-weight: 700;">🎮 Standard Romgon</h4>
                                 <p style="color: #999; margin: 0 0 12px 0; font-size: 0.85em; line-height: 1.4;">Classic ruleset with all pieces defending bases. Highest competitive level.</p>
                                 <div style="display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;">
                                     <span style="background: rgba(102, 126, 234, 0.2); padding: 4px 10px; border-radius: 12px; font-size: 0.75em; color: #aaa;">All 7 pieces</span>
@@ -572,7 +574,7 @@
                                     font-size: 0.9em;
                                     cursor: pointer;
                                     transition: all 0.3s ease;
-                                " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'"><i class="fa-solid fa-play"></i> Play Now</button>
+                                " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">▶️ Play Now</button>
                             </div>
 
                             <!-- Shapes Defense Variant -->
@@ -583,7 +585,7 @@
                                 border: 1px solid rgba(255, 107, 107, 0.35);
                                 transition: all 0.3s ease;
                             " onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='rgba(255, 107, 107, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(255, 107, 107, 0.35)'">
-                                <h4 style="color: #ff6b6b; margin: 0 0 10px 0; font-size: 1.1em; font-weight: 700;"><i class="fa-solid fa-shield"></i> Shapes Defense</h4>
+                                <h4 style="color: #ff6b6b; margin: 0 0 10px 0; font-size: 1.1em; font-weight: 700;">🛡️ Shapes Defense</h4>
                                 <p style="color: #999; margin: 0 0 12px 0; font-size: 0.85em; line-height: 1.4;">Enhanced piece-based defense with all pieces defending bases.</p>
                                 <div style="display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;">
                                     <span style="background: rgba(255, 107, 107, 0.2); padding: 4px 10px; border-radius: 12px; font-size: 0.75em; color: #aaa;">Enhanced defense</span>
@@ -601,7 +603,7 @@
                                     font-size: 0.9em;
                                     cursor: pointer;
                                     transition: all 0.3s ease;
-                                " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'"><i class="fa-solid fa-play"></i> Play Now</button>
+                                " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">▶️ Play Now</button>
                             </div>
 
                             <!-- Rhombus Original -->
@@ -612,7 +614,7 @@
                                 border: 1px solid rgba(4, 206, 180, 0.35);
                                 transition: all 0.3s ease;
                             " onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='rgba(4, 206, 180, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(4, 206, 180, 0.35)'">
-                                <h4 style="color: #04ceb4; margin: 0 0 10px 0; font-size: 1.1em; font-weight: 700;"><i class="fa-solid fa-diamond"></i> Rhombus Original</h4>
+                                <h4 style="color: #04ceb4; margin: 0 0 10px 0; font-size: 1.1em; font-weight: 700;">💎 Rhombus Original</h4>
                                 <p style="color: #999; margin: 0 0 12px 0; font-size: 0.85em; line-height: 1.4;">Only rhombuses defend bases. Fast-paced master-level gameplay.</p>
                                 <div style="display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;">
                                     <span style="background: rgba(4, 206, 180, 0.2); padding: 4px 10px; border-radius: 12px; font-size: 0.75em; color: #aaa;">Rhombus-only</span>
@@ -630,7 +632,7 @@
                                     font-size: 0.9em;
                                     cursor: pointer;
                                     transition: all 0.3s ease;
-                                " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'"><i class="fa-solid fa-play"></i> Play Now</button>
+                                " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">▶️ Play Now</button>
                             </div>
 
                             <!-- Fortress Variant -->
@@ -641,7 +643,7 @@
                                 border: 1px solid rgba(255, 215, 0, 0.35);
                                 transition: all 0.3s ease;
                             " onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='rgba(255, 215, 0, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(255, 215, 0, 0.35)'">
-                                <h4 style="color: #ffd700; margin: 0 0 10px 0; font-size: 1.1em; font-weight: 700;"><i class="fa-solid fa-fort-awesome"></i> Fortress</h4>
+                                <h4 style="color: #ffd700; margin: 0 0 10px 0; font-size: 1.1em; font-weight: 700;">🏰 Fortress</h4>
                                 <p style="color: #999; margin: 0 0 12px 0; font-size: 0.85em; line-height: 1.4;">Enhanced fortress mechanics for impenetrable base defense.</p>
                                 <div style="display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;">
                                     <span style="background: rgba(255, 215, 0, 0.2); padding: 4px 10px; border-radius: 12px; font-size: 0.75em; color: #aaa;">Fortress zones</span>
@@ -659,7 +661,7 @@
                                     font-size: 0.9em;
                                     cursor: pointer;
                                     transition: all 0.3s ease;
-                                " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'"><i class="fa-solid fa-play"></i> Play Now</button>
+                                " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">▶️ Play Now</button>
                             </div>
                         </div>
                     </div>
@@ -676,9 +678,9 @@
                                 opacity: 0.65;
                                 transition: all 0.3s ease;
                             " onmouseover="this.style.opacity='1'; this.style.transform='scale(1.05)'" onmouseout="this.style.opacity='0.65'; this.style.transform='scale(1)'">
-                                <div style="font-size: 2.2em; margin-bottom: 8px;"><i class="fa-solid fa-shield-halved" style="color: #667eea;"></i></div>
+                                <div style="font-size: 2.2em; margin-bottom: 8px;">🛡️</div>
                                 <p style="color: #ccc; font-size: 0.8em; margin: 0; font-weight: 600;">First Game</p>
-                                <p style="color: #667eea; font-size: 0.75em; margin: 6px 0 0 0;"><i class="fa-solid fa-lock"></i> Locked</p>
+                                <p style="color: #667eea; font-size: 0.75em; margin: 6px 0 0 0;">🔒 Locked</p>
                             </div>
                             <div style="
                                 background: rgba(38, 222, 129, 0.08);
@@ -688,9 +690,9 @@
                                 border: 1px solid rgba(38, 222, 129, 0.4);
                                 transition: all 0.3s ease;
                             " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                                <div style="font-size: 2.2em; margin-bottom: 8px;"><i class="fa-solid fa-medal" style="color: #26de81;"></i></div>
+                                <div style="font-size: 2.2em; margin-bottom: 8px;">🥇</div>
                                 <p style="color: #ccc; font-size: 0.8em; margin: 0; font-weight: 600;">First Win</p>
-                                <p style="color: #26de81; font-size: 0.75em; margin: 6px 0 0 0;"><i class="fa-solid fa-check"></i> Unlocked</p>
+                                <p style="color: #26de81; font-size: 0.75em; margin: 6px 0 0 0;">✅ Unlocked</p>
                             </div>
                             <div style="
                                 background: rgba(255, 215, 0, 0.08);
@@ -701,9 +703,9 @@
                                 opacity: 0.65;
                                 transition: all 0.3s ease;
                             " onmouseover="this.style.opacity='1'; this.style.transform='scale(1.05)'" onmouseout="this.style.opacity='0.65'; this.style.transform='scale(1)'">
-                                <div style="font-size: 2.2em; margin-bottom: 8px;"><i class="fa-solid fa-fire" style="color: #ffd700;"></i></div>
+                                <div style="font-size: 2.2em; margin-bottom: 8px;">🔥</div>
                                 <p style="color: #ccc; font-size: 0.8em; margin: 0; font-weight: 600;">10-Win Streak</p>
-                                <p style="color: #ffd700; font-size: 0.75em; margin: 6px 0 0 0;"><i class="fa-solid fa-lock"></i> Locked</p>
+                                <p style="color: #ffd700; font-size: 0.75em; margin: 6px 0 0 0;">🔒 Locked</p>
                             </div>
                             <div style="
                                 background: rgba(78, 205, 196, 0.08);
@@ -714,9 +716,9 @@
                                 opacity: 0.65;
                                 transition: all 0.3s ease;
                             " onmouseover="this.style.opacity='1'; this.style.transform='scale(1.05)'" onmouseout="this.style.opacity='0.65'; this.style.transform='scale(1)'">
-                                <div style="font-size: 2.2em; margin-bottom: 8px;"><i class="fa-solid fa-crosshairs" style="color: #4ecdc4;"></i></div>
+                                <div style="font-size: 2.2em; margin-bottom: 8px;">🎯</div>
                                 <p style="color: #ccc; font-size: 0.8em; margin: 0; font-weight: 600;">Master Tactician</p>
-                                <p style="color: #4ecdc4; font-size: 0.75em; margin: 6px 0 0 0;"><i class="fa-solid fa-lock"></i> Locked</p>
+                                <p style="color: #4ecdc4; font-size: 0.75em; margin: 6px 0 0 0;">🔒 Locked</p>
                             </div>
                             <div style="
                                 background: rgba(165, 94, 234, 0.08);
@@ -727,9 +729,9 @@
                                 opacity: 0.65;
                                 transition: all 0.3s ease;
                             " onmouseover="this.style.opacity='1'; this.style.transform='scale(1.05)'" onmouseout="this.style.opacity='0.65'; this.style.transform='scale(1)'">
-                                <div style="font-size: 2.2em; margin-bottom: 8px;"><i class="fa-solid fa-crown" style="color: #a55eea;"></i></div>
+                                <div style="font-size: 2.2em; margin-bottom: 8px;">👑</div>
                                 <p style="color: #ccc; font-size: 0.8em; margin: 0; font-weight: 600;">Champion</p>
-                                <p style="color: #a55eea; font-size: 0.75em; margin: 6px 0 0 0;"><i class="fa-solid fa-lock"></i> Locked</p>
+                                <p style="color: #a55eea; font-size: 0.75em; margin: 6px 0 0 0;">🔒 Locked</p>
                             </div>
                         </div>
 
@@ -739,7 +741,7 @@
                             border-radius: 12px;
                             border: 1px solid rgba(102, 126, 234, 0.25);
                         ">
-                            <h4 style="color: #667eea; margin: 0 0 14px 0; font-size: 0.95em; font-weight: 700;"><i class="fa-solid fa-chart-line"></i> Overall Progress</h4>
+                            <h4 style="color: #667eea; margin: 0 0 14px 0; font-size: 0.95em; font-weight: 700;">📈 Overall Progress</h4>
                             <p style="color: #aaa; margin: 0 0 12px 0; font-size: 0.9em;">1 of 5 achievements unlocked (20%)</p>
                             <div style="
                                 background: rgba(0, 0, 0, 0.3);
@@ -771,7 +773,7 @@
                             ">
                                 <p style="color: #999; font-size: 0.75em; margin: 0 0 10px 0; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Current Rating</p>
                                 <div style="font-size: 2.2em; font-weight: bold; color: #f39c12; margin-bottom: 8px; line-height: 1;" id="hub-current-rating">1600</div>
-                                <div style="font-size: 0.95em; color: #4ecdc4; font-weight: 600;" id="hub-rating-tier"><i class="fa-solid fa-award"></i> Intermediate</div>
+                                <div style="font-size: 0.95em; color: #4ecdc4; font-weight: 600;" id="hub-rating-tier">🏅 Intermediate</div>
                             </div>
 
                             <!-- Stats Card -->
@@ -803,30 +805,30 @@
                             border: 1px solid rgba(243, 156, 18, 0.25);
                             margin-bottom: 16px;
                         ">
-                            <h4 style="color: #f39c12; margin: 0 0 14px 0; font-size: 0.95em; font-weight: 700;"><i class="fa-solid fa-ranking-star"></i> Rating Tiers</h4>
+                            <h4 style="color: #f39c12; margin: 0 0 14px 0; font-size: 0.95em; font-weight: 700;">⭐ Rating Tiers</h4>
                             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
                                 <div style="background: rgba(255, 215, 0, 0.08); padding: 10px 12px; border-radius: 8px; border-left: 3px solid #FFD700;">
-                                    <p style="color: #FFD700; font-weight: 600; margin: 0; font-size: 0.85em;"><i class="fa-solid fa-crown"></i> Grandmaster</p>
+                                    <p style="color: #FFD700; font-weight: 600; margin: 0; font-size: 0.85em;">👑 Grandmaster</p>
                                     <p style="color: #999; margin: 4px 0 0 0; font-size: 0.75em;">2400+</p>
                                 </div>
                                 <div style="background: rgba(255, 105, 180, 0.08); padding: 10px 12px; border-radius: 8px; border-left: 3px solid #FF69B4;">
-                                    <p style="color: #FF69B4; font-weight: 600; margin: 0; font-size: 0.85em;"><i class="fa-solid fa-trophy"></i> Master</p>
+                                    <p style="color: #FF69B4; font-weight: 600; margin: 0; font-size: 0.85em;">🏆 Master</p>
                                     <p style="color: #999; margin: 4px 0 0 0; font-size: 0.75em;">2200-2399</p>
                                 </div>
                                 <div style="background: rgba(255, 107, 107, 0.08); padding: 10px 12px; border-radius: 8px; border-left: 3px solid #FF6B6B;">
-                                    <p style="color: #FF6B6B; font-weight: 600; margin: 0; font-size: 0.85em;"><i class="fa-solid fa-star"></i> Expert</p>
+                                    <p style="color: #FF6B6B; font-weight: 600; margin: 0; font-size: 0.85em;">⭐ Expert</p>
                                     <p style="color: #999; margin: 4px 0 0 0; font-size: 0.75em;">2000-2199</p>
                                 </div>
                                 <div style="background: rgba(243, 156, 18, 0.08); padding: 10px 12px; border-radius: 8px; border-left: 3px solid #F39C12;">
-                                    <p style="color: #F39C12; font-weight: 600; margin: 0; font-size: 0.85em;"><i class="fa-solid fa-medal"></i> Advanced</p>
+                                    <p style="color: #F39C12; font-weight: 600; margin: 0; font-size: 0.85em;">🥉 Advanced</p>
                                     <p style="color: #999; margin: 4px 0 0 0; font-size: 0.75em;">1800-1999</p>
                                 </div>
                                 <div style="background: rgba(78, 205, 196, 0.08); padding: 10px 12px; border-radius: 8px; border-left: 3px solid #4ecdc4;">
-                                    <p style="color: #4ecdc4; font-weight: 600; margin: 0; font-size: 0.85em;"><i class="fa-solid fa-award"></i> Intermediate</p>
+                                    <p style="color: #4ecdc4; font-weight: 600; margin: 0; font-size: 0.85em;">🏅 Intermediate</p>
                                     <p style="color: #999; margin: 4px 0 0 0; font-size: 0.75em;">1600-1799</p>
                                 </div>
                                 <div style="background: rgba(39, 174, 96, 0.08); padding: 10px 12px; border-radius: 8px; border-left: 3px solid #27ae60;">
-                                    <p style="color: #27ae60; font-weight: 600; margin: 0; font-size: 0.85em;"><i class="fa-solid fa-seedling"></i> Beginner</p>
+                                    <p style="color: #27ae60; font-weight: 600; margin: 0; font-size: 0.85em;">🌱 Beginner</p>
                                     <p style="color: #999; margin: 4px 0 0 0; font-size: 0.75em;">1400-1599</p>
                                 </div>
                             </div>
@@ -839,7 +841,7 @@
                             border-radius: 12px;
                             border: 1px solid rgba(78, 205, 196, 0.25);
                         ">
-                            <h4 style="color: #4ecdc4; margin: 0 0 14px 0; font-size: 0.95em; font-weight: 700;"><i class="fa-solid fa-chart-line"></i> Recent Rating Changes</h4>
+                            <h4 style="color: #4ecdc4; margin: 0 0 14px 0; font-size: 0.95em; font-weight: 700;">📈 Recent Rating Changes</h4>
                             <div id="hub-rating-history" style="display: flex; flex-direction: column; gap: 10px;">
                                 <p style="color: #999; text-align: center; padding: 16px; font-size: 0.9em;">No rating changes yet. Play a rated game to start!</p>
                             </div>
@@ -1254,7 +1256,7 @@
             const deleteBtn = document.querySelector('button[onclick="deleteAccount()"]');
             if (deleteBtn) deleteBtn.style.display = 'none';
             
-            document.getElementById('account-modal').style.display = 'block';
+            document.getElementById('account-modal').style.display = 'flex';
             return;
         }
         
@@ -1315,7 +1317,7 @@
         const deleteBtn = document.querySelector('button[onclick="deleteAccount()"]');
         if (deleteBtn) deleteBtn.style.display = 'block';
         
-        document.getElementById('account-modal').style.display = 'block';
+        document.getElementById('account-modal').style.display = 'flex';
     }
     
     function hideAccountModal() {
@@ -1461,7 +1463,7 @@
             document.getElementById('account-member-level').textContent = 'Guest';
             document.getElementById('account-total-games').textContent = '0';
 
-            document.getElementById('account-avatar-header').innerHTML = '<i class="fa-solid fa-user"></i>';
+            document.getElementById('account-avatar-header').innerHTML = '👤';
             document.getElementById('account-username').textContent = 'Guest Player';
             document.getElementById('account-email').textContent = 'Session: ' + (currentUser.id || 'Anonymous');
             
