@@ -214,9 +214,53 @@ async function initializeTables() {
         console.error('❌ Error creating chat_messages table:', err);
     }
 
-    // TODO: Add remaining tables (rating_changes, friends, messages, etc.)
-    // For now, these will be created on-demand or can be added later
-    console.log('✅ Core tables initialized');
+    // Rating changes table for tracking rating history
+    const createRatingChangesTable = `
+        CREATE TABLE IF NOT EXISTS rating_changes (
+            id ${isPostgres ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT'},
+            player_id INTEGER NOT NULL,
+            old_rating INTEGER NOT NULL,
+            new_rating INTEGER NOT NULL,
+            change INTEGER NOT NULL,
+            game_id TEXT,
+            opponent_id INTEGER,
+            opponent_rating INTEGER,
+            result TEXT,
+            created_at TIMESTAMP DEFAULT ${isPostgres ? 'CURRENT_TIMESTAMP' : "CURRENT_TIMESTAMP"}
+        )
+    `;
+    
+    try {
+        await executeSql(createRatingChangesTable);
+        console.log('✅ Rating changes table ready');
+    } catch (err) {
+        console.error('❌ Error creating rating_changes table:', err);
+    }
+
+    // API keys table for developer access
+    const createApiKeysTable = `
+        CREATE TABLE IF NOT EXISTS api_keys (
+            id ${isPostgres ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT'},
+            user_id INTEGER NOT NULL,
+            key_name TEXT NOT NULL,
+            api_key TEXT UNIQUE NOT NULL,
+            permissions TEXT NOT NULL,
+            rate_limit INTEGER DEFAULT 1000,
+            is_active INTEGER DEFAULT 1,
+            last_used_at TIMESTAMP,
+            created_at TIMESTAMP DEFAULT ${isPostgres ? 'CURRENT_TIMESTAMP' : "CURRENT_TIMESTAMP"},
+            expires_at TIMESTAMP
+        )
+    `;
+    
+    try {
+        await executeSql(createApiKeysTable);
+        console.log('✅ API keys table ready');
+    } catch (err) {
+        console.error('❌ Error creating api_keys table:', err);
+    }
+
+    console.log('✅ All tables initialized');
 }
 
 module.exports = { db, dbPromise };
