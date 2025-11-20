@@ -9140,59 +9140,57 @@
         <!-- Main Content Area -->
         <div style="
             padding: 16px 24px;
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             width: 100%;
             max-height: calc(100vh - 80px);
             overflow: hidden;
         ">
-            <!-- Compact Grid Layout: Online Players + Public Rooms side by side -->
-            <div style="display: grid; grid-template-columns: 300px 1fr; gap: 16px; margin-bottom: 16px;">
+            <!-- Compact 3-Column Layout: Players | Rooms | Chat -->
+            <div style="display: grid; grid-template-columns: 220px 1fr 320px; gap: 12px; margin-bottom: 12px;">
                 
-                <!-- Online Players Section (Compact Sidebar) -->
+                <!-- Online Players Section (Left Sidebar) -->
                 <div style="
                     background: linear-gradient(135deg, rgba(78, 205, 196, 0.08) 0%, rgba(78, 205, 196, 0.05) 100%);
                     border: 1px solid rgba(78, 205, 196, 0.2);
-                    border-radius: 12px;
-                    padding: 12px 16px;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-                    max-height: 200px;
+                    border-radius: 10px;
+                    padding: 10px 12px;
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+                    max-height: 280px;
                     overflow-y: auto;
                 ">
-                    <h3 style="margin: 0 0 10px 0; color: #4ecdc4; font-size: 0.9em; font-weight: 700;">
+                    <h3 style="margin: 0 0 8px 0; color: #4ecdc4; font-size: 0.85em; font-weight: 700;">
                         <i class="fas fa-users"></i> Online Players
                     </h3>
-                    <!-- Online Players List (Lobby Graphical Context) -->
                     <div id="online-players-lobby-list" style="
                         display: flex;
-                        gap: 8px;
+                        gap: 6px;
                         flex-wrap: wrap;
                         align-items: center;
                     ">
-                        <!-- Players will be added dynamically -->
-                        <span style="color: #888; font-size: 0.8em;">Connecting...</span>
+                        <span style="color: #888; font-size: 0.75em;">Connecting...</span>
                     </div>
                 </div>
 
-                <!-- Public Rooms Section (Main Content) -->
+                <!-- Public Rooms Section (Center - Main Content) -->
                 <div style="
                     background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
                     border: 1px solid rgba(78, 205, 196, 0.2);
-                    border-radius: 12px;
-                    padding: 12px 16px;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-                    max-height: 200px;
+                    border-radius: 10px;
+                    padding: 10px 14px;
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+                    max-height: 280px;
                     overflow-y: auto;
                 ">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <h3 style="
                             margin: 0;
-                            font-size: 0.9em;
+                            font-size: 0.85em;
                             color: #4ecdc4;
                             font-weight: 700;
                             display: flex;
                             align-items: center;
-                            gap: 6px;
+                            gap: 5px;
                         ">
                             <i class="fas fa-door-open"></i> Public Rooms
                         </h3>
@@ -9200,33 +9198,74 @@
                             background: rgba(78, 205, 196, 0.2);
                             border: 1px solid rgba(78, 205, 196, 0.4);
                             color: #4ecdc4;
-                            padding: 4px 10px;
-                            border-radius: 6px;
+                            padding: 3px 8px;
+                            border-radius: 5px;
                             cursor: pointer;
-                            font-size: 0.75em;
+                            font-size: 0.7em;
                             font-weight: 600;
                             transition: all 0.2s;
                         " onmouseover="this.style.background='rgba(78, 205, 196, 0.3)'" onmouseout="this.style.background='rgba(78, 205, 196, 0.2)'">
-                            <i class="fas fa-sync-alt"></i> Refresh
+                            <i class="fas fa-sync-alt"></i>
                         </button>
                     </div>
-
-                    <!-- Rooms List -->
                     <div id="public-rooms-list" style="
                         display: flex;
                         flex-direction: column;
-                        gap: 8px;
+                        gap: 6px;
                     ">
-                        <!-- Rooms will be added dynamically -->
-                        <div style="
-                            text-align: center;
-                            padding: 20px;
-                            color: #888;
-                            font-size: 0.8em;
-                        ">
-                            <i class="fas fa-inbox" style="font-size: 1.5em; margin-bottom: 8px; opacity: 0.5;"></i>
-                            <p style="margin: 0;">No public rooms available</p>
+                        <div style="text-align: center; padding: 15px; color: #888; font-size: 0.75em;">
+                            <i class="fas fa-inbox" style="font-size: 1.3em; margin-bottom: 6px; opacity: 0.5;"></i>
+                            <p style="margin: 0;">Loading rooms...</p>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Global Chat Section (Right Sidebar) -->
+                <div style="
+                    background: rgba(35, 39, 46, 0.9);
+                    border: 1px solid rgba(255, 121, 198, 0.3);
+                    border-radius: 10px;
+                    padding: 10px 12px;
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+                    display: flex;
+                    flex-direction: column;
+                    max-height: 280px;
+                ">
+                    <h3 style="margin: 0 0 8px 0; color: #ff79c6; font-size: 0.85em; font-weight: 700;">
+                        <i class="fas fa-comments"></i> Global Chat
+                    </h3>
+                    <div id="global-chat-messages" style="
+                        flex: 1;
+                        overflow-y: auto;
+                        margin-bottom: 8px;
+                        padding-right: 4px;
+                    ">
+                        <!-- Chat messages will appear here -->
+                    </div>
+                    <div style="display: flex; gap: 6px;">
+                        <input id="global-chat-input" type="text" placeholder="Message..." style="
+                            flex: 1;
+                            background: rgba(0, 0, 0, 0.3);
+                            border: 1px solid rgba(255, 121, 198, 0.3);
+                            border-radius: 6px;
+                            padding: 6px 10px;
+                            color: #fff;
+                            font-size: 0.8em;
+                            outline: none;
+                        " onkeypress="if(event.key==='Enter') sendGlobalMessage()">
+                        <button onclick="sendGlobalMessage()" style="
+                            background: linear-gradient(135deg, #ff79c6, #bd93f9);
+                            border: none;
+                            color: #fff;
+                            padding: 6px 12px;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-size: 0.8em;
+                            font-weight: 600;
+                            transition: all 0.2s;
+                        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
                     </div>
                 </div>
             </div>
