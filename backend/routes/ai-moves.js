@@ -79,6 +79,20 @@ router.post('/move', async (req, res) => {
         }
 
         console.log(`✅ Generated ${legalMoves.length} legal moves`);
+        
+        // DEBUG: Show move breakdown by piece type
+        const movesByPiece = {};
+        legalMoves.forEach(move => {
+            const piece = board[move.from];
+            if (piece) {
+                const key = `${piece.type}`;
+                movesByPiece[key] = (movesByPiece[key] || 0) + 1;
+            }
+        });
+        console.log('📊 Legal moves by piece:', movesByPiece);
+        
+        // DEBUG: Show first few moves
+        console.log('🎯 Sample moves:', legalMoves.slice(0, 5).map(m => `${board[m.from]?.type}: ${m.from}→${m.to}`).join(', '));
 
         // Get difficulty settings
         const settings = DIFFICULTY_SETTINGS[difficulty] || DIFFICULTY_SETTINGS.hard;

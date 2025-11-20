@@ -489,8 +489,18 @@ class MinimaxEngine {
                 score += 100;
             }
 
-            // Moving valuable pieces to safety
-            if (piece) {
+            // IMPORTANT: Discourage moving rhombus unless necessary
+            if (piece && piece.type === 'rhombus') {
+                score -= 500; // Heavy penalty for moving king
+            }
+
+            // Encourage developing other pieces
+            if (piece && piece.type !== 'rhombus') {
+                score += 200; // Bonus for developing pieces
+            }
+
+            // Moving valuable pieces (but not rhombus)
+            if (piece && piece.type !== 'rhombus') {
                 score += this.evaluator.PIECE_VALUES[piece.type] * 0.1;
             }
 

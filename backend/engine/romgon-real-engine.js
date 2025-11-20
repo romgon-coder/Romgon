@@ -572,10 +572,14 @@ function canFlipSafely(board, pos, playerColor, flipModeEnabled) {
  */
 function generateAllMoves(board, playerColor, flipModeEnabled = false) {
     const allMoves = [];
+    const pieceCount = {};
 
     Object.keys(board).forEach(pos => {
         const piece = board[pos];
         if (piece && piece.color === playerColor) {
+            // Count pieces
+            pieceCount[piece.type] = (pieceCount[piece.type] || 0) + 1;
+            
             // Add movement moves
             const moves = getLegalMoves(board, pos, playerColor, flipModeEnabled);
             allMoves.push(...moves);
@@ -595,14 +599,19 @@ function generateAllMoves(board, playerColor, flipModeEnabled = false) {
         }
     });
 
+    console.log(`🎲 Generated ${allMoves.length} total moves for ${playerColor} from ${Object.keys(pieceCount).length} piece types:`, pieceCount);
+
     // CRITICAL: Filter out illegal moves (rhombus check rules)
     const legalMoves = allMoves.filter(move => {
         const validation = validateMove(board, move, playerColor, flipModeEnabled);
         if (!validation.legal) {
-            // console.log(`❌ Filtered illegal move ${move.from}→${move.to}: ${validation.reason}`);
+            const piece = board[move.from];
+            console.log(`❌ Filtered illegal ${piece?.type} move ${move.from}→${move.to}: ${validation.reason}`);
         }
         return validation.legal;
     });
+
+    console.log(`✅ ${legalMoves.length} legal moves after filtering`);
 
     return legalMoves;
 }
