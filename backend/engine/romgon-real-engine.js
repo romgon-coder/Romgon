@@ -181,6 +181,139 @@ function getLegalMoves(board, fromPos, playerColor, flipModeEnabled = false) {
 }
 
 /**
+ * Check if a position is under threat by opponent pieces
+ * Used for illegal move detection (can't move into check)
+ */
+function isPositionUnderThreat(board, pos, playerColor, flipModeEnabled = false) {
+    const opponentColor = playerColor === 'white' ? 'black' : 'white';
+    const targetPiece = board[pos];
+    const targetFlipped = targetPiece?.flipped || false;
+    
+    // Check all opponent pieces to see if they can attack this position
+    for (const [oppPos, oppPiece] of Object.entries(board)) {
+        if (oppPiece && oppPiece.color === opponentColor) {
+            // In flip mode, only consider threat if flip states match
+            if (flipModeEnabled) {
+                const attackerFlipped = oppPiece.flipped || false;
+                if (attackerFlipped !== targetFlipped) {
+                    continue; // Can't attack - flip state mismatch
+                }
+            }
+            
+            // Check if opponent can attack this position
+            const oppMoves = getLegalMoves(board, oppPos, opponentColor, flipModeEnabled);
+            if (oppMoves.some(m => m.to === pos && m.isCapture)) {
+                return true; // Position is under threat
+            }
+        }
+    }
+    return false;
+}
+
+/**
+ * Check if a move would put/leave player's rhombus in check
+ * Returns true if move is ILLEGAL (rhombus in danger)
+ */
+function wouldRhombusBeInCheck(board, move, playerColor, flipModeEnabled = false) {
+    // Apply move temporarily
+    const testBoard = applyMove(board, move);
+    
+    // Find player's rhombus
+    let rhombusPos = null;
+    for (const [pos, piece] of Object.entries(testBoard)) {
+        if (piece && piece.color === playerColor && piece.type === 'rhombus') {
+            rhombusPos = pos;
+            break;
+        }
+    }
+    
+    if (!rhombusPos) {
+        // No rhombus found (already captured) - move is legal
+        return false;
+    }
+    
+    // Check if rhombus is under threat after this move
+    return isPositionUnderThreat(testBoard, rhombusPos, playerColor, flipModeEnabled);
+}
+
+/**
+ * Validate move against all illegal move rules
+ * Returns { legal: boolean, reason: string }
+ */
+function validateMove(board, move, playerColor, flipModeEnabled = false) {
+    const piece = board[move.from];
+    if (!piece) {
+        return { legal: false, reason: 'No piece at source position' };
+    }
+    
+    if (piece.color !== playerColor) {
+        return { legal: false, reason: 'Not your piece' };
+    }
+    
+    // RULE 1: Rhombus cannot capture another rhombus
+    if (piece.type === 'rhombus' && move.isCapture) {
+        const targetPiece = board[move.to];
+        if (targetPiece && targetPiece.type === 'rhombus') {
+            return { legal: false, reason: 'Rhombus cannot capture another rhombus' };
+        }
+    }
+    
+    // RULE 2: In flip mode, can only attack pieces with matching flip state
+    if (flipModeEnabled && move.isCapture) {
+        const attackerFlipped = piece.flipped || false;
+        const targetPiece = board[move.to];
+        const targetFlipped = targetPiece?.flipped || false;
+        
+        if (attackerFlipped !== targetFlipped) {
+            return { legal: false, reason: 'Cannot attack piece with different flip state' };
+        }
+    }
+    
+    // RULE 3: Cannot move if it puts/leaves rhombus in check (except if capturing the attacker)
+    const isRhombusMove = piece.type === 'rhombus';
+    const rhombusInCheckAfter = wouldRhombusBeInCheck(board, move, playerColor, flipModeEnabled);
+    
+    if (rhombusInCheckAfter) {
+        // Exception: If this is a capture that removes the threat, it's legal
+        // Check if rhombus is currently in check
+        let rhombusPos = null;
+        for (const [pos, p] of Object.entries(board)) {
+            if (p && p.color === playerColor && p.type === 'rhombus') {
+                rhombusPos = pos;
+                break;
+            }
+        }
+        
+        const rhombusCurrentlyInCheck = rhombusPos && isPositionUnderThreat(board, rhombusPos, playerColor, flipModeEnabled);
+        
+        if (rhombusCurrentlyInCheck && move.isCapture) {
+            // Check if capturing this piece removes the threat
+            const capturedPiece = board[move.to];
+            if (capturedPiece) {
+                // See if rhombus would still be in check after this capture
+                if (!rhombusInCheckAfter) {
+                    return { legal: true, reason: 'Capturing attacking piece' };
+                }
+            }
+        }
+        
+        return { legal: false, reason: isRhombusMove ? 
+            'Cannot move rhombus into check' : 
+            'This move leaves your rhombus in check' };
+    }
+    
+    // RULE 4: Flip action - rhombus cannot flip into danger
+    if (move.isFlip && piece.type === 'rhombus') {
+        const testBoard = applyMove(board, move);
+        if (isPositionUnderThreat(testBoard, move.from, playerColor, flipModeEnabled)) {
+            return { legal: false, reason: 'Rhombus cannot flip into check' };
+        }
+    }
+    
+    return { legal: true, reason: 'Move is legal' };
+}
+
+/**
  * Apply a move to the board (returns new board state)
  * Handles both movement and flip actions
  */
@@ -435,6 +568,7 @@ function canFlipSafely(board, pos, playerColor, flipModeEnabled) {
 /**
  * Generate all legal moves for current player
  * Includes both movement and flip actions
+ * FILTERS OUT ILLEGAL MOVES (rhombus check rules, flip state validation, etc.)
  */
 function generateAllMoves(board, playerColor, flipModeEnabled = false) {
     const allMoves = [];
@@ -461,7 +595,16 @@ function generateAllMoves(board, playerColor, flipModeEnabled = false) {
         }
     });
 
-    return allMoves;
+    // CRITICAL: Filter out illegal moves (rhombus check rules)
+    const legalMoves = allMoves.filter(move => {
+        const validation = validateMove(board, move, playerColor, flipModeEnabled);
+        if (!validation.legal) {
+            // console.log(`❌ Filtered illegal move ${move.from}→${move.to}: ${validation.reason}`);
+        }
+        return validation.legal;
+    });
+
+    return legalMoves;
 }
 
 /**
@@ -503,5 +646,8 @@ module.exports = {
     isGameOver,
     evaluatePosition,
     findBestMove,
-    generateAllMoves
+    generateAllMoves,
+    validateMove,
+    isPositionUnderThreat,
+    wouldRhombusBeInCheck
 };
