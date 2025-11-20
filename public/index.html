@@ -22517,22 +22517,10 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             }
         }
 
-        // Listen for public rooms updates
-        if (socket) {
-            socket.on('publicRooms', (rooms) => {
-                updatePublicRooms(rooms);
-            });
-
-            socket.on('roomJoined', (data) => {
-                showNotification(`Joined room: ${data.roomName}`, 'success');
-                // Handle room joined (transition to game screen)
-            });
-        }
-
         // Auto-refresh rooms every 10 seconds when on lobby screen
         setInterval(() => {
             const lobbyVisible = document.getElementById('main-menu')?.style.display !== 'none';
-            if (lobbyVisible && socket && socket.connected) {
+            if (lobbyVisible && typeof socket !== 'undefined' && socket && socket.connected) {
                 refreshPublicRooms();
             }
         }, 10000);
@@ -24547,6 +24535,21 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
             socket.on('connect', () => {
                 console.log('✅ Connected to multiplayer server');
                 updateConnectionStatus('connected', 'Connected');
+                
+                // Request initial public rooms list
+                refreshPublicRooms();
+            });
+
+            // Listen for public rooms updates
+            socket.on('publicRooms', (rooms) => {
+                console.log('🚪 Received public rooms:', rooms);
+                updatePublicRooms(rooms);
+            });
+
+            socket.on('roomJoined', (data) => {
+                console.log('✅ Room joined:', data);
+                showNotification(`Joined room: ${data.roomName}`, 'success');
+                // Handle room joined (transition to game screen)
             });
 
             // Global lobby chat listener - receive messages from all users in real-time
