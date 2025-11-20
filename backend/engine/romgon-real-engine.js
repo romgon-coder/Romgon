@@ -166,8 +166,10 @@ function getLegalMoves(board, fromPos, playerColor, flipModeEnabled = false) {
                 const attackerFlipped = piece.flipped || false;
                 const targetFlipped = targetPiece.flipped || false;
                 if (attackerFlipped !== targetFlipped) {
+                    console.log(`❌ FLIP MISMATCH: ${piece.type}(flipped=${attackerFlipped}) at ${fromPos} cannot attack ${targetPiece.type}(flipped=${targetFlipped}) at ${targetPos}`);
                     return; // Cannot attack - flip state mismatch
                 }
+                console.log(`✅ FLIP MATCH: ${piece.type}(flipped=${attackerFlipped}) at ${fromPos} CAN attack ${targetPiece.type}(flipped=${targetFlipped}) at ${targetPos}`);
             }
 
             // Opponent piece - can capture (except rhombus vs rhombus)
