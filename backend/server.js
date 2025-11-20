@@ -164,6 +164,67 @@ console.log('✅ Custom games routes initialized with database');
 console.log('🤖 AI training system initialized');
 
 // ============================================
+// AI STATE MANAGEMENT
+// ============================================
+
+async function loadAIState() {
+    try {
+        const fs = require('fs').promises;
+        const path = require('path');
+        const savePath = path.join(__dirname, 'data/ai-state.json');
+        
+        try {
+            await fs.access(savePath);
+            console.log('📂 Loading AI state from file...');
+            
+            // Trigger AI load via internal call
+            const fetch = require('node-fetch');
+            const response = await fetch(`http://localhost:${PORT}/api/ai/load`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log('✅ AI state loaded successfully');
+                console.log(`📊 AI Stats: ${data.stats.gamesPlayed} games, ${data.stats.knownPositions} positions`);
+            }
+        } catch {
+            console.log('ℹ️ No saved AI state found, starting fresh');
+        }
+    } catch (error) {
+        console.error('⚠️ Error loading AI state:', error.message);
+    }
+}
+
+async function saveAIState() {
+    try {
+        console.log('💾 Auto-saving AI state...');
+        const fetch = require('node-fetch');
+        const response = await fetch(`http://localhost:${PORT}/api/ai/save`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log(`✅ AI state saved: ${data.stats.gamesPlayed} games, ${data.stats.knownPositions} positions`);
+        }
+    } catch (error) {
+        console.error('⚠️ Error saving AI state:', error.message);
+    }
+}
+
+// Auto-save AI state every 10 minutes
+setInterval(saveAIState, 10 * 60 * 1000);
+
+// Save AI state on shutdown
+process.on('SIGTERM', async () => {
+    console.log('SIGTERM received, saving AI state...');
+    await saveAIState();
+});
+
+// ============================================
 // WEBSOCKET SETUP
 // ============================================
 
@@ -307,7 +368,7 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
     console.log(`
 ╔════════════════════════════════════════╗
 ║   🎮 ROMGON Backend Server             ║
@@ -320,11 +381,24 @@ server.listen(PORT, () => {
 
 ✅ Server ready to accept connections!
     `);
+    
+    // Load AI state after server starts
+    setTimeout(() => loadAIState(), 2000);
 });
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
+process.on('SIGTERM', async () => {
     console.log('SIGTERM received, shutting down gracefully...');
+    await saveAIState();
+    server.close(() => {
+        console.log('Server closed');
+        process.exit(0);
+    });
+});
+
+process.on('SIGINT', async () => {
+    console.log('\nSIGINT received, shutting down gracefully...');
+    await saveAIState();
     server.close(() => {
         console.log('Server closed');
         process.exit(0);

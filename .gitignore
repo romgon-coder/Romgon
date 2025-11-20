@@ -31,6 +31,8 @@ build/
 *.tmp
 *.temp
 
+# AI training data
+backend/data/ai-state.json
 
 .vercel
 
