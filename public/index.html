@@ -9164,6 +9164,62 @@
                     <span style="color: #888; font-size: 0.9em;">Connecting...</span>
                 </div>
             </div>
+
+            <!-- Public Rooms Section -->
+            <div style="
+                background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+                border: 1px solid rgba(78, 205, 196, 0.2);
+                border-radius: 16px;
+                padding: 24px;
+                margin-bottom: 28px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            ">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="
+                        margin: 0;
+                        font-size: 1.5em;
+                        color: #4ecdc4;
+                        font-weight: 700;
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                    ">
+                        <i class="fas fa-door-open"></i> Public Rooms
+                    </h2>
+                    <button onclick="refreshPublicRooms()" style="
+                        background: rgba(78, 205, 196, 0.2);
+                        border: 1px solid rgba(78, 205, 196, 0.4);
+                        color: #4ecdc4;
+                        padding: 8px 16px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-size: 0.9em;
+                        font-weight: 600;
+                        transition: all 0.2s;
+                    " onmouseover="this.style.background='rgba(78, 205, 196, 0.3)'" onmouseout="this.style.background='rgba(78, 205, 196, 0.2)'">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+
+                <!-- Rooms List -->
+                <div id="public-rooms-list" style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
+                ">
+                    <!-- Rooms will be added dynamically -->
+                    <div style="
+                        text-align: center;
+                        padding: 40px;
+                        color: #888;
+                        font-size: 0.95em;
+                    ">
+                        <i class="fas fa-inbox" style="font-size: 2em; margin-bottom: 12px; opacity: 0.5;"></i>
+                        <p style="margin: 0;">No public rooms available</p>
+                        <p style="margin: 8px 0 0 0; font-size: 0.85em;">Create a new game to start playing!</p>
+                    </div>
+                </div>
+            </div>
             
             <!-- Quick Play Bar (Highlighted) -->
             <div style="
@@ -22347,6 +22403,139 @@ Analyze positions and suggest the best move with clear reasoning. Be concise (2-
                 console.warn('⚠️ renderOnlinePlayersOld failed:', e);
             }
         }
+
+        // Public Rooms Management
+        let publicRooms = [];
+
+        function refreshPublicRooms() {
+            // Request public rooms from server
+            if (socket && socket.connected) {
+                socket.emit('getPublicRooms');
+            }
+        }
+
+        function updatePublicRooms(rooms) {
+            publicRooms = rooms;
+            renderPublicRooms();
+        }
+
+        function renderPublicRooms() {
+            const listEl = document.getElementById('public-rooms-list');
+            if (!listEl) return;
+
+            if (!publicRooms || publicRooms.length === 0) {
+                listEl.innerHTML = `
+                    <div style="
+                        text-align: center;
+                        padding: 40px;
+                        color: #888;
+                        font-size: 0.95em;
+                    ">
+                        <i class="fas fa-inbox" style="font-size: 2em; margin-bottom: 12px; opacity: 0.5;"></i>
+                        <p style="margin: 0;">No public rooms available</p>
+                        <p style="margin: 8px 0 0 0; font-size: 0.85em;">Create a new game to start playing!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            publicRooms.forEach(room => {
+                const isFull = room.players >= room.maxPlayers;
+                const statusColor = room.status === 'waiting' ? '#4ecdc4' : (room.status === 'playing' ? '#f39c12' : '#888');
+                const statusText = room.status === 'waiting' ? 'Waiting' : (room.status === 'playing' ? 'In Progress' : 'Unknown');
+                
+                html += `
+                    <div style="
+                        background: linear-gradient(135deg, rgba(78, 205, 196, 0.1) 0%, rgba(102, 126, 234, 0.1) 100%);
+                        border: 1px solid rgba(78, 205, 196, 0.3);
+                        border-radius: 12px;
+                        padding: 16px 20px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        transition: all 0.2s;
+                        cursor: ${isFull || room.status !== 'waiting' ? 'default' : 'pointer'};
+                        opacity: ${isFull || room.status !== 'waiting' ? '0.6' : '1'};
+                    " ${isFull || room.status !== 'waiting' ? '' : `onclick="joinPublicRoom('${room.roomId}')" onmouseover="this.style.background='linear-gradient(135deg, rgba(78, 205, 196, 0.2) 0%, rgba(102, 126, 234, 0.2) 100%)'; this.style.transform='translateX(5px)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(78, 205, 196, 0.1) 0%, rgba(102, 126, 234, 0.1) 100%)'; this.style.transform='translateX(0)'"`}>
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                <span style="
+                                    color: #fff;
+                                    font-weight: 700;
+                                    font-size: 1.1em;
+                                ">${room.name || 'Untitled Room'}</span>
+                                <span style="
+                                    background: ${statusColor}22;
+                                    color: ${statusColor};
+                                    padding: 4px 10px;
+                                    border-radius: 6px;
+                                    font-size: 0.75em;
+                                    font-weight: 600;
+                                    text-transform: uppercase;
+                                    letter-spacing: 0.5px;
+                                ">${statusText}</span>
+                            </div>
+                            <div style="display: flex; gap: 16px; color: #aaa; font-size: 0.85em;">
+                                <span><i class="fas fa-user"></i> Host: ${room.host || 'Unknown'}</span>
+                                <span><i class="fas fa-users"></i> ${room.players}/${room.maxPlayers}</span>
+                                ${room.variant ? `<span><i class="fas fa-chess"></i> ${room.variant}</span>` : ''}
+                                ${room.timeControl ? `<span><i class="fas fa-clock"></i> ${room.timeControl}</span>` : ''}
+                            </div>
+                        </div>
+                        ${!isFull && room.status === 'waiting' ? `
+                            <button style="
+                                background: linear-gradient(135deg, #4ecdc4 0%, #44b3ab 100%);
+                                border: none;
+                                color: #fff;
+                                padding: 10px 24px;
+                                border-radius: 8px;
+                                font-weight: 600;
+                                font-size: 0.9em;
+                                cursor: pointer;
+                                transition: all 0.2s;
+                                box-shadow: 0 4px 12px rgba(78, 205, 196, 0.3);
+                            " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 16px rgba(78, 205, 196, 0.4)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(78, 205, 196, 0.3)'">
+                                <i class="fas fa-sign-in-alt"></i> Join
+                            </button>
+                        ` : `
+                            <span style="color: #666; font-size: 0.9em; font-weight: 600;">
+                                ${isFull ? 'FULL' : 'IN PROGRESS'}
+                            </span>
+                        `}
+                    </div>
+                `;
+            });
+
+            listEl.innerHTML = html;
+        }
+
+        function joinPublicRoom(roomId) {
+            if (socket && socket.connected) {
+                socket.emit('joinRoom', { roomId });
+                showNotification('Joining room...', 'info');
+            }
+        }
+
+        // Listen for public rooms updates
+        if (socket) {
+            socket.on('publicRooms', (rooms) => {
+                updatePublicRooms(rooms);
+            });
+
+            socket.on('roomJoined', (data) => {
+                showNotification(`Joined room: ${data.roomName}`, 'success');
+                // Handle room joined (transition to game screen)
+            });
+        }
+
+        // Auto-refresh rooms every 10 seconds when on lobby screen
+        setInterval(() => {
+            const lobbyVisible = document.getElementById('main-menu')?.style.display !== 'none';
+            if (lobbyVisible && socket && socket.connected) {
+                refreshPublicRooms();
+            }
+        }, 10000);
         
         function renderOnlinePlayersOld() { // This renders the compact list in the PANEL/MODAL
             console.log('🎨 renderOnlinePlayersOld called');
