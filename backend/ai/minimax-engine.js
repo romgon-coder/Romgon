@@ -479,6 +479,11 @@ class MinimaxEngine {
             const piece = board[move.from];
             const target = board[move.to];
 
+            // CRITICAL: Rhombus flip to escape danger gets highest priority
+            if (move.isFlip && piece && piece.type === 'rhombus') {
+                score += 10000; // MUST consider rhombus escape flips first
+            }
+
             // Captures are good
             if (target) {
                 score += 1000 + this.evaluator.PIECE_VALUES[target.type];
@@ -490,7 +495,7 @@ class MinimaxEngine {
             }
 
             // IMPORTANT: Discourage moving rhombus unless necessary
-            if (piece && piece.type === 'rhombus') {
+            if (piece && piece.type === 'rhombus' && !move.isFlip) {
                 score -= 500; // Heavy penalty for moving king
             }
 

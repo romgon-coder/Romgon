@@ -534,32 +534,38 @@ function canFlipSafely(board, pos, playerColor, flipModeEnabled) {
     const piece = board[pos];
     if (!piece || piece.color !== playerColor) return false;
     
-    // Only certain pieces can flip (not rhombus in danger)
-    const willBeFlipped = !piece.flipped;
-    const opponentColor = playerColor === 'white' ? 'black' : 'white';
+    // Create board state after flip
+    const testBoard = JSON.parse(JSON.stringify(board));
+    testBoard[pos].flipped = !testBoard[pos].flipped;
     
-    // Check if any opponent piece can attack this position after flip
-    const [row, col] = pos.split('-').map(Number);
-    
-    for (const oppPos in board) {
-        const oppPiece = board[oppPos];
-        if (oppPiece && oppPiece.color === opponentColor) {
-            // Check if opponent has matching flip state after our flip
-            if (oppPiece.flipped === willBeFlipped) {
-                // Create temporary board with flipped piece
-                const testBoard = JSON.parse(JSON.stringify(board));
-                testBoard[pos].flipped = willBeFlipped;
-                
-                // Check if opponent can attack
-                const oppMoves = getLegalMoves(testBoard, oppPos, opponentColor, flipModeEnabled);
-                if (oppMoves.some(m => m.to === pos && m.isCapture)) {
-                    // SPECIAL: Rhombus cannot flip into danger
-                    if (piece.type === 'rhombus') {
-                        return false;
-                    }
-                }
-            }
+    // For rhombus: Check if flipping helps escape danger or puts it in danger
+    if (piece.type === 'rhombus') {
+        const wasUnderThreat = isPositionUnderThreat(board, pos, playerColor, flipModeEnabled);
+        const willBeUnderThreat = isPositionUnderThreat(testBoard, pos, playerColor, flipModeEnabled);
+        
+        // Allow flip if it helps escape (was threatened, won't be after flip)
+        // Block flip if it creates danger (wasn't threatened, will be after flip)
+        if (wasUnderThreat && !willBeUnderThreat) {
+            console.log(`✅ Rhombus flip at ${pos} escapes threat - ALLOWING`);
+            return true; // Good flip - escapes danger
         }
+        if (!wasUnderThreat && willBeUnderThreat) {
+            console.log(`❌ Rhombus flip at ${pos} would create threat - BLOCKING`);
+            return false; // Bad flip - creates danger
+        }
+        // If neither threatened before or after, allow it
+        console.log(`✅ Rhombus flip at ${pos} is neutral - ALLOWING`);
+        return true;
+    }
+    
+    // For other pieces: make sure flip doesn't leave OUR rhombus in check
+    const ourRhombusPos = Object.keys(testBoard).find(p => 
+        testBoard[p]?.type === 'rhombus' && testBoard[p]?.color === playerColor
+    );
+    
+    if (ourRhombusPos && isPositionUnderThreat(testBoard, ourRhombusPos, playerColor, flipModeEnabled)) {
+        console.log(`❌ Flip of ${piece.type} at ${pos} would expose rhombus - BLOCKING`);
+        return false; // This flip would expose our rhombus
     }
     
     return true;
