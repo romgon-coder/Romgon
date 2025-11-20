@@ -262,6 +262,8 @@ class MinimaxEngine {
         this.pruneCount = 0;
         this.transpositionTable = new Map(); // Cache evaluated positions
         this.maxCacheSize = 10000;
+        this.moveHistory = []; // Track recent moves to detect repetition
+        this.maxHistorySize = 20;
     }
 
     /**
@@ -292,13 +294,24 @@ class MinimaxEngine {
         // Order moves for better pruning
         const orderedMoves = this.orderMoves(board, moves, player);
 
+        // ANTI-REPETITION: Penalize moves that repeat recent positions
+        const scoredMoves = orderedMoves.map(move => {
+            const moveKey = `${move.from}-${move.to}`;
+            const repetitionCount = this.moveHistory.filter(m => m === moveKey).length;
+            
+            // Heavy penalty for repeated moves
+            const repetitionPenalty = repetitionCount * 5000;
+            
+            return { move, repetitionPenalty };
+        });
+
         let bestMove = null;
         let bestScore = -Infinity;
         let alpha = -Infinity;
         const beta = Infinity;
 
         // Evaluate each move
-        for (const move of orderedMoves) {
+        for (const { move, repetitionPenalty } of scoredMoves) {
             // Check time limit
             if (Date.now() - this.startTime > this.timeLimit) {
                 console.log(`⏰ Time limit reached, stopping search`);
@@ -318,7 +331,7 @@ class MinimaxEngine {
                 player,
                 flipModeEnabled,
                 false // not maximizing (opponent's turn)
-            );
+            ) - repetitionPenalty; // Apply repetition penalty
 
             // Update best move
             if (score > bestScore) {
@@ -328,6 +341,17 @@ class MinimaxEngine {
 
             // Update alpha
             alpha = Math.max(alpha, score);
+        }
+
+        // Record this move in history to detect future repetitions
+        if (bestMove) {
+            const moveKey = `${bestMove.from}-${bestMove.to}`;
+            this.moveHistory.push(moveKey);
+            
+            // Keep history limited
+            if (this.moveHistory.length > this.maxHistorySize) {
+                this.moveHistory.shift();
+            }
         }
 
         const searchTime = Date.now() - this.startTime;
@@ -535,6 +559,7 @@ class MinimaxEngine {
             nodesSearched: this.nodesSearched,
             pruneCount: this.pruneCount,
             cacheSize: this.transpositionTable.size,
+            moveHistorySize: this.moveHistory.length,
             pruneEfficiency: this.pruneCount > 0 
                 ? Math.round((this.pruneCount / this.nodesSearched) * 100) 
                 : 0
@@ -542,10 +567,20 @@ class MinimaxEngine {
     }
 
     /**
-     * Clear cache
+     * Clear cache and move history (call between games)
      */
     clearCache() {
         this.transpositionTable.clear();
+        this.moveHistory = [];
+        console.log('🧹 AI cache and move history cleared');
+    }
+
+    /**
+     * Reset move history only (for new game)
+     */
+    resetMoveHistory() {
+        this.moveHistory = [];
+        console.log('🔄 AI move history reset');
     }
 }
 

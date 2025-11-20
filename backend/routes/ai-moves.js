@@ -201,6 +201,9 @@ router.post('/game-start', (req, res) => {
             startTime: Date.now()
         });
 
+        // Reset AI move history for new game (prevents repetition penalties from previous games)
+        minimaxEngine.resetMoveHistory();
+
         console.log(`📝 Started tracking game: ${gameId}`);
 
         res.json({
