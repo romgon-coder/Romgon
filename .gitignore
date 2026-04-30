@@ -37,3 +37,6 @@ backend/data/ai-state.json
 .vercel
 
 RomgonTemp/
+
+# Large video files (exceed Cloudflare Pages 25 MiB limit)
+public/ASSETS/backgrounds/hexagon_patterns_black.mp4
